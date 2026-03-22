@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NBA Card Catalogue Test</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #080b12; --surf: #0f1320; --surf2: #161c2d; --surf3: #1d2438;
+  --border: #252d44; --accent: #FF5722; --gold: #FFD600;
+  --green: #69F0AE; --cyan: #40C4FF; --purple: #B388FF; --red: #FF5252;
+  --text: #EEF0FF; --text2: #7986a8;
+  --fd: 'Bebas Neue', sans-serif; --fu: 'Barlow Condensed', sans-serif; --fb: 'Barlow', sans-serif;
+}
+body { background: var(--bg); color: var(--text); font-family: var(--fb); padding: 24px; }
+
+h1 { font-family: var(--fd); color: var(--accent); font-size: 32px; margin-bottom: 20px; letter-spacing: 2px; }
+
+/* Card button row */
+.card-btn {
+  width: 100%; background: var(--surf); border: 1px solid var(--border);
+  border-radius: 12px; padding: 14px 18px; margin-bottom: 8px;
+  cursor: pointer; transition: all 0.18s; text-align: left; color: var(--text);
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.card-btn:hover { border-color: var(--accent); background: var(--surf2); }
+.card-btn.open { border-color: var(--accent); background: var(--surf2); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+
+.card-btn-left { display: flex; align-items: center; gap: 14px; }
+.card-btn-pos {
+  background: var(--accent); color: #fff; font-family: var(--fu);
+  font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 5px;
+  letter-spacing: 0.1em; white-space: nowrap;
+}
+.card-btn-name { font-family: var(--fu); font-size: 18px; font-weight: 700; }
+.card-btn-team { font-size: 12px; color: var(--text2); margin-top: 1px; }
+.card-btn-right { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+.card-btn-stats { display: flex; gap: 10px; }
+.stat-pill { font-family: var(--fu); font-size: 12px; font-weight: 700; }
+.stat-pill span { color: var(--text2); font-weight: 400; }
+.chevron { font-size: 14px; color: var(--text2); transition: transform 0.2s; }
+.card-btn.open .chevron { transform: rotate(180deg); }
+
+/* Expanded panel */
+.card-panel {
+  display: none; background: var(--surf2);
+  border: 1px solid var(--accent); border-top: none;
+  border-bottom-left-radius: 12px; border-bottom-right-radius: 12px;
+  padding: 20px; margin-bottom: 8px;
+}
+.card-panel.open { display: block; }
+
+/* Panel layout */
+.panel-top { display: flex; gap: 20px; margin-bottom: 18px; }
+.panel-stats-box {
+  background: var(--surf3); border-radius: 10px; padding: 14px 18px;
+  display: flex; gap: 20px; flex-wrap: wrap; flex-shrink: 0;
+}
+.big-stat { text-align: center; }
+.big-stat .val { font-family: var(--fd); font-size: 28px; line-height: 1; }
+.big-stat .lbl { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+.big-stat.hp .val { color: var(--green); }
+.big-stat.dmg .val { color: var(--accent); }
+.big-stat.spd .val { color: var(--gold); }
+
+.panel-ability {
+  flex: 1; background: var(--surf3); border-radius: 10px; padding: 14px 16px;
+  border-left: 3px solid var(--gold);
+}
+.ability-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--gold); font-weight: 700; margin-bottom: 4px; font-family: var(--fu); }
+.ability-name { font-family: var(--fu); font-size: 16px; font-weight: 700; margin-bottom: 6px; }
+.ability-desc { font-size: 12px; color: var(--text2); line-height: 1.6; }
+
+/* Skills */
+.skills-title { font-family: var(--fu); font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text2); margin-bottom: 10px; }
+.skill-row {
+  background: var(--surf3); border-radius: 9px; padding: 12px 14px;
+  margin-bottom: 8px; border-left: 3px solid var(--cyan);
+  display: flex; gap: 14px; align-items: flex-start;
+}
+.skill-dmg-box {
+  background: var(--surf); border-radius: 7px; padding: 8px 12px;
+  text-align: center; flex-shrink: 0; min-width: 70px;
+}
+.skill-dmg-val { font-family: var(--fd); font-size: 22px; color: var(--accent); line-height: 1; }
+.skill-dmg-lbl { font-size: 9px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 2px; }
+.skill-info { flex: 1; }
+.skill-name { font-family: var(--fu); font-size: 15px; font-weight: 700; margin-bottom: 4px; }
+.skill-desc { font-size: 12px; color: var(--text2); line-height: 1.6; }
+
+/* Extra info row */
+.info-row { display: flex; gap: 16px; margin-bottom: 14px; flex-wrap: wrap; }
+.info-chip {
+  background: var(--surf3); border-radius: 6px; padding: 5px 10px;
+  font-size: 11px; color: var(--text2);
+}
+.info-chip b { color: var(--text); }
+</style>
+</head>
+<body>
+
+<h1>🏀 CARD CATALOGUE</h1>
+<p style="color:var(--text2);font-size:13px;margin-bottom:20px">Click any card to expand details</p>
+
+<div id="cards-list"></div>
+
+<script>
+const CARDS = [
+  {
+    name: "Stephen Curry (Splash Brother)",
+    position: "PG/SG",
+    tier: "GOAT TIER",
+    team: "Golden State Warriors",
+    height: "6'2",
+    weight: 185,
+    hp: 2200,
+    basicDmg: 850,
+    spd: 9,
+    abilityName: "Splash Brother",
+    abilityDesc: "Curry is one half of the Splash Brothers, contributing heavily with his unstoppable pull up shots while Klay helps to relieve defensive pressure off of Curry. When any Warriors Klay Thompson card is on the team with Curry, he will gain an additional 1000 HP and 1 SPD. When Klay is no longer on the team, he will lose the boost.",
+    skills: [
+      {
+        name: "Float Me One",
+        dmg: "950",
+        desc: "Curry's floater is one of his favorite ways to score. He takes the high arcing shot over defenders with incredible precision. This skill cannot be blocked by defensive skills. For a maximum of 4 uses."
+      },
+      {
+        name: "Downtown Francisco",
+        dmg: "1400",
+        desc: "Curry is the heart and soul of the Golden State. His insane shot making abilities from deep terrorizes perimeter defenders. Curry takes a shot from way beyond the arc and swishes it in. For a maximum of 1 use."
+      }
+    ]
+  }
+];
+
+function render() {
+  const list = document.getElementById('cards-list');
+  list.innerHTML = CARDS.map((c, i) => `
+    <button class="card-btn" onclick="toggle(${i})" id="btn-${i}">
+      <div class="card-btn-left">
+        <div class="card-btn-pos">${c.position}</div>
+        <div>
+          <div class="card-btn-name">${c.name}</div>
+          <div class="card-btn-team">${c.team} · ${c.tier}</div>
+        </div>
+      </div>
+      <div class="card-btn-right">
+        <div class="card-btn-stats">
+          <div class="stat-pill"><span>HP </span>${c.hp}</div>
+          <div class="stat-pill"><span>DMG </span>${c.basicDmg}</div>
+          <div class="stat-pill"><span>SPD </span>${c.spd}</div>
+        </div>
+        <div class="chevron">▼</div>
+      </div>
+    </button>
+    <div class="card-panel" id="panel-${i}">
+      <div class="panel-top">
+        <div class="panel-stats-box">
+          <div class="big-stat hp"><div class="val">${c.hp}</div><div class="lbl">HP</div></div>
+          <div class="big-stat dmg"><div class="val">${c.basicDmg}</div><div class="lbl">Basic DMG</div></div>
+          <div class="big-stat spd"><div class="val">${c.spd}</div><div class="lbl">SPD</div></div>
+        </div>
+        <div class="panel-ability">
+          <div class="ability-label">⚡ Ability</div>
+          <div class="ability-name">${c.abilityName}</div>
+          <div class="ability-desc">${c.abilityDesc}</div>
+        </div>
+      </div>
+      <div class="info-row">
+        <div class="info-chip"><b>Height:</b> ${c.height}</div>
+        <div class="info-chip"><b>Weight:</b> ${c.weight} lbs</div>
+        <div class="info-chip"><b>Position:</b> ${c.position}</div>
+        <div class="info-chip"><b>Tier:</b> ${c.tier}</div>
+      </div>
+      <div class="skills-title">Skills</div>
+      ${c.skills.map(s => `
+        <div class="skill-row">
+          <div class="skill-dmg-box">
+            <div class="skill-dmg-val">${s.dmg}</div>
+            <div class="skill-dmg-lbl">DMG</div>
+          </div>
+          <div class="skill-info">
+            <div class="skill-name">${s.name}</div>
+            <div class="skill-desc">${s.desc}</div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
+}
+
+function toggle(i) {
+  const btn   = document.getElementById(`btn-${i}`);
+  const panel = document.getElementById(`panel-${i}`);
+  const isOpen = panel.classList.contains('open');
+  // Close all
+  document.querySelectorAll('.card-btn').forEach(b => b.classList.remove('open'));
+  document.querySelectorAll('.card-panel').forEach(p => p.classList.remove('open'));
+  // Open this one if it was closed
+  if (!isOpen) {
+    btn.classList.add('open');
+    panel.classList.add('open');
+  }
+}
+
+render();
+</script>
+</body>
+</html>
