@@ -220,8 +220,6 @@
     <div id="setup-slots" class="slots-grid" style="display:flex; justify-content:center;"></div>
     <div class="filter-bar" style="justify-content:center;">
       <button class="btn-primary" id="start-battle-btn" onclick="startBattle()" disabled style="padding:10px 30px; font-size:1rem;">ENTER ARENA</button>
-
-      
     </div>
   </div>
   <div style="padding: 16px 24px; font-weight:800; color:var(--accent);">YOUR BENCH</div>
@@ -261,13 +259,11 @@
         <div style="font-size:0.75rem; font-weight:800; color:var(--text-muted); margin-bottom:4px;" id="turn-indicator">YOUR TURN</div>
         <div id="active-card-info" style="font-weight:800; color:var(--pos-pg); margin-bottom: 8px;">Waiting for battle...</div>
         <div id="action-buttons" style="display:flex; flex-direction:column; gap:6px;">
-          </div>
+        </div>
       </div>
-
-<script>
+    </div> </div> </div> <script>
 // ==================== CONFIGURATION ====================
 const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/`;
-
 
 // ==================== COMPRESSED CARDS DB ====================
 const CARDS = [
@@ -310,7 +306,7 @@ const CARDS = [
   {name:"Clyde Drexler",pos:"SG/SF",tier:"GOAT TIER",team:"Portland Trail Blazers GOAT Series",hp:3450,dmg:800,spd:9,ab:"The Glide",abdesc:"Drexler is a Trail Blazer legend. He has been an icon of the franchise for decades. When any Portland Trail Blazer card is on the team with Drexler, he will gain an additional 500 HP. And additional 1 SPD. When there is no Trail Blazer left, he will lose the boost.",image:"clyde_drexler.png",skills:[{name:"Gliding Slam",dmg:"1100",desc:"Drexler drives into the paint, leaps up and glides to the hoop for a slam dunk. For a maximum of 5 uses."},{name:"Called Bank",dmg:"1700",desc:"Drexler shoots a buzzer-beating shot for the win and calls bank. This skill has a 50% chance of hitting, to be decided via coin flip. For a maximum of 2 uses."}]},
   {name:"Ray Allen (Sugar Ray)",pos:"SG/SF",tier:"GOAT TIER",team:"Seattle Supersonics GOAT Series",hp:3400,dmg:750,spd:9,ab:"Sugar Ray",abdesc:"Ray Allen has a perfect shooting form. Pretty to look at and it seems like it always goes in. Allen is not affected by skills that force coin flips and his skills cannot miss. However, he may be blocked and contested.",image:"ray_allen_(sugar_ray).png",skills:[{name:"Supersonic Slam",dmg:"1000",desc:"Allen's athleticism is often overlooked. He drives past defenders and slams it in. For a maximum of 5 uses."},{name:"Catch And Shoot",dmg:"1200",desc:"Allen gets himself wide open, catches the ball and watches as it splashes. For a maximum of 2 uses."}]},
   {name:"Ray Allen (The 4th Heatle)",pos:"SG/SF",tier:"GOAT TIER",team:"Seattle Supersonics GOAT Series",hp:3200,dmg:800,spd:7,ab:"The 4th Heatle",abdesc:"Ray Allen joined the legendary Heatles and complemented them perfectly. The sharpshooting veteran brought them to new heights. When any one of LeBron, Wade or Bosh is on the team, Allen will gain an additional 300 DMG for all skills. When they are no longer on the team, he will lose the boost.",image:"ray_allen_(the_4th_heatle).png",skills:[{name:"Bang!",dmg:"900",desc:"Allen receives the ball from his point guard for a corner three. For a maximum of 4 uses."},{name:"Back Out To Allen",dmg:"1700",desc:"Allen hits a clutch game-tying three in an elimination game. This skill cannot be blocked, contested or miss due to defensive skills when used against a San Antonio Spur. Otherwise, this skill has a 50% chance of hitting, to be decided via coin flip. For a maximum of 2 uses."}]},
-  {name:"Vince Carter",pos:"SG/SF",tier:"GOAT TIER",team:"Toronto Raptors GOAT Series",hp:3400,dmg:850,spd:10,ab:"Vinsanity",abdesc:"Vince Carter is the best in-game dunker in NBA history. His explosive and ferocious dunks make him a formidable opponent. His skills cannot be blocked or contested by defensive skills.",image:"vince_carter.png",skills:[{name:"On A Poster",dmg:"1050",desc:"Carter sprints to the basket and dunks viciously on his defender, putting him on a poster. For a maximum of 4 uses."},{name:"Hurdle Dunk",dmg:"1900",desc:"Carter leaps and hurdles over a defender for a poster dunk. This skill has a 50% chance of hitting, to be decided via coin flip. For a maximum of 2 uses."}]},
+  {name:"Vince Carter",pos:"SG/SF",tier:"GOAT TIER",team:"Toronto Raptors GOAT Series",hp:3400,dmg:850,spd:10,ab:"Vinsanity",abdesc:"Vince Carter is the best in-game dunker in NBA history. His explosive and ferocious dunks make him a formidable opponent. His skills cannot be blocked or contested by defensive skills.",image:"vince_carter.png",skills:[{name:"On A Poster",dmg:"1050",desc:"Carter sprints to the basket and dunks viciously on his defender, putting on a poster. For a maximum of 4 uses."},{name:"Hurdle Dunk",dmg:"1900",desc:"Carter leaps and hurdles over a defender for a poster dunk. This skill has a 50% chance of hitting, to be decided via coin flip. For a maximum of 2 uses."}]},
   {name:"Sidney Moncrief",pos:"SG/PG",tier:"GOAT TIER",team:"Milwaukee Bucks GOAT Series",hp:3750,dmg:400,spd:9,ab:"The Squid",abdesc:"Moncrief is one of the best perimeter defenders ever. He hounds his assignments relentlessly with his high defensive IQ. Basic attack damage from all opponents used against Moncrief will be halved.",image:"sidney_moncrief.png",skills:[{name:"No Shot",dmg:"N/A (contest)",desc:"Moncrief guards his opponents closely, making hard for them to shoot. He contests all jumpshot skills used against any of his teammates, including himself. The jumpshot skill will fail. This is used right after the opponent attacks and does not count as a move from Moncrief. This can be used once each turn and for a maximum of 2 uses."},{name:"No Drive",dmg:"N/A (contest)",desc:"Moncrief guards his opponents closely, making hard for them to drive. He contests all close shot skills used against any of his teammates, including himself. The close shot skill will fail. This is used right after the opponent attacks and does not count as a move from Moncrief. This can be used once each turn and for a maximum of 3 uses."}]},
   {name:"Joe Dumars",pos:"SG/PG",tier:"GOAT TIER",team:"Detroit Pistons GOAT Series",hp:3650,dmg:450,spd:7,ab:"Broadway Joe",abdesc:"Dumars is a highly effective perimeter defender, he gives his opponents hell when defending them. Any close shot skills used against his team's PG and SG will be completely blocked in the first 2 rounds.",image:"joe_dumars.png",skills:[{name:"Catch And Grab",dmg:"N/A (intercept)",desc:"Dumars intercepts any assist skills to completely stop it. Dumars may target any opponent. This skill is used right after the opponent attacks and does not count as a move from Dumars. This can be used once each turn and for a maximum of 2 uses."},{name:"Road Barricade",dmg:"N/A (contest)",desc:"Dumars contests any close shot skills used against any of his teammates, including himself. The close shot skill will fail. This is used right after the opponent attacks and does not count as a move from Dumars. This can be used once each turn and for a maximum of 2 uses."}]},
   {name:"Reggie Miller",pos:"SG/SF",tier:"GOAT TIER",team:"Indiana Pacers GOAT Series",hp:2950,dmg:750,spd:8,ab:"The Knick Killer",abdesc:"Miller is one of the most clutch players ever and a known Knick killer. Miller's basic attacks and skills will all deal an additional 500 DMG when he is targeting any New York Knick player.",image:"reggie_miller.png",skills:[{name:"Step-Back Jumper",dmg:"1000",desc:"Miller's step-back jumper is a favorite weapon of his which he uses flawlessly. For a maximum of 5 uses."},{name:"Choke Talk",dmg:"N/A (nullify)",desc:"Miller is one of the best trash talkers in all of basketball, he provokes and angers his opponents to no end. This skill nullifies any defensive skills. This is to be used after an opponent blocks, steals, intercepts or contests a shot. Miller can target any opponent. This skill does not affect misses or coin flips forced by skills. This can be used once each turn for a maximum of 2 uses."}]},
@@ -388,7 +384,6 @@ const CARDS = [
   {name:"Victor Wembanyama",pos:"C/PF",tier:"GOAT TIER",team:"San Antonio Spurs Future Series",hp:3700,dmg:500,spd:7,ab:"Alien",abdesc:"Wembanyama is a generational talent, sometimes, his combination of size and skill seems like it's out of this world. Opponents shorter than 7'1 are unable to block or contest his damaging skills and basic attacks. Opponents shorter than 7'1 are also not able to nullify his defensive skills.",image:"victor_wembanyama.png",skills:[{name:"Wingspan Block",dmg:"N/A (block)",desc:"Wembanyama uses his insane wingspan to deny his opponents with ease. Wembanyama blocks any damaging skills completely. This is used right after the opponent attacks and does not count as a move from him. Wembanyama may target any opponent. This can be used once each turn and for a maximum of 3 uses."},{name:"Three From Space",dmg:"1450",desc:"Wembanyama launches a three with his high arching jumpshot. This skill has a 50% chance of hitting, to be decided via coin flip. For a maximum of 2 uses."}]}
 ];
 
-  // Ensure enough mock cards for testing (Remove this after pasting real db)
 // ==================== STATE MANAGEMENT ====================
 let draftSquad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
 let activeLineup = { PG:null, SG:null, SF:null, PF:null, C:null, '6TH':null };
@@ -411,21 +406,6 @@ let activePlayerIndex = 0; // Which player card is currently acting
 let activeEnemyIndex = 0; 
 let isAnimating = false;
 
-// ==================== STATE MANAGEMENT ====================
-let draftSquad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
-let activeLineup = { PG:null, SG:null, SF:null, PF:null, C:null, '6TH':null };
-let benchRoster = [];
-let hasSixthMan = false;
-const POSITIONS = ['PG','SG','SF','PF','C'];
-
-let playerActive = [], playerBench = [], enemyActive = [], enemyBench = [];
-let playerScore = 0, enemyScore = 0;
-
-let expandedCardCat = null;
-let expandedCardDraft = null;
-let isCollapsing = false;
-let searchTimeout;
-
 // ==================== UTILS & UI HELPERS ====================
 function $(id) { return document.getElementById(id); }
 
@@ -437,7 +417,6 @@ function escapeJS(str) {
     .replace(/`/g, "\\`");
 }
 
-function $(id) { return document.getElementById(id); }
 function shortName(n) { return n.replace(/ \(.+?\)$/, ''); }
 function escapeHtml(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
 function getDBShortName(f) { let m = f.match(/^(.*?)(\s\(.*)?$/); if(!m)return f; let b=m[1], v=m[2]||''; let p=b.split(' '); if(p.length>1){ let f=p.shift(); return f.charAt(0)+'. '+p.join(' ')+v; } return b+v; }
@@ -445,23 +424,9 @@ function getImgUrl(filename, name) { return (!filename || filename.length<3) ? `
 function handleImgError(el, name) { el.onerror=null; el.src=`https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(shortName(name))}`; }
 
 function showScreen(id) {
-  console.log("Trying to show screen:", id);
-
-  if (!id) {
-    console.error("showScreen called with invalid id:", id);
-    return;
-  }
-
-  const el = document.getElementById(id);
-  console.log("Element found:", el);
-
-  if (!el) {
-    console.error("Screen not found:", id);
-    return;
-  }
-
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  el.classList.add('active');
+  let el = document.getElementById(id);
+  if (el) el.classList.add('active');
   window.scrollTo(0,0);
 }
 
@@ -580,6 +545,10 @@ function renderExpandedRow(card, context) {
 }
 
 // ==================== PHASE 1: CATALOGUE ====================
+function goCat() {
+  showScreen('catalogue-screen');
+}
+
 function filterCat() {
   if(isCollapsing) return;
   let q = $('cs').value.toLowerCase(), posF = $('cp').value, sort = $('csort').value;
@@ -700,7 +669,7 @@ function renderSetupBench() {
   }).join('');
 }
 
-// ==================== PHASE 4: BATTLE ====================
+// ==================== PHASE 4: BATTLE & ENGINE ====================
 function startBattle() {
   playerActive = [];
   // Respect the 6th Man logic
@@ -718,7 +687,7 @@ function startBattle() {
   
   playerScore = 0; enemyScore = 0; turnCount = 1; currentTurn = 'player';
   
-  // Apply Pre-Game Synergies (Example: Splash Brothers)
+  // Apply Pre-Game Synergies
   applyTeamSynergies(playerActive);
   applyTeamSynergies(enemyActive);
 
@@ -730,167 +699,17 @@ function startBattle() {
   renderActionPanel();
 }
 
-  function renderActionPanel() {
-  if (playerScore >= 8 || enemyScore >= 8) return; // Game Over state handled elsewhere
-
-  let panel = $('action-buttons');
-  let turnInd = $('turn-indicator');
-  let info = $('active-card-info');
-
-  if (currentTurn === 'enemy') {
-    turnInd.textContent = "ENEMY TURN"; turnInd.style.color = "#FF5252";
-    info.textContent = "Opponent is thinking...";
-    panel.innerHTML = `<div style="color:var(--text-muted); font-size:0.8rem;">Waiting for enemy move...</div>`;
-    setTimeout(enemyAI, 1500); // Trigger Enemy AI
-    return;
-  }
-
-  // Player Turn
-  turnInd.textContent = `YOUR TURN (TURN ${turnCount})`; turnInd.style.color = "#69F0AE";
-  
-  // Find next living player
-  while(playerActive[activePlayerIndex] && playerActive[activePlayerIndex].isDead) {
-    activePlayerIndex = (activePlayerIndex + 1) % playerActive.length;
-  }
-  let activeCard = playerActive[activePlayerIndex];
-  info.textContent = `${shortName(activeCard.name)} is ready!`;
-
-  let html = `<button class="btn-primary" onclick="executeMove('basic', 0)">⚔️ BASIC ATTACK (${activeCard.dmg} DMG)</button>`;
-  
-  activeCard.skills.forEach((skill, idx) => {
-    // Only show damaging skills for now, utility skills require complex target selection UI
-    if(!isNaN(skill.dmg) || skill.dmg.includes("DMG")) {
-       html += `<button class="btn-primary" style="background:var(--pos-c);" onclick="executeMove('skill', ${idx})">✨ ${skill.name} (${skill.dmg})</button>`;
-    }
-  });
-  
-  html += `<button class="btn-primary" style="background:var(--border-heavy);" onclick="passTurn()">⏭️ PASS / DEFEND</button>`;
-  panel.innerHTML = html;
-}
-
-async function executeMove(type, skillIdx) {
-  if (isAnimating) return;
-  isAnimating = true;
-  $('action-buttons').innerHTML = `<div style="color:var(--text-muted); font-size:0.8rem;">Executing...</div>`;
-
-  let attacker = playerActive[activePlayerIndex];
-  let dmg = type === 'basic' ? attacker.dmg : parseInt(attacker.skills[skillIdx].dmg);
-  let moveName = type === 'basic' ? 'Basic Attack' : attacker.skills[skillIdx].name;
-
-  // Lane Targeting Logic (Simplified for Engine Base)
-  // PG targets PG/SG. If dead, targets next available.
-  let targetIdx = enemyActive.findIndex(c => !c.isDead); // Fallback: first alive
-  
-  if (targetIdx === -1) return; // All enemies dead
-  let target = enemyActive[targetIdx];
-
-  logMsg(`<b>${shortName(attacker.name)}</b> uses ${moveName} on ${shortName(target.name)}!`, "atk");
-
-  await playCombatAnimation(`player-${activePlayerIndex}`, `enemy-${targetIdx}`, dmg, target, type);
-
-  // Check Win Condition
-  if(target.currentHp <= 0) {
-    target.isDead = true;
-    playerScore++; 
-    $('score-player').textContent = playerScore;
-    $(`card-enemy-${targetIdx}`).classList.add('dead-card');
-    logMsg(`💀 ${shortName(target.name)} KNOCKED OUT!`, "atk");
-  }
-
-  finishTurn();
-}
-
-async function enemyAI() {
-  if (isAnimating) return;
-  isAnimating = true;
-
-  while(enemyActive[activeEnemyIndex] && enemyActive[activeEnemyIndex].isDead) {
-    activeEnemyIndex = (activeEnemyIndex + 1) % enemyActive.length;
-  }
-  let attacker = enemyActive[activeEnemyIndex];
-  
-  let targetIdx = playerActive.findIndex(c => !c.isDead);
-  let target = playerActive[targetIdx];
-
-  // AI chooses Basic Attack 70% of the time, Skill 30%
-  let isSkill = Math.random() > 0.7 && attacker.skills.length > 0 && !isNaN(parseInt(attacker.skills[0].dmg));
-  let dmg = isSkill ? parseInt(attacker.skills[0].dmg) : attacker.dmg;
-  let moveName = isSkill ? attacker.skills[0].name : "Basic Attack";
-
-  logMsg(`<b>${shortName(attacker.name)}</b> uses ${moveName} on ${shortName(target.name)}!`, "def");
-
-  await playCombatAnimation(`enemy-${activeEnemyIndex}`, `player-${targetIdx}`, dmg, target, isSkill ? 'skill' : 'basic');
-
-  if(target.currentHp <= 0) {
-    target.isDead = true;
-    enemyScore++; 
-    $('score-enemy').textContent = enemyScore;
-    $(`card-player-${targetIdx}`).classList.add('dead-card');
-    logMsg(`💀 ${shortName(target.name)} KNOCKED OUT!`, "def");
-  }
-
-  finishTurn();
-}
-
-async function playCombatAnimation(atkId, defId, dmg, targetObj, moveType) {
-  let atkEl = $(`wrap-${atkId}`); 
-  let defEl = $(`wrap-${defId}`); 
-  
-  // Attacker leaps up
-  atkEl.classList.add('anim-waft-up');
-  await new Promise(r => setTimeout(r, 500));
-  
-  // Defender takes hit
-  defEl.classList.add('anim-shake');
-  let pop = document.createElement('div'); 
-  pop.className = 'dmg-popup'; 
-  pop.innerHTML = `💥 -${dmg}`; 
-  defEl.appendChild(pop);
-  
-  // Update HP Data & Bar
-  targetObj.currentHp = Math.max(0, targetObj.currentHp - dmg);
-  let pct = (targetObj.currentHp / targetObj.hp) * 100;
-  let fill = $(`hpf-${defId}`);
-  fill.style.width = pct + '%'; 
-  fill.style.background = pct > 50 ? '#69F0AE' : pct > 20 ? '#FFD600' : '#FF5252';
-  $(`hpt-${defId}`).textContent = `${targetObj.currentHp}/${targetObj.hp}`;
-  
-  await new Promise(r => setTimeout(r, 600));
-  atkEl.classList.remove('anim-waft-up'); 
-  defEl.classList.remove('anim-shake'); 
-  pop.remove();
-}
-
-function passTurn() { logMsg(`<b>${shortName(playerActive[activePlayerIndex].name)}</b> holds their ground.`, "sys"); finishTurn(); }
-
-function finishTurn() {
-  isAnimating = false;
-  if (playerScore >= 8) { logMsg("🏆 YOU WON THE MATCH!", "atk"); return; }
-  if (enemyScore >= 8) { logMsg("❌ YOU LOST THE MATCH.", "def"); return; }
-
-  if (currentTurn === 'player') {
-    activePlayerIndex = (activePlayerIndex + 1) % playerActive.length;
-    currentTurn = 'enemy';
-  } else {
-    activeEnemyIndex = (activeEnemyIndex + 1) % enemyActive.length;
-    currentTurn = 'player';
-    turnCount++;
-  }
-  renderActionPanel();
-}
-
 function applyTeamSynergies(team) {
   let names = team.map(c => c.name);
   team.forEach(card => {
-    // Example: Splash Brother Synergy
     if(card.ab === "Splash Brother") {
       if(card.name.includes("Curry") && names.some(n => n.includes("Klay Thompson"))) { card.hp += 1000; card.spd += 1; card.currentHp = card.hp; }
       if(card.name.includes("Klay") && names.some(n => n.includes("Stephen Curry"))) { card.dmg += 500; card.spd += 1; }
     }
-    // Example: Dynamic Duo (LeBron & Wade)
     if(card.ab === "Dynamic Duo" && names.some(n => n.includes("LeBron"))) { card.dmg += 200; }
   });
 }
+
 function renderArena() {
   $('enemy-bench-row').innerHTML = enemyBench.map(c => `<div class="bench-card face-down"><img src="${GITHUB_RAW_BASE}goat-tier-back.png" onerror="this.style.display='none'"></div>`).join('');
   $('enemy-active-row').innerHTML = enemyActive.map((c, i) => buildCardHtml(c, `enemy-${i}`, true)).join('');
@@ -920,33 +739,142 @@ function logMsg(txt, t) {
   log.scrollTop = log.scrollHeight;
 }
 
-async function simulateAttackSequence() {
-  $('btn-test-attack').disabled = true;
-  let pIdx = playerActive.findIndex(c => !c.isDead), eIdx = enemyActive.findIndex(c => !c.isDead);
-  if(pIdx === -1 || eIdx === -1) { logMsg("Game Over!", "sys"); return; }
+function renderActionPanel() {
+  if (playerScore >= 8 || enemyScore >= 8) return;
+
+  let panel = $('action-buttons');
+  let turnInd = $('turn-indicator');
+  let info = $('active-card-info');
+
+  if (currentTurn === 'enemy') {
+    turnInd.textContent = "ENEMY TURN"; turnInd.style.color = "#FF5252";
+    info.textContent = "Opponent is thinking...";
+    panel.innerHTML = `<div style="color:var(--text-muted); font-size:0.8rem;">Waiting for enemy move...</div>`;
+    setTimeout(enemyAI, 1500);
+    return;
+  }
+
+  turnInd.textContent = `YOUR TURN (TURN ${turnCount})`; turnInd.style.color = "#69F0AE";
   
-  let pC = playerActive[pIdx], eC = enemyActive[eIdx], dmg = pC.dmg;
-  logMsg(`<b>${getDBShortName(pC.name)}</b> attacks ${getDBShortName(eC.name)} for ${dmg} DMG!`, "atk");
+  while(playerActive[activePlayerIndex] && playerActive[activePlayerIndex].isDead) {
+    activePlayerIndex = (activePlayerIndex + 1) % playerActive.length;
+  }
+  let activeCard = playerActive[activePlayerIndex];
+  info.textContent = `${shortName(activeCard.name)} is ready!`;
+
+  let html = `<button class="btn-primary" onclick="executeMove('basic', 0)">⚔️ BASIC ATTACK (${activeCard.dmg} DMG)</button>`;
   
-  let pEl = $(`wrap-player-${pIdx}`); pEl.classList.add('anim-waft-up');
+  activeCard.skills.forEach((skill, idx) => {
+    if(!isNaN(skill.dmg) || skill.dmg.includes("DMG")) {
+       html += `<button class="btn-primary" style="background:var(--pos-c);" onclick="executeMove('skill', ${idx})">✨ ${skill.name} (${skill.dmg})</button>`;
+    }
+  });
+  
+  html += `<button class="btn-primary" style="background:var(--border-heavy);" onclick="passTurn()">⏭️ PASS / DEFEND</button>`;
+  panel.innerHTML = html;
+}
+
+async function executeMove(type, skillIdx) {
+  if (isAnimating) return;
+  isAnimating = true;
+  $('action-buttons').innerHTML = `<div style="color:var(--text-muted); font-size:0.8rem;">Executing...</div>`;
+
+  let attacker = playerActive[activePlayerIndex];
+  let dmg = type === 'basic' ? attacker.dmg : parseInt(attacker.skills[skillIdx].dmg);
+  let moveName = type === 'basic' ? 'Basic Attack' : attacker.skills[skillIdx].name;
+
+  let targetIdx = enemyActive.findIndex(c => !c.isDead); 
+  if (targetIdx === -1) return; 
+  let target = enemyActive[targetIdx];
+
+  logMsg(`<b>${shortName(attacker.name)}</b> uses ${moveName} on ${shortName(target.name)}!`, "atk");
+
+  await playCombatAnimation(`player-${activePlayerIndex}`, `enemy-${targetIdx}`, dmg, target, type);
+
+  if(target.currentHp <= 0) {
+    target.isDead = true;
+    playerScore++; 
+    $('score-player').textContent = playerScore;
+    $(`card-enemy-${targetIdx}`).classList.add('dead-card');
+    logMsg(`💀 ${shortName(target.name)} KNOCKED OUT!`, "atk");
+  }
+
+  finishTurn();
+}
+
+async function enemyAI() {
+  if (isAnimating) return;
+  isAnimating = true;
+
+  while(enemyActive[activeEnemyIndex] && enemyActive[activeEnemyIndex].isDead) {
+    activeEnemyIndex = (activeEnemyIndex + 1) % enemyActive.length;
+  }
+  let attacker = enemyActive[activeEnemyIndex];
+  
+  let targetIdx = playerActive.findIndex(c => !c.isDead);
+  let target = playerActive[targetIdx];
+
+  let isSkill = Math.random() > 0.7 && attacker.skills.length > 0 && !isNaN(parseInt(attacker.skills[0].dmg));
+  let dmg = isSkill ? parseInt(attacker.skills[0].dmg) : attacker.dmg;
+  let moveName = isSkill ? attacker.skills[0].name : "Basic Attack";
+
+  logMsg(`<b>${shortName(attacker.name)}</b> uses ${moveName} on ${shortName(target.name)}!`, "def");
+
+  await playCombatAnimation(`enemy-${activeEnemyIndex}`, `player-${targetIdx}`, dmg, target, isSkill ? 'skill' : 'basic');
+
+  if(target.currentHp <= 0) {
+    target.isDead = true;
+    enemyScore++; 
+    $('score-enemy').textContent = enemyScore;
+    $(`card-player-${targetIdx}`).classList.add('dead-card');
+    logMsg(`💀 ${shortName(target.name)} KNOCKED OUT!`, "def");
+  }
+
+  finishTurn();
+}
+
+async function playCombatAnimation(atkId, defId, dmg, targetObj, moveType) {
+  let atkEl = $(`wrap-${atkId}`); 
+  let defEl = $(`wrap-${defId}`); 
+  
+  atkEl.classList.add('anim-waft-up');
+  await new Promise(r => setTimeout(r, 500));
+  
+  defEl.classList.add('anim-shake');
+  let pop = document.createElement('div'); 
+  pop.className = 'dmg-popup'; 
+  pop.innerHTML = `💥 -${dmg}`; 
+  defEl.appendChild(pop);
+  
+  targetObj.currentHp = Math.max(0, targetObj.currentHp - dmg);
+  let pct = (targetObj.currentHp / targetObj.hp) * 100;
+  let fill = $(`hpf-${defId}`);
+  fill.style.width = pct + '%'; 
+  fill.style.background = pct > 50 ? '#69F0AE' : pct > 20 ? '#FFD600' : '#FF5252';
+  $(`hpt-${defId}`).textContent = `${targetObj.currentHp}/${targetObj.hp}`;
+  
   await new Promise(r => setTimeout(r, 600));
-  
-  let eEl = $(`wrap-enemy-${eIdx}`); eEl.classList.add('anim-shake');
-  let pop = document.createElement('div'); pop.className = 'dmg-popup'; pop.innerHTML = `💥 -${dmg}`; eEl.appendChild(pop);
-  
-  eC.currentHp = Math.max(0, eC.currentHp - dmg);
-  if(eC.currentHp === 0) eC.isDead = true;
-  
-  let pct = (eC.currentHp / eC.hp) * 100;
-  let fill = $(`hpf-enemy-${eIdx}`);
-  fill.style.width = pct + '%'; fill.style.background = pct > 50 ? '#69F0AE' : pct > 20 ? '#FFD600' : '#FF5252';
-  $(`hpt-enemy-${eIdx}`).textContent = `${eC.currentHp}/${eC.hp}`;
-  
-  await new Promise(r => setTimeout(r, 600));
-  pEl.classList.remove('anim-waft-up'); eEl.classList.remove('anim-shake'); pop.remove();
-  
-  if(eC.isDead) { $(`card-enemy-${eIdx}`).classList.add('dead-card'); logMsg(`💀 ${getDBShortName(eC.name)} KNOCKED OUT!`, "atk"); enemyScore++; $('score-enemy').textContent = enemyScore; }
-  $('btn-test-attack').disabled = false;
+  atkEl.classList.remove('anim-waft-up'); 
+  defEl.classList.remove('anim-shake'); 
+  pop.remove();
+}
+
+function passTurn() { logMsg(`<b>${shortName(playerActive[activePlayerIndex].name)}</b> holds their ground.`, "sys"); finishTurn(); }
+
+function finishTurn() {
+  isAnimating = false;
+  if (playerScore >= 8) { logMsg("🏆 YOU WON THE MATCH!", "atk"); return; }
+  if (enemyScore >= 8) { logMsg("❌ YOU LOST THE MATCH.", "def"); return; }
+
+  if (currentTurn === 'player') {
+    activePlayerIndex = (activePlayerIndex + 1) % playerActive.length;
+    currentTurn = 'enemy';
+  } else {
+    activeEnemyIndex = (activeEnemyIndex + 1) % enemyActive.length;
+    currentTurn = 'player';
+    turnCount++;
+  }
+  renderActionPanel();
 }
 
 // Init
