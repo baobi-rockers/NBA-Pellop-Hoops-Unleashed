@@ -405,12 +405,15 @@ let isCollapsing = false;
 let searchTimeout;
 
 // ==================== UTILS & UI HELPERS ====================
-  function escapeJS(str) {
+function $(id) { return document.getElementById(id); }
+
+function escapeJS(str) {
   return str
     .replace(/\\/g, "\\\\")
     .replace(/'/g, "\\'")
     .replace(/"/g, '\\"')
     .replace(/`/g, "\\`");
+}
 }
 function $(id) { return document.getElementById(id); }
 function shortName(n) { return n.replace(/ \(.+?\)$/, ''); }
