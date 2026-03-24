@@ -6,7 +6,6 @@
   <title>NBA Card Battle · TCG Pocket Edition</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script>
-    // Failsafe Error Catcher
     window.onerror = function(msg, url, lineNo) {
       document.body.innerHTML += `<div style="position:fixed;top:0;left:0;right:0;background:#FF5252;color:white;padding:20px;z-index:99999;font-weight:bold;">CRITICAL ERROR: ${msg}<br>Line: ${lineNo}</div>`;
       return false;
@@ -88,7 +87,6 @@
     .expanded-card-container { perspective: 1500px; width: min(100%, 250px); flex-shrink: 0; z-index: 10; margin: 0 auto; }
     .expanded-card-flipper { position: relative; width: 100%; padding-bottom: 140%; transform-style: preserve-3d; animation: fairySpin 2s cubic-bezier(0.1, 0.9, 0.2, 1) forwards; }
     
-    /* 3.5 Turns = 1260 degrees */
     @keyframes fairySpin { 0% { transform: rotateY(1260deg) scale(0.6); opacity: 0; } 15% { opacity: 1; } 100% { transform: rotateY(0deg) scale(1); opacity: 1; } }
 
     .expanded-front, .expanded-back { position: absolute; inset: 0; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 14px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.8); border: 2px solid var(--border-heavy); background: #0f1320; }
@@ -133,8 +131,8 @@
     .hp-text { font-size: 0.65rem; font-weight: 800; text-align: center; width: 100%; margin-top: -4px; text-shadow: 0 1px 2px black; }
     
     .bench-area { display: flex; gap: 8px; justify-content: center; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 12px; min-height: 80px; flex-wrap: wrap; }
-    .bench-card { width: 45px; height: 63px; border-radius: 4px; border: 1px solid var(--border-heavy); overflow: hidden; background: #0f1320; }
-    .bench-card img { width: 100%; height: 100%; object-fit: cover; }
+    .bench-card { width: 45px; height: 63px; border-radius: 4px; border: 1px solid var(--border-heavy); overflow: hidden; background: #0f1320; position: relative; }
+    .bench-card img { position: absolute; width: 100%; height: 100%; object-fit: cover; }
 
     /* Battle Animations */
     .anim-waft-up { transform: translateY(-40px) scale(1.1) rotate(2deg); z-index: 10; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
@@ -268,6 +266,7 @@
 // ==================== CONFIGURATION ====================
 const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/`;
 
+
 // ==================== COMPRESSED CARDS DB ====================
 const CARDS = [
   {name:"Stephen Curry (Splash Brother)",pos:"PG/SG",tier:"GOAT TIER",team:"Golden State Warriors GOAT Series",hp:2200,dmg:850,spd:9,ab:"Splash Brother",abdesc:"Curry is one half of the Splash Brothers, contributing heavily with his unstoppable pull up shots while Klay helps to relieve defensive pressure off of Curry. When any Warriors Klay Thompson card is on the team with Curry, he will gain an additional 1000 HP and 1 SPD. When Klay is no longer on the team, he will lose the boost.",image:"stephen_curry_(splash_brother).png",skills:[{name:"Float Me One",dmg:"950",desc:"Curry's floater is one of his favorite ways to score. He takes the high arcing shot over defenders with incredible precision. This skill cannot be blocked by defensive skills. For a maximum of 4 uses."},{name:"Downtown Francisco",dmg:"1400",desc:"Curry is the heart and soul of the Golden State. His insane shot making abilities from deep terrorizes perimeter defenders. Curry takes a shot from way beyond the arc and swishes it in. For a maximum of 1 use."}]},
@@ -387,8 +386,7 @@ const CARDS = [
   {name:"Victor Wembanyama",pos:"C/PF",tier:"GOAT TIER",team:"San Antonio Spurs Future Series",hp:3700,dmg:500,spd:7,ab:"Alien",abdesc:"Wembanyama is a generational talent, sometimes, his combination of size and skill seems like it's out of this world. Opponents shorter than 7'1 are unable to block or contest his damaging skills and basic attacks. Opponents shorter than 7'1 are also not able to nullify his defensive skills.",image:"victor_wembanyama.png",skills:[{name:"Wingspan Block",dmg:"N/A (block)",desc:"Wembanyama uses his insane wingspan to deny his opponents with ease. Wembanyama blocks any damaging skills completely. This is used right after the opponent attacks and does not count as a move from him. Wembanyama may target any opponent. This can be used once each turn and for a maximum of 3 uses."},{name:"Three From Space",dmg:"1450",desc:"Wembanyama launches a three with his high arching jumpshot. This skill has a 50% chance of hitting, to be decided via coin flip. For a maximum of 2 uses."}]}
 ];
 
-
-// Ensure enough mock cards for testing (Remove this after pasting real db)
+  // Ensure enough mock cards for testing (Remove this after pasting real db)
 while(CARDS.length < 25) { CARDS.push({...CARDS[0], name: "Clone " + CARDS.length}); }
 
 // ==================== STATE MANAGEMENT ====================
@@ -597,7 +595,7 @@ function filterDraftGrid() {
     let inD = isCardInDraft(c);
     let safeName = escapeJS(c.name);
     return `
-      <div class="compact-card" ${!inD ? `draggable="true" ondragstart="handleDragStart(event, '${safeName}')" ondragend="handleDragEnd(event)"` : 'style="opacity:0.3;pointer-events:none;"'} onclick="toggleExpand('${safeName}', 'draft')" onmouseenter="showTooltip(event, '${safeName}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)" ontouchstart="handleTouchStart(event, '${safeName}')" ontouchend="handleTouchEnd()" ontouchmove="hideTooltip()">
+      <div class="compact-card" data-name="${escapeHtml(c.name)}" ${!inD ? `draggable="true" ondragstart="handleDragStart(event, '${safeName}')" ondragend="handleDragEnd(event)"` : 'style="opacity:0.3;pointer-events:none;"'} onclick="toggleExpand('${safeName}', 'draft')" onmouseenter="showTooltip(event, '${safeName}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)" ontouchstart="handleTouchStart(event, '${safeName}')" ontouchend="handleTouchEnd()" ontouchmove="hideTooltip()">
         <div class="card-img-sm"><img src="${getImgUrl(c.image, c.name)}" onerror="handleImgError(this, '${safeName}')"></div>
       </div>`;
   }).join('');
@@ -647,7 +645,7 @@ function renderSetupBench() {
     let inA = Object.values(activeLineup).some(ac => ac && ac.name === c.name);
     if(inA) return '';
     let safeName = escapeJS(c.name);
-    return `<div class="compact-card" draggable="true" ondragstart="handleDragStart(event, '${safeName}')" ondragend="handleDragEnd(event)" onmouseenter="showTooltip(event, '${safeName}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"><div class="card-img-sm"><img src="${getImgUrl(c.image, c.name)}" onerror="handleImgError(this, '${safeName}')"></div></div>`;
+    return `<div class="compact-card" data-name="${escapeHtml(c.name)}" draggable="true" ondragstart="handleDragStart(event, '${safeName}')" ondragend="handleDragEnd(event)" onmouseenter="showTooltip(event, '${safeName}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"><div class="card-img-sm"><img src="${getImgUrl(c.image, c.name)}" onerror="handleImgError(this, '${safeName}')"></div></div>`;
   }).join('');
 }
 
@@ -669,7 +667,7 @@ function startBattle() {
 }
 
 function renderArena() {
-  $('enemy-bench-row').innerHTML = enemyBench.map(c => `<div class="bench-card face-down"></div>`).join('');
+  $('enemy-bench-row').innerHTML = enemyBench.map(c => `<div class="bench-card face-down"><img src="${GITHUB_RAW_BASE}goat-tier-back.png" onerror="this.style.display='none'"></div>`).join('');
   $('enemy-active-row').innerHTML = enemyActive.map((c, i) => buildCardHtml(c, `enemy-${i}`, true)).join('');
   $('player-active-row').innerHTML = playerActive.map((c, i) => buildCardHtml(c, `player-${i}`, false)).join('');
   $('player-bench-row').innerHTML = playerBench.map(c => `<div class="bench-card"><img src="${getImgUrl(c.image, c.name)}" onerror="handleImgError(this, '${escapeJS(c.name)}')"></div>`).join('');
@@ -731,4 +729,3 @@ document.addEventListener('DOMContentLoaded', () => { showScreen('auth-screen');
 </script>
 </body>
 </html>
-
