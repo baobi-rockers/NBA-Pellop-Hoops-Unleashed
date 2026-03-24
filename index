@@ -140,8 +140,8 @@
 </div>
 <script>
 // ==================== CONFIGURATION ====================
-const GITHUB_USERNAME = 'your-username';  
-const GITHUB_REPO = 'your-repo-name';     
+const GITHUB_USERNAME = 'baobi-rockers';  
+const GITHUB_REPO = 'NBA-Pellop-Hoops-Unleashed';     
 const GITHUB_BRANCH = 'main';             
 const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/${GITHUB_BRANCH}/`;
 
