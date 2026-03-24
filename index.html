@@ -350,6 +350,16 @@ let CU = { uid: 'player1', dname: 'Player' };
 let squad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
 const POSITIONS = ['PG','SG','SF','PF','C'];
 
+  function squadCount() {
+  let n = 0;
+  POSITIONS.forEach(p => { if (squad[p][0]) n++; if (squad[p][1]) n++; });
+  return n;
+}
+
+function isCardInSquad(card) {
+  return POSITIONS.some(p => (squad[p][0] && squad[p][0].name === card.name) || (squad[p][1] && squad[p][1].name === card.name));
+}
+  
 let expandedCardCat = null;
 let expandedCardTS = null;
 let isCollapsing = false;
