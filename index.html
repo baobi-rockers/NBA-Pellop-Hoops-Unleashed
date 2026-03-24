@@ -8,81 +8,121 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
-      --bg: #f0f2f5; --surface: #ffffff; --surface-2: #f8fafc; --border: #e2e8f0;
-      --border-heavy: #cbd5e1; --accent: #f97316; --accent-dark: #ea580c;
-      --text: #0f172a; --text-light: #475569; --text-muted: #64748b;
+      --bg: #080b12; --surface: #161c2d; --surface-2: #1d2438; --border: #252d44;
+      --border-heavy: #3a476b; --accent: #FF5722; --accent-dark: #e64a19;
+      --text: #EEF0FF; --text-light: #b0bbd5; --text-muted: #7986a8;
     }
     body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); overflow: hidden; height: 100vh; }
     .screen { display: none; height: 100vh; overflow-y: auto; background: var(--bg); }
     .screen.active { display: block; }
-    .app-header { position: sticky; top: 0; z-index: 50; background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
-    .logo { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.6rem; background: linear-gradient(135deg, #f97316, #ea580c); background-clip: text; -webkit-background-clip: text; color: transparent; letter-spacing: -0.5px; }
-    .nav { display: flex; gap: 6px; background: var(--surface-2); padding: 4px; border-radius: 40px; border: 1px solid var(--border); }
+    
+    /* Header & Nav */
+    .app-header { position: sticky; top: 0; z-index: 50; background: rgba(8, 11, 18, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .logo { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.6rem; background: linear-gradient(135deg, #FF5722, #FFD600); background-clip: text; -webkit-background-clip: text; color: transparent; letter-spacing: -0.5px; }
+    .nav { display: flex; gap: 6px; background: var(--surface); padding: 4px; border-radius: 40px; border: 1px solid var(--border); }
     .nav-btn { padding: 8px 20px; border-radius: 30px; font-weight: 600; font-size: 0.9rem; background: transparent; border: none; cursor: pointer; transition: all 0.2s; color: var(--text-light); }
-    .nav-btn.active, .nav-btn:hover { background: white; box-shadow: 0 2px 6px rgba(0,0,0,0.04); color: var(--accent); }
-    .user-badge { display: flex; align-items: center; gap: 12px; background: white; padding: 5px 12px 5px 16px; border-radius: 40px; border: 1px solid var(--border); font-size: 0.85rem; font-weight: 500; }
-    .user-dot { width: 8px; height: 8px; background: #10b981; border-radius: 50%; }
+    .nav-btn.active, .nav-btn:hover { background: var(--border); color: white; }
+    .user-badge { display: flex; align-items: center; gap: 12px; background: var(--surface); padding: 5px 12px 5px 16px; border-radius: 40px; border: 1px solid var(--border); font-size: 0.85rem; font-weight: 500; }
+    .user-dot { width: 8px; height: 8px; background: #69F0AE; border-radius: 50%; }
     .logout-btn { background: none; border: none; font-size: 0.8rem; color: var(--text-muted); cursor: pointer; font-weight: 500; }
-    .logout-btn:hover { color: #ef4444; }
-    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; padding: 24px; }
     
-    /* DRAG AND DROP STYLES */
-    .compact-card { background: var(--surface); border-radius: 20px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.08); transition: all 0.2s; cursor: grab; border: 1px solid var(--border); }
-    .compact-card:active { cursor: grabbing; transform: scale(0.98); }
-    .compact-card:hover { transform: translateY(-4px); box-shadow: 0 12px 24px -8px rgba(0,0,0,0.15); border-color: var(--accent); }
-    .compact-card.dragging { opacity: 0.5; border: 2px dashed var(--accent); transform: scale(0.95); }
-    
-    .card-img-sm { aspect-ratio: 3 / 2; background: #1e293b; position: relative; overflow: hidden; pointer-events: none; }
-    .card-img-sm img { width: 100%; height: 100%; object-fit: cover; }
-    .card-badge-sm { position: absolute; top: 8px; left: 8px; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); padding: 2px 8px; border-radius: 20px; font-size: 0.65rem; font-weight: 700; color: #ffd966; }
-    .card-info { padding: 12px; pointer-events: none; }
-    .card-name-sm { font-weight: 800; font-size: 1rem; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .card-team-sm { font-size: 0.65rem; color: var(--text-muted); margin-bottom: 6px; height: 14px; overflow: hidden; }
-    .card-stats-sm { display: flex; gap: 8px; font-size: 0.7rem; font-weight: 600; color: var(--text-light); }
-    
-    /* MODAL STYLES */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(12px); display: none; align-items: center; justify-content: center; z-index: 1000; }
-    .modal-card { max-width: 380px; width: 90%; background: var(--surface); border-radius: 32px; overflow: hidden; box-shadow: 0 25px 40px -12px black; max-height: 90vh; overflow-y: auto; }
-    .modal-img { aspect-ratio: 3 / 2; background: #1e293b; position: relative; }
-    .modal-img img { width: 100%; height: 100%; object-fit: cover; }
-    .modal-content { padding: 20px; }
-    .modal-name { font-size: 1.4rem; font-weight: 800; display: flex; justify-content: space-between; }
-    .modal-stats { display: flex; gap: 16px; margin: 12px 0; flex-wrap: wrap; }
-    .modal-stat { background: var(--surface-2); padding: 4px 12px; border-radius: 40px; font-weight: 700; font-size: 0.9rem; }
-    .modal-ability { background: #f1f5f9; padding: 12px; border-radius: 20px; margin: 12px 0; border-left: 4px solid var(--accent); }
-    .skill-item { background: var(--surface-2); padding: 10px; border-radius: 16px; margin-bottom: 8px; }
-    .skill-name { font-weight: 700; display: flex; justify-content: space-between; }
-    .close-modal { background: var(--accent); border: none; padding: 12px; border-radius: 40px; font-weight: 700; color: white; cursor: pointer; width: 100%; margin-top: 12px; }
-    
-    /* SLOT STYLES */
-    .slots-container { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px; background: var(--surface); border-bottom: 1px solid var(--border); overflow-x: auto; }
-    .slot-card { background: var(--surface-2); border-radius: 16px; border: 2px dashed var(--border-heavy); padding: 8px; min-width: 100px; flex: 1; transition: all 0.2s; position: relative; }
-    .slot-card.filled { border: 2px solid var(--accent); background: white; }
-    .slot-card.drag-over { border-color: var(--accent); background: #fff7ed; transform: scale(1.05); box-shadow: 0 4px 12px rgba(249, 115, 22, 0.2); }
-    .slot-pos { font-weight: 800; font-size: 0.7rem; margin-bottom: 4px; display: flex; justify-content: space-between; color: var(--text-muted); pointer-events: none; }
-    .slot-name { font-weight: 700; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
-    .remove-slot { color: #ef4444; font-size: 0.7rem; cursor: pointer; background: none; border: none; position: absolute; top: 8px; right: 8px; pointer-events: auto; }
-    
+    /* Grid & Filter */
     .filter-bar { display: flex; gap: 12px; flex-wrap: wrap; padding: 12px 24px; background: var(--surface); border-bottom: 1px solid var(--border); align-items: center; }
-    .filter-bar input, .filter-bar select { padding: 10px 16px; border-radius: 40px; border: 1px solid var(--border); background: white; font-size: 0.85rem; }
-    .filter-bar input { flex: 1; min-width: 150px; }
-    .btn-primary { background: var(--accent); border: none; padding: 10px 20px; border-radius: 40px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s; }
-    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
-    .btn-primary:disabled { background: var(--border-heavy); cursor: not-allowed; }
+    .filter-bar input, .filter-bar select { padding: 10px 16px; border-radius: 40px; border: 1px solid var(--border); background: var(--surface-2); color: white; font-size: 0.85rem; }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; padding: 24px; align-items: start; }
+    
+    /* COMPACT CARD (Full Art) */
+    .compact-card { background: var(--surface); border-radius: 12px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.5); transition: all 0.2s; cursor: grab; border: 1px solid var(--border); position: relative; aspect-ratio: 2.5 / 3.5; }
+    .compact-card:active { cursor: grabbing; transform: scale(0.98); }
+    .compact-card:hover { transform: translateY(-6px); box-shadow: 0 12px 24px rgba(255, 87, 34, 0.2); border-color: var(--accent); }
+    .compact-card.dragging { opacity: 0.4; border: 2px dashed var(--accent); transform: scale(0.95); }
+    
+    .card-img-sm { width: 100%; height: 100%; background: #0f1320; position: absolute; inset: 0; pointer-events: none; }
+    .card-img-sm img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .card-header-overlay { position: absolute; top: 0; left: 0; right: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%); padding: 12px; pointer-events: none; }
+    .card-name-sm { font-weight: 800; font-size: 1.1rem; color: white; text-shadow: 0 2px 4px black; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-tier-sm { font-size: 0.65rem; font-weight: 700; color: #FFD600; text-transform: uppercase; margin-top: 2px; }
+    
+    .card-stats-row { position: absolute; bottom: 0; left: 0; right: 0; background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 100%); padding: 20px 12px 12px 12px; display: flex; justify-content: space-between; align-items: flex-end; pointer-events: none; }
+    .card-stats-sm { display: flex; flex-direction: column; gap: 4px; font-size: 0.75rem; font-weight: 700; color: white; text-shadow: 0 1px 2px black; }
+    
+    .expand-btn { pointer-events: auto; background: rgba(255, 87, 34, 0.9); border: 1px solid rgba(255,255,255,0.2); padding: 6px 10px; border-radius: 8px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s; backdrop-filter: blur(4px); font-size: 0.75rem; }
+    .expand-btn:hover { background: var(--accent); transform: scale(1.05); }
+
+    /* EXPANDED INLINE ROW */
+    .expanded-row { grid-column: 1 / -1; display: flex; gap: 24px; padding: 24px; background: rgba(22, 28, 45, 0.5); border-radius: 20px; border: 1px solid var(--border-heavy); margin: 10px 0; overflow: hidden; align-items: flex-start; }
+    
+    /* 3D Flip Animation */
+    .expanded-card-container { perspective: 1000px; width: 280px; flex-shrink: 0; z-index: 10; }
+    .expanded-card-flipper { position: relative; width: 100%; aspect-ratio: 2.5 / 3.5; transform-style: preserve-3d; animation: tcgFlip 1.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+    .expanded-front, .expanded-back { position: absolute; inset: 0; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 16px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.6); border: 2px solid var(--border-heavy); }
+    .expanded-front { transform: rotateY(360deg); }
+    .expanded-front img, .expanded-back img { width: 100%; height: 100%; object-fit: cover; }
+    .expanded-back { transform: rotateY(180deg); background: #080b12; }
+    
+    @keyframes tcgFlip {
+      0% { transform: rotateY(180deg) scale(0.8) translateY(-50px); opacity: 0; }
+      20% { opacity: 1; }
+      50% { transform: rotateY(180deg) scale(1.05) translateY(0); }
+      100% { transform: rotateY(360deg) scale(1) translateY(0); }
+    }
+
+    /* Scroll Unroll Animation */
+    .expanded-scroll-wrapper { flex: 1; overflow: hidden; max-width: 0; opacity: 0; animation: scrollReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.6s forwards; background: linear-gradient(90deg, var(--surface) 0%, var(--surface-2) 100%); border-radius: 16px; border: 1px solid var(--border); box-shadow: inset 0 0 20px rgba(0,0,0,0.5); position: relative; }
+    @keyframes scrollReveal {
+      0% { max-width: 0; opacity: 0; padding-left: 0; padding-right: 0; }
+      10% { opacity: 1; }
+      100% { max-width: 1200px; opacity: 1; padding-left: 24px; padding-right: 24px; }
+    }
+    
+    .expanded-content { width: 100%; min-width: 400px; padding: 24px 0; color: var(--text); }
+    .ec-header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 1px solid var(--border-heavy); padding-bottom: 16px; margin-bottom: 16px; }
+    .ec-title { font-size: 2rem; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.1; color: white; }
+    .ec-team { color: var(--accent); font-weight: 600; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+    .ec-close { background: transparent; border: 1px solid var(--border-heavy); color: var(--text-light); padding: 8px 16px; border-radius: 8px; cursor: pointer; transition: 0.2s; font-weight: bold; }
+    .ec-close:hover { background: rgba(255,255,255,0.1); color: white; }
+    
+    .ec-stats-row { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+    .ec-stat { background: rgba(0,0,0,0.4); padding: 8px 16px; border-radius: 8px; font-weight: 700; border: 1px solid var(--border); font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+    .ec-stat span { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; }
+    
+    .ec-ability { background: rgba(64, 196, 255, 0.1); border-left: 4px solid #40C4FF; padding: 16px; border-radius: 0 8px 8px 0; margin-bottom: 24px; }
+    .ec-ability-name { font-weight: 800; color: #40C4FF; font-size: 1.2rem; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; }
+    .ec-ability-desc { font-size: 0.9rem; line-height: 1.5; color: var(--text-light); }
+    
+    .ec-skills-grid { display: flex; flex-direction: column; gap: 12px; }
+    .ec-skill { background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 16px; border-radius: 12px; }
+    .ec-skill-header { display: flex; justify-content: space-between; font-weight: 800; font-size: 1.1rem; margin-bottom: 8px; color: white; }
+    .ec-skill-dmg { color: #FF5252; background: rgba(255, 82, 82, 0.1); padding: 2px 8px; border-radius: 4px; font-size: 0.9rem; }
+    .ec-skill-desc { font-size: 0.85rem; color: var(--text-light); line-height: 1.5; }
+
+    /* Slots & Base UI */
+    .slots-container { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px; background: var(--surface); border-bottom: 1px solid var(--border); overflow-x: auto; }
+    .slot-card { background: var(--bg); border-radius: 12px; border: 2px dashed var(--border-heavy); padding: 12px; min-width: 120px; flex: 1; transition: all 0.2s; position: relative; }
+    .slot-card.filled { border: 2px solid var(--accent); background: var(--surface-2); }
+    .slot-card.drag-over { border-color: var(--accent); background: rgba(255, 87, 34, 0.1); transform: scale(1.05); }
+    .slot-pos { font-weight: 800; font-size: 0.8rem; margin-bottom: 6px; display: flex; justify-content: space-between; color: var(--text-light); pointer-events: none; }
+    .slot-name { font-weight: 700; font-size: 0.85rem; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+    .remove-slot { color: #FF5252; font-size: 0.8rem; cursor: pointer; background: none; border: none; position: absolute; top: 8px; right: 8px; pointer-events: auto; font-weight: bold; }
+    .btn-primary { background: var(--accent); border: none; padding: 10px 20px; border-radius: 40px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
+    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3); }
+    .btn-primary:disabled { background: var(--border-heavy); cursor: not-allowed; box-shadow: none; color: var(--text-muted); }
   </style>
 </head>
 <body>
 <div id="auth-screen" class="screen">
   <div style="display:flex; align-items:center; justify-content:center; height:100%;">
-    <div style="background:white; border-radius: 40px; padding: 32px; width: 340px; box-shadow: 0 20px 35px -12px rgba(0,0,0,0.1);">
-      <div class="logo" style="font-size: 2rem; text-align:center;">NBA⚡BATTLE</div>
-      <div style="text-align:center; margin-bottom:24px; color: var(--text-muted);">TCG Pocket Edition</div>
-      <input id="au" type="text" placeholder="Username" style="width:100%; padding:12px; border-radius: 30px; border:1px solid var(--border); margin-bottom:12px;">
-      <input id="ap" type="password" placeholder="Password" style="width:100%; padding:12px; border-radius: 30px; border:1px solid var(--border); margin-bottom:12px;">
-      <button class="btn-primary" style="width:100%" onclick="authSubmit()">Enter Arena</button>
+    <div style="background:var(--surface); border-radius: 24px; padding: 40px; width: 360px; border: 1px solid var(--border); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.8);">
+      <div class="logo" style="font-size: 2.2rem; text-align:center;">NBA⚡BATTLE</div>
+      <div style="text-align:center; margin-bottom:32px; color: var(--text-muted); font-weight: 600;">TCG Pocket Edition</div>
+      <input id="au" type="text" placeholder="Username" style="width:100%; padding:14px; border-radius: 12px; border:1px solid var(--border); margin-bottom:16px; background: var(--bg); color: white;">
+      <input id="ap" type="password" placeholder="Password" style="width:100%; padding:14px; border-radius: 12px; border:1px solid var(--border); margin-bottom:24px; background: var(--bg); color: white;">
+      <button class="btn-primary" style="width:100%; padding: 14px;" onclick="authSubmit()">Enter Arena</button>
     </div>
   </div>
 </div>
+
 <div id="home-screen" class="screen">
   <div class="app-header">
     <div class="logo">NBA⚡BATTLE</div>
@@ -93,63 +133,57 @@
     <div class="user-badge"><div class="user-dot"></div><span id="home-u">Player</span><button class="logout-btn" onclick="doLogout()">Logout</button></div>
   </div>
   <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; text-align:center; gap:32px; padding: 20px;">
-    <div><h1 style="font-size: 3rem; font-weight:800;">NBA CARD<br>BATTLE</h1><p style="color: var(--text-light);">117 GOATs · Lane combat · Skills & abilities</p></div>
+    <div><h1 style="font-size: 3.5rem; font-weight:800; text-shadow: 0 4px 20px rgba(0,0,0,0.5);">NBA CARD BATTLE</h1><p style="color: var(--text-muted); font-size: 1.2rem; margin-top: 8px;">117 GOATs · Lane combat · Skills & abilities</p></div>
     <div style="display:flex; gap: 16px; flex-wrap: wrap; justify-content: center;">
       <button class="btn-primary" onclick="goVsBot()">🤖 VS BOT</button>
-      <button class="btn-primary" style="background: #334155;" onclick="goMP()">⚡ MULTIPLAYER</button>
-      <button class="btn-primary" style="background: #334155;" onclick="goCat()">📋 COLLECTION</button>
+      <button class="btn-primary" style="background: var(--border-heavy);" onclick="goMP()">⚡ MULTIPLAYER</button>
+      <button class="btn-primary" style="background: var(--border-heavy);" onclick="goCat()">📋 COLLECTION</button>
     </div>
   </div>
 </div>
+
 <div id="catalogue-screen" class="screen">
   <div class="app-header">
     <div class="logo">NBA⚡BATTLE</div>
     <div class="nav"><button class="nav-btn" onclick="showScreen('home-screen')">Home</button><button class="nav-btn active">Cards</button></div>
   </div>
   <div class="filter-bar">
-    <input type="text" id="cs" placeholder="Search player or team" oninput="filterCat()">
+    <input type="text" id="cs" placeholder="Search player or team..." oninput="filterCat()">
     <select id="cp" onchange="filterCat()">
-      <option value="">All Positions</option>
-      <option value="PG">PG</option><option value="SG">SG</option><option value="SF">SF</option><option value="PF">PF</option><option value="C">C</option>
+      <option value="">All Positions</option><option value="PG">PG</option><option value="SG">SG</option><option value="SF">SF</option><option value="PF">PF</option><option value="C">C</option>
     </select>
     <select id="csort" onchange="filterCat()">
-      <option value="name">Name A-Z</option>
-      <option value="hp">HP ↓</option>
-      <option value="dmg">DMG ↓</option>
-      <option value="spd">SPD ↓</option>
+      <option value="name">Name A-Z</option><option value="hp">HP ↓</option><option value="dmg">DMG ↓</option><option value="spd">SPD ↓</option>
     </select>
   </div>
   <div id="cgrid" class="card-grid"></div>
 </div>
+
 <div id="team-select-screen" class="screen">
   <div class="app-header">
     <div class="logo">⚡ DRAFT SQUAD</div>
-    <div style="display:flex; gap:8px; align-items:center;">
-      <span id="ts-count-lbl" style="font-weight:600;">0/10</span>
-      <button class="btn-primary" onclick="autoFillSquad()">🎲 Random</button>
+    <div style="display:flex; gap:12px; align-items:center;">
+      <span id="ts-count-lbl" style="font-weight:800; color: #40C4FF;">0/10</span>
+      <button class="btn-primary" style="background: var(--border-heavy);" onclick="autoFillSquad()">🎲 Random</button>
       <button class="btn-primary" id="ts-confirm-btn" onclick="confirmTeamSelect()" disabled>BATTLE!</button>
     </div>
   </div>
-  <div style="text-align: center; font-size: 0.8rem; color: var(--text-muted); margin-top: 12px;">Drag and drop players into their valid position slots below. Double-click a card to view stats.</div>
-  
+  <div style="text-align: center; font-size: 0.85rem; color: #69F0AE; padding: 12px; background: var(--surface-2); border-bottom: 1px solid var(--border);">
+    Grab and drop players into valid slots. Hit Expand to read full skills.
+  </div>
   <div id="ts-slots" class="slots-container"></div>
   <div class="filter-bar">
-    <input type="text" id="ts-search" placeholder="Search cards..." oninput="filterTeamSelect()">
+    <input type="text" id="ts-search" placeholder="Search draft pool..." oninput="filterTeamSelect()">
     <select id="ts-sort" onchange="filterTeamSelect()">
-      <option value="name">Name A-Z</option>
-      <option value="hp">HP ↓</option>
-      <option value="dmg">DMG ↓</option>
-      <option value="spd">SPD ↓</option>
+      <option value="name">Name A-Z</option><option value="hp">HP ↓</option><option value="dmg">DMG ↓</option><option value="spd">SPD ↓</option>
     </select>
   </div>
   <div id="ts-grid" class="card-grid"></div>
 </div>
+
 <div id="battle-screen" class="screen">
   <div class="app-header"><div class="logo">⚡ BATTLEFIELD</div></div>
-  <div style="padding:40px; text-align:center; color:#64748b;">Battle system coming soon...</div>
-</div>
-<div id="card-modal" class="modal-overlay">
-  <div class="modal-card" id="modal-content"></div>
+  <div style="padding:40px; text-align:center; color:var(--text-muted);">Battle system grafting incoming...</div>
 </div>
 
 <script>
@@ -162,7 +196,6 @@ const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${
 function escapeJS(str) { return str.replace(/'/g, "\\'"); }
 
 // ==================== COMPRESSED CARDS DB ====================
-// Database compressed to prevent cutoffs while maintaining all your exact stats and descriptions
 const CARDS = [
   {name:"Stephen Curry (Splash Brother)",pos:"PG/SG",tier:"GOAT TIER",team:"Golden State Warriors GOAT Series",hp:2200,dmg:850,spd:9,ab:"Splash Brother",abdesc:"Curry is one half of the Splash Brothers, contributing heavily with his unstoppable pull up shots while Klay helps to relieve defensive pressure off of Curry. When any Warriors Klay Thompson card is on the team with Curry, he will gain an additional 1000 HP and 1 SPD. When Klay is no longer on the team, he will lose the boost.",image:"stephen_curry_(splash_brother).png",skills:[{name:"Float Me One",dmg:"950",desc:"Curry's floater is one of his favorite ways to score. He takes the high arcing shot over defenders with incredible precision. This skill cannot be blocked by defensive skills. For a maximum of 4 uses."},{name:"Downtown Francisco",dmg:"1400",desc:"Curry is the heart and soul of the Golden State. His insane shot making abilities from deep terrorizes perimeter defenders. Curry takes a shot from way beyond the arc and swishes it in. For a maximum of 1 use."}]},
   {name:"Stephen Curry (Chef Curry)",pos:"PG/SG",tier:"GOAT TIER",team:"Golden State Warriors GOAT Series",hp:2800,dmg:850,spd:9,ab:"Chef Curry",abdesc:"Curry will start cooking once he gets into his groove. When his shots start falling, his confidence grows. Curry will increase his basic attack by 400 DMG for the rest of the game for every \"Skyfucker\" skill he hits.",image:"stephen_curry_(chef_curry).png",skills:[{name:"Grand Theft Steph",dmg:"250",desc:"Curry's anticipation allows him to get an easy steal. He steals the ball and denies his opponent's card of making any move. He also damages his opponents slightly. This skill will move first (x2 priority) and he can target any opponent. This skill cannot be nullified. For a maximum of 1 use."},{name:"Skyfucker",dmg:"2000",desc:"Curry pulls up from beyond the arc, anywhere on the court. This skill has a 50% chance of hitting, to be decided via coin flip. For a maximum of 2 uses."}]},
@@ -286,18 +319,22 @@ let CU = { uid: 'player1', dname: 'Player' };
 let squad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
 const POSITIONS = ['PG','SG','SF','PF','C'];
 
+// Expanded State tracking
+let expandedCardCat = null;
+let expandedCardTS = null;
+
 function $(id) { return document.getElementById(id); }
 
 function getImgUrl(filename, name) {
   if (!filename || filename.length < 3) {
-    return `https://placehold.co/400x266/1e293b/ffd966?text=${encodeURIComponent(name)}`;
+    return `https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(name)}`;
   }
   return `${GITHUB_RAW_BASE}${filename}`;
 }
 
 function handleImgError(el, name) {
   el.onerror = null;
-  el.src = `https://placehold.co/400x266/1e293b/ffd966?text=${encodeURIComponent(name)}`;
+  el.src = `https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(name)}`;
 }
 
 function shortName(name) { return name.replace(/ \(.+?\)$/, ''); }
@@ -316,13 +353,82 @@ function authSubmit() {
 
 function doLogout() { showScreen('auth-screen'); }
 
-function goCat() { showScreen('catalogue-screen'); filterCat(); }
+function goCat() { expandedCardCat = null; showScreen('catalogue-screen'); filterCat(); }
 
 function goVsBot() {
   squad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
+  expandedCardTS = null;
   showScreen('team-select-screen');
   renderSlots();
   filterTeamSelect();
+}
+
+function toggleExpand(name, context) {
+  if (context === 'cat') {
+    expandedCardCat = (expandedCardCat === name) ? null : name;
+    filterCat();
+  } else {
+    expandedCardTS = (expandedCardTS === name) ? null : name;
+    filterTeamSelect();
+  }
+}
+
+// Rendering the Full-Width Expanded Row
+function renderExpandedRow(card, context) {
+  const safeName = escapeJS(card.name);
+  const backImgUrl = `${GITHUB_RAW_BASE}goat-tier-back.png`; // Added card back
+  
+  let skillsHtml = (card.skills || []).map(s => `
+    <div class="ec-skill">
+      <div class="ec-skill-header"><span>${s.name}</span> <span class="ec-skill-dmg">⚔️ ${s.dmg}</span></div>
+      <div class="ec-skill-desc">${s.desc}</div>
+    </div>
+  `).join('');
+
+  return `
+    <div class="expanded-row">
+      <div class="expanded-card-container">
+        <div class="expanded-card-flipper">
+          <div class="expanded-back">
+            <img src="${backImgUrl}" alt="Card Back" onerror="this.src='https://placehold.co/400x560/000/fff?text=CARD+BACK'">
+          </div>
+          <div class="expanded-front">
+            <img src="${getImgUrl(card.image, card.name)}" alt="${card.name}" onerror="handleImgError(this, '${safeName}')">
+          </div>
+        </div>
+      </div>
+      
+      <div class="expanded-scroll-wrapper">
+        <div class="expanded-content">
+          <div class="ec-header">
+            <div>
+              <div class="ec-title">${card.name}</div>
+              <div class="ec-team">${card.tier} &nbsp;|&nbsp; ${card.team}</div>
+            </div>
+            <button class="ec-close" onclick="toggleExpand('${safeName}', '${context}')">✕ CLOSE</button>
+          </div>
+          
+          <div class="ec-stats-row">
+            <div class="ec-stat"><span>HP</span> ❤️ ${card.hp}</div>
+            <div class="ec-stat"><span>DMG</span> ⚔️ ${card.dmg}</div>
+            <div class="ec-stat"><span>SPD</span> ⚡ ${card.spd}</div>
+            <div class="ec-stat"><span>POS</span> 📍 ${card.pos}</div>
+          </div>
+          
+          <div class="ec-ability">
+            <div class="ec-ability-name">✨ ${card.ab}</div>
+            <div class="ec-ability-desc">${card.abdesc}</div>
+          </div>
+          
+          <div style="font-weight: 800; font-size: 1.2rem; margin-bottom: 12px; color: white;">📜 SKILLS</div>
+          <div class="ec-skills-grid">
+            ${skillsHtml || '<div class="ec-skill-desc">No special skills</div>'}
+          </div>
+          
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 function filterCat() {
@@ -340,54 +446,26 @@ function filterCat() {
   else filtered.sort((a,b) => a.name.localeCompare(b.name));
   
   $('cgrid').innerHTML = filtered.map(c => {
+    if (c.name === expandedCardCat) {
+      return renderExpandedRow(c, 'cat');
+    }
+    
     const safeName = escapeJS(c.name);
     return `
-      <div class="compact-card" onclick="showFullCard('${safeName}')">
+      <div class="compact-card">
         <div class="card-img-sm">
           <img src="${getImgUrl(c.image, c.name)}" alt="${c.name}" onerror="handleImgError(this, '${safeName}')">
-          <div class="card-badge-sm">${c.tier}</div>
         </div>
-        <div class="card-info">
+        <div class="card-header-overlay">
           <div class="card-name-sm">${shortName(c.name)}</div>
-          <div class="card-team-sm">${c.team}</div>
-          <div class="card-stats-sm">
-            <span>❤️ ${c.hp}</span> <span>⚔️ ${c.dmg}</span> <span>⚡ ${c.spd}</span>
-          </div>
+          <div class="card-tier-sm">${c.tier}</div>
         </div>
+        <button class="expand-btn" onclick="toggleExpand('${safeName}', 'cat')">⤢ EXPAND</button>
       </div>
     `;
   }).join('');
 }
 
-function showFullCard(name) {
-  const card = CARDS.find(c => c.name === name);
-  if (!card) return;
-  const safeName = escapeJS(card.name);
-  let skillsHtml = (card.skills || []).map(s => `
-    <div class="skill-item">
-      <div class="skill-name"><span>${s.name}</span><span>${s.dmg} dmg</span></div>
-      <div style="font-size:0.8rem; color:#64748b;">${s.desc}</div>
-    </div>
-  `).join('');
-  const modalHTML = `
-    <div class="modal-img">
-      <img src="${getImgUrl(card.image, card.name)}" alt="${card.name}" onerror="handleImgError(this, '${safeName}')">
-    </div>
-    <div class="modal-content">
-      <div class="modal-name"><span>${card.name}</span><span>❤️ ${card.hp}</span></div>
-      <div class="modal-stats">
-        <span class="modal-stat">⚔️ ${card.dmg}</span>
-        <span class="modal-stat">⚡ ${card.spd}</span>
-        <span class="modal-stat">${card.pos}</span>
-      </div>
-      <div class="modal-ability"><strong>✨ ${card.ab}</strong><div>${card.abdesc}</div></div>
-      <div class="modal-skills"><strong>📜 Skills</strong>${skillsHtml || '<p>No special skills</p>'}</div>
-      <button class="close-modal" onclick="$('card-modal').style.display='none'">Close</button>
-    </div>
-  `;
-  $('modal-content').innerHTML = modalHTML;
-  $('card-modal').style.display = 'flex';
-}
 
 // ==================== DRAG AND DROP SQUAD LOGIC ====================
 function squadCount() {
@@ -466,7 +544,7 @@ function renderSlots() {
             <span>${pos}</span> 
             ${card ? `<button class="remove-slot" onclick="event.stopPropagation();removeSlot('${pos}${idx}')">✕</button>` : ''}
           </div>
-          ${card ? `<div class="slot-name">${shortName(card.name)}</div>` : '<div style="opacity:0.4; font-size:0.6rem;">Drop Here</div>'}
+          ${card ? `<div class="slot-name">${shortName(card.name)}</div>` : '<div style="opacity:0.4; font-size:0.7rem;">Drop Here</div>'}
         </div>`;
     });
   });
@@ -486,20 +564,23 @@ function filterTeamSelect() {
   else list.sort((a,b) => a.name.localeCompare(b.name));
   
   $('ts-grid').innerHTML = list.map(c => {
+    if (c.name === expandedCardTS) {
+      return renderExpandedRow(c, 'ts');
+    }
+    
     const safeName = escapeJS(c.name);
     const inSquad = isCardInSquad(c);
+    
     return `
-      <div class="compact-card" 
-           ${!inSquad ? `draggable="true" ondragstart="handleDragStart(event, '${safeName}')" ondragend="handleDragEnd(event)"` : 'style="opacity: 0.5; border: 1px solid #10b981;"'} 
-           ondblclick="showFullCard('${safeName}')">
+      <div class="compact-card" ${!inSquad ? `draggable="true" ondragstart="handleDragStart(event, '${safeName}')" ondragend="handleDragEnd(event)"` : 'style="opacity: 0.3; pointer-events: none;"'}>
         <div class="card-img-sm">
           <img src="${getImgUrl(c.image, c.name)}" onerror="handleImgError(this, '${safeName}')">
         </div>
-        <div class="card-info" style="pointer-events: auto;">
+        <div class="card-header-overlay">
           <div class="card-name-sm">${shortName(c.name)}</div>
-          <div style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">Pos: ${c.pos}</div>
-          ${inSquad ? '<div style="color: #10b981; font-weight: bold; font-size: 0.7rem; text-align: center; margin-top: 8px;">✓ IN SQUAD</div>' : '<div style="color: var(--text-muted); font-size: 0.7rem; text-align: center; margin-top: 8px;">≡ Drag to Draft</div>'}
+          <div class="card-tier-sm">${c.tier} &nbsp;·&nbsp; ${c.pos}</div>
         </div>
+        <button class="expand-btn" onclick="toggleExpand('${safeName}', 'ts')">⤢ EXPAND</button>
       </div>
     `;
   }).join('');
