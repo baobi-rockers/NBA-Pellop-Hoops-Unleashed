@@ -7027,14 +7027,33 @@ function filterCat() {
   }).join('');
 }
 
-function filterDraftGrid() {
-  if(isCollapsing) return;
-  let q = $('draft-search').value.toLowerCase(), sort = $('draft-sort').value;
+function goDraft() {
+  // Reset draft squad for a fresh start
+  draftSquad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
+  expandedCardDraft = null;
   
-  // Filter based on Name or Team using the new JSON paths
-  let list = CARDS.filter(c => {
+  showScreen('draft-screen');
+  
+  // Refresh the UI
+  if (typeof renderDraftSlots === "function") renderDraftSlots();
+  if (typeof filterDraftGrid === "function") filterDraftGrid();
+}
+
+function goCat() {
+  expandedCardCat = null;
+  showScreen('catalogue-screen');
+  if (typeof filterCat === "function") filterCat();
+}
+
+function filterDraftGrid() {
+  if (isCollapsing) return;
+  const q = $('draft-search').value.toLowerCase();
+  const sort = $('draft-sort').value;
+  
+  // Filter out nulls and apply search
+  let list = CARDS.filter(c => c && c.UI_Frontend_Data).filter(c => {
     let name = getCardName(c).toLowerCase();
-    let team = c.UI_Frontend_Data?.Team?.toLowerCase() || "";
+    let team = c.UI_Frontend_Data.Team.toLowerCase();
     return !q || name.includes(q) || team.includes(q);
   });
 
@@ -7052,7 +7071,8 @@ function filterDraftGrid() {
     let safeName = escapeJS(name);
     
     return `
-      <div class="compact-card" ${!inD ? `draggable="true" ondragstart="handleDragStart(event, '${safeName}')" ondragend="handleDragEnd(event)"` : 'style="opacity:0.3;pointer-events:none;"'} 
+      <div class="compact-card" 
+           ${!inD ? `draggable="true" ondragstart="handleDragStart(event, '${safeName}')" ondragend="handleDragEnd(event)"` : 'style="opacity:0.3;pointer-events:none;"'} 
            onclick="toggleExpand('${safeName}', 'draft')" 
            onmouseenter="showTooltip(event, '${safeName}')" 
            onmouseleave="hideTooltip()" 
