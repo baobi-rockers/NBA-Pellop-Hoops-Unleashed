@@ -20,46 +20,88 @@
     .screen.active { display: block; }
     
     /* Header & Nav */
-    .app-header { position: sticky; top: 0; z-index: 50; background: rgba(8, 11, 18, 0.9); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+    .app-header { background: rgba(8, 11, 18, 0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
     .logo { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.6rem; background: linear-gradient(135deg, #FF5722, #FFD600); background-clip: text; -webkit-background-clip: text; color: transparent; letter-spacing: -0.5px; }
     .nav { display: flex; gap: 6px; background: var(--surface); padding: 4px; border-radius: 40px; border: 1px solid var(--border); }
     .nav-btn { padding: 8px 20px; border-radius: 30px; font-weight: 600; font-size: 0.9rem; background: transparent; border: none; cursor: pointer; transition: all 0.2s; color: var(--text-light); }
     .nav-btn.active, .nav-btn:hover { background: var(--border); color: white; }
+    .user-badge { display: flex; align-items: center; gap: 12px; background: var(--surface); padding: 5px 12px 5px 16px; border-radius: 40px; border: 1px solid var(--border); font-size: 0.85rem; font-weight: 500; }
+    .user-dot { width: 8px; height: 8px; background: #69F0AE; border-radius: 50%; }
+    .logout-btn { background: none; border: none; font-size: 0.8rem; color: var(--text-muted); cursor: pointer; font-weight: 500; }
+    .logout-btn:hover { color: #FF5252; }
     
-    /* Grid & Filter */
-    .filter-bar { display: flex; gap: 12px; flex-wrap: wrap; padding: 12px 24px; background: var(--surface); border-bottom: 1px solid var(--border); align-items: center; position: sticky; top: 60px; z-index: 40; }
+    /* Sticky Container - Freezes Slots & Search to the top */
+    .sticky-container { position: sticky; top: 0; z-index: 100; background: var(--bg); box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+    
+    .filter-bar { display: flex; gap: 12px; flex-wrap: wrap; padding: 12px 24px; background: var(--surface); border-bottom: 1px solid var(--border); align-items: center; }
     .filter-bar input, .filter-bar select { padding: 10px 16px; border-radius: 40px; border: 1px solid var(--border); background: var(--surface-2); color: white; font-size: 0.85rem; }
     .filter-bar input { flex: 1; min-width: 150px; }
-    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 24px; padding: 24px; align-items: start; }
     
-    /* COMPACT CARD (Pure Art Grid) */
+    /* Strict 5x2 Grid for Slots */
+    .slots-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; padding: 16px 24px; background: var(--bg); border-bottom: 1px solid var(--border); }
+    .slot-card { background: var(--surface); border-radius: 12px; border: 2px dashed var(--border-heavy); padding: 10px; min-height: 80px; text-align: center; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; }
+    .slot-card.filled { border-style: solid; background: rgba(255,255,255,0.02); }
+    .slot-pos { font-weight: 900; font-size: 0.8rem; margin-bottom: 4px; pointer-events: none; }
+    .slot-name { font-weight: 700; font-size: 0.8rem; color: white; white-space: normal; line-height: 1.3; pointer-events: none; word-wrap: break-word; width: 100%; }
+    
+    /* Positional Coloring */
+    .slot-PG.filled, .slot-PG.drag-over { border-color: var(--pos-pg); }
+    .slot-SG.filled, .slot-SG.drag-over { border-color: var(--pos-sg); }
+    .slot-SF.filled, .slot-SF.drag-over { border-color: var(--pos-sf); }
+    .slot-PF.filled, .slot-PF.drag-over { border-color: var(--pos-pf); }
+    .slot-C.filled,  .slot-C.drag-over  { border-color: var(--pos-c); }
+    .slot-PG .slot-pos { color: var(--pos-pg); }
+    .slot-SG .slot-pos { color: var(--pos-sg); }
+    .slot-SF .slot-pos { color: var(--pos-sf); }
+    .slot-PF .slot-pos { color: var(--pos-pf); }
+    .slot-C .slot-pos  { color: var(--pos-c); }
+
+    .slot-card.drag-over { background: rgba(255, 255, 255, 0.08); transform: scale(1.05); border-style: solid; }
+    .remove-slot { color: #FF5252; font-size: 0.8rem; cursor: pointer; background: rgba(0,0,0,0.6); border: 1px solid #FF5252; position: absolute; top: 4px; right: 4px; pointer-events: auto; font-weight: bold; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+    .remove-slot:hover { background: #FF5252; color: white; }
+
+    /* Invalid Shake Animation */
+    @keyframes shakeInvalid {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-5px); border-color: #FF5252; background: rgba(255, 82, 82, 0.1); }
+      40%, 80% { transform: translateX(5px); border-color: #FF5252; background: rgba(255, 82, 82, 0.1); }
+    }
+    .shake-invalid { animation: shakeInvalid 0.5s ease-in-out; }
+    .invalid-overlay { position: absolute; inset: 0; background: rgba(255, 82, 82, 0.95); color: white; font-weight: 900; display: flex; align-items: center; justify-content: center; border-radius: 10px; z-index: 10; font-size: 0.9rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5); text-transform: uppercase; }
+
+    /* Cards Grid */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 24px; padding: 24px; align-items: start; }
     .compact-card { background: transparent; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.5); transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; position: relative; aspect-ratio: 2.5 / 3.5; border: 1px solid var(--border-heavy); }
     .compact-card:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(255, 214, 0, 0.2); border-color: var(--pos-pg); }
+    .compact-card.dragging { opacity: 0.4; }
     .card-img-sm { width: 100%; height: 100%; background: #0f1320; pointer-events: none; }
     .card-img-sm img { width: 100%; height: 100%; object-fit: cover; }
     
-    /* EXPANDED INLINE ROW */
-    .expanded-row { grid-column: 1 / -1; display: flex; gap: 40px; padding: 32px; background: rgba(22, 28, 45, 0.6); border-radius: 24px; border: 1px solid var(--border-heavy); margin: 16px 0; overflow: hidden; align-items: flex-start; flex-wrap: wrap; transition: opacity 0.4s ease, max-height 0.4s ease, padding 0.4s ease; transform-origin: top; }
+    /* Custom Tooltip */
+    .tooltip-bubble { position: fixed; z-index: 9999; background: rgba(8,11,18,0.95); border: 1px solid var(--pos-sf); padding: 16px; border-radius: 16px; color: var(--text-light); max-width: 320px; font-size: 0.85rem; line-height: 1.5; box-shadow: 0 15px 35px rgba(0,0,0,0.9); backdrop-filter: blur(8px); opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+    .tooltip-bubble b { color: white; display: block; margin-bottom: 2px; font-size: 0.95rem; }
+    .tooltip-bubble.visible { opacity: 1; }
+
+    /* Expanded Fairy Landing Row */
+    .expanded-row { grid-column: 1 / -1; display: flex; gap: 40px; padding: 40px; background: rgba(22, 28, 45, 0.7); border-radius: 24px; border: 1px solid var(--border-heavy); margin: 16px 0; overflow: hidden; align-items: flex-start; flex-wrap: wrap; transition: opacity 0.4s ease, max-height 0.4s ease, padding 0.4s ease, margin 0.4s ease; cursor: pointer; }
     .expanded-row.collapsing { opacity: 0; max-height: 0 !important; padding-top: 0; padding-bottom: 0; margin-top: 0; margin-bottom: 0; border-width: 0; overflow: hidden; transform: scaleY(0.9); }
     
-    /* 3D Fairy Spin Animation */
-    .expanded-card-container { perspective: 1200px; width: min(100%, 460px); flex-shrink: 0; z-index: 10; margin: 0 auto; cursor: pointer; }
-    .expanded-card-flipper { position: relative; width: 100%; aspect-ratio: 2.5 / 3.5; transform-style: preserve-3d; animation: fairySpin 2.2s cubic-bezier(0.1, 0.95, 0.25, 1) forwards; }
+    /* 3.5 Turns = 1260 degrees */
+    .expanded-card-container { perspective: 1500px; width: min(100%, 360px); flex-shrink: 0; z-index: 10; margin: 0 auto; }
+    .expanded-card-flipper { position: relative; width: 100%; aspect-ratio: 2.5 / 3.5; transform-style: preserve-3d; animation: fairySpin 2s cubic-bezier(0.1, 0.9, 0.2, 1) forwards; }
     
-    /* 1260 degrees = 3.5 spins. Starts on back, lands on front. */
     @keyframes fairySpin {
-      0% { transform: rotateY(1260deg) scale(0.6) translateY(-60px); opacity: 0; }
+      0% { transform: rotateY(1260deg) scale(0.5); opacity: 0; }
       15% { opacity: 1; }
-      100% { transform: rotateY(0deg) scale(1) translateY(0); opacity: 1; }
+      100% { transform: rotateY(0deg) scale(1.1); opacity: 1; }
     }
 
-    .expanded-front, .expanded-back { position: absolute; inset: 0; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 20px; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.8); border: 2px solid var(--border-heavy); }
+    .expanded-front, .expanded-back { position: absolute; inset: 0; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 20px; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.8); border: 2px solid var(--border-heavy); background: #0f1320; }
     .expanded-front { transform: rotateY(0deg); }
     .expanded-front img, .expanded-back img { width: 100%; height: 100%; object-fit: cover; }
-    .expanded-back { transform: rotateY(180deg); background: #080b12; }
+    .expanded-back { transform: rotateY(180deg); }
     
-    /* Scroll Unroll Animation */
-    .expanded-scroll-wrapper { flex: 1; min-width: 320px; overflow: hidden; max-width: 0; opacity: 0; animation: scrollReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.8s forwards; background: linear-gradient(90deg, var(--surface) 0%, rgba(29, 36, 56, 0.5) 100%); border-radius: 16px; border: 1px solid var(--border); box-shadow: inset 0 0 30px rgba(0,0,0,0.5); position: relative; }
+    .expanded-scroll-wrapper { flex: 1; min-width: 280px; overflow: hidden; max-width: 0; opacity: 0; animation: scrollReveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) 0.8s forwards; background: linear-gradient(90deg, var(--surface) 0%, rgba(29, 36, 56, 0.3) 100%); border-radius: 16px; border: 1px solid var(--border); box-shadow: inset 0 0 30px rgba(0,0,0,0.5); pointer-events: none; }
     @keyframes scrollReveal {
       0% { max-width: 0; opacity: 0; padding-left: 0; padding-right: 0; }
       10% { opacity: 1; }
@@ -85,51 +127,14 @@
     .ec-skill-dmg { color: #FF5252; background: rgba(255, 82, 82, 0.1); padding: 4px 10px; border-radius: 6px; font-size: 1rem; }
     .ec-skill-desc { font-size: 0.95rem; color: var(--text-light); line-height: 1.6; }
 
-    /* Custom Tooltip Bubble */
-    .tooltip-bubble { position: fixed; z-index: 9999; background: rgba(8,11,18,0.98); border: 1px solid var(--accent); padding: 16px; border-radius: 16px; color: var(--text-light); max-width: 320px; font-size: 0.85rem; line-height: 1.5; box-shadow: 0 15px 35px rgba(0,0,0,0.9); backdrop-filter: blur(8px); pointer-events: none; opacity: 0; transition: opacity 0.2s; pointer-events: none; }
-    .tooltip-bubble b { color: white; display: block; margin-bottom: 2px; font-size: 0.95rem; }
-    .tooltip-bubble.visible { opacity: 1; }
-
-    /* Slots & Base UI */
-    .slots-container { display: flex; flex-wrap: wrap; gap: 12px; padding: 20px 24px; background: var(--surface); border-bottom: 1px solid var(--border); }
-    .slot-card { background: var(--bg); border-radius: 12px; border: 2px dashed var(--border-heavy); padding: 12px 16px; min-width: 140px; flex: 1; transition: all 0.2s; position: relative; display: flex; flex-direction: column; justify-content: center; min-height: 70px; }
-    .slot-card.filled { border-style: solid; background: rgba(255,255,255,0.03); }
-    
-    /* Positional Colors for Slots */
-    .slot-PG.filled, .slot-PG.drag-over { border-color: var(--pos-pg); }
-    .slot-SG.filled, .slot-SG.drag-over { border-color: var(--pos-sg); }
-    .slot-SF.filled, .slot-SF.drag-over { border-color: var(--pos-sf); }
-    .slot-PF.filled, .slot-PF.drag-over { border-color: var(--pos-pf); }
-    .slot-C.filled,  .slot-C.drag-over  { border-color: var(--pos-c); }
-    
-    .slot-PG .slot-pos { color: var(--pos-pg); }
-    .slot-SG .slot-pos { color: var(--pos-sg); }
-    .slot-SF .slot-pos { color: var(--pos-sf); }
-    .slot-PF .slot-pos { color: var(--pos-pf); }
-    .slot-C .slot-pos  { color: var(--pos-c); }
-
-    .slot-card.drag-over { background: rgba(255, 255, 255, 0.1); transform: scale(1.05); border-style: solid; }
-    
-    /* Shake Animation for Invalid Drop */
-    @keyframes shakeInvalid {
-      0%, 100% { transform: translateX(0); }
-      20%, 60% { transform: translateX(-5px); border-color: #FF5252; background: rgba(255, 82, 82, 0.1); }
-      40%, 80% { transform: translateX(5px); border-color: #FF5252; background: rgba(255, 82, 82, 0.1); }
-    }
-    .shake-invalid { animation: shakeInvalid 0.5s ease-in-out; }
-    .invalid-overlay { position: absolute; inset: 0; background: rgba(255, 82, 82, 0.9); color: white; font-weight: 900; display: flex; align-items: center; justify-content: center; border-radius: 10px; z-index: 10; font-size: 1.1rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
-
-    .slot-pos { font-weight: 800; font-size: 0.8rem; margin-bottom: 6px; display: flex; justify-content: space-between; pointer-events: none; }
-    .slot-name { font-weight: 700; font-size: 0.9rem; color: white; white-space: normal; line-height: 1.3; pointer-events: none; text-align: left; }
-    .remove-slot { color: #FF5252; font-size: 1rem; cursor: pointer; background: rgba(0,0,0,0.5); border: 1px solid #FF5252; position: absolute; top: 6px; right: 6px; pointer-events: auto; font-weight: bold; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
-    .remove-slot:hover { background: #FF5252; color: white; }
-    
     .btn-primary { background: var(--accent); border: none; padding: 10px 20px; border-radius: 40px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s; text-transform: uppercase; letter-spacing: 0.5px; }
     .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3); }
     .btn-primary:disabled { background: var(--border-heavy); cursor: not-allowed; box-shadow: none; color: var(--text-muted); }
   </style>
 </head>
 <body onclick="handleBodyClick(event)">
+
+<div id="drag-ghost" style="position:absolute; top:-1000px; left:-1000px; background:var(--accent); color:white; padding:10px 24px; border-radius:40px; font-weight:800; font-family:'Plus Jakarta Sans', sans-serif; pointer-events:none; z-index:-1; box-shadow: 0 10px 25px rgba(0,0,0,0.8); border: 2px solid white; font-size: 1.1rem; white-space: nowrap;">Ghost</div>
 
 <div id="tooltip" class="tooltip-bubble"></div>
 
@@ -165,39 +170,42 @@
 </div>
 
 <div id="catalogue-screen" class="screen">
-  <div class="app-header">
-    <div class="logo">NBA⚡BATTLE</div>
-    <div class="nav"><button class="nav-btn" onclick="showScreen('home-screen')">Home</button><button class="nav-btn active">Cards</button></div>
-  </div>
-  <div class="filter-bar">
-    <input type="text" id="cs" placeholder="Search player or team..." oninput="handleSearchFilter('cat')">
-    <select id="cp" onchange="handleSearchFilter('cat')">
-      <option value="">All Positions</option><option value="PG">PG</option><option value="SG">SG</option><option value="SF">SF</option><option value="PF">PF</option><option value="C">C</option>
-    </select>
-    <select id="csort" onchange="handleSearchFilter('cat')">
-      <option value="name">Name A-Z</option><option value="hp">HP ↓</option><option value="dmg">DMG ↓</option><option value="spd">SPD ↓</option>
-    </select>
+  <div class="sticky-container">
+    <div class="app-header">
+      <div class="logo">NBA⚡BATTLE</div>
+      <div class="nav"><button class="nav-btn" onclick="showScreen('home-screen')">Home</button><button class="nav-btn active">Cards</button></div>
+    </div>
+    <div class="filter-bar">
+      <input type="text" id="cs" placeholder="Search player or team..." oninput="handleSearchFilter('cat')">
+      <select id="cp" onchange="handleSearchFilter('cat')">
+        <option value="">All Positions</option><option value="PG">PG</option><option value="SG">SG</option><option value="SF">SF</option><option value="PF">PF</option><option value="C">C</option>
+      </select>
+      <select id="csort" onchange="handleSearchFilter('cat')">
+        <option value="name">Name A-Z</option><option value="hp">HP ↓</option><option value="dmg">DMG ↓</option><option value="spd">SPD ↓</option>
+      </select>
+    </div>
   </div>
   <div id="cgrid" class="card-grid"></div>
 </div>
 
 <div id="team-select-screen" class="screen">
-  <div class="app-header">
-    <div class="logo">⚡ DRAFT SQUAD</div>
-    <div style="display:flex; gap:12px; align-items:center;">
-      <span id="ts-count-lbl" style="font-weight:800; color: #40C4FF;">0/10</span>
-      <button class="btn-primary" style="background: var(--border-heavy);" onclick="autoFillSquad()">🎲 Random</button>
-      <button class="btn-primary" id="ts-confirm-btn" onclick="confirmTeamSelect()" disabled>BATTLE!</button>
+  <div class="sticky-container">
+    <div class="app-header">
+      <div class="logo">⚡ DRAFT SQUAD</div>
+      <div style="display:flex; gap:12px; align-items:center;">
+        <span id="ts-count-lbl" style="font-weight:800; color: #40C4FF;">0/10</span>
+        <button class="btn-primary" style="background: var(--border-heavy);" onclick="autoFillSquad()">🎲 Random</button>
+        <button class="btn-primary" id="ts-confirm-btn" onclick="confirmTeamSelect()" disabled>BATTLE!</button>
+      </div>
     </div>
-  </div>
-  
-  <div id="ts-slots" class="slots-container"></div>
-  <div class="filter-bar">
-    <input type="text" id="ts-search" placeholder="Search draft pool..." oninput="handleSearchFilter('ts')">
-    <select id="ts-sort" onchange="handleSearchFilter('ts')">
-      <option value="name">Name A-Z</option><option value="hp">HP ↓</option><option value="dmg">DMG ↓</option><option value="spd">SPD ↓</option>
-    </select>
-    <span style="color: var(--pos-sf); font-size: 0.8rem; margin-left: auto;">Drag name to draft. Click to expand.</span>
+    <div id="ts-slots" class="slots-grid"></div>
+    <div class="filter-bar">
+      <input type="text" id="ts-search" placeholder="Search draft pool..." oninput="handleSearchFilter('ts')">
+      <select id="ts-sort" onchange="handleSearchFilter('ts')">
+        <option value="name">Name A-Z</option><option value="hp">HP ↓</option><option value="dmg">DMG ↓</option><option value="spd">SPD ↓</option>
+      </select>
+      <span style="color: var(--pos-sf); font-size: 0.8rem; margin-left: auto;">Drag name pill to draft. Click card to expand. Hover to preview stats.</span>
+    </div>
   </div>
   <div id="ts-grid" class="card-grid"></div>
 </div>
@@ -213,8 +221,6 @@ const GITHUB_USERNAME = 'baobi-rockers';
 const GITHUB_REPO = 'NBA-Pellop-Hoops-Unleashed';     
 const GITHUB_BRANCH = 'main';             
 const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/${GITHUB_USERNAME}/${GITHUB_REPO}/${GITHUB_BRANCH}/`;
-
-function escapeJS(str) { return str.replace(/'/g, "\\'"); }
 
 // ==================== COMPRESSED CARDS DB ====================
 const CARDS = [
@@ -343,45 +349,28 @@ const POSITIONS = ['PG','SG','SF','PF','C'];
 let expandedCardCat = null;
 let expandedCardTS = null;
 let isCollapsing = false;
+let searchTimeout;
 
-// Tooltip Logic
 let tooltipTimer;
 const tooltip = document.getElementById('tooltip');
 
-function showTooltip(e, name) {
-  clearTimeout(tooltipTimer);
-  const card = CARDS.find(c => c.name === name);
-  if (!card) return;
-  
-  let skillsHtml = (card.skills || []).map(s => `<b>${s.name} (⚔️ ${s.dmg})</b>${s.desc}`).join('<br><br>');
-  tooltip.innerHTML = `<b>✨ ${card.ab}</b>${card.abdesc}<br><br>${skillsHtml}`;
-  
-  tooltip.classList.add('visible');
-  positionTooltip(e);
-}
-
-function hideTooltip() {
-  clearTimeout(tooltipTimer);
-  tooltip.classList.remove('visible');
-}
-
-function positionTooltip(e) {
-  if(!tooltip.classList.contains('visible')) return;
-  let x = e.touches ? e.touches[0].clientX : e.clientX;
-  let y = e.touches ? e.touches[0].clientY : e.clientY;
-  
-  let ttWidth = tooltip.offsetWidth;
-  if(x + 15 + ttWidth > window.innerWidth) { x = x - ttWidth - 10; } 
-  else { x = x + 15; }
-  
-  tooltip.style.left = `${x}px`;
-  tooltip.style.top = `${y + 15}px`;
-}
-
-function handleTouchStart(e, name) { tooltipTimer = setTimeout(() => showTooltip(e, name), 500); }
-function handleTouchEnd() { hideTooltip(); }
-
 function $(id) { return document.getElementById(id); }
+
+function shortName(name) { return name.replace(/ \(.+?\)$/, ''); }
+
+function getImgUrl(filename, name) {
+  if (!filename || filename.length < 3) {
+    return `https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(shortName(name))}`;
+  }
+  return `${GITHUB_RAW_BASE}${filename}`;
+}
+
+function handleImgError(el) {
+  let nameObj = el.closest('[data-name]');
+  let name = nameObj ? nameObj.getAttribute('data-name') : 'Card';
+  el.onerror = null;
+  el.src = `https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(shortName(name))}`;
+}
 
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -404,29 +393,65 @@ function goVsBot() {
   filterTeamSelect();
 }
 
+// ==================== TOOLTIP ====================
+function showTooltip(e, name) {
+  clearTimeout(tooltipTimer);
+  const card = CARDS.find(c => c.name === name);
+  if (!card) return;
+  
+  let skillsHtml = (card.skills || []).map(s => `<b>${s.name} (⚔️ ${s.dmg})</b>${s.desc}`).join('<br><br>');
+  tooltip.innerHTML = `<div style="color:#FFD600; font-weight:bold; margin-bottom:4px; font-size:1.1rem;">${shortName(name)}</div><b>✨ ${card.ab}</b>${card.abdesc}<br><br>${skillsHtml}`;
+  
+  tooltip.classList.add('visible');
+  positionTooltip(e);
+}
+
+function hideTooltip() {
+  clearTimeout(tooltipTimer);
+  tooltip.classList.remove('visible');
+}
+
+function positionTooltip(e) {
+  if(!tooltip.classList.contains('visible')) return;
+  let x = e.touches ? e.touches[0].clientX : e.clientX;
+  let y = e.touches ? e.touches[0].clientY : e.clientY;
+  
+  let ttWidth = tooltip.offsetWidth;
+  let ttHeight = tooltip.offsetHeight;
+  
+  if(x + 15 + ttWidth > window.innerWidth) { x = x - ttWidth - 10; } else { x = x + 15; }
+  if(y + 15 + ttHeight > window.innerHeight) { y = y - ttHeight - 10; } else { y = y + 15; }
+  
+  tooltip.style.left = `${x}px`;
+  tooltip.style.top = `${y}px`;
+}
+
+function handleTouchStart(e, name) { tooltipTimer = setTimeout(() => showTooltip(e, name), 400); }
+function handleTouchEnd() { hideTooltip(); }
+
+// ==================== EXPANSION LOGIC ====================
 function toggleExpand(name, context) {
   if (isCollapsing) return;
+  hideTooltip();
   let currentExpanded = context === 'cat' ? expandedCardCat : expandedCardTS;
   
   if (currentExpanded && currentExpanded !== name) {
-    // If opening a new one while another is open, just instantly swap to keep flow
     if (context === 'cat') expandedCardCat = name; else expandedCardTS = name;
     if (context === 'cat') filterCat(); else filterTeamSelect();
     return;
   }
   
   if (currentExpanded === name) {
-    // Smooth Close
     closeExpandedWithAnim(context);
   } else {
-    // Open
     if (context === 'cat') expandedCardCat = name; else expandedCardTS = name;
     if (context === 'cat') filterCat(); else filterTeamSelect();
-    
-    // Scroll into view
     setTimeout(() => {
       let row = document.querySelector('.expanded-row');
-      if (row) row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (row) {
+        let offset = row.getBoundingClientRect().top + window.scrollY - 180;
+        window.scrollTo({ top: offset, behavior: 'smooth' });
+      }
     }, 50);
   }
 }
@@ -440,11 +465,10 @@ function closeExpandedWithAnim(context) {
     if (context === 'cat') expandedCardCat = null; else expandedCardTS = null;
     if (context === 'cat') filterCat(); else filterTeamSelect();
     isCollapsing = false;
-  }, 400); // Matches CSS transition
+  }, 400); 
 }
 
 function handleBodyClick(e) {
-  // Close if clicking outside the card row or any UI buttons
   let row = document.querySelector('.expanded-row');
   if (row && !e.target.closest('.expanded-row') && !e.target.closest('.compact-card') && !e.target.closest('.filter-bar') && !e.target.closest('.app-header')) {
     let ctx = expandedCardCat ? 'cat' : 'ts';
@@ -453,18 +477,21 @@ function handleBodyClick(e) {
 }
 
 function handleSearchFilter(context) {
+  clearTimeout(searchTimeout);
   let isExpanded = context === 'cat' ? expandedCardCat : expandedCardTS;
+  
   if (isExpanded) {
-    closeExpandedWithAnim(context);
+    closeExpandedWithAnim(context); 
+    searchTimeout = setTimeout(() => {
+      if (context === 'cat') filterCat(); else filterTeamSelect();
+    }, 400); 
   } else {
     if (context === 'cat') filterCat(); else filterTeamSelect();
   }
 }
 
 function renderExpandedRow(card, context) {
-  const safeName = escapeJS(card.name);
   const backImgUrl = `${GITHUB_RAW_BASE}goat-tier-back.png`; 
-  
   let skillsHtml = (card.skills || []).map(s => `
     <div class="ec-skill">
       <div class="ec-skill-header"><span>${s.name}</span> <span class="ec-skill-dmg">⚔️ ${s.dmg}</span></div>
@@ -473,14 +500,14 @@ function renderExpandedRow(card, context) {
   `).join('');
 
   return `
-    <div class="expanded-row">
-      <div class="expanded-card-container" onclick="toggleExpand('${safeName}', '${context}')">
+    <div class="expanded-row" onclick="closeExpandedWithAnim('${context}')">
+      <div class="expanded-card-container">
         <div class="expanded-card-flipper">
           <div class="expanded-back">
             <img src="${backImgUrl}" onerror="this.src='https://placehold.co/460x644/000/fff?text=CARD+BACK'">
           </div>
           <div class="expanded-front">
-            <img src="${GITHUB_RAW_BASE}${card.image}" onerror="this.src='https://placehold.co/460x644/1e293b/ffd966?text=${encodeURIComponent(card.name)}'">
+            <img src="${getImgUrl(card.image, card.name)}" onerror="handleImgError(this)">
           </div>
         </div>
       </div>
@@ -528,12 +555,12 @@ function filterCat() {
   
   $('cgrid').innerHTML = filtered.map(c => {
     if (c.name === expandedCardCat) return renderExpandedRow(c, 'cat');
-    const safeName = escapeJS(c.name);
+    const safeDataName = c.name.replace(/"/g, '&quot;');
     return `
-      <div class="compact-card" onclick="toggleExpand('${safeName}', 'cat')" 
-           onmouseenter="showTooltip(event, '${safeName}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"
-           ontouchstart="handleTouchStart(event, '${safeName}')" ontouchend="handleTouchEnd()" ontouchmove="hideTooltip()">
-        <div class="card-img-sm"><img src="${GITHUB_RAW_BASE}${c.image}" onerror="this.src='https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(c.name)}'"></div>
+      <div class="compact-card" data-name="${safeDataName}" onclick="toggleExpand(this.getAttribute('data-name'), 'cat')" 
+           onmouseenter="showTooltip(event, this.getAttribute('data-name'))" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"
+           ontouchstart="handleTouchStart(event, this.getAttribute('data-name'))" ontouchend="handleTouchEnd()" ontouchmove="hideTooltip()">
+        <div class="card-img-sm"><img src="${getImgUrl(c.image, c.name)}" onerror="handleImgError(this)"></div>
       </div>
     `;
   }).join('');
@@ -541,26 +568,17 @@ function filterCat() {
 
 
 // ==================== DRAG AND DROP ====================
-function handleDragStart(e, name) {
+function handleDragStart(e) {
+  let name = e.currentTarget.getAttribute('data-name');
   hideTooltip();
   e.dataTransfer.setData('text/plain', name);
   e.dataTransfer.effectAllowed = 'move';
   
-  // Custom Drag Ghost
-  const ghost = document.createElement('div');
-  ghost.textContent = name;
-  ghost.style.background = 'var(--accent)';
-  ghost.style.color = 'white';
-  ghost.style.padding = '8px 20px';
-  ghost.style.borderRadius = '30px';
-  ghost.style.fontWeight = 'bold';
-  ghost.style.fontFamily = "'Inter', sans-serif";
-  ghost.style.position = 'absolute';
-  ghost.style.top = '-1000px'; 
-  document.body.appendChild(ghost);
+  let ghost = document.getElementById('drag-ghost');
+  ghost.textContent = shortName(name); 
   e.dataTransfer.setDragImage(ghost, 0, 0);
   
-  setTimeout(() => { e.target.classList.add('dragging'); ghost.remove(); }, 0);
+  setTimeout(() => e.target.classList.add('dragging'), 0);
 }
 function handleDragEnd(e) { e.target.classList.remove('dragging'); }
 function handleDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; e.currentTarget.classList.add('drag-over'); }
@@ -573,11 +591,10 @@ function handleDrop(e, pos, idx) {
   const cardName = e.dataTransfer.getData('text/plain');
   const card = CARDS.find(c => c.name === cardName);
   if (!card) return;
-  if (isCardInSquad(card)) { alert(`${card.name.split('(')[0]} is already in your squad!`); return; }
+  if (isCardInSquad(card)) { alert(`${shortName(card.name)} is already in your squad!`); return; }
   
   let validPos = card.pos.split('/').map(p => p.trim());
   if (!validPos.includes(pos)) {
-    // Trigger Invalid Shake
     let slotEl = document.getElementById(`slot-${pos}-${idx}`);
     slotEl.classList.add('shake-invalid');
     let overlay = document.createElement('div');
@@ -585,10 +602,7 @@ function handleDrop(e, pos, idx) {
     overlay.innerHTML = '🚫 INVALID ROLE';
     slotEl.appendChild(overlay);
     
-    setTimeout(() => {
-      slotEl.classList.remove('shake-invalid');
-      overlay.remove();
-    }, 1000);
+    setTimeout(() => { slotEl.classList.remove('shake-invalid'); overlay.remove(); }, 1000);
     return;
   }
   
@@ -605,17 +619,17 @@ function removeSlot(pos, idx) {
 
 function renderSlots() {
   let html = '';
-  POSITIONS.forEach(pos => {
-    [0,1].forEach(idx => {
+  [0, 1].forEach(idx => {
+    POSITIONS.forEach(pos => {
       let card = squad[pos][idx];
       html += `
         <div id="slot-${pos}-${idx}" class="slot-card slot-${pos} ${card ? 'filled' : ''}"
              ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event, '${pos}', ${idx})">
           <div class="slot-pos">${pos}</div>
           ${card ? `
-            <div class="slot-name">${card.name}</div>
+            <div class="slot-name">${shortName(card.name)}</div>
             <button class="remove-slot" onclick="event.stopPropagation();removeSlot('${pos}', ${idx})">✕</button>
-          ` : '<div style="opacity:0.3; font-size:0.75rem; text-align:center; margin-top: 10px;">Drop Here</div>'}
+          ` : '<div style="opacity:0.3; font-size:0.75rem; text-align:center; margin-top: 4px;">Drop Here</div>'}
         </div>`;
     });
   });
@@ -639,15 +653,16 @@ function filterTeamSelect() {
   
   $('ts-grid').innerHTML = list.map(c => {
     if (c.name === expandedCardTS) return renderExpandedRow(c, 'ts');
-    const safeName = escapeJS(c.name);
+    const safeDataName = c.name.replace(/"/g, '&quot;');
     const inSquad = isCardInSquad(c);
     
     return `
-      <div class="compact-card" ${!inSquad ? `draggable="true" ondragstart="handleDragStart(event, '${safeName}')" ondragend="handleDragEnd(event)"` : 'style="opacity: 0.3; pointer-events: none;"'} 
-           onclick="toggleExpand('${safeName}', 'ts')"
-           onmouseenter="showTooltip(event, '${safeName}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"
-           ontouchstart="handleTouchStart(event, '${safeName}')" ontouchend="handleTouchEnd()" ontouchmove="hideTooltip()">
-        <div class="card-img-sm"><img src="${GITHUB_RAW_BASE}${c.image}" onerror="this.src='https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(c.name)}'"></div>
+      <div class="compact-card" data-name="${safeDataName}" 
+           ${!inSquad ? `draggable="true" ondragstart="handleDragStart(event)" ondragend="handleDragEnd(event)"` : 'style="opacity: 0.3; pointer-events: none;"'} 
+           onclick="toggleExpand(this.getAttribute('data-name'), 'ts')"
+           onmouseenter="showTooltip(event, this.getAttribute('data-name'))" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"
+           ontouchstart="handleTouchStart(event, this.getAttribute('data-name'))" ontouchend="handleTouchEnd()" ontouchmove="hideTooltip()">
+        <div class="card-img-sm"><img src="${getImgUrl(c.image, c.name)}" onerror="handleImgError(this)"></div>
       </div>
     `;
   }).join('');
