@@ -412,7 +412,26 @@ function getDBShortName(f) { let m = f.match(/^(.*?)(\s\(.*)?$/); if(!m)return f
 function getImgUrl(filename, name) { return (!filename || filename.length<3) ? `https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(shortName(name))}` : `${GITHUB_RAW_BASE}${filename}`; }
 function handleImgError(el, name) { el.onerror=null; el.src=`https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(shortName(name))}`; }
 
-function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); $(id).classList.add('active'); window.scrollTo(0,0); }
+function showScreen(id) {
+  console.log("Trying to show screen:", id);
+
+  if (!id) {
+    console.error("showScreen called with invalid id:", id);
+    return;
+  }
+
+  const el = document.getElementById(id);
+  console.log("Element found:", el);
+
+  if (!el) {
+    console.error("Screen not found:", id);
+    return;
+  }
+
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  el.classList.add('active');
+  window.scrollTo(0,0);
+}
 
 // ==================== TOOLTIPS ====================
 let tooltipTimer;
