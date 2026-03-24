@@ -296,6 +296,12 @@
     </div> </div> </div> <script>
 // ==================== CONFIGURATION ====================
 const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/`;
+      
+// ==================== DATA BRIDGE HELPERS ====================
+function getCardName(c) { return c.UI_Frontend_Data.Name; }
+function getCardHP(c) { return c.UI_Frontend_Data.Stats.HP; }
+function getCardDMG(c) { return c.UI_Frontend_Data.Stats.Base_DMG; }
+function getCardSPD(c) { return c.UI_Frontend_Data.Stats.Speed; }
 
 // ==================== COMPRESSED CARDS DB ====================
 const CARDS = [
@@ -7036,7 +7042,10 @@ function filterDraftGrid() {
   if(isCollapsing) return;
   let q = $('draft-search').value.toLowerCase(), sort = $('draft-sort').value;
   let list = CARDS.filter(c => !q || c.name.toLowerCase().includes(q) || c.team.toLowerCase().includes(q));
-  if (sort === 'hp') list.sort((a,b)=>b.hp-a.hp); else if (sort === 'dmg') list.sort((a,b)=>b.dmg-a.dmg); else if (sort === 'spd') list.sort((a,b)=>b.spd-a.spd); else list.sort((a,b)=>a.name.localeCompare(b.name));
+if (sort === 'hp') list.sort((a,b) => getCardHP(b) - getCardHP(a)); 
+else if (sort === 'dmg') list.sort((a,b) => getCardDMG(b) - getCardDMG(a)); 
+else if (sort === 'spd') list.sort((a,b) => getCardSPD(b) - getCardSPD(a)); 
+else list.sort((a,b) => getCardName(a).localeCompare(getCardName(b)));
   
   $('draft-grid').innerHTML = list.map(c => {
     if (c.name === expandedCardDraft) return renderExpandedRow(c, 'draft');
