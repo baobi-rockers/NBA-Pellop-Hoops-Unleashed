@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script>
     window.onerror = function(msg, url, lineNo) {
-      document.body.innerHTML += `<div style="position:fixed;top:0;left:0;right:0;background:#FF5252;color:white;padding:20px;z-index:99999;font-weight:bold;">CRITICAL ERROR: ${msg}<br>Line: ${lineNo}</div>`;
+      document.body.innerHTML += `<div style="position:fixed;top:0;left:0;right:0;background:#FF5252;color:white;padding:20px;z-index:99999;font-family:sans-serif;font-weight:bold;">CRITICAL ERROR: ${msg}<br>Line: ${lineNo}</div>`;
       return false;
     };
   </script>
@@ -23,128 +23,110 @@
     .screen { display: none; min-height: 100vh; background: var(--bg); padding-bottom: 60px; }
     .screen.active { display: block; }
     
-    .app-header { background: rgba(8, 11, 18, 0.98); border-bottom: 1px solid var(--border); padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; z-index: 100; position: sticky; top:0; }
-    .logo { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.2rem; background: linear-gradient(135deg, #FF5722, #FFD600); -webkit-background-clip: text; color: transparent; }
-    .nav { display: flex; gap: 6px; background: var(--surface); padding: 4px; border-radius: 40px; border: 1px solid var(--border); }
-    .nav-btn { padding: 4px 14px; border-radius: 30px; font-weight: 600; font-size: 0.8rem; background: transparent; border: none; cursor: pointer; color: var(--text-light); }
+    /* Sleek Thin Header */
+    .app-header { background: rgba(8, 11, 18, 0.98); border-bottom: 1px solid var(--border); padding: 6px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; z-index: 100; position: sticky; top:0; }
+    .logo { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.1rem; background: linear-gradient(135deg, #FF5722, #FFD600); -webkit-background-clip: text; color: transparent; }
+    .nav { display: flex; gap: 4px; background: var(--surface); padding: 3px; border-radius: 40px; border: 1px solid var(--border); }
+    .nav-btn { padding: 3px 12px; border-radius: 30px; font-weight: 600; font-size: 0.75rem; background: transparent; border: none; cursor: pointer; color: var(--text-light); }
     .nav-btn.active, .nav-btn:hover { background: var(--border); color: white; }
     
-    .btn-primary { background: var(--accent); border: none; padding: 6px 16px; border-radius: 40px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+    /* Buttons */
+    .btn-primary { background: var(--accent); border: none; padding: 6px 16px; border-radius: 40px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px; }
     .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
     .btn-primary:disabled { background: var(--border-heavy); cursor: not-allowed; color: var(--text-muted); }
     
     .sticky-container { position: sticky; top: 0; z-index: 90; background: var(--bg); box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-    .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; padding: 8px 16px; background: var(--surface); border-bottom: 1px solid var(--border); align-items: center; }
-    .filter-bar input, .filter-bar select { padding: 6px 12px; border-radius: 40px; border: 1px solid var(--border); background: var(--surface-2); color: white; font-size: 0.8rem; }
-    .filter-bar input { flex: 1; min-width: 130px; }
-
-    /* Slots Grid */
+    
+    /* Slots Grid - Compact */
     .slots-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 10px 16px; background: var(--bg); border-bottom: 1px solid var(--border); }
-    .slot-card { background: var(--surface); border-radius: 8px; border: 1px dashed var(--border-heavy); padding: 6px; min-height: 48px; text-align: center; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; }
+    .slot-card { background: var(--surface); border-radius: 8px; border: 1px dashed var(--border-heavy); padding: 4px; min-height: 50px; text-align: center; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .slot-card.filled { border-style: solid; background: rgba(255,255,255,0.02); border-width: 2px; }
-    .slot-pos { font-weight: 900; font-size: 0.65rem; margin-bottom: 2px; pointer-events: none; }
-    .slot-name { font-weight: 700; font-size: 0.7rem; color: white; line-height: 1.2; pointer-events: none; word-wrap: break-word; width: 100%; }
-    .slot-card.drag-over { background: rgba(255, 255, 255, 0.08); transform: scale(1.05); border-style: solid; }
-    .remove-slot { color: #FF5252; font-size: 0.7rem; cursor: pointer; background: rgba(0,0,0,0.6); border: 1px solid #FF5252; position: absolute; top: 2px; right: 2px; font-weight: bold; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 5; }
+    .slot-pos { font-weight: 900; font-size: 0.6rem; margin-bottom: 2px; pointer-events: none; }
+    .slot-name { font-weight: 700; font-size: 0.65rem; color: white; line-height: 1.1; pointer-events: none; word-wrap: break-word; width: 100%; }
 
     .slot-PG.filled { border-color: var(--pos-pg); } .slot-PG .slot-pos { color: var(--pos-pg); }
     .slot-SG.filled { border-color: var(--pos-sg); } .slot-SG .slot-pos { color: var(--pos-sg); }
     .slot-SF.filled { border-color: var(--pos-sf); } .slot-SF .slot-pos { color: var(--pos-sf); }
     .slot-PF.filled { border-color: var(--pos-pf); } .slot-PF .slot-pos { color: var(--pos-pf); }
     .slot-C.filled { border-color: var(--pos-c); } .slot-C .slot-pos { color: var(--pos-c); }
-    .slot-6TH { border-color: var(--pos-6th); } .slot-6TH .slot-pos { color: var(--pos-6th); }
+    .slot-6TH { display: none; border-color: var(--pos-6th); } .slot-6TH .slot-pos { color: var(--pos-6th); }
 
-    /* Shake Anim */
-    @keyframes shakeInvalid { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-5px); border-color: #FF5252; } 40%, 80% { transform: translateX(5px); border-color: #FF5252; } }
-    .shake-invalid { animation: shakeInvalid 0.5s ease-in-out; }
-    .invalid-overlay { position: absolute; inset: 0; background: rgba(255, 82, 82, 0.95); color: white; font-weight: 900; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-size: 0.7rem; text-transform: uppercase; pointer-events: none; }
-
-    /* Card Styling */
     .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 16px; padding: 16px 24px; }
-    .compact-card { position: relative; width: 100%; padding-bottom: 140%; background: transparent; border-radius: 8px; overflow: hidden; box-shadow: 0 6px 15px rgba(0,0,0,0.5); cursor: pointer; border: 1px solid var(--border-heavy); transition: 0.2s; }
-    .compact-card:hover { transform: translateY(-4px); border-color: var(--accent); }
-    .card-img-sm { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #0f1320; pointer-events: none; }
+    .compact-card { position: relative; width: 100%; padding-bottom: 140%; border-radius: 8px; overflow: hidden; box-shadow: 0 6px 15px rgba(0,0,0,0.5); cursor: pointer; border: 1px solid var(--border-heavy); }
+    .card-img-sm { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #0f1320; }
     .card-img-sm img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* 3D Expansion & Fairy Spin */
-    .expanded-row { grid-column: 1 / -1; display: flex; gap: 20px; padding: 24px; background: rgba(22, 28, 45, 0.8); border-radius: 16px; border: 1px solid var(--border-heavy); margin: 8px 0; overflow: hidden; align-items: flex-start; flex-wrap: wrap; transition: 0.3s ease; }
-    .expanded-card-container { perspective: 1500px; width: min(100%, 250px); flex-shrink: 0; }
+    /* Expanded View */
+    .expanded-row { grid-column: 1 / -1; display: flex; gap: 20px; padding: 20px; background: rgba(22, 28, 45, 0.9); border-radius: 16px; border: 1px solid var(--border-heavy); margin: 8px 0; overflow: hidden; }
+    .expanded-card-container { perspective: 1500px; width: 200px; flex-shrink: 0; }
     .expanded-card-flipper { position: relative; width: 100%; padding-bottom: 140%; transform-style: preserve-3d; animation: fairySpin 2s cubic-bezier(0.1, 0.9, 0.2, 1) forwards; }
     @keyframes fairySpin { 0% { transform: rotateY(1260deg) scale(0.6); opacity: 0; } 100% { transform: rotateY(0deg) scale(1); opacity: 1; } }
-    .expanded-front, .expanded-back { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 14px; overflow: hidden; background: #0f1320; border: 1px solid var(--border-heavy); }
+    .expanded-front, .expanded-back { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-heavy); }
     .expanded-front { transform: rotateY(0deg); }
-    .expanded-front img, .expanded-back img { width: 100%; height: 100%; object-fit: cover; }
-    .expanded-back { transform: rotateY(180deg); }
+    .expanded-back { transform: rotateY(180deg); background-image: url('https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/goat-tier-back.png'); background-size: cover; }
+    .expanded-front img { width: 100%; height: 100%; object-fit: cover; }
     
-    .expanded-scroll-wrapper { flex: 1; min-width: 250px; opacity: 0; animation: scrollReveal 1s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards; }
-    @keyframes scrollReveal { 0% { max-width: 0; opacity: 0; } 100% { max-width: 1200px; opacity: 1; } }
-    .ec-title { font-size: 1.5rem; font-weight: 800; color: white; border-bottom: 1px solid var(--border-heavy); padding-bottom: 8px; margin-bottom: 12px; }
-    .ec-stat { background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 6px; font-weight: 800; border: 1px solid var(--border); font-size: 0.9rem; margin-right: 8px; display: inline-block; }
-    .ec-stat span { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; }
+    .expanded-scroll-wrapper { flex: 1; opacity: 0; animation: scrollReveal 1s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards; }
+    @keyframes scrollReveal { 0% { max-width: 0; opacity: 0; } 100% { max-width: 1000px; opacity: 1; } }
+    .ec-title { font-size: 1.3rem; font-weight: 800; color: white; border-bottom: 1px solid var(--border-heavy); padding-bottom: 4px; margin-bottom: 8px; }
+    .ec-stat { background: rgba(0,0,0,0.4); padding: 3px 8px; border-radius: 6px; font-weight: 800; border: 1px solid var(--border); font-size: 0.8rem; margin-right: 4px; display: inline-block; }
+    .ec-stat span { font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase; }
 
-    /* Battle Arena Table */
+    /* Battle Arena */
     .arena-container { display: flex; height: calc(100vh - 45px); width: 100%; overflow: hidden; }
-    .court-area { flex: 1; display: flex; flex-direction: column; background: radial-gradient(circle at center, #1d2438 0%, #080b12 100%); padding: 10px; justify-content: space-between; }
-    .sidebar-area { width: 280px; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; }
+    .court-area { flex: 1; display: flex; flex-direction: column; background: radial-gradient(circle at center, #1d2438 0%, #080b12 100%); padding: 10px; justify-content: space-between; position: relative; }
+    .sidebar-area { width: 260px; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; }
     
-    .battle-row { display: flex; justify-content: center; gap: 8px; align-items: center; min-height: 140px; }
-    .battle-card-wrapper { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 90px; position: relative; transition: 0.4s; }
-    .battle-card { width: 100%; padding-bottom: 140%; border-radius: 6px; border: 2px solid var(--border-heavy); overflow: hidden; position: relative; background: #0f1320; box-shadow: 0 4px 10px rgba(0,0,0,0.8); }
+    .battle-row { display: flex; justify-content: center; gap: 8px; align-items: center; min-height: 120px; }
+    .battle-card-wrapper { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 80px; position: relative; transition: 0.4s; cursor: pointer; }
+    .battle-card { width: 100%; padding-bottom: 140%; border-radius: 6px; border: 2px solid var(--border-heavy); overflow: hidden; position: relative; background: #0f1320; }
     .battle-card img { position: absolute; width: 100%; height: 100%; object-fit: cover; }
-    .face-down { background-image: url('https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/goat-tier-back.png'); background-size: cover; }
-    .dead-card { filter: grayscale(100%) brightness(0.3); pointer-events: none; }
+    .dead-card { filter: grayscale(100%) brightness(0.2); pointer-events: none; }
     
-    .hp-bar-container { width: 100%; height: 6px; background: #000; border-radius: 3px; border: 1px solid var(--border-heavy); overflow: hidden; margin-top: 4px; }
+    .hp-bar-container { width: 100%; height: 6px; background: #000; border-radius: 3px; border: 1px solid var(--border-heavy); overflow: hidden; margin-top: 2px; }
     .hp-fill { height: 100%; background: #69F0AE; width: 100%; transition: width 0.3s; }
-    .hp-text { font-size: 0.6rem; font-weight: 800; margin-top: 2px; text-shadow: 0 1px 2px black; }
+    .hp-text { font-size: 0.55rem; font-weight: 800; margin-top: 1px; text-shadow: 0 1px 2px black; }
     
-    .bench-area { display: flex; gap: 4px; justify-content: center; padding: 6px; background: rgba(0,0,0,0.2); border-radius: 8px; }
-    .bench-card { width: 35px; height: 49px; border-radius: 3px; border: 1px solid var(--border-heavy); overflow: hidden; position: relative; }
+    .bench-area { display: flex; gap: 4px; justify-content: center; padding: 4px; background: rgba(0,0,0,0.2); border-radius: 8px; }
+    .bench-card { width: 30px; height: 42px; border-radius: 3px; border: 1px solid var(--border-heavy); overflow: hidden; position: relative; }
     .bench-card img { position: absolute; width: 100%; height: 100%; object-fit: cover; }
 
-    /* Combat Anims */
-    .anim-waft-up { transform: translateY(-40px) scale(1.1); z-index: 10; }
-    .anim-waft-down { transform: translateY(40px) scale(1.1); z-index: 10; }
-    .anim-shake { animation: shake 0.4s; }
-    @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
-    .dmg-popup { position: absolute; top: 0; left: 50%; transform: translateX(-50%); font-weight: 900; color: #FFD600; font-size: 2rem; z-index: 50; animation: popUp 0.8s forwards; text-shadow: 0 0 10px #FF5252; }
-    @keyframes popUp { 0%{opacity:0; top: 20px;} 50%{opacity:1;} 100%{opacity:0; top: -40px;} }
-
     /* Action Overlay */
-    .action-overlay { position: fixed; inset:0; background:rgba(0,0,0,0.8); z-index: 2000; display:none; align-items:center; justify-content:center; }
-    .action-menu { background: var(--surface); border: 2px solid var(--accent); padding: 20px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px; width: 240px; }
+    .action-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 2000; display: none; align-items: center; justify-content: center; }
+    .action-menu { background: var(--surface); border: 2px solid var(--accent); padding: 20px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px; width: 240px; text-align: center; }
 
-    /* Log */
-    .sb-log { flex: 1; padding: 12px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; font-size: 0.75rem; background: #080b12; }
-    .log-entry { padding: 6px 10px; border-radius: 6px; border-left: 3px solid var(--border-heavy); background: rgba(255,255,255,0.03); }
-    .log-entry.atk { border-left-color: var(--accent); }
-    .score-board { display: flex; justify-content: center; gap: 15px; font-size: 2rem; font-weight: 900; padding: 10px; background: var(--surface-2); }
+    /* Target Highlighting */
+    .targetable { border-color: var(--accent) !important; box-shadow: 0 0 15px var(--accent); animation: pulse 1s infinite alternate; }
+    @keyframes pulse { from { opacity: 0.7; } to { opacity: 1; } }
 
-    .tooltip-bubble { position: fixed; z-index: 9999; background: rgba(8,11,18,0.96); border: 1px solid var(--pos-sf); padding: 12px; border-radius: 12px; color: var(--text-light); max-width: 240px; font-size: 0.75rem; opacity: 0; pointer-events: none; transition: 0.15s; }
+    /* Damage Popup */
+    .dmg-popup { position: absolute; top: 0; left: 50%; transform: translateX(-50%); font-weight: 900; color: #FFD600; font-size: 2rem; z-index: 50; animation: popUp 0.8s forwards; text-shadow: 0 0 10px #FF5252; }
+    @keyframes popUp { 0%{opacity:0; top: 10px;} 50%{opacity:1;} 100%{opacity:0; top: -30px;} }
+
+    .log-entry { padding: 6px; font-size: 0.7rem; border-left: 3px solid var(--border-heavy); margin-bottom: 4px; background: rgba(255,255,255,0.02); }
+    .tooltip-bubble { position: fixed; z-index: 9999; background: rgba(8,11,18,0.96); border: 1px solid var(--pos-sf); padding: 10px; border-radius: 10px; color: var(--text-light); max-width: 220px; font-size: 0.7rem; opacity: 0; pointer-events: none; transition: 0.1s; }
     .tooltip-bubble.visible { opacity: 1; }
-    
-    .targetable { border-color: var(--accent) !important; box-shadow: 0 0 20px var(--accent); cursor: crosshair; }
   </style>
 </head>
 <body onclick="handleBodyClick(event)">
 
-<div id="drag-ghost" style="position:absolute; top:-1000px; left:-1000px; background:var(--accent); color:white; padding:8px 18px; border-radius:40px; font-weight:800; font-family:'Plus Jakarta Sans', sans-serif; pointer-events:none; z-index:-1; box-shadow: 0 8px 20px rgba(0,0,0,0.8); border: 1px solid white; font-size: 0.9rem; white-space: nowrap;">Ghost</div>
+<div id="drag-ghost" style="position:absolute; top:-1000px; left:-1000px; background:var(--accent); color:white; padding:6px 16px; border-radius:40px; font-weight:800; font-size:0.8rem; pointer-events:none; z-index:-1; border: 1px solid white;">Ghost</div>
 <div id="tooltip" class="tooltip-bubble"></div>
 
 <div id="action-overlay" class="action-overlay">
   <div class="action-menu">
-    <div id="action-name" style="font-weight:900; color:white; text-align:center; margin-bottom:5px;">Player</div>
-    <button class="btn-primary" onclick="initiateAttack()">⚔️ ATTACK</button>
-    <button class="btn-primary" style="background:#3a476b" onclick="initiateSwap()">🔄 SWAP</button>
+    <div id="action-p-name" style="font-weight:900; color:white; font-size:1.1rem; margin-bottom:5px;">Player</div>
+    <button class="btn-primary" style="padding:12px;" onclick="startTargeting()">⚔️ ATTACK</button>
+    <button class="btn-primary" style="background:#3a476b; padding:12px;" onclick="openSwapMenu()">🔄 SWAP</button>
     <button class="btn-primary" onclick="$('action-overlay').style.display='none'" style="background:transparent; border:1px solid var(--border)">CANCEL</button>
   </div>
 </div>
 
 <div id="home-screen" class="screen active">
   <div class="app-header"><div class="logo">NBA⚡BATTLE</div></div>
-  <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; text-align:center; gap:32px; padding: 20px;">
+  <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; text-align:center; gap:20px; padding: 20px;">
     <h1>NBA CARD BATTLE</h1>
-    <button class="btn-primary" style="padding: 12px 24px; font-size: 1rem;" onclick="goDraft()">🤖 START GAME</button>
+    <button class="btn-primary" style="padding: 12px 24px; font-size: 1rem;" onclick="goDraft()">🤖 VS BOT</button>
   </div>
 </div>
 
@@ -158,19 +140,26 @@
 
 <div id="draft-screen" class="screen">
   <div class="sticky-container">
-    <div class="app-header"><div class="logo">DRAFT SQUAD</div><span id="draft-count-lbl" style="font-weight:800; color: #40C4FF;">0/10</span></div>
+    <div class="app-header">
+      <div class="logo">DRAFT SQUAD</div>
+      <span id="draft-count-lbl" style="font-weight:800; color: #40C4FF;">0/10</span>
+    </div>
     <div id="draft-slots" class="slots-grid"></div>
-    <div class="filter-bar"><input type="text" id="draft-search" placeholder="Search Pool..." oninput="handleSearchFilter('draft')"><button class="btn-primary" id="draft-confirm-btn" onclick="goSetup()" disabled>LOCK IN</button></div>
+    <div class="filter-bar">
+      <input type="text" id="draft-search" placeholder="Search Pool..." oninput="handleSearchFilter('draft')">
+      <button class="btn-primary" id="draft-confirm-btn" onclick="goSetup()" disabled>SET UP TEAM</button>
+    </div>
   </div>
   <div id="draft-grid" class="card-grid"></div>
 </div>
 
 <div id="setup-screen" class="screen">
   <div class="sticky-container">
-    <div class="app-header"><div class="logo">LINEUP</div><span id="setup-count-lbl" style="font-weight:800; color: #69F0AE;">0/5</span></div>
+    <div class="app-header"><div class="logo">LOCKER ROOM</div><span id="setup-count-lbl" style="font-weight:800; color: #69F0AE;">0/5</span></div>
     <div id="setup-slots" class="slots-grid" style="display:flex; justify-content:center; gap:8px;"></div>
     <div class="filter-bar" style="justify-content:center;"><button class="btn-primary" id="start-battle-btn" onclick="startBattle()" disabled>ENTER ARENA</button></div>
   </div>
+  <div style="padding: 12px 20px; font-weight:800; color:var(--accent); font-size: 0.9rem;">AVAILABLE ROSTER</div>
   <div id="setup-bench-grid" class="card-grid"></div>
 </div>
 
@@ -181,7 +170,7 @@
         <div id="enemy-bench-row" class="bench-area" style="margin-bottom:10px;"></div>
         <div id="enemy-active-row" class="battle-row"></div>
       </div>
-      <div id="targeting-msg" style="text-align:center; color:var(--accent); font-weight:900; font-size:0.9rem; display:none;">SELECT A TARGET</div>
+      <div id="targeting-ui" style="text-align:center; color:var(--accent); font-weight:900; display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); z-index:100; background:rgba(0,0,0,0.8); padding:10px 20px; border-radius:40px; border:2px solid var(--accent);">SELECT A TARGET</div>
       <div>
         <div id="player-active-row" class="battle-row"></div>
         <div id="player-bench-row" class="bench-area" style="margin-top:10px;"></div>
@@ -190,7 +179,7 @@
     <div class="sidebar-area">
       <div class="score-board"><div id="score-p" style="color:var(--pos-sf)">0</div><div style="color:var(--text-muted)">-</div><div id="score-e" style="color:var(--pos-sg)">0</div></div>
       <div id="battle-log" class="sb-log"></div>
-      <div style="padding:10px; background:var(--surface-2); text-align:center;"><div id="turn-id" style="font-weight:800; color:var(--accent);">TURN: PLAYER</div></div>
+      <div style="padding:10px; background:var(--surface-2); text-align:center;"><div id="turn-id" style="font-weight:800; color:var(--accent); font-size:0.7rem;">TURN: PLAYER</div></div>
     </div>
   </div>
 </div>
@@ -198,6 +187,8 @@
 <script>
 // ==================== CONFIGURATION ====================
 const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/`;
+const POSITIONS = ['PG','SG','SF','PF','C'];
+
 // ==================== COMPRESSED CARDS DB ====================
 const CARDS = [
   {name:"Stephen Curry (Splash Brother)",pos:"PG/SG",tier:"GOAT TIER",team:"Golden State Warriors GOAT Series",hp:2200,dmg:850,spd:9,ab:"Splash Brother",abdesc:"Curry is one half of the Splash Brothers, contributing heavily with his unstoppable pull up shots while Klay helps to relieve defensive pressure off of Curry. When any Warriors Klay Thompson card is on the team with Curry, he will gain an additional 1000 HP and 1 SPD. When Klay is no longer on the team, he will lose the boost.",image:"stephen_curry_(splash_brother).png",skills:[{name:"Float Me One",dmg:"950",desc:"Curry's floater is one of his favorite ways to score. He takes the high arcing shot over defenders with incredible precision. This skill cannot be blocked by defensive skills. For a maximum of 4 uses."},{name:"Downtown Francisco",dmg:"1400",desc:"Curry is the heart and soul of the Golden State. His insane shot making abilities from deep terrorizes perimeter defenders. Curry takes a shot from way beyond the arc and swishes it in. For a maximum of 1 use."}]},
@@ -317,9 +308,8 @@ const CARDS = [
   {name:"Victor Wembanyama",pos:"C/PF",tier:"GOAT TIER",team:"San Antonio Spurs Future Series",hp:3700,dmg:500,spd:7,ab:"Alien",abdesc:"Wembanyama is a generational talent, sometimes, his combination of size and skill seems like it's out of this world. Opponents shorter than 7'1 are unable to block or contest his damaging skills and basic attacks. Opponents shorter than 7'1 are also not able to nullify his defensive skills.",image:"victor_wembanyama.png",skills:[{name:"Wingspan Block",dmg:"N/A (block)",desc:"Wembanyama uses his insane wingspan to deny his opponents with ease. Wembanyama blocks any damaging skills completely. This is used right after the opponent attacks and does not count as a move from him. Wembanyama may target any opponent. This can be used once each turn and for a maximum of 3 uses."},{name:"Three From Space",dmg:"1450",desc:"Wembanyama launches a three with his high arching jumpshot. This skill has a 50% chance of hitting, to be decided via coin flip. For a maximum of 2 uses."}]}
 ];
 
-
 // Extend for mock
-while(CARDS.length < 25) { CARDS.push({...CARDS[0], name: "Card " + CARDS.length}); }
+while(CARDS.length < 25) { CARDS.push({...CARDS[0], name: "Card " + CARDS.length, shortName: "Card " + CARDS.length}); }
 
 // ==================== STATE ====================
 let draftSquad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
@@ -329,62 +319,32 @@ let playerScore = 0, enemyScore = 0, currentTurn = 'player', isAnimating = false
 let expandedCardCat = null, expandedCardDraft = null, isCollapsing = false;
 let selectedBattleIdx = null, isTargeting = false;
 
-// ==================== UTILS ====================
+// ==================== CORE UTILS ====================
 function $(id) { return document.getElementById(id); }
-function shortName(n) { return n.replace(/ \(.+?\)$/, ''); }
 function escapeJS(s) { return s.replace(/'/g, "\\'"); }
-function getDBShortName(f) { let m = f.match(/^(.*?)(\s\(.*)?$/); if(!m)return f; let b=m[1], v=m[2]||''; let p=b.split(' '); if(p.length>1){ return p.shift().charAt(0)+'. '+p.join(' ')+v; } return b+v; }
+function escapeHtml(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
 function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); $(id).classList.add('active'); window.scrollTo(0,0); }
-function getImgUrl(i, n) { return (!i || i.length<3) ? `https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(shortName(n))}` : `${GITHUB_RAW_BASE}${i}`; }
-function handleImgError(el, name) { el.onerror=null; el.src=`https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(shortName(name))}`; }
-
-// ==================== FILTERS & UI ====================
-function filterCat() {
-  let q = $('cs').value.toLowerCase();
-  $('cgrid').innerHTML = CARDS.filter(c=>c.name.toLowerCase().includes(q)).map(c => {
-    if (c.name === expandedCardCat) return renderExpandedRow(c, 'cat');
-    let safe = escapeJS(c.name);
-    return `<div class="compact-card" onclick="toggleExpand('${safe}', 'cat')" onmouseenter="showTooltip(event, '${safe}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"><div class="card-img-sm"><img src="${getImgUrl(c.image, c.name)}" onerror="handleImgError(this, '${safe}')"></div></div>`;
-  }).join('');
-}
-
-function filterDraftGrid() {
-  let q = $('draft-search').value.toLowerCase();
-  $('draft-grid').innerHTML = CARDS.filter(c=>c.name.toLowerCase().includes(q)).map(c => {
-    if (c.name === expandedCardDraft) return renderExpandedRow(c, 'draft');
-    let inD = POSITIONS.some(p => draftSquad[p][0]?.name === c.name || draftSquad[p][1]?.name === c.name);
-    let safe = escapeJS(c.name);
-    return `<div class="compact-card" data-name="${safe}" ${!inD?`draggable="true" ondragstart="handleDragStart(event,'${safe}')"`:'style="opacity:0.2;pointer-events:none;"'} onclick="toggleExpand('${safe}','draft')" onmouseenter="showTooltip(event,'${safe}')" onmouseleave="hideTooltip()">
-      <div class="card-img-sm"><img src="${getImgUrl(c.image, c.name)}" onerror="handleImgError(this,'${safe}')"></div>
-    </div>`;
-  }).join('');
-}
-
-function handleSearchFilter(ctx) { if(ctx==='cat') filterCat(); else filterDraftGrid(); }
-function handleBodyClick(e) { if(!e.target.closest('.expanded-row') && !e.target.closest('.compact-card')) { expandedCardCat = null; expandedCardDraft = null; filterCat(); filterDraftGrid(); } }
 
 // ==================== TOOLTIPS ====================
-let tooltipTimer;
 function showTooltip(e, name) {
-  clearTimeout(tooltipTimer);
   const c = CARDS.find(x => x.name === name); if (!c) return;
-  $('tooltip').innerHTML = `<b>${shortName(name)}</b><b>✨ ${c.ab}</b>${c.abdesc}`;
-  $('tooltip').classList.add('visible'); positionTooltip(e);
+  const tt = $('tooltip');
+  tt.innerHTML = `<b>${c.shortName}</b><b>✨ ${c.ab}</b>${c.abdesc}`;
+  tt.classList.add('visible');
+  let x = e.clientX, y = e.clientY, tw = tt.offsetWidth, th = tt.offsetHeight;
+  let px = (x + tw + 20 > window.innerWidth) ? x - tw - 20 : x + 20;
+  let py = (y + th + 20 > window.innerHeight) ? y - th - 20 : y + 20;
+  tt.style.left = px+'px'; tt.style.top = py+'px';
 }
 function hideTooltip() { $('tooltip').classList.remove('visible'); }
-function positionTooltip(e) {
-  let x = e.clientX, y = e.clientY, tw = $('tooltip').offsetWidth;
-  let px = (x + tw + 20 > window.innerWidth) ? x - tw - 20 : x + 20;
-  $('tooltip').style.left = px+'px'; $('tooltip').style.top = (y+20)+'px';
-}
 
-// ==================== DRAFTING & SETUP ====================
+// ==================== DRAFTING ====================
 function goDraft() { showScreen('draft-screen'); renderDraftSlots(); filterDraftGrid(); }
 function renderDraftSlots() {
   let html = ''; [0,1].forEach(i => POSITIONS.forEach(p => {
     let c = draftSquad[p][i];
     html += `<div class="slot-card slot-${p} ${c?'filled':''}" ondragover="event.preventDefault()" ondrop="dropDraft(event, '${p}', ${i})">
-      <div class="slot-pos">${p}</div>${c?`<div class="slot-name">${getDBShortName(c.name)}</div><button class="remove-slot" onclick="draftSquad['${p}'][${i}]=null;renderDraftSlots();filterDraftGrid()">✕</button>`:'<div style="opacity:0.2;font-size:0.6rem">Drop</div>'}
+      <div class="slot-pos">${p}</div>${c?`<div class="slot-name">${c.shortName}</div><button class="remove-slot" onclick="draftSquad['${p}'][${i}]=null;renderDraftSlots();filterDraftGrid()">✕</button>`:'<div style="opacity:0.2;font-size:0.5rem">Drop</div>'}
     </div>`;
   }));
   $('draft-slots').innerHTML = html;
@@ -398,6 +358,20 @@ function dropDraft(e, pos, idx) {
   if(!card || !card.pos.includes(pos)) { e.currentTarget.classList.add('shake-invalid'); setTimeout(()=>e.currentTarget.classList.remove('shake-invalid'),1000); return; }
   draftSquad[pos][idx] = card; renderDraftSlots(); filterDraftGrid();
 }
+function filterDraftGrid() {
+  let q = $('draft-search').value.toLowerCase();
+  $('draft-grid').innerHTML = CARDS.filter(c=>c.name.toLowerCase().includes(q)).map(c => {
+    if(c.name === expandedCardDraft) return renderExpandedRow(c, 'draft');
+    let inD = POSITIONS.some(p => draftSquad[p][0]?.name === c.name || draftSquad[p][1]?.name === c.name);
+    let safe = escapeJS(c.name);
+    return `<div class="compact-card" data-name="${safe}" ${!inD?`draggable="true" ondragstart="handleDragStart(event,'${safe}')"`:'style="opacity:0.2;pointer-events:none;"'} onclick="toggleExpand('${safe}','draft')" onmouseenter="showTooltip(event,'${safe}')" onmouseleave="hideTooltip()">
+      <div class="card-img-sm"><img src="${GITHUB_RAW_BASE+c.image}" onerror="handleImgError(this,'${safe}')"></div>
+    </div>`;
+  }).join('');
+}
+function handleDragStart(e, name) { hideTooltip(); e.dataTransfer.setData('text/plain', name); let g = $('drag-ghost'); let c = CARDS.find(x=>x.name===name); g.textContent = c.shortName; e.dataTransfer.setDragImage(g, 0, 0); }
+
+// ==================== SETUP ====================
 function goSetup() {
   benchRoster = []; POSITIONS.forEach(p => [0,1].forEach(i => { if(draftSquad[p][i]) benchRoster.push(draftSquad[p][i]); }));
   let harden = benchRoster.find(x => x.name.includes("Sixth Man"));
@@ -409,19 +383,20 @@ function dropSetup(e, pos) {
   e.preventDefault(); let name = e.dataTransfer.getData('text/plain'); let card = benchRoster.find(x=>x.name===name);
   if(!card) return;
   if(pos === '6TH' && !card.name.includes("Sixth Man")) return;
-  activeLineup[pos] = card; e.currentTarget.classList.add('filled'); e.currentTarget.querySelector('.slot-name').textContent = getDBShortName(card.name);
+  if(pos !== '6TH' && !card.pos.includes(pos)) return;
+  activeLineup[pos] = card; e.currentTarget.classList.add('filled'); e.currentTarget.querySelector('.slot-name').textContent = card.shortName;
   let count = Object.values(activeLineup).filter(x=>x).length;
-  $('setup-count-lbl').textContent = count + "/5"; $('start-battle-btn').disabled = count < 5; renderSetupBench();
+  $('setup-count-lbl').textContent = count + (harden ? "/6" : "/5"); $('start-battle-btn').disabled = count < 5; renderSetupBench();
 }
 function renderSetupBench() {
   $('setup-bench-grid').innerHTML = benchRoster.map(c => {
     if(Object.values(activeLineup).includes(c)) return '';
     let safe = escapeJS(c.name);
-    return `<div class="compact-card" draggable="true" ondragstart="handleDragStart(event,'${safe}')"><div class="card-img-sm"><img src="${getImgUrl(c.image, c.name)}"></div></div>`;
+    return `<div class="compact-card" draggable="true" ondragstart="handleDragStart(event,'${safe}')" onmouseenter="showTooltip(event,'${safe}')" onmouseleave="hideTooltip()"><div class="card-img-sm"><img src="${GITHUB_RAW_BASE+c.image}"></div></div>`;
   }).join('');
 }
 
-// ==================== BATTLE ENGINE ====================
+// ==================== ARENA ====================
 function startBattle() {
   playerActive = []; POSITIONS.forEach(p => { if(activeLineup[p]) playerActive.push({...activeLineup[p], curHp: activeLineup[p].hp, dead: false}); });
   if(activeLineup['6TH']) playerActive.push({...activeLineup['6TH'], curHp: activeLineup['6TH'].hp, dead: false});
@@ -436,14 +411,15 @@ function renderArena() {
   $('enemy-bench-row').innerHTML = enemyBench.map(() => `<div class="bench-card face-down"></div>`).join('');
   $('enemy-active-row').innerHTML = enemyActive.map((c,i) => buildBattleCard(c, `e-${i}`, true)).join('');
   $('player-active-row').innerHTML = playerActive.map((c,i) => buildBattleCard(c, `p-${i}`, false)).join('');
-  $('player-bench-row').innerHTML = playerBench.map(c => `<div class="bench-card"><img src="${getImgUrl(c.image, c.name)}"></div>`).join('');
+  $('player-bench-row').innerHTML = playerBench.map(c => `<div class="bench-card"><img src="${GITHUB_RAW_BASE+c.image}"></div>`).join('');
 }
 
 function buildBattleCard(c, id, isE) {
   let pct = (c.curHp / c.hp) * 100;
-  return `<div class="battle-card-wrapper ${c.dead?'dead-card':''} ${isTargeting && isValidTarget(c, isE)?'targetable':''}" id="wrap-${id}" onclick="handleCardClick('${id}')">
+  let tcl = isTargeting && isValidTarget(c, isE) ? 'targetable' : '';
+  return `<div class="battle-card-wrapper ${c.dead?'dead-card':''} ${tcl}" id="wrap-${id}" onclick="handleCardClick('${id}')">
     ${isE?`<div class="hp-bar-container"><div class="hp-fill" style="width:${pct}%"></div></div>`:''}
-    <div class="battle-card ${isE && playerScore < 8 ? 'face-down' : ''}"><img src="${getImgUrl(c.image, c.name)}"></div>
+    <div class="battle-card"><img src="${GITHUB_RAW_BASE+c.image}"></div>
     ${!isE?`<div class="hp-bar-container"><div class="hp-fill" style="width:${pct}%"></div></div>`:''}
     <div class="hp-text">${c.curHp}/${c.hp}</div>
   </div>`;
@@ -451,30 +427,23 @@ function buildBattleCard(c, id, isE) {
 
 function handleCardClick(id) {
   if (currentTurn !== 'player' || isAnimating) return;
-  if (isTargeting) {
-    if (id.startsWith('e')) executeAttack(selectedBattleIdx, id.split('-')[1]);
-    return;
-  }
-  if (id.startsWith('p')) {
-    selectedBattleIdx = id.split('-')[1];
-    $('action-name').textContent = shortName(playerActive[selectedBattleIdx].name);
-    $('action-overlay').style.display = 'flex';
-  }
+  if (isTargeting) { if (id.startsWith('e')) executeAttack(selectedBattleIdx, id.split('-')[1]); return; }
+  if (id.startsWith('p')) { selectedBattleIdx = id.split('-')[1]; $('action-p-name').textContent = playerActive[selectedBattleIdx].shortName; $('action-overlay').style.display = 'flex'; }
 }
 
-function initiateAttack() { $('action-overlay').style.display = 'none'; isTargeting = true; renderArena(); }
+function startTargeting() { $('action-overlay').style.display = 'none'; isTargeting = true; $('targeting-ui').style.display='block'; renderArena(); }
 function isValidTarget(c, isE) {
   if (!isE || c.dead) return false;
-  let attacker = playerActive[selectedBattleIdx];
-  if (attacker.pos.includes('PG')) return c.pos.includes('PG') || c.pos.includes('SG');
-  if (attacker.pos.includes('SG')) return c.pos.includes('SG') || c.pos.includes('SF');
+  let att = playerActive[selectedBattleIdx];
+  if (att.pos.includes('PG')) return c.pos.includes('PG') || c.pos.includes('SG');
+  if (att.pos.includes('SG')) return c.pos.includes('SG') || c.pos.includes('SF');
   return true;
 }
 
 async function executeAttack(pIdx, eIdx) {
-  isTargeting = false; isAnimating = true;
+  isTargeting = false; isAnimating = true; $('targeting-ui').style.display='none';
   let pC = playerActive[pIdx], eC = enemyActive[eIdx];
-  logMsg(`${shortName(pC.name)} smacks ${shortName(eC.name)}!`, 'atk');
+  logMsg(`${pC.shortName} smacks ${eC.shortName}!`, 'atk');
   $('wrap-p-'+pIdx).classList.add('anim-waft-up');
   await new Promise(r => setTimeout(r, 500));
   $('wrap-e-'+eIdx).classList.add('anim-shake');
@@ -511,23 +480,24 @@ function logMsg(m, t) {
   l.prepend(e);
 }
 
-function handleDragStart(e, name) {
-  hideTooltip(); e.dataTransfer.setData('text/plain', name);
-  let ghost = $('drag-ghost'); ghost.textContent = getDBShortName(name); e.dataTransfer.setDragImage(ghost, 0, 0);
+function toggleExpand(name, context) {
+  let curr = context === 'cat' ? expandedCardCat : expandedCardDraft;
+  if (curr === name) { expandedCardCat = null; expandedCardDraft = null; } 
+  else { if (context === 'cat') expandedCardCat = name; else expandedCardDraft = name; }
+  if (context === 'cat') filterCat(); else filterDraftGrid();
 }
 
 function renderExpandedRow(card, context) {
-  let safeName = escapeJS(card.name);
-  return `<div class="expanded-row" onclick="closeExpandedWithAnim('${context}')">
-      <div class="expanded-card-container"><div class="expanded-card-flipper">
-          <div class="expanded-back"></div><div class="expanded-front"><img src="${getImgUrl(card.image, card.name)}"></div>
-      </div></div>
-      <div class="expanded-scroll-wrapper"><div class="ec-title">${card.name}</div>
-          <div class="ec-stat"><span>HP</span> ${card.hp}</div><div class="ec-stat"><span>DMG</span> ${card.dmg}</div>
-      </div></div>`;
+  return `<div class="expanded-row" onclick="toggleExpand('${escapeJS(card.name)}','${context}')">
+      <div class="expanded-card-container"><div class="expanded-card-flipper"><div class="expanded-back"></div><div class="expanded-front"><img src="${GITHUB_RAW_BASE+card.image}"></div></div></div>
+      <div class="expanded-scroll-wrapper"><div class="ec-title">${card.name}</div><div class="ec-stat"><span>HP</span> ${card.hp}</div><div class="ec-stat"><span>DMG</span> ${card.dmg}</div></div>
+    </div>`;
 }
 
-document.addEventListener('DOMContentLoaded', () => { filterCat(); });
+function handleSearchFilter(ctx) { if(ctx==='cat') filterCat(); else filterDraftGrid(); }
+function handleBodyClick(e) { if(!e.target.closest('.expanded-row') && !e.target.closest('.compact-card')) { expandedCardCat = null; expandedCardDraft = null; filterCat(); filterDraftGrid(); } }
+
+document.addEventListener('DOMContentLoaded', () => { showScreen('home-screen'); });
 </script>
 </body>
 </html>
