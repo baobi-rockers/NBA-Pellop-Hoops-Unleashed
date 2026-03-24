@@ -297,11 +297,17 @@
 // ==================== CONFIGURATION ====================
 const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/`;
       
-// ==================== DATA BRIDGE HELPERS ====================
-function getCardName(c) { return c.UI_Frontend_Data.Name; }
-function getCardHP(c) { return c.UI_Frontend_Data.Stats.HP; }
-function getCardDMG(c) { return c.UI_Frontend_Data.Stats.Base_DMG; }
-function getCardSPD(c) { return c.UI_Frontend_Data.Stats.Speed; }
+// ==================== DATA BRIDGE HELPERS (CRASH-PROOF) ====================
+function getCardName(c) { return c?.UI_Frontend_Data?.Name || "Unknown Player"; }
+function getCardImg(c) { return c?.UI_Frontend_Data?.Image_File || ""; }
+function getCardHP(c) { return c?.UI_Frontend_Data?.Stats?.HP || 0; }
+function getCardDMG(c) { return c?.UI_Frontend_Data?.Stats?.Base_DMG || 0; }
+function getCardSPD(c) { return c?.UI_Frontend_Data?.Stats?.Speed || 0; }
+function getCardPos(c) { 
+  const p = c?.UI_Frontend_Data?.Positions;
+  if (!p) return "N/A";
+  return p.Primary + (p.Secondary ? '/' + p.Secondary : ''); 
+}
 
 // ==================== COMPRESSED CARDS DB ====================
 const CARDS = [
@@ -6834,8 +6840,10 @@ function getCardSPD(c) { return c.UI_Frontend_Data.Stats.Speed; }
 function getCardPos(c) { return c.UI_Frontend_Data.Positions.Primary + (c.UI_Frontend_Data.Positions.Secondary ? '/' + c.UI_Frontend_Data.Positions.Secondary : ''); }
 function $(id) { return document.getElementById(id); }
 
+// Updated escapeJS with a safety net
 function escapeJS(str) {
-  return str
+  if (!str) return ""; 
+  return str.toString()
     .replace(/\\/g, "\\\\")
     .replace(/'/g, "\\'")
     .replace(/"/g, '\\"')
@@ -6996,13 +7004,45 @@ function filterCat() {
   }).join('');
 }
 
-// ==================== PHASE 2: DRAFTING ====================
-function isCardInDraft(card) { return POSITIONS.some(p => (draftSquad[p][0]?.name === card.name) || (draftSquad[p][1]?.name === card.name)); }
+function filterDraftGrid() {
+  if(isCollapsing) return;
+  let q = $('draft-search').value.toLowerCase(), sort = $('draft-sort').value;
+  
+  // Filter based on Name or Team using the new JSON paths
+  let list = CARDS.filter(c => {
+    let name = getCardName(c).toLowerCase();
+    let team = c.UI_Frontend_Data?.Team?.toLowerCase() || "";
+    return !q || name.includes(q) || team.includes(q);
+  });
 
-function goDraft() {
-  draftSquad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
-  expandedCardDraft = null;
-  showScreen('draft-screen'); renderDraftSlots(); filterDraftGrid();
+  // Sort using helpers
+  if (sort === 'hp') list.sort((a,b) => getCardHP(b) - getCardHP(a)); 
+  else if (sort === 'dmg') list.sort((a,b) => getCardDMG(b) - getCardDMG(a)); 
+  else if (sort === 'spd') list.sort((a,b) => getCardSPD(b) - getCardSPD(a)); 
+  else list.sort((a,b) => getCardName(a).localeCompare(getCardName(b)));
+  
+  $('draft-grid').innerHTML = list.map(c => {
+    let name = getCardName(c);
+    if (name === expandedCardDraft) return renderExpandedRow(c, 'draft');
+    
+    let inD = isCardInDraft(c);
+    let safeName = escapeJS(name);
+    
+    return `
+      <div class="compact-card" ${!inD ? `draggable="true" ondragstart="handleDragStart(event, '${safeName}')" ondragend="handleDragEnd(event)"` : 'style="opacity:0.3;pointer-events:none;"'} 
+           onclick="toggleExpand('${safeName}', 'draft')" 
+           onmouseenter="showTooltip(event, '${safeName}')" 
+           onmouseleave="hideTooltip()" 
+           onmousemove="positionTooltip(event)">
+        <div class="card-img-sm"><img src="${getImgUrl(getCardImg(c), name)}" onerror="handleImgError(this, '${safeName}')"></div>
+      </div>`;
+  }).join('');
+}
+
+// ==================== PHASE 2: DRAFTING ====================
+function isCardInDraft(card) { 
+  let name = getCardName(card);
+  return POSITIONS.some(p => (getCardName(draftSquad[p][0]) === name) || (getCardName(draftSquad[p][1]) === name)); 
 }
 
 function renderDraftSlots() {
@@ -7010,17 +7050,23 @@ function renderDraftSlots() {
   [0, 1].forEach(idx => {
     POSITIONS.forEach(pos => {
       let c = draftSquad[pos][idx];
+      let cName = c ? getCardName(c) : null;
       html += `
         <div id="dslot-${pos}-${idx}" class="slot-card slot-${pos} ${c?'filled':''}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropDraft(event, '${pos}', ${idx})">
           <div class="slot-pos">${pos}</div>
-          ${c ? `<div class="slot-name">${getDBShortName(c.name)}</div><button class="remove-slot" onclick="removeDraft('${pos}', ${idx})">✕</button>` : '<div style="opacity:0.3;font-size:0.65rem;margin-top:2px;">Drop Here</div>'}
+          ${c ? `<div class="slot-name">${getDBShortName(cName)}</div><button class="remove-slot" onclick="removeDraft('${pos}', ${idx})">✕</button>` : '<div style="opacity:0.3;font-size:0.65rem;margin-top:2px;">Drop Here</div>'}
         </div>`;
     });
   });
   $('draft-slots').innerHTML = html;
   
   let count = 0; hasSixthMan = false;
-  POSITIONS.forEach(p => [0,1].forEach(i => { if(draftSquad[p][i]){ count++; if(draftSquad[p][i].name.includes("Sixth Man")) hasSixthMan = true; } }));
+  POSITIONS.forEach(p => [0,1].forEach(i => { 
+    if(draftSquad[p][i]){ 
+      count++; 
+      if(getCardName(draftSquad[p][i]).includes("Sixth Man")) hasSixthMan = true; 
+    } 
+  }));
   
   let max = hasSixthMan ? 11 : 10;
   $('draft-count-lbl').textContent = `${count}/${max}`;
