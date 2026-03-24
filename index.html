@@ -822,6 +822,34 @@ function showActionMenu(card, idx, x, y) {
   menu.style.display = 'flex';
 }
 
+function getValidTargets(attackerCard, enemyTeam) {
+  // 1. Define the lane rules
+  const laneMap = {
+    'PG': ['PG', 'SG'],
+    'SG': ['SG', 'SF'],
+    'SF': ['SG', 'SF', 'PF'],
+    'PF': ['PF', 'C'],
+    'C':  ['PF', 'C'],
+    '6TH': ['PG', 'SG', 'SF', 'PF', 'C'] // 6th man can usually hit anyone
+  };
+
+  // 2. Gather all positions the attacker is allowed to hit based on their roles
+  let validDefPos = new Set();
+  attackerCard.pos.split('/').forEach(p => {
+    let basePos = p.trim();
+    if (laneMap[basePos]) {
+      laneMap[basePos].forEach(vp => validDefPos.add(vp));
+    }
+  });
+
+  // 3. Filter the enemy team to only those who have a matching position
+  return enemyTeam.map((c, i) => ({c, i})).filter(def => {
+    if(def.c.isDead) return false;
+    let defPositions = def.c.pos.split('/').map(p => p.trim());
+    return defPositions.some(dp => validDefPos.has(dp));
+  });
+}
+
 function selectAction(actorIdx, type, skillIdx) {
   $('action-menu').style.display = 'none';
   pendingAction = { actorIdx, actionType: type, skillIdx };
@@ -833,8 +861,17 @@ function selectAction(actorIdx, type, skillIdx) {
     uiState = 'AWAITING_BENCH';
     logMsg(`Select a bench card to swap with <b>${shortName(playerActive[actorIdx].name)}</b>.`, "sys");
   } else {
+    // Check Lanes!
+    let validEnemies = getValidTargets(playerActive[actorIdx], enemyActive);
+    if (validEnemies.length === 0) {
+      logMsg(`<b>${shortName(playerActive[actorIdx].name)}</b> has no valid targets in their lane!`, "sys");
+      return;
+    }
+    
     uiState = 'AWAITING_TARGET';
-    logMsg(`Select an enemy target for <b>${shortName(playerActive[actorIdx].name)}</b>.`, "sys");
+    logMsg(`Select a valid lane target for <b>${shortName(playerActive[actorIdx].name)}</b>.`, "sys");
+    
+    // Optional: You can add a CSS class here to highlight valid enemies on the board
   }
 }
 
@@ -875,43 +912,85 @@ async function confirmMoves() {
   $('checkout-panel').classList.remove('visible');
   isAnimating = true;
   
-  for (let action of stagedActions) {
+  // 1. Generate Enemy AI Moves simultaneously
+  let enemyStaged = generateEnemyAI();
+  
+  // 2. Combine into a Master Queue
+  let masterQueue = [];
+  stagedActions.forEach(a => masterQueue.push({...a, execTeam: 'player', card: playerActive[a.actorIdx]}));
+  enemyStaged.forEach(a => masterQueue.push({...a, execTeam: 'enemy', card: enemyActive[a.actorIdx]}));
+  
+  // 3. Sort the Queue based on your exact rules
+  masterQueue.sort((a, b) => {
+    // A. Priority Multipliers (Parse from description, e.g. "x4 priority")
+    let prioA = getSkillPriority(a);
+    let prioB = getSkillPriority(b);
+    if (prioA !== prioB) return prioB - prioA; // Higher priority goes first
+    
+    // B. 6th Man Rule (Moves absolutely last unless tied)
+    let is6A = a.card.ab === "Sixth Man";
+    let is6B = b.card.ab === "Sixth Man";
+    if (is6A && !is6B) return 1;
+    if (!is6A && is6B) return -1;
+    
+    // C. Speed
+    if (a.card.spd !== b.card.spd) return b.card.spd - a.card.spd;
+    
+    // D. Positional Hierarchy: PG > SG > SF > PF > C
+    const posWeight = { 'PG':5, 'SG':4, 'SF':3, 'PF':2, 'C':1, '6TH':0 };
+    let posA = posWeight[a.card.pos.split('/')[0].trim()] || 0;
+    let posB = posWeight[b.card.pos.split('/')[0].trim()] || 0;
+    if (posA !== posB) return posB - posA;
+    
+    // E. 50/50 Coin Flip
+    return Math.random() > 0.5 ? 1 : -1;
+  });
+  
+  // 4. Execute the Queue
+  for (let action of masterQueue) {
     if(playerScore >= 8 || enemyScore >= 8) break;
-    await executeAction(action, 'player');
+    await executeAction(action, action.execTeam);
+    
+    // Check for mid-turn deaths and replace them immediately
+    autoReplaceDeadCards('player', playerActive, playerBench);
+    autoReplaceDeadCards('enemy', enemyActive, enemyBench);
   }
   
-  stagedActions = []; uiState = 'IDLE';
+  stagedActions = []; uiState = 'IDLE'; turnCount++;
   if (playerScore < 8 && enemyScore < 8) {
-    currentTurn = 'enemy'; turnCount++;
-    renderArena();
-    setTimeout(enemyAITurn, 1000);
-  } else { isAnimating = false; renderArena(); }
+    isAnimating = false; renderArena();
+  }
 }
 
-async function enemyAITurn() {
-  isAnimating = true;
+function getSkillPriority(action) {
+  if (action.actionType !== 'skill') return 1; // Basic attacks are normal priority
+  let skill = action.card.skills[action.skillIdx];
+  if (!skill || !skill.desc) return 1;
+  
+  let match = skill.desc.match(/x(\d) priority/);
+  return match ? parseInt(match[1]) : 1;
+}
+
+function generateEnemyAI() {
+  let actions = [];
   let aliveEnemies = enemyActive.map((c,i) => ({c,i})).filter(x => !x.c.isDead);
   let moves = Math.min(2, aliveEnemies.length);
   
+  // Simple AI: Picks random alive card, picks random valid target
   for(let i=0; i<moves; i++) {
-    if(playerScore >= 8 || enemyScore >= 8) break;
-    let avail = enemyActive.map((c,idx) => ({c,idx})).filter(x => !x.c.isDead);
-    if(avail.length === 0) break;
+    let actor = aliveEnemies[i];
+    let validTargets = getValidTargets(actor.c, playerActive);
     
-    let actor = avail[Math.floor(Math.random() * avail.length)];
-    let alivePlayers = playerActive.map((c,idx) => ({c,idx})).filter(x => !x.c.isDead);
-    if(alivePlayers.length === 0) break;
-    
-    let target = alivePlayers[Math.floor(Math.random() * alivePlayers.length)];
-    let isSkill = Math.random() > 0.5 && actor.c.skills.length > 0;
-    
-    await executeAction({ actorIdx: actor.idx, actionType: isSkill ? 'skill' : 'basic', skillIdx: 0, targetIdx: target.idx, team: 'enemy' }, 'enemy');
+    if(validTargets.length > 0) {
+      let target = validTargets[Math.floor(Math.random() * validTargets.length)];
+      let isSkill = Math.random() > 0.5 && actor.c.skills.length > 0;
+      actions.push({ actorIdx: actor.i, actionType: isSkill ? 'skill' : 'basic', skillIdx: 0, targetIdx: target.i });
+    } else {
+       // If no targets, pass or swap
+       actions.push({ actorIdx: actor.i, actionType: 'pass', skillIdx: 0, targetIdx: null });
+    }
   }
-  
-  if (playerScore < 8 && enemyScore < 8) {
-    currentTurn = 'player'; turnCount++; isAnimating = false;
-    renderArena();
-  }
+  return actions;
 }
 
 async function executeAction(action, execTeam) {
@@ -933,6 +1012,32 @@ async function executeAction(action, execTeam) {
      renderArena(); await new Promise(r => setTimeout(r, 600)); return;
   }
 
+function autoReplaceDeadCards(teamStr, activeArr, benchArr) {
+  for (let i = 0; i < activeArr.length; i++) {
+    if (activeArr[i] && activeArr[i].isDead) {
+      
+      // Look for a valid bench replacement (must share at least one position)
+      let deadPositions = activeArr[i].pos.split('/').map(p => p.trim());
+      
+      let replacementIdx = benchArr.findIndex(benchCard => {
+         let benchPos = benchCard.pos.split('/').map(p => p.trim());
+         return deadPositions.some(dp => benchPos.includes(dp));
+      });
+      
+      if (replacementIdx !== -1) {
+        logMsg(`🔄 <b>${shortName(benchArr[replacementIdx].name)}</b> stepped in from the bench!`, 'sys');
+        
+        // Swap them
+        let temp = activeArr[i];
+        activeArr[i] = benchArr[replacementIdx];
+        benchArr[replacementIdx] = temp; // Put dead card on bench
+        
+        renderArena();
+      }
+    }
+  }
+}
+  
   let defender = defenders[targetIdx];
   if (defender.isDead) { // Retarget
     let newTgt = defenders.findIndex(c => !c.isDead);
