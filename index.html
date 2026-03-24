@@ -23,14 +23,17 @@
     .screen { display: none; min-height: 100vh; background: var(--bg); padding-bottom: 60px; }
     .screen.active { display: block; }
     
-    /* Sleek Ultra-Thin Header */
+    /* UI Buttons & Header */
     .app-header { background: rgba(8, 11, 18, 0.98); border-bottom: 1px solid var(--border); padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; z-index: 100; position: sticky; top:0; }
     .logo { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.2rem; background: linear-gradient(135deg, #FF5722, #FFD600); -webkit-background-clip: text; color: transparent; }
     .nav { display: flex; gap: 6px; background: var(--surface); padding: 4px; border-radius: 40px; border: 1px solid var(--border); }
     .nav-btn { padding: 4px 14px; border-radius: 30px; font-weight: 600; font-size: 0.8rem; background: transparent; border: none; cursor: pointer; color: var(--text-light); }
     .nav-btn.active, .nav-btn:hover { background: var(--border); color: white; }
+    .user-badge { display: flex; align-items: center; gap: 8px; background: var(--surface); padding: 4px 12px; border-radius: 40px; border: 1px solid var(--border); font-size: 0.8rem; font-weight: 500; }
+    .user-dot { width: 6px; height: 6px; background: #69F0AE; border-radius: 50%; }
+    .logout-btn { background: none; border: none; font-size: 0.75rem; color: var(--text-muted); cursor: pointer; font-weight: 500; }
+    .logout-btn:hover { color: #FF5252; }
     
-    /* Common UI Elements */
     .btn-primary { background: var(--accent); border: none; padding: 6px 16px; border-radius: 40px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
     .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
     .btn-primary:disabled { background: var(--border-heavy); cursor: not-allowed; color: var(--text-muted); }
@@ -38,30 +41,77 @@
     .sticky-container { position: sticky; top: 0; z-index: 90; background: var(--bg); box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
     .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; padding: 8px 16px; background: var(--surface); border-bottom: 1px solid var(--border); align-items: center; }
     .filter-bar input, .filter-bar select { padding: 6px 12px; border-radius: 40px; border: 1px solid var(--border); background: var(--surface-2); color: white; font-size: 0.8rem; }
+    .filter-bar input { flex: 1; min-width: 130px; }
 
-    /* Slots & Drag Drop */
-    .slots-grid { display: flex; justify-content: center; gap: 6px; padding: 10px 16px; background: var(--bg); border-bottom: 1px solid var(--border); flex-wrap: wrap; }
-    .slot-card { background: var(--surface); border-radius: 8px; border: 1px dashed var(--border-heavy); padding: 6px; min-height: 48px; width: 120px; text-align: center; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; }
+    /* Slots & Drag Drop - Strict Grid */
+    .slots-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 10px 16px; background: var(--bg); border-bottom: 1px solid var(--border); }
+    .slot-card { background: var(--surface); border-radius: 8px; border: 1px dashed var(--border-heavy); padding: 6px; min-height: 48px; text-align: center; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; }
     .slot-card.filled { border-style: solid; background: rgba(255,255,255,0.02); border-width: 2px; }
     .slot-pos { font-weight: 900; font-size: 0.65rem; margin-bottom: 2px; pointer-events: none; }
-    .slot-name { font-weight: 700; font-size: 0.7rem; color: white; line-height: 1.2; pointer-events: none; word-wrap: break-word; width: 100%; }
+    .slot-name { font-weight: 700; font-size: 0.7rem; color: white; white-space: normal; line-height: 1.2; pointer-events: none; word-wrap: break-word; width: 100%; }
     .slot-card.drag-over { background: rgba(255, 255, 255, 0.08); transform: scale(1.05); border-style: solid; }
-    .remove-slot { color: #FF5252; font-size: 0.7rem; cursor: pointer; background: rgba(0,0,0,0.6); border: 1px solid #FF5252; position: absolute; top: 2px; right: 2px; font-weight: bold; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    .remove-slot { color: #FF5252; font-size: 0.7rem; cursor: pointer; background: rgba(0,0,0,0.6); border: 1px solid #FF5252; position: absolute; top: 2px; right: 2px; font-weight: bold; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+    .remove-slot:hover { background: #FF5252; color: white; }
 
-    .slot-PG.filled { border-color: var(--pos-pg); } .slot-PG .slot-pos { color: var(--pos-pg); }
-    .slot-SG.filled { border-color: var(--pos-sg); } .slot-SG .slot-pos { color: var(--pos-sg); }
-    .slot-SF.filled { border-color: var(--pos-sf); } .slot-SF .slot-pos { color: var(--pos-sf); }
-    .slot-PF.filled { border-color: var(--pos-pf); } .slot-PF .slot-pos { color: var(--pos-pf); }
-    .slot-C.filled { border-color: var(--pos-c); } .slot-C .slot-pos { color: var(--pos-c); }
+    /* Positional Colors */
+    .slot-PG.filled, .slot-PG.drag-over { border-color: var(--pos-pg); } .slot-PG .slot-pos { color: var(--pos-pg); }
+    .slot-SG.filled, .slot-SG.drag-over { border-color: var(--pos-sg); } .slot-SG .slot-pos { color: var(--pos-sg); }
+    .slot-SF.filled, .slot-SF.drag-over { border-color: var(--pos-sf); } .slot-SF .slot-pos { color: var(--pos-sf); }
+    .slot-PF.filled, .slot-PF.drag-over { border-color: var(--pos-pf); } .slot-PF .slot-pos { color: var(--pos-pf); }
+    .slot-C.filled,  .slot-C.drag-over  { border-color: var(--pos-c); }  .slot-C .slot-pos  { color: var(--pos-c); }
     .slot-6TH { display: none; }
     .slot-6TH.filled, .slot-6TH.drag-over { border-color: var(--pos-6th); } .slot-6TH .slot-pos { color: var(--pos-6th); }
 
-    /* Card Grids */
+    /* Invalid Shake */
+    @keyframes shakeInvalid { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-5px); border-color: #FF5252; background: rgba(255, 82, 82, 0.1); } 40%, 80% { transform: translateX(5px); border-color: #FF5252; background: rgba(255, 82, 82, 0.1); } }
+    .shake-invalid { animation: shakeInvalid 0.5s ease-in-out; }
+    .invalid-overlay { position: absolute; inset: 0; background: rgba(255, 82, 82, 0.95); color: white; font-weight: 900; display: flex; align-items: center; justify-content: center; border-radius: 6px; z-index: 10; font-size: 0.7rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5); text-transform: uppercase; }
+
+    /* Pure Art Cards Grid */
     .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 16px; padding: 16px 24px; align-items: start; }
     .compact-card { position: relative; width: 100%; padding-bottom: 140%; background: transparent; border-radius: 8px; overflow: hidden; box-shadow: 0 6px 15px rgba(0,0,0,0.5); transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; border: 1px solid var(--border-heavy); }
-    .compact-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(255, 214, 0, 0.2); }
+    .compact-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(255, 214, 0, 0.2); border-color: var(--pos-pg); }
+    .compact-card.dragging { opacity: 0.4; }
     .card-img-sm { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #0f1320; pointer-events: none; }
     .card-img-sm img { width: 100%; height: 100%; object-fit: cover; }
+
+    /* Smart Tooltip Bubble */
+    .tooltip-bubble { position: fixed; z-index: 9999; background: rgba(8,11,18,0.96); border: 1px solid var(--pos-sf); padding: 12px 14px; border-radius: 12px; color: var(--text-light); max-width: 260px; font-size: 0.75rem; line-height: 1.4; box-shadow: 0 15px 35px rgba(0,0,0,0.9); backdrop-filter: blur(8px); opacity: 0; pointer-events: none; transition: opacity 0.15s; }
+    .tooltip-bubble b { color: white; display: block; margin-bottom: 2px; font-size: 0.8rem; }
+    .tooltip-bubble.visible { opacity: 1; }
+
+    /* Expanded Fairy Landing Row */
+    .expanded-row { grid-column: 1 / -1; display: flex; gap: 20px; padding: 24px; background: rgba(22, 28, 45, 0.8); border-radius: 16px; border: 1px solid var(--border-heavy); margin: 8px 0; overflow: hidden; align-items: flex-start; flex-wrap: wrap; transition: opacity 0.3s ease, max-height 0.3s ease, padding 0.3s ease, margin 0.3s ease; cursor: pointer; }
+    .expanded-row.collapsing { opacity: 0; max-height: 0 !important; padding-top: 0; padding-bottom: 0; margin-top: 0; margin-bottom: 0; border-width: 0; overflow: hidden; transform: scaleY(0.9); }
+    
+    .expanded-card-container { perspective: 1500px; width: min(100%, 250px); flex-shrink: 0; z-index: 10; margin: 0 auto; }
+    .expanded-card-flipper { position: relative; width: 100%; padding-bottom: 140%; transform-style: preserve-3d; animation: fairySpin 2s cubic-bezier(0.1, 0.9, 0.2, 1) forwards; }
+    
+    @keyframes fairySpin { 0% { transform: rotateY(1260deg) scale(0.6); opacity: 0; } 15% { opacity: 1; } 100% { transform: rotateY(0deg) scale(1); opacity: 1; } }
+
+    .expanded-front, .expanded-back { position: absolute; inset: 0; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 14px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.8); border: 2px solid var(--border-heavy); background: #0f1320; }
+    .expanded-front { transform: rotateY(0deg); }
+    .expanded-front img, .expanded-back img { width: 100%; height: 100%; object-fit: cover; }
+    .expanded-back { transform: rotateY(180deg); }
+    
+    .expanded-scroll-wrapper { flex: 1; min-width: 250px; overflow: hidden; max-width: 0; opacity: 0; animation: scrollReveal 1s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards; background: transparent; pointer-events: none; }
+    @keyframes scrollReveal { 0% { max-width: 0; opacity: 0; padding-left: 0; padding-right: 0; } 10% { opacity: 1; } 100% { max-width: 1200px; opacity: 1; padding-left: 16px; padding-right: 16px; } }
+    
+    .expanded-content { width: 100%; padding: 12px 0; color: var(--text); }
+    .ec-header { border-bottom: 1px solid var(--border-heavy); padding-bottom: 10px; margin-bottom: 16px; }
+    .ec-title { font-size: 1.5rem; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.1; color: white; }
+    .ec-team { color: var(--accent); font-weight: 700; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+    .ec-stats-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .ec-stat { background: rgba(0,0,0,0.4); padding: 6px 12px; border-radius: 8px; font-weight: 800; border: 1px solid var(--border); font-size: 0.95rem; display: flex; align-items: center; gap: 6px; }
+    .ec-stat span { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; }
+    .ec-ability { background: rgba(64, 196, 255, 0.05); border-left: 3px solid #40C4FF; padding: 12px 16px; border-radius: 0 8px 8px 0; margin-bottom: 20px; }
+    .ec-ability-name { font-weight: 800; color: #40C4FF; font-size: 1rem; margin-bottom: 4px; }
+    .ec-ability-desc { font-size: 0.85rem; line-height: 1.5; color: var(--text-light); }
+    .ec-skills-grid { display: flex; flex-direction: column; gap: 10px; }
+    .ec-skill { background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 12px 16px; border-radius: 10px; }
+    .ec-skill-header { display: flex; justify-content: space-between; font-weight: 800; font-size: 0.95rem; margin-bottom: 6px; color: white; }
+    .ec-skill-dmg { color: #FF5252; background: rgba(255, 82, 82, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; }
+    .ec-skill-desc { font-size: 0.8rem; color: var(--text-light); line-height: 1.5; }
 
     /* BATTLE ARENA STYLES */
     .arena-container { display: flex; height: calc(100vh - 45px); width: 100%; overflow: hidden; }
@@ -86,57 +136,75 @@
 
     /* Battle Animations */
     .anim-waft-up { transform: translateY(-40px) scale(1.1) rotate(2deg); z-index: 10; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
-    .anim-waft-down { transform: translateY(40px) scale(1.1) rotate(-2deg); z-index: 10; box-shadow: 0 20px 40px rgba(0,0,0,0.8); }
     @keyframes shake { 0%,100%{transform:translateX(0);} 20%,60%{transform:translateX(-8px) rotate(-3deg);} 40%,80%{transform:translateX(8px) rotate(3deg);} }
     .anim-shake { animation: shake 0.4s; border-color: #FF5252 !important; box-shadow: inset 0 0 20px rgba(255,82,82,0.8); }
-    
     .dmg-popup { position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 900; font-size: 2.5rem; color: #FFD600; text-shadow: 0 4px 0 #FF5252, 0 0 20px rgba(255,82,82,0.8); z-index: 20; pointer-events: none; animation: popUp 1s forwards; opacity: 0; white-space: nowrap; }
     @keyframes popUp { 0%{opacity:0; transform:translate(-50%, 20px) scale(0.5);} 20%{opacity:1; transform:translate(-50%, -10px) scale(1.2);} 80%{opacity:1; transform:translate(-50%, -30px) scale(1);} 100%{opacity:0; transform:translate(-50%, -50px) scale(0.8);} }
 
-    /* Sidebar Styles */
     .sb-header { background: var(--surface-2); padding: 16px; border-bottom: 1px solid var(--border); text-align: center; }
     .score-board { display: flex; justify-content: center; gap: 20px; font-size: 2.5rem; font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 900; margin-top: 10px; }
     .sb-log { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; font-size: 0.8rem; }
     .log-entry { background: rgba(0,0,0,0.3); padding: 8px 12px; border-radius: 8px; border-left: 3px solid var(--border-heavy); }
     .log-entry.atk { border-left-color: var(--accent); }
-    .log-entry.def { border-left-color: #FF5252; }
     .sb-controls { padding: 16px; background: var(--surface-2); border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
-
-    /* Smart Tooltip */
-    .tooltip-bubble { position: fixed; z-index: 9999; background: rgba(8,11,18,0.96); border: 1px solid var(--pos-sf); padding: 12px; border-radius: 12px; color: var(--text-light); max-width: 240px; font-size: 0.75rem; line-height: 1.4; box-shadow: 0 15px 35px rgba(0,0,0,0.9); opacity: 0; pointer-events: none; transition: opacity 0.15s; }
-    .tooltip-bubble b { color: white; display: block; margin-bottom: 2px; font-size: 0.8rem; }
-    .tooltip-bubble.visible { opacity: 1; }
   </style>
 </head>
-<body>
+<body onclick="handleBodyClick(event)">
 
-<div id="drag-ghost" style="position:absolute; top:-1000px; left:-1000px; background:var(--accent); color:white; padding:8px 18px; border-radius:40px; font-weight:800; pointer-events:none; z-index:-1;">Ghost</div>
+<div id="drag-ghost" style="position:absolute; top:-1000px; left:-1000px; background:var(--accent); color:white; padding:8px 18px; border-radius:40px; font-weight:800; font-family:'Plus Jakarta Sans', sans-serif; pointer-events:none; z-index:-1; box-shadow: 0 8px 20px rgba(0,0,0,0.8); border: 1px solid white; font-size: 0.9rem; white-space: nowrap;">Ghost</div>
 <div id="tooltip" class="tooltip-bubble"></div>
 
 <div id="home-screen" class="screen active">
   <div class="app-header">
     <div class="logo">NBA⚡BATTLE</div>
+    <div class="nav">
+      <button class="nav-btn active" onclick="showScreen('home-screen')">Home</button>
+      <button class="nav-btn" onclick="goCat()">Cards</button>
+    </div>
   </div>
   <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; text-align:center; gap:32px; padding: 20px;">
-    <div><h1 style="font-size: 3.5rem; font-weight:800;">NBA CARD BATTLE</h1><p style="color: var(--text-muted);">117 GOATs · Lane combat</p></div>
+    <div><h1 style="font-size: 3.5rem; font-weight:800; text-shadow: 0 4px 20px rgba(0,0,0,0.5);">NBA CARD BATTLE</h1><p style="color: var(--text-muted); font-size: 1.2rem; margin-top: 8px;">117 GOATs · Lane combat</p></div>
     <div style="display:flex; gap: 16px;">
-      <button class="btn-primary" onclick="goDraft()">🤖 DRAFT TEAM</button>
-      <button class="btn-primary" style="background: var(--border-heavy);" onclick="alert('Beta limitation.')">📋 COLLECTION</button>
+      <button class="btn-primary" style="padding: 12px 24px; font-size: 1rem;" onclick="goDraft()">🤖 DRAFT TEAM</button>
+      <button class="btn-primary" style="background: var(--border-heavy); padding: 12px 24px; font-size: 1rem;" onclick="goCat()">📋 COLLECTION</button>
     </div>
   </div>
 </div>
 
-<div id="draft-screen" class="screen">
+<div id="catalogue-screen" class="screen">
   <div class="sticky-container">
     <div class="app-header">
-      <div class="logo">⚡ DRAFT SQUAD</div>
-      <span id="draft-count-lbl" style="font-weight:800; color: #40C4FF; font-size: 1rem;">0/10</span>
+      <div class="logo">NBA⚡BATTLE</div>
+      <div class="nav"><button class="nav-btn" onclick="showScreen('home-screen')">Home</button><button class="nav-btn active">Cards</button></div>
+    </div>
+    <div class="filter-bar">
+      <input type="text" id="cs" placeholder="Search player or team..." oninput="handleSearchFilter('cat')">
+      <select id="cp" onchange="handleSearchFilter('cat')"><option value="">All Positions</option><option value="PG">PG</option><option value="SG">SG</option><option value="SF">SF</option><option value="PF">PF</option><option value="C">C</option></select>
+      <select id="csort" onchange="handleSearchFilter('cat')"><option value="name">Name A-Z</option><option value="hp">HP ↓</option><option value="dmg">DMG ↓</option><option value="spd">SPD ↓</option></select>
+    </div>
+  </div>
+  <div id="cgrid" class="card-grid"></div>
+</div>
+
+<div id="draft-screen" class="screen">
+  <div class="sticky-container">
+    <div class="app-header" style="justify-content: center;">
+      <div class="logo" style="margin-right: auto;">⚡ DRAFT SQUAD</div>
+      <span id="draft-count-lbl" style="font-weight:800; color: #40C4FF; font-size: 1rem; margin-right: 12px;">0/10</span>
     </div>
     <div id="draft-slots" class="slots-grid"></div>
-    <div class="filter-bar">
-      <button class="btn-primary" style="background: var(--border-heavy);" onclick="autoFillDraft()">🎲 Random</button>
-      <button class="btn-primary" id="draft-confirm-btn" onclick="goSetup()" disabled>SET UP TEAM</button>
-      <span style="color: var(--pos-sf); font-size: 0.75rem; margin-left: auto;">Drag names up to draft.</span>
+    <div style="display:flex; justify-content:space-between; padding: 6px 16px; background:var(--surface-2); border-bottom:1px solid var(--border); align-items: center; flex-wrap: wrap; gap: 8px;">
+      <div style="display:flex; gap: 8px;">
+        <input type="text" id="draft-search" placeholder="Search..." oninput="handleSearchFilter('draft')" style="padding: 4px 10px; border-radius: 40px; border: 1px solid var(--border); background: var(--bg); color: white; font-size: 0.75rem; width: 120px;">
+        <select id="draft-sort" onchange="handleSearchFilter('draft')" style="padding: 4px 10px; border-radius: 40px; border: 1px solid var(--border); background: var(--bg); color: white; font-size: 0.75rem;">
+          <option value="name">A-Z</option><option value="hp">HP ↓</option><option value="dmg">DMG ↓</option><option value="spd">SPD ↓</option>
+        </select>
+      </div>
+      <div style="display:flex; gap: 8px; align-items: center;">
+        <span style="color: var(--text-muted); font-size: 0.65rem; margin-right: 4px;">Hover: Stats | Drag: Draft</span>
+        <button class="btn-primary" style="background: var(--border-heavy);" onclick="autoFillDraft()">🎲 Random</button>
+        <button class="btn-primary" id="draft-confirm-btn" onclick="goSetup()" disabled>SET UP TEAM</button>
+      </div>
     </div>
   </div>
   <div id="draft-grid" class="card-grid"></div>
@@ -148,9 +216,8 @@
       <div class="logo">📋 STARTING LINEUP</div>
       <span id="setup-count-lbl" style="font-weight:800; color: #69F0AE; font-size: 1rem;">0/5</span>
     </div>
-    <div style="text-align:center; font-size:0.8rem; padding:10px; color:var(--text-muted);">Set your active 5 for the arena. Drag from your bench below.</div>
-    <div id="setup-slots" class="slots-grid">
-      </div>
+    <div style="text-align:center; font-size:0.75rem; padding:8px; color:var(--text-muted); background:var(--surface-2);">Drag your starting 5 from the bench below.</div>
+    <div id="setup-slots" class="slots-grid" style="display:flex; justify-content:center;"></div>
     <div class="filter-bar" style="justify-content:center;">
       <button class="btn-primary" id="start-battle-btn" onclick="startBattle()" disabled style="padding:10px 30px; font-size:1rem;">ENTER ARENA</button>
     </div>
@@ -172,14 +239,12 @@
         <div class="battle-row" id="enemy-active-row"></div>
         <div class="bench-area" id="enemy-bench-row" style="margin-top:20px;"></div>
       </div>
-      
       <div>
         <div class="bench-area" id="player-bench-row" style="margin-bottom:20px;"></div>
         <div class="battle-row" id="player-active-row"></div>
         <div style="text-align:center; font-weight:800; font-size:0.8rem; color:#69F0AE; margin-top:8px;">YOUR TEAM</div>
       </div>
     </div>
-    
     <div class="sidebar-area">
       <div class="sb-header">
         <div style="font-weight:800; color:var(--text-muted); font-size:0.8rem; letter-spacing:1px;">FIRST TO 8 POINTS</div>
@@ -189,11 +254,8 @@
           <div style="color:#FF5252;" id="score-enemy">0</div>
         </div>
       </div>
-      <div class="sb-log" id="battle-log">
-        <div class="log-entry" style="text-align:center; border:none; color:var(--text-muted);">Match Starting...</div>
-      </div>
+      <div class="sb-log" id="battle-log"></div>
       <div class="sb-controls">
-        <div style="font-size:0.75rem; text-align:center; margin-bottom:8px;" id="turn-indicator">Your Turn: Select a card to attack</div>
         <button class="btn-primary" id="btn-test-attack" onclick="simulateAttackSequence()">⚔️ TEST ATTACK (DEV)</button>
       </div>
     </div>
@@ -324,289 +386,340 @@ const CARDS = [
   {name:"Victor Wembanyama",pos:"C/PF",tier:"GOAT TIER",team:"San Antonio Spurs Future Series",hp:3700,dmg:500,spd:7,ab:"Alien",abdesc:"Wembanyama is a generational talent, sometimes, his combination of size and skill seems like it's out of this world. Opponents shorter than 7'1 are unable to block or contest his damaging skills and basic attacks. Opponents shorter than 7'1 are also not able to nullify his defensive skills.",image:"victor_wembanyama.png",skills:[{name:"Wingspan Block",dmg:"N/A (block)",desc:"Wembanyama uses his insane wingspan to deny his opponents with ease. Wembanyama blocks any damaging skills completely. This is used right after the opponent attacks and does not count as a move from him. Wembanyama may target any opponent. This can be used once each turn and for a maximum of 3 uses."},{name:"Three From Space",dmg:"1450",desc:"Wembanyama launches a three with his high arching jumpshot. This skill has a 50% chance of hitting, to be decided via coin flip. For a maximum of 2 uses."}]}
 ];
 
-// Extend mock data to have at least 20 cards for drafting
-while(CARDS.length < 20) { CARDS.push({...CARDS[0], name: "Clone " + CARDS.length}); }
+
+// Extend mock data for testing (Remove this line after pasting your real cards!)
+while(CARDS.length < 25) { CARDS.push({...CARDS[0], name: "Clone " + CARDS.length}); }
 
 // ==================== STATE MANAGEMENT ====================
-const POSITIONS = ['PG','SG','SF','PF','C'];
 let draftSquad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
-let hasSixthMan = false;
-
-// Setup State
 let activeLineup = { PG:null, SG:null, SF:null, PF:null, C:null, '6TH':null };
 let benchRoster = [];
+let hasSixthMan = false;
+const POSITIONS = ['PG','SG','SF','PF','C'];
 
-// Battle State
-let playerActive = [];
-let playerBench = [];
-let enemyActive = [];
-let enemyBench = [];
-let playerScore = 0;
-let enemyScore = 0;
+let playerActive = [], playerBench = [], enemyActive = [], enemyBench = [];
+let playerScore = 0, enemyScore = 0;
 
-// Utils
+let expandedCardCat = null;
+let expandedCardDraft = null;
+let isCollapsing = false;
+let searchTimeout;
+
+// ==================== UTILS & UI HELPERS ====================
 function $(id) { return document.getElementById(id); }
 function shortName(n) { return n.replace(/ \(.+?\)$/, ''); }
-function getImg(img, name) { return img && img.length > 3 ? GITHUB_RAW_BASE+img : `https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(shortName(name))}`; }
-function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); $(id).classList.add('active'); }
+function escapeHtml(str) { return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); }
+function getDBShortName(f) { let m = f.match(/^(.*?)(\s\(.*)?$/); if(!m)return f; let b=m[1], v=m[2]||''; let p=b.split(' '); if(p.length>1){ let f=p.shift(); return f.charAt(0)+'. '+p.join(' ')+v; } return b+v; }
+function getImgUrl(filename, name) { return (!filename || filename.length<3) ? `https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(shortName(name))}` : `${GITHUB_RAW_BASE}${filename}`; }
+function handleImgError(el) { let n = el.closest('[data-name]') ? el.closest('[data-name]').getAttribute('data-name') : 'Card'; el.onerror=null; el.src=`https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(shortName(n))}`; }
 
-// ==================== PHASE 1: DRAFTING ====================
+function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); $(id).classList.add('active'); window.scrollTo(0,0); }
+
+// ==================== TOOLTIPS ====================
+let tooltipTimer;
+const tooltip = $('tooltip');
+function showTooltip(e, name) {
+  clearTimeout(tooltipTimer);
+  const card = CARDS.find(c => c.name === name);
+  if (!card) return;
+  let skillsHtml = (card.skills || []).map(s => `<b>${s.name} (⚔️ ${s.dmg})</b>${s.desc}`).join('<br><br>');
+  tooltip.innerHTML = `<div style="color:#FFD600; font-weight:bold; margin-bottom:4px; font-size:0.95rem;">${shortName(name)}</div><b>✨ ${card.ab}</b>${card.abdesc}<br><br>${skillsHtml}`;
+  tooltip.classList.add('visible');
+  positionTooltip(e);
+}
+function hideTooltip() { clearTimeout(tooltipTimer); tooltip.classList.remove('visible'); }
+function positionTooltip(e) {
+  if(!tooltip.classList.contains('visible')) return;
+  let x = e.touches ? e.touches[0].clientX : e.clientX;
+  let y = e.touches ? e.touches[0].clientY : e.clientY;
+  let tw = tooltip.offsetWidth, th = tooltip.offsetHeight, pad = 10, px = x+15, py = y+15;
+  if(px + tw > window.innerWidth - pad) px = x - tw - 15;
+  if(py + th > window.innerHeight - pad) py = y - th - 15;
+  tooltip.style.left = `${Math.max(pad, px)}px`; tooltip.style.top = `${Math.max(pad, py)}px`;
+}
+
+// ==================== DRAG & GHOST PILL ====================
+function handleDragStart(e) {
+  let name = e.currentTarget.getAttribute('data-name');
+  hideTooltip();
+  e.dataTransfer.setData('text/plain', name);
+  e.dataTransfer.effectAllowed = 'move';
+  let ghost = $('drag-ghost');
+  ghost.textContent = getDBShortName(name); 
+  e.dataTransfer.setDragImage(ghost, 0, 0);
+  setTimeout(() => e.target.classList.add('dragging'), 0);
+}
+function handleDragEnd(e) { e.target.classList.remove('dragging'); }
+function handleDragOver(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+function handleDragLeave(e) { e.currentTarget.classList.remove('drag-over'); }
+
+function triggerInvalidDrop(slotEl) {
+  slotEl.classList.add('shake-invalid');
+  let overlay = document.createElement('div'); overlay.className = 'invalid-overlay'; overlay.innerHTML = '🚫 INVALID ROLE';
+  slotEl.appendChild(overlay);
+  setTimeout(() => { slotEl.classList.remove('shake-invalid'); overlay.remove(); }, 1000);
+}
+
+// ==================== EXPANDED CARD RENDER ====================
+function toggleExpand(name, context) {
+  if (isCollapsing) return; hideTooltip();
+  let curr = context === 'cat' ? expandedCardCat : expandedCardDraft;
+  if (curr === name) { closeExpandedWithAnim(context); } 
+  else {
+    if (context === 'cat') expandedCardCat = name; else expandedCardDraft = name;
+    if (context === 'cat') filterCat(); else filterDraftGrid();
+    setTimeout(() => { let row = document.querySelector('.expanded-row'); if(row) window.scrollTo({ top: row.getBoundingClientRect().top + window.scrollY - 150, behavior: 'smooth' }); }, 50);
+  }
+}
+
+function closeExpandedWithAnim(context) {
+  isCollapsing = true;
+  let row = document.querySelector('.expanded-row');
+  if (row) row.classList.add('collapsing');
+  setTimeout(() => {
+    if (context === 'cat') expandedCardCat = null; else expandedCardDraft = null;
+    if (context === 'cat') filterCat(); else filterDraftGrid();
+    isCollapsing = false;
+  }, 300); 
+}
+
+function handleBodyClick(e) {
+  let row = document.querySelector('.expanded-row');
+  if (row && !e.target.closest('.expanded-row') && !e.target.closest('.compact-card') && !e.target.closest('.sticky-container') && !e.target.closest('.app-header')) {
+    closeExpandedWithAnim(expandedCardCat ? 'cat' : 'draft');
+  }
+}
+
+function handleSearchFilter(context) {
+  clearTimeout(searchTimeout);
+  if ((context === 'cat' && expandedCardCat) || (context === 'draft' && expandedCardDraft)) {
+    closeExpandedWithAnim(context); 
+    searchTimeout = setTimeout(() => { if (context === 'cat') filterCat(); else filterDraftGrid(); }, 300); 
+  } else {
+    if (context === 'cat') filterCat(); else filterDraftGrid();
+  }
+}
+
+function renderExpandedRow(card, context) {
+  let skillsHtml = (card.skills || []).map(s => `<div class="ec-skill"><div class="ec-skill-header"><span>${s.name}</span> <span class="ec-skill-dmg">⚔️ ${s.dmg}</span></div><div class="ec-skill-desc">${s.desc}</div></div>`).join('');
+  return `
+    <div class="expanded-row" onclick="closeExpandedWithAnim('${context}')">
+      <div class="expanded-card-container">
+        <div class="expanded-card-flipper">
+          <div class="expanded-back"><img src="${GITHUB_RAW_BASE}goat-tier-back.png" onerror="this.src='https://placehold.co/460x644/000/fff?text=BACK'"></div>
+          <div class="expanded-front"><img src="${getImgUrl(card.image, card.name)}" onerror="handleImgError(this)"></div>
+        </div>
+      </div>
+      <div class="expanded-scroll-wrapper">
+        <div class="expanded-content">
+          <div class="ec-header"><div class="ec-title">${card.name}</div><div class="ec-team">${card.tier} &nbsp;|&nbsp; ${card.team}</div></div>
+          <div class="ec-stats-row">
+            <div class="ec-stat"><span>HP</span> ❤️ ${card.hp}</div><div class="ec-stat"><span>DMG</span> ⚔️ ${card.dmg}</div>
+            <div class="ec-stat"><span>SPD</span> ⚡ ${card.spd}</div><div class="ec-stat"><span>POS</span> 📍 ${card.pos}</div>
+          </div>
+          <div class="ec-ability"><div class="ec-ability-name">✨ ${card.ab}</div><div class="ec-ability-desc">${card.abdesc}</div></div>
+          <div style="font-weight:800;font-size:1rem;margin-bottom:8px;color:white;">📜 SKILLS</div>
+          <div class="ec-skills-grid">${skillsHtml || '<div class="ec-skill-desc">None</div>'}</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+// ==================== PHASE 1: CATALOGUE ====================
+function filterCat() {
+  if(isCollapsing) return;
+  let q = $('cs').value.toLowerCase(), posF = $('cp').value, sort = $('csort').value;
+  let filtered = CARDS.filter(c => (!q || c.name.toLowerCase().includes(q) || c.team.toLowerCase().includes(q)) && (!posF || c.pos.split('/').some(p=>p.trim()===posF)));
+  if (sort === 'hp') filtered.sort((a,b)=>b.hp-a.hp); else if (sort === 'dmg') filtered.sort((a,b)=>b.dmg-a.dmg); else if (sort === 'spd') filtered.sort((a,b)=>b.spd-a.spd); else filtered.sort((a,b)=>a.name.localeCompare(b.name));
+  
+  $('cgrid').innerHTML = filtered.map(c => {
+    if (c.name === expandedCardCat) return renderExpandedRow(c, 'cat');
+    return `<div class="compact-card" data-name="${escapeHtml(c.name)}" onclick="toggleExpand(this.getAttribute('data-name'), 'cat')" onmouseenter="showTooltip(event, this.getAttribute('data-name'))" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"><div class="card-img-sm"><img src="${getImgUrl(c.image, c.name)}" onerror="handleImgError(this)"></div></div>`;
+  }).join('');
+}
+
+// ==================== PHASE 2: DRAFTING ====================
+function isCardInDraft(card) { return POSITIONS.some(p => (draftSquad[p][0]?.name === card.name) || (draftSquad[p][1]?.name === card.name)); }
+
 function goDraft() {
   draftSquad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
-  showScreen('draft-screen');
-  renderDraftSlots();
-  renderDraftGrid();
+  expandedCardDraft = null;
+  showScreen('draft-screen'); renderDraftSlots(); filterDraftGrid();
 }
 
 function renderDraftSlots() {
   let html = '';
   [0, 1].forEach(idx => {
     POSITIONS.forEach(pos => {
-      let card = draftSquad[pos][idx];
+      let c = draftSquad[pos][idx];
       html += `
-        <div class="slot-card slot-${pos} ${card ? 'filled' : ''}" ondragover="event.preventDefault()" ondrop="dropDraft(event, '${pos}', ${idx})">
+        <div id="dslot-${pos}-${idx}" class="slot-card slot-${pos} ${c?'filled':''}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropDraft(event, '${pos}', ${idx})">
           <div class="slot-pos">${pos}</div>
-          ${card ? `<div class="slot-name">${shortName(card.name)}</div><button class="remove-slot" onclick="removeDraft('${pos}', ${idx})">✕</button>` : '<div style="opacity:0.3; font-size:0.6rem;">Drop</div>'}
+          ${c ? `<div class="slot-name">${getDBShortName(c.name)}</div><button class="remove-slot" onclick="removeDraft('${pos}', ${idx})">✕</button>` : '<div style="opacity:0.3;font-size:0.65rem;margin-top:2px;">Drop Here</div>'}
         </div>`;
     });
   });
   $('draft-slots').innerHTML = html;
   
-  let count = 0;
-  hasSixthMan = false;
-  POSITIONS.forEach(p => [0,1].forEach(i => {
-    if(draftSquad[p][i]) { count++; if(draftSquad[p][i].name.includes("Sixth Man")) hasSixthMan = true; }
-  }));
+  let count = 0; hasSixthMan = false;
+  POSITIONS.forEach(p => [0,1].forEach(i => { if(draftSquad[p][i]){ count++; if(draftSquad[p][i].name.includes("Sixth Man")) hasSixthMan = true; } }));
   
   let max = hasSixthMan ? 11 : 10;
   $('draft-count-lbl').textContent = `${count}/${max}`;
-  $('draft-confirm-btn').disabled = count < (hasSixthMan ? 11 : 10);
-  
-  // Quick hack to allow 11th pick for harden: In a real build, we'd add an extra specific slot.
-  // For this prototype, we'll just require 10 to proceed.
-  $('draft-confirm-btn').disabled = count < 10;
+  $('draft-confirm-btn').disabled = count < 10; 
 }
 
-function renderDraftGrid() {
-  $('draft-grid').innerHTML = CARDS.map(c => {
-    let inSquad = POSITIONS.some(p => (draftSquad[p][0]&&draftSquad[p][0].name===c.name)||(draftSquad[p][1]&&draftSquad[p][1].name===c.name));
+function dropDraft(e, pos, idx) {
+  e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+  let card = CARDS.find(c => c.name === e.dataTransfer.getData('text/plain'));
+  if (!card || isCardInDraft(card)) return;
+  if (!card.pos.split('/').map(p=>p.trim()).includes(pos)) return triggerInvalidDrop($(`dslot-${pos}-${idx}`));
+  
+  draftSquad[pos][idx] = card; renderDraftSlots(); filterDraftGrid();
+}
+
+function removeDraft(pos, idx) { draftSquad[pos][idx] = null; renderDraftSlots(); filterDraftGrid(); }
+
+function filterDraftGrid() {
+  if(isCollapsing) return;
+  let q = $('draft-search').value.toLowerCase(), sort = $('draft-sort').value;
+  let list = CARDS.filter(c => !q || c.name.toLowerCase().includes(q) || c.team.toLowerCase().includes(q));
+  if (sort === 'hp') list.sort((a,b)=>b.hp-a.hp); else if (sort === 'dmg') list.sort((a,b)=>b.dmg-a.dmg); else if (sort === 'spd') list.sort((a,b)=>b.spd-a.spd); else list.sort((a,b)=>a.name.localeCompare(b.name));
+  
+  $('draft-grid').innerHTML = list.map(c => {
+    if (c.name === expandedCardDraft) return renderExpandedRow(c, 'draft');
+    let inD = isCardInDraft(c);
     return `
-      <div class="compact-card" ${!inSquad ? `draggable="true" ondragstart="startDrag(event, '${c.name}')"` : 'style="opacity:0.3"'}>
-        <div class="card-img-sm"><img src="${getImg(c.image, c.name)}"></div>
+      <div class="compact-card" data-name="${escapeHtml(c.name)}" ${!inD ? `draggable="true" ondragstart="handleDragStart(event)" ondragend="handleDragEnd(event)"` : 'style="opacity:0.3;pointer-events:none;"'} onclick="toggleExpand(this.getAttribute('data-name'), 'draft')" onmouseenter="showTooltip(event, this.getAttribute('data-name'))" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)">
+        <div class="card-img-sm"><img src="${getImgUrl(c.image, c.name)}" onerror="handleImgError(this)"></div>
       </div>`;
   }).join('');
 }
 
-function startDrag(e, name) { e.dataTransfer.setData('text', name); }
-function dropDraft(e, pos, idx) {
-  let name = e.dataTransfer.getData('text');
-  let card = CARDS.find(c => c.name === name);
-  if(card && card.pos.includes(pos)) { draftSquad[pos][idx] = card; renderDraftSlots(); renderDraftGrid(); }
-}
-function removeDraft(pos, idx) { draftSquad[pos][idx] = null; renderDraftSlots(); renderDraftGrid(); }
-
 function autoFillDraft() {
-  let shuffled = [...CARDS].sort(() => Math.random() - 0.5);
-  POSITIONS.forEach(pos => {
-    let matches = shuffled.filter(c => c.pos.includes(pos));
-    if (matches[0]) draftSquad[pos][0] = matches[0];
-    if (matches[1]) draftSquad[pos][1] = matches[1];
-  });
-  renderDraftSlots(); renderDraftGrid();
+  draftSquad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
+  let shuf = [...CARDS].sort(()=>Math.random()-0.5);
+  POSITIONS.forEach(pos => { let m = shuf.filter(c => c.pos.includes(pos) && !isCardInDraft(c)); if(m[0]) draftSquad[pos][0]=m[0]; if(m[1]) draftSquad[pos][1]=m[1]; });
+  renderDraftSlots(); filterDraftGrid();
 }
 
-// ==================== PHASE 2: SET UP LINEUP ====================
+// ==================== PHASE 3: SETUP ====================
 function goSetup() {
-  // Flatten drafted squad to bench
   benchRoster = [];
   POSITIONS.forEach(p => [0,1].forEach(i => { if(draftSquad[p][i]) benchRoster.push(draftSquad[p][i]); }));
-  
-  // Check for Harden
-  hasSixthMan = benchRoster.some(c => c.name === "James Harden (Sixth Man)");
   activeLineup = { PG:null, SG:null, SF:null, PF:null, C:null, '6TH':null };
-  
-  showScreen('setup-screen');
-  renderSetupSlots();
-  renderSetupBench();
+  showScreen('setup-screen'); renderSetupSlots(); renderSetupBench();
 }
 
 function renderSetupSlots() {
-  let slots = [...POSITIONS];
-  if(hasSixthMan) slots.push('6TH');
-  
-  let html = slots.map(pos => {
-    let card = activeLineup[pos];
-    let is6th = pos === '6TH';
+  let slots = [...POSITIONS]; if(hasSixthMan) slots.push('6TH');
+  $('setup-slots').innerHTML = slots.map(pos => {
+    let c = activeLineup[pos]; let is6 = pos === '6TH';
     return `
-      <div class="slot-card slot-${is6th ? '6TH' : pos} ${card ? 'filled' : ''}" style="${is6th ? 'display:flex;' : ''}" ondragover="event.preventDefault()" ondrop="dropSetup(event, '${pos}')">
-        <div class="slot-pos">${is6th ? 'SIXTH MAN' : pos}</div>
-        ${card ? `<div class="slot-name">${shortName(card.name)}</div><button class="remove-slot" onclick="removeSetup('${pos}')">✕</button>` : `<div style="opacity:0.3; font-size:0.6rem;">${is6th ? 'Harden Only' : 'Drop'}</div>`}
+      <div id="sslots-${pos}" class="slot-card slot-${is6 ? '6TH' : pos} ${c?'filled':''}" style="${is6 ? 'display:flex;' : ''}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropSetup(event, '${pos}')">
+        <div class="slot-pos">${is6 ? 'SIXTH MAN' : pos}</div>
+        ${c ? `<div class="slot-name">${getDBShortName(c.name)}</div><button class="remove-slot" onclick="activeLineup['${pos}']=null;renderSetupSlots();renderSetupBench()">✕</button>` : `<div style="opacity:0.3;font-size:0.65rem;">${is6 ? 'Harden Only' : 'Drop'}</div>`}
       </div>`;
   }).join('');
-  
-  $('setup-slots').innerHTML = html;
-  
-  let count = Object.values(activeLineup).filter(c=>c).length;
-  let max = hasSixthMan ? 6 : 5;
-  $('setup-count-lbl').textContent = `${count}/${max}`;
-  $('start-battle-btn').disabled = count < 5; // Must have at least 5 to start
+  let c = Object.values(activeLineup).filter(x=>x).length;
+  $('setup-count-lbl').textContent = `${c}/${hasSixthMan?6:5}`;
+  $('start-battle-btn').disabled = c < 5;
+}
+
+function dropSetup(e, pos) {
+  e.preventDefault(); e.currentTarget.classList.remove('drag-over');
+  let card = benchRoster.find(c => c.name === e.dataTransfer.getData('text/plain'));
+  if(!card) return;
+  if(pos === '6TH' && !card.name.includes("Sixth Man")) return triggerInvalidDrop($(`sslots-${pos}`));
+  if(pos !== '6TH' && !card.pos.split('/').map(p=>p.trim()).includes(pos)) return triggerInvalidDrop($(`sslots-${pos}`));
+  activeLineup[pos] = card; renderSetupSlots(); renderSetupBench();
 }
 
 function renderSetupBench() {
   $('setup-bench-grid').innerHTML = benchRoster.map(c => {
-    let isActive = Object.values(activeLineup).some(ac => ac && ac.name === c.name);
-    if(isActive) return '';
-    return `
-      <div class="compact-card" draggable="true" ondragstart="startDrag(event, '${c.name}')">
-        <div class="card-img-sm"><img src="${getImg(c.image, c.name)}"></div>
-      </div>`;
+    let inA = Object.values(activeLineup).some(ac => ac && ac.name === c.name);
+    if(inA) return '';
+    return `<div class="compact-card" data-name="${escapeHtml(c.name)}" draggable="true" ondragstart="handleDragStart(event)" ondragend="handleDragEnd(event)" onmouseenter="showTooltip(event, this.getAttribute('data-name'))" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"><div class="card-img-sm"><img src="${getImgUrl(c.image, c.name)}" onerror="handleImgError(this)"></div></div>`;
   }).join('');
 }
 
-function dropSetup(e, pos) {
-  let name = e.dataTransfer.getData('text');
-  let card = benchRoster.find(c => c.name === name);
-  if(!card) return;
-  
-  if(pos === '6TH' && card.name !== "James Harden (Sixth Man)") { alert("Only James Harden (Sixth Man) can be placed here."); return; }
-  if(pos !== '6TH' && !card.pos.includes(pos)) { alert(`Cannot play ${pos}`); return; }
-  
-  activeLineup[pos] = card;
-  renderSetupSlots(); renderSetupBench();
-}
-function removeSetup(pos) { activeLineup[pos] = null; renderSetupSlots(); renderSetupBench(); }
-
-// ==================== PHASE 3: BATTLE ARENA ====================
+// ==================== PHASE 4: BATTLE ====================
 function startBattle() {
-  // 1. Prepare Player Arrays
   playerActive = [];
-  ['PG','SG','SF','PF','C','6TH'].forEach(p => { if(activeLineup[p]) { let c = {...activeLineup[p], currentHp: activeLineup[p].hp, isDead: false}; playerActive.push(c); } });
+  ['PG','SG','SF','PF','C','6TH'].forEach(p => { if(activeLineup[p]) playerActive.push({...activeLineup[p], currentHp: activeLineup[p].hp, isDead: false}); });
   playerBench = benchRoster.filter(c => !playerActive.some(ac => ac.name === c.name));
   
-  // 2. Generate Enemy Arrays (Mock 5 Randoms for now)
-  let shuffled = [...CARDS].sort(()=>Math.random()-0.5);
-  enemyActive = shuffled.slice(0,5).map(c => ({...c, currentHp: c.hp, isDead: false}));
-  enemyBench = shuffled.slice(5,10);
+  let shuf = [...CARDS].sort(()=>Math.random()-0.5);
+  enemyActive = shuf.slice(0,5).map(c => ({...c, currentHp: c.hp, isDead: false}));
+  enemyBench = shuf.slice(5,10);
   
   playerScore = 0; enemyScore = 0;
-  updateScore();
-  logMsg("Match Started! First to 8 KOs wins.", "sys");
+  $('battle-log').innerHTML = `<div class="log-entry" style="text-align:center; color:var(--text-muted);">Match Starting... First to 8 KOs.</div>`;
+  $('score-player').textContent = '0'; $('score-enemy').textContent = '0';
   
-  showScreen('battle-screen');
-  renderArena();
-}
-
-function updateScore() {
-  $('score-player').textContent = playerScore;
-  $('score-enemy').textContent = enemyScore;
-}
-
-function logMsg(text, type) {
-  let log = $('battle-log');
-  let color = type === 'atk' ? '#69F0AE' : type === 'def' ? '#FF5252' : '#b0bbd5';
-  log.innerHTML += `<div class="log-entry" style="border-left-color:${color}">${text}</div>`;
-  log.scrollTop = log.scrollHeight;
+  showScreen('battle-screen'); renderArena();
 }
 
 function renderArena() {
-  // Enemy Bench (Face Down)
-  $('enemy-bench-row').innerHTML = enemyBench.map(c => `<div class="bench-card face-down"><img src="${GITHUB_RAW_BASE}goat-tier-back.png"></div>`).join('');
-  
-  // Enemy Active
-  $('enemy-active-row').innerHTML = enemyActive.map((c, i) => buildBattleCardHtml(c, `enemy-${i}`, true)).join('');
-  
-  // Player Active
-  $('player-active-row').innerHTML = playerActive.map((c, i) => buildBattleCardHtml(c, `player-${i}`, false)).join('');
-  
-  // Player Bench (Face Up)
-  $('player-bench-row').innerHTML = playerBench.map(c => `<div class="bench-card"><img src="${getImg(c.image, c.name)}"></div>`).join('');
+  $('enemy-bench-row').innerHTML = enemyBench.map(c => `<div class="bench-card face-down"></div>`).join('');
+  $('enemy-active-row').innerHTML = enemyActive.map((c, i) => buildCardHtml(c, `enemy-${i}`, true)).join('');
+  $('player-active-row').innerHTML = playerActive.map((c, i) => buildCardHtml(c, `player-${i}`, false)).join('');
+  $('player-bench-row').innerHTML = playerBench.map(c => `<div class="bench-card"><img src="${getImgUrl(c.image, c.name)}" onerror="handleImgError(this)"></div>`).join('');
 }
 
-function buildBattleCardHtml(card, id, isEnemy) {
-  let pct = Math.max(0, (card.currentHp / card.hp) * 100);
-  let color = pct > 50 ? '#69F0AE' : pct > 20 ? '#FFD600' : '#FF5252';
-  
-  // Positional border color match
-  let posColor = 'var(--border-heavy)';
-  if(card.pos.includes('PG')) posColor = 'var(--pos-pg)';
-  else if(card.pos.includes('SG')) posColor = 'var(--pos-sg)';
-  else if(card.pos.includes('SF')) posColor = 'var(--pos-sf)';
-  else if(card.pos.includes('PF')) posColor = 'var(--pos-pf)';
-  else if(card.pos.includes('C')) posColor = 'var(--pos-c)';
+function buildCardHtml(c, id, isE) {
+  let pct = Math.max(0, (c.currentHp / c.hp) * 100);
+  let clr = pct > 50 ? '#69F0AE' : pct > 20 ? '#FFD600' : '#FF5252';
+  let pc = c.pos.includes('PG')?'var(--pos-pg)':c.pos.includes('SG')?'var(--pos-sg)':c.pos.includes('SF')?'var(--pos-sf)':c.pos.includes('PF')?'var(--pos-pf)':'var(--pos-c)';
   
   return `
-    <div class="battle-card-wrapper" id="wrap-${id}">
-      ${isEnemy ? `<div class="hp-bar-container"><div class="hp-fill" id="hpfill-${id}" style="width:${pct}%; background:${color};"></div></div>` : ''}
-      
-      <div class="battle-card ${card.isDead ? 'dead-card' : ''}" id="card-${id}" style="border-color:${posColor};">
-        <img src="${getImg(card.image, card.name)}">
-      </div>
-      
-      ${!isEnemy ? `<div class="hp-bar-container"><div class="hp-fill" id="hpfill-${id}" style="width:${pct}%; background:${color};"></div></div>` : ''}
-      <div class="hp-text" id="hptxt-${id}">${card.currentHp}/${card.hp}</div>
+    <div class="battle-card-wrapper" id="wrap-${id}" data-name="${escapeHtml(c.name)}" onmouseenter="showTooltip(event, this.getAttribute('data-name'))" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)">
+      ${isE ? `<div class="hp-bar-container"><div class="hp-fill" id="hpf-${id}" style="width:${pct}%; background:${clr};"></div></div>` : ''}
+      <div class="battle-card ${c.isDead ? 'dead-card' : ''}" id="card-${id}" style="border-color:${pc};"><img src="${getImgUrl(c.image, c.name)}" onerror="handleImgError(this)"></div>
+      ${!isE ? `<div class="hp-bar-container"><div class="hp-fill" id="hpf-${id}" style="width:${pct}%; background:${clr};"></div></div>` : ''}
+      <div class="hp-text" id="hpt-${id}">${c.currentHp}/${c.hp}</div>
     </div>`;
 }
 
-// ==================== COMBAT ANIMATION ENGINE ====================
-// A completely automated visual sequence showing the physical card interactions
+function logMsg(txt, t) {
+  let log = $('battle-log');
+  let clr = t==='atk'?'#69F0AE':t==='def'?'#FF5252':'#b0bbd5';
+  log.innerHTML += `<div class="log-entry" style="border-left-color:${clr}">${txt}</div>`;
+  log.scrollTop = log.scrollHeight;
+}
+
 async function simulateAttackSequence() {
   $('btn-test-attack').disabled = true;
+  let pIdx = playerActive.findIndex(c => !c.isDead), eIdx = enemyActive.findIndex(c => !c.isDead);
+  if(pIdx === -1 || eIdx === -1) { logMsg("Game Over!", "sys"); return; }
   
-  // Find a living player and enemy
-  let pIdx = playerActive.findIndex(c => !c.isDead);
-  let eIdx = enemyActive.findIndex(c => !c.isDead);
+  let pC = playerActive[pIdx], eC = enemyActive[eIdx], dmg = pC.dmg;
+  logMsg(`<b>${getDBShortName(pC.name)}</b> attacks ${getDBShortName(eC.name)} for ${dmg} DMG!`, "atk");
   
-  if(pIdx === -1 || eIdx === -1) { logMsg("No valid targets!", "sys"); return; }
+  let pEl = $(`wrap-player-${pIdx}`); pEl.classList.add('anim-waft-up');
+  await new Promise(r => setTimeout(r, 600));
   
-  let pCard = playerActive[pIdx];
-  let eCard = enemyActive[eIdx];
-  let dmg = pCard.dmg; // Use basic DMG for test
+  let eEl = $(`wrap-enemy-${eIdx}`); eEl.classList.add('anim-shake');
+  let pop = document.createElement('div'); pop.className = 'dmg-popup'; pop.innerHTML = `💥 -${dmg}`; eEl.appendChild(pop);
   
-  logMsg(`<b>${shortName(pCard.name)}</b> attacks ${shortName(eCard.name)} for ${dmg} DMG!`, "atk");
+  eC.currentHp = Math.max(0, eC.currentHp - dmg);
+  if(eC.currentHp === 0) eC.isDead = true;
   
-  // 1. Waft up attacker
-  let pEl = $(`wrap-player-${pIdx}`);
-  pEl.classList.add('anim-waft-up');
+  let pct = (eC.currentHp / eC.hp) * 100;
+  let fill = $(`hpf-enemy-${eIdx}`);
+  fill.style.width = pct + '%'; fill.style.background = pct > 50 ? '#69F0AE' : pct > 20 ? '#FFD600' : '#FF5252';
+  $(`hpt-enemy-${eIdx}`).textContent = `${eC.currentHp}/${eC.hp}`;
   
-  await new Promise(r => setTimeout(r, 600)); // Wait for float
+  await new Promise(r => setTimeout(r, 600));
+  pEl.classList.remove('anim-waft-up'); eEl.classList.remove('anim-shake'); pop.remove();
   
-  // 2. Smack target & Shake
-  let eEl = $(`wrap-enemy-${eIdx}`);
-  eEl.classList.add('anim-shake');
-  
-  // 3. Pop Damage Number
-  let popup = document.createElement('div');
-  popup.className = 'dmg-popup';
-  popup.innerHTML = `💥 -${dmg}`;
-  eEl.appendChild(popup);
-  
-  // 4. Resolve Math & HP Bar
-  eCard.currentHp -= dmg;
-  if(eCard.currentHp <= 0) { eCard.currentHp = 0; eCard.isDead = true; }
-  
-  let pct = Math.max(0, (eCard.currentHp / eCard.hp) * 100);
-  let fill = $(`hpfill-enemy-${eIdx}`);
-  fill.style.width = pct + '%';
-  fill.style.background = pct > 50 ? '#69F0AE' : pct > 20 ? '#FFD600' : '#FF5252';
-  $(`hptxt-enemy-${eIdx}`).textContent = `${eCard.currentHp}/${eCard.hp}`;
-  
-  await new Promise(r => setTimeout(r, 600)); // Let anim finish
-  
-  // 5. Reset
-  pEl.classList.remove('anim-waft-up');
-  eEl.classList.remove('anim-shake');
-  popup.remove();
-  
-  if(eCard.isDead) {
-    $(`card-enemy-${eIdx}`).classList.add('dead-card');
-    logMsg(`💀 ${shortName(eCard.name)} was KNOCKED OUT!`, "atk");
-    playerScore++;
-    updateScore();
-  }
-  
+  if(eC.isDead) { $(`card-enemy-${eIdx}`).classList.add('dead-card'); logMsg(`💀 ${getDBShortName(eC.name)} KNOCKED OUT!`, "atk"); enemyScore++; $('score-enemy').textContent = enemyScore; }
   $('btn-test-attack').disabled = false;
 }
 
+// Init
+document.addEventListener('DOMContentLoaded', () => { showScreen('auth-screen'); filterCat(); });
 </script>
 </body>
 </html>
+
