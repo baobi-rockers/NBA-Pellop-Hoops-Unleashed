@@ -6998,24 +6998,36 @@ function handleSearchFilter(context) {
 }
 
 function renderExpandedRow(card, context) {
-  let safeName = escapeJS(card.name);
-  let skillsHtml = (card.skills || []).map(s => `<div class="ec-skill"><div class="ec-skill-header"><span>${s.name}</span> <span class="ec-skill-dmg">⚔️ ${s.dmg}</span></div><div class="ec-skill-desc">${s.desc}</div></div>`).join('');
+  let name = getCardName(card);
+  let safeName = escapeJS(name);
+  let hp = getCardHP(card);
+  let dmg = getCardDMG(card);
+  let spd = getCardSPD(card);
+  let pos = getCardPos(card);
+  let tier = card.UI_Frontend_Data?.Tier || "GOAT TIER";
+  let team = card.UI_Frontend_Data?.Team || "Unknown Team";
+  let abName = card.Ability?.Name || "None";
+  let abDesc = card.Ability?.Description_UI || "None";
+
+  // Map the new Skills path
+  let skillsHtml = (card.Skills || []).map(s => `<div class="ec-skill"><div class="ec-skill-header"><span>${s.Name}</span> <span class="ec-skill-dmg">⚔️ ${s.Display_DMG}</span></div><div class="ec-skill-desc">${s.Description_UI}</div></div>`).join('');
+
   return `
     <div class="expanded-row" onclick="closeExpandedWithAnim('${context}')">
       <div class="expanded-card-container">
         <div class="expanded-card-flipper">
           <div class="expanded-back"><img src="${GITHUB_RAW_BASE}goat-tier-back.png" onerror="this.src='https://placehold.co/460x644/000/fff?text=BACK'"></div>
-          <div class="expanded-front"><img src="${getImgUrl(card.image, card.name)}" onerror="handleImgError(this, '${safeName}')"></div>
+          <div class="expanded-front"><img src="${getImgUrl(getCardImg(card), name)}" onerror="handleImgError(this, '${safeName}')"></div>
         </div>
       </div>
       <div class="expanded-scroll-wrapper">
         <div class="expanded-content">
-          <div class="ec-header"><div class="ec-title">${card.name}</div><div class="ec-team">${card.tier} &nbsp;|&nbsp; ${card.team}</div></div>
+          <div class="ec-header"><div class="ec-title">${name}</div><div class="ec-team">${tier} &nbsp;|&nbsp; ${team}</div></div>
           <div class="ec-stats-row">
-            <div class="ec-stat"><span>HP</span> ❤️ ${card.hp}</div><div class="ec-stat"><span>DMG</span> ⚔️ ${card.dmg}</div>
-            <div class="ec-stat"><span>SPD</span> ⚡ ${card.spd}</div><div class="ec-stat"><span>POS</span> 📍 ${card.pos}</div>
+            <div class="ec-stat"><span>HP</span> ❤️ ${hp}</div><div class="ec-stat"><span>DMG</span> ⚔️ ${dmg}</div>
+            <div class="ec-stat"><span>SPD</span> ⚡ ${spd}</div><div class="ec-stat"><span>POS</span> 📍 ${pos}</div>
           </div>
-          <div class="ec-ability"><div class="ec-ability-name">✨ ${card.ab}</div><div class="ec-ability-desc">${card.abdesc}</div></div>
+          <div class="ec-ability"><div class="ec-ability-name">✨ ${abName}</div><div class="ec-ability-desc">${abDesc}</div></div>
           <div style="font-weight:800;font-size:1rem;margin-bottom:8px;color:white;">📜 SKILLS</div>
           <div class="ec-skills-grid">${skillsHtml || '<div class="ec-skill-desc">None</div>'}</div>
         </div>
@@ -7028,13 +7040,18 @@ function goCat() {
   showScreen('catalogue-screen');
 }
 
+ript
 function filterCat() {
   if(isCollapsing) return;
   let q = $('cs').value.toLowerCase(), posF = $('cp').value, sort = $('csort').value;
+  
+  // 1. Clean the array to avoid crashes
   let cleanCards = CARDS.filter(c => c && c.UI_Frontend_Data);
-  let filtered = CARDS.filter(c => {
-    let name = getCardName(c).toLowerCase();
-    let team = c.UI_Frontend_Data.Team.toLowerCase();
+  
+  // 2. Filter using the CLEAN array
+  let filtered = cleanCards.filter(c => {
+    let name = (getCardName(c) || "").toLowerCase();
+    let team = (c.UI_Frontend_Data.Team || "").toLowerCase();
     let pos = getCardPos(c);
     return (!q || name.includes(q) || team.includes(q)) && (!posF || pos.split('/').some(p=>p.trim()===posF));
   });
@@ -7045,12 +7062,12 @@ function filterCat() {
   else filtered.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
   
   $('cgrid').innerHTML = filtered.map(c => {
-    if (getCardName(c) === expandedCardCat) return renderExpandedRow(c, 'cat');
-    let safeName = escapeJS(getCardName(c));
-    return `<div class="compact-card" onclick="toggleExpand('${safeName}', 'cat')" onmouseenter="showTooltip(event, '${safeName}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c), getCardName(c))}" onerror="handleImgError(this, '${safeName}')"></div></div>`;
+    let name = getCardName(c);
+    if (name === expandedCardCat) return renderExpandedRow(c, 'cat');
+    let safeName = escapeJS(name);
+    return `<div class="compact-card" onclick="toggleExpand('${safeName}', 'cat')" onmouseenter="showTooltip(event, '${safeName}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c), name)}" onerror="handleImgError(this, '${safeName}')"></div></div>`;
   }).join('');
 }
-
 function goDraft() {
   // Reset draft squad for a fresh start
   draftSquad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
@@ -7074,18 +7091,39 @@ function filterDraftGrid() {
   const q = $('draft-search').value.toLowerCase();
   const sort = $('draft-sort').value;
   
-  // Filter out nulls and apply search
-  let list = CARDS.filter(c => c && c.UI_Frontend_Data).filter(c => {
-    let name = getCardName(c).toLowerCase();
-    let team = c.UI_Frontend_Data.Team.toLowerCase();
+  // 1. Clean the array
+  let cleanCards = CARDS.filter(c => c && c.UI_Frontend_Data);
+  
+  // 2. Filter using the CLEAN array
+  let list = cleanCards.filter(c => {
+    let name = (getCardName(c) || "").toLowerCase();
+    let team = (c.UI_Frontend_Data.Team || "").toLowerCase();
     return !q || name.includes(q) || team.includes(q);
   });
 
-  // Sort using helpers
   if (sort === 'hp') list.sort((a,b) => getCardHP(b) - getCardHP(a)); 
   else if (sort === 'dmg') list.sort((a,b) => getCardDMG(b) - getCardDMG(a)); 
   else if (sort === 'spd') list.sort((a,b) => getCardSPD(b) - getCardSPD(a)); 
   else list.sort((a,b) => getCardName(a).localeCompare(getCardName(b)));
+  
+  $('draft-grid').innerHTML = list.map(c => {
+    let name = getCardName(c);
+    if (name === expandedCardDraft) return renderExpandedRow(c, 'draft');
+    
+    let inD = isCardInDraft(c);
+    let safeName = escapeJS(name);
+    
+    return `
+      <div class="compact-card" 
+           ${!inD ? `draggable="true" ondragstart="handleDragStart(event, '${safeName}')" ondragend="handleDragEnd(event)"` : 'style="opacity:0.3;pointer-events:none;"'} 
+           onclick="toggleExpand('${safeName}', 'draft')" 
+           onmouseenter="showTooltip(event, '${safeName}')" 
+           onmouseleave="hideTooltip()" 
+           onmousemove="positionTooltip(event)">
+        <div class="card-img-sm"><img src="${getImgUrl(getCardImg(c), name)}" onerror="handleImgError(this, '${safeName}')"></div>
+      </div>`;
+  }).join('');
+}
   
   $('draft-grid').innerHTML = list.map(c => {
     let name = getCardName(c);
