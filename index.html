@@ -113,7 +113,7 @@
     .ec-skill-dmg { color: #FF5252; background: rgba(255, 82, 82, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; }
     .ec-skill-desc { font-size: 0.8rem; color: var(--text-light); line-height: 1.5; }
 
-   /* BATTLE ARENA STYLES */
+    /* BATTLE ARENA STYLES */
     .arena-container { display: flex; height: calc(100vh - 45px); width: 100%; overflow: hidden; position: relative; }
     .court-area { flex: 1; display: flex; flex-direction: column; background: radial-gradient(circle at center, #1d2438 0%, #080b12 100%); padding: 30px; justify-content: space-between; overflow-y: auto; width: 100%; }
     
@@ -285,22 +285,17 @@
       <div id="staged-list" style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px; font-size:0.9rem; color:var(--text-light);"></div>
       <button class="btn-primary" id="confirm-moves-btn" style="width:100%; padding: 16px; font-size: 1.1rem;" onclick="confirmMoves()">LOCK IN MOVES</button>
     </div>
-    
-    <div id="replace-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.9); z-index:9999; flex-direction:column; align-items:center; justify-content:center;">
-       <h2 style="color:#FFD600; margin-bottom:20px; font-family:'Plus Jakarta Sans', sans-serif;">SELECT BENCH REPLACEMENT</h2>
-       <div id="replace-options" style="display:flex; gap:20px;"></div>
-    </div>
-
   </div>
 </div>
 
 <script>
+// ==================== UTILS & SELECTORS MUST BE AT THE VERY TOP ====================
+function $(id) { return document.getElementById(id); }
+
 // ==================== CONFIGURATION ====================
 const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/`;
 
-function $(id) { return document.getElementById(id); }
-
-// ==================== DATA BRIDGE HELPERS ====================
+// ==================== DATA BRIDGE HELPERS (CRASH-PROOF) ====================
 function getCardName(c) { return c?.UI_Frontend_Data?.Name || "Unknown Player"; }
 function getCardImg(c) { return c?.UI_Frontend_Data?.Image_File || ""; }
 function getCardHP(c) { return c?.UI_Frontend_Data?.Stats?.HP || 0; }
@@ -312,7 +307,6 @@ function getCardPos(c) {
   return p.Primary + (p.Secondary ? '/' + p.Secondary : ''); 
 }
 
-// ==================== UTILITIES & SAFETY NETS ====================
 function escapeJS(str) {
   if (!str) return ""; 
   return str.toString()
@@ -362,7 +356,7 @@ function showScreen(id) {
   window.scrollTo(0,0);
 }
 
-// ==================== COMPRESSED CARDS DB ====================
+// ==================== NEW LOGIC-READY CARDS DB ====================
 const CARDS = [
   {
     "UI_Frontend_Data": {
@@ -7110,6 +7104,33 @@ function renderArena() {
       let safeName = escapeJS(name);
       return `<div class="bench-card" onclick="onBenchClick(${i}, event)"><img src="${getImgUrl(getCardImg(c), name)}" onerror="handleImgError(this, '${safeName}')"></div>`;
   }).join('');
+}
+
+function buildCardHtml(c, index, isE) {
+  let name = getCardName(c);
+  let hpMax = getCardHP(c);
+  let pct = Math.max(0, (c.currentHp / hpMax) * 100);
+  let clr = pct > 50 ? '#69F0AE' : pct > 20 ? '#FFD600' : '#FF5252';
+  let pos = getCardPos(c);
+  let pc = pos.includes('PG')?'var(--pos-pg)':pos.includes('SG')?'var(--pos-sg)':pos.includes('SF')?'var(--pos-sf)':pos.includes('PF')?'var(--pos-pf)':'var(--pos-c)';
+  let safeName = escapeJS(name);
+  let teamStr = isE ? 'enemy' : 'player';
+  
+  let isStaged = !isE && stagedActions.some(a => a.actorIdx === index);
+  let isValidTarget = isE && uiState === 'AWAITING_TARGET' && getValidTargets(playerActive[pendingAction.actorIdx], enemyActive).some(v => v.i === index);
+  
+  return `
+    <div class="battle-card-wrapper" id="wrap-${teamStr}-${index}" onclick="onCardClick('${teamStr}', ${index}, event)" onmouseenter="showTooltip(event, '${safeName}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)">
+      ${isE ? `<div class="hp-bar-container"><div class="hp-fill" id="hpf-${teamStr}-${index}" style="width:${pct}%; background:${clr};"></div></div>` : ''}
+      
+      <div class="battle-card ${c.isDead ? 'dead-card' : ''} ${isStaged ? 'staged' : ''} ${isValidTarget ? 'valid-target' : ''}" id="card-${teamStr}-${index}" style="border-color:${pc};">
+        <img src="${getImgUrl(getCardImg(c), name)}" onerror="handleImgError(this, '${safeName}')">
+        ${isStaged ? `<div class="undo-btn" onclick="event.stopPropagation(); undoAction(${index})">✕</div>` : ''}
+      </div>
+
+      ${!isE ? `<div class="hp-bar-container"><div class="hp-fill" id="hpf-${teamStr}-${index}" style="width:${pct}%; background:${clr};"></div></div>` : ''}
+      <div class="hp-text" id="hpt-${teamStr}-${index}">${c.currentHp}/${hpMax}</div>
+    </div>`;
 }
 
 function logMsg(txt, t) {
