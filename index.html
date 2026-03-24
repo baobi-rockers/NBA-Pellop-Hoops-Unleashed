@@ -9,8 +9,8 @@
     // Fail-safe Error Catcher
     window.onerror = function(msg, url, lineNo) {
       const errDiv = document.createElement('div');
-      errDiv.style = "position:fixed;top:0;left:0;right:0;background:#FF5252;color:white;padding:15px;z-index:9999;font-weight:bold;font-size:12px;";
-      errDiv.innerHTML = `⚠️ LOAD ERROR: ${msg}<br>Check your CARDS data near Line: ${lineNo}`;
+      errDiv.style = "position:fixed;top:0;left:0;right:0;background:#FF5252;color:white;padding:15px;z-index:99999;font-weight:bold;font-size:12px;text-align:center;";
+      errDiv.innerHTML = `⚠️ LOAD ERROR: ${msg}<br>Check your card data near Line: ${lineNo}`;
       document.body.appendChild(errDiv);
       return false;
     };
@@ -18,93 +18,114 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
-      --bg: #080b12; --surf: #161c2d; --surf2: #1d2438; --border: #252d44;
-      --accent: #FF5722; --text: #EEF0FF; --muted: #7986a8;
-      --pg: #FFD600; --sg: #FF5252; --sf: #69F0AE; --pf: #40C4FF; --c: #B388FF;
+      --bg: #080b12; --surface: #161c2d; --surface-2: #1d2438; --border: #252d44;
+      --border-heavy: #3a476b; --accent: #FF5722; --accent-dark: #e64a19;
+      --text: #EEF0FF; --text-light: #b0bbd5; --text-muted: #7986a8;
+      --pos-pg: #FFD600; --pos-sg: #FF5252; --pos-sf: #69F0AE; --pos-pf: #40C4FF; --pos-c: #B388FF; --pos-6th: #E040FB;
     }
-    body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); overflow-x: hidden; }
-    .screen { display: none; min-height: 100vh; }
+    body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); overflow-y: scroll; height: 100vh; }
+    .screen { display: none; min-height: 100vh; background: var(--bg); padding-bottom: 60px; }
     .screen.active { display: block; }
     
-    /* Sleek Ultra-Thin Header */
-    .app-header { background: rgba(8,11,18,0.98); border-bottom: 1px solid var(--border); padding: 6px 12px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 1000; }
+    /* Sleek Thin Header */
+    .app-header { background: rgba(8, 11, 18, 0.98); border-bottom: 1px solid var(--border); padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; z-index: 100; position: sticky; top:0; }
     .logo { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.1rem; background: linear-gradient(135deg, #FF5722, #FFD600); -webkit-background-clip: text; color: transparent; }
+    .nav { display: flex; gap: 4px; background: var(--surface); padding: 3px; border-radius: 40px; border: 1px solid var(--border); }
+    .nav-btn { padding: 3px 12px; border-radius: 30px; font-weight: 600; font-size: 0.75rem; background: transparent; border: none; cursor: pointer; color: var(--text-light); }
+    .nav-btn.active, .nav-btn:hover { background: var(--border); color: white; }
     
-    .sticky-container { position: sticky; top: 0; z-index: 900; background: var(--bg); border-bottom: 1px solid var(--border); }
+    /* Buttons */
+    .btn-primary { background: var(--accent); border: none; padding: 6px 16px; border-radius: 40px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s; text-transform: uppercase; font-size: 0.7rem; letter-spacing: 0.5px; }
+    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
+    .btn-primary:disabled { background: var(--border-heavy); cursor: not-allowed; color: var(--text-muted); }
     
-    /* Strict 5x2 Grid for Slots */
-    .slots-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px; background: #05070a; }
-    .slot-card { background: var(--surf); border: 1px dashed var(--muted); border-radius: 6px; min-height: 44px; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; transition: 0.2s; }
-    .slot-card.filled { border-style: solid; background: rgba(255,255,255,0.03); border-width: 2px; }
-    .slot-pos { font-weight: 900; font-size: 0.55rem; opacity: 0.8; margin-bottom: 1px; }
-    .slot-name { font-weight: 700; font-size: 0.65rem; color: white; line-height: 1.1; text-align: center; padding: 0 4px; }
+    .sticky-container { position: sticky; top: 0; z-index: 90; background: var(--bg); box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
     
-    /* Colors */
-    .slot-PG.filled { border-color: var(--pg); } .slot-PG .slot-pos { color: var(--pg); }
-    .slot-SG.filled { border-color: var(--sg); } .slot-SG .slot-pos { color: var(--sg); }
-    .slot-SF.filled { border-color: var(--sf); } .slot-SF .slot-pos { color: var(--sf); }
-    .slot-PF.filled { border-color: var(--pf); } .slot-PF .slot-pos { color: var(--pf); }
-    .slot-C.filled  { border-color: var(--c);  } .slot-C  .slot-pos { color: var(--c);  }
+    /* Slots Grid - strictly compact 5x2 */
+    .slots-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; padding: 8px 16px; background: var(--bg); border-bottom: 1px solid var(--border); }
+    .slot-card { background: var(--surface); border-radius: 8px; border: 1px dashed var(--border-heavy); padding: 4px; min-height: 50px; text-align: center; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .slot-card.filled { border-style: solid; background: rgba(255,255,255,0.02); border-width: 2px; }
+    .slot-pos { font-weight: 900; font-size: 0.6rem; margin-bottom: 2px; }
+    .slot-name { font-weight: 700; font-size: 0.65rem; color: white; line-height: 1.1; word-wrap: break-word; width: 100%; }
 
-    .remove-slot { position: absolute; top: -5px; right: -5px; background: #FF5252; color: white; border: none; width: 16px; height: 16px; border-radius: 50%; font-size: 10px; font-weight: 900; cursor: pointer; }
+    .slot-PG.filled, .slot-PG.drag-over { border-color: var(--pos-pg); } .slot-PG .slot-pos { color: var(--pos-pg); }
+    .slot-SG.filled, .slot-SG.drag-over { border-color: var(--pos-sg); } .slot-SG .slot-pos { color: var(--pos-sg); }
+    .slot-SF.filled, .slot-SF.drag-over { border-color: var(--pos-sf); } .slot-SF .slot-pos { color: var(--pos-sf); }
+    .slot-PF.filled, .slot-PF.drag-over { border-color: var(--pos-pf); } .slot-PF .slot-pos { color: var(--pos-pf); }
+    .slot-C.filled,  .slot-C.drag-over  { border-color: var(--pos-c); }  .slot-C  .slot-pos { color: var(--pos-c); }
+    .slot-6TH { display: none; border-color: var(--pos-6th); } .slot-6TH .slot-pos { color: var(--pos-6th); }
 
-    /* Filter Bar */
-    .filter-bar { display: flex; gap: 6px; padding: 6px 12px; background: var(--surf); align-items: center; }
-    .filter-bar input, .filter-bar select { padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); background: var(--bg); color: white; font-size: 0.75rem; }
+    .remove-slot { color: #FF5252; font-size: 0.7rem; cursor: pointer; background: rgba(0,0,0,0.6); border: 1px solid #FF5252; position: absolute; top: 2px; right: 2px; font-weight: bold; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; z-index: 5; }
 
-    /* Cards */
-    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; padding: 12px; }
-    .compact-card { position: relative; width: 100%; padding-bottom: 140%; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); cursor: pointer; transition: 0.2s; }
+    @keyframes shakeInvalid { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-5px); border-color: #FF5252; } 40%, 80% { transform: translateX(5px); border-color: #FF5252; } }
+    .shake-invalid { animation: shakeInvalid 0.5s ease-in-out; }
+    .invalid-overlay { position: absolute; inset: 0; background: rgba(255, 82, 82, 0.95); color: white; font-weight: 900; display: flex; align-items: center; justify-content: center; border-radius: 6px; font-size: 0.7rem; text-transform: uppercase; pointer-events: none; }
+
+    /* Card Styling */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(115px, 1fr)); gap: 12px; padding: 12px 16px; }
+    .compact-card { position: relative; width: 100%; padding-bottom: 140%; background: transparent; border-radius: 8px; overflow: hidden; box-shadow: 0 6px 15px rgba(0,0,0,0.5); cursor: pointer; border: 1px solid var(--border-heavy); transition: 0.2s; }
     .compact-card:hover { transform: translateY(-4px); border-color: var(--accent); }
-    .card-img { position: absolute; inset: 0; background: #0f1320; }
-    .card-img img { width: 100%; height: 100%; object-fit: cover; }
+    .card-img-sm { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #0f1320; pointer-events: none; }
+    .card-img-sm img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* Expanded View - Fairy Spin */
-    .expanded-row { grid-column: 1 / -1; display: flex; gap: 20px; padding: 20px; background: rgba(22,28,45,0.95); border-radius: 12px; border: 1px solid var(--accent); margin: 8px 0; align-items: flex-start; flex-wrap: wrap; }
-    .expanded-card-container { perspective: 1000px; width: 220px; flex-shrink: 0; }
-    .flipper { position: relative; width: 100%; padding-bottom: 140%; transform-style: preserve-3d; animation: fairySpin 2s cubic-bezier(0.1, 0.9, 0.2, 1) forwards; }
-    @keyframes fairySpin { 0% { transform: rotateY(1260deg) scale(0.6); } 100% { transform: rotateY(0deg) scale(1); } }
-    .front, .back { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 10px; overflow: hidden; border: 1px solid var(--muted); }
-    .back { transform: rotateY(180deg); background: url('https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/goat-tier-back.png') center/cover; }
+    /* Fairy Spin Expansion */
+    .expanded-row { grid-column: 1 / -1; display: flex; gap: 20px; padding: 24px; background: rgba(22, 28, 45, 0.9); border-radius: 16px; border: 1px solid var(--border-heavy); margin: 8px 0; overflow: hidden; align-items: flex-start; flex-wrap: wrap; transition: 0.3s ease; }
+    .expanded-row.collapsing { opacity: 0; max-height: 0 !important; padding: 0 !important; margin: 0 !important; }
     
-    .scroll-info { flex: 1; min-width: 200px; opacity: 0; animation: reveal 1s forwards 0.8s; }
-    @keyframes reveal { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
-    .ec-stat { background: #000; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 800; border: 1px solid var(--border); margin: 2px; display: inline-block; }
-
-    /* Tooltip */
-    .tooltip { position: fixed; z-index: 9999; background: rgba(8,11,18,0.98); border: 1px solid var(--accent); padding: 12px; border-radius: 10px; font-size: 0.75rem; color: #fff; pointer-events: none; opacity: 0; transition: opacity 0.1s; max-width: 240px; }
-    .tooltip.visible { opacity: 1; }
+    .expanded-card-container { perspective: 1500px; width: min(100%, 230px); flex-shrink: 0; }
+    .expanded-card-flipper { position: relative; width: 100%; padding-bottom: 140%; transform-style: preserve-3d; animation: fairySpin 2s cubic-bezier(0.1, 0.9, 0.2, 1) forwards; }
+    /* 3.5 turns = 1260 degrees */
+    @keyframes fairySpin { 0% { transform: rotateY(1260deg) scale(0.6); opacity: 0; } 100% { transform: rotateY(0deg) scale(1); opacity: 1; } }
+    .expanded-front, .expanded-back { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 14px; overflow: hidden; border: 1px solid var(--border-heavy); background: #0f1320; }
+    .expanded-front { transform: rotateY(0deg); }
+    .expanded-back { transform: rotateY(180deg); background-image: url('https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/goat-tier-back.png'); background-size: cover; }
+    .expanded-front img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .expanded-scroll-wrapper { flex: 1; min-width: 250px; opacity: 0; animation: scrollReveal 1s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards; }
+    @keyframes scrollReveal { 0% { max-width: 0; opacity: 0; } 100% { max-width: 1000px; opacity: 1; } }
+    .ec-title { font-size: 1.3rem; font-weight: 800; color: white; border-bottom: 1px solid var(--border-heavy); padding-bottom: 4px; margin-bottom: 8px; }
+    .ec-stat { background: rgba(0,0,0,0.4); padding: 3px 8px; border-radius: 6px; font-weight: 800; border: 1px solid var(--border); font-size: 0.8rem; margin-right: 4px; display: inline-block; }
+    .ec-stat span { font-size: 0.55rem; color: var(--text-muted); text-transform: uppercase; }
 
     /* Battle Arena */
-    .arena { display: flex; height: calc(100vh - 40px); }
-    .court { flex: 1; background: radial-gradient(circle, #1d2438, #080b12); display: flex; flex-direction: column; justify-content: space-between; padding: 20px; position: relative; }
-    .battle-card { width: 80px; position: relative; transition: 0.4s; cursor: pointer; }
-    .card-face { width: 100%; padding-bottom: 140%; border-radius: 6px; border: 2px solid var(--muted); overflow: hidden; background: #0f1320; }
-    .card-face img { position: absolute; width: 100%; height: 100%; object-fit: cover; }
-    .hp-bar { width: 100%; height: 5px; background: #000; border: 1px solid #333; margin-top: 4px; border-radius: 3px; overflow: hidden; }
-    .hp-fill { height: 100%; background: #69F0AE; width: 100%; transition: 0.3s; }
+    .arena-container { display: flex; height: calc(100vh - 45px); width: 100%; overflow: hidden; }
+    .court-area { flex: 1; display: flex; flex-direction: column; background: radial-gradient(circle at center, #1d2438 0%, #080b12 100%); padding: 10px; justify-content: space-between; position: relative; }
+    .sidebar-area { width: 260px; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; }
+    
+    .battle-row { display: flex; justify-content: center; gap: 8px; align-items: center; min-height: 120px; }
+    .battle-card-wrapper { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 80px; position: relative; transition: 0.4s; cursor: pointer; }
+    .battle-card { width: 100%; padding-bottom: 140%; border-radius: 6px; border: 2px solid var(--border-heavy); overflow: hidden; position: relative; background: #0f1320; }
+    .battle-card img { position: absolute; width: 100%; height: 100%; object-fit: cover; }
+    .dead-card { filter: grayscale(100%) brightness(0.2); pointer-events: none; }
+    
+    .hp-bar-container { width: 100%; height: 6px; background: #000; border-radius: 3px; border: 1px solid var(--border-heavy); overflow: hidden; margin-top: 2px; }
+    .hp-fill { height: 100%; background: #69F0AE; width: 100%; transition: width 0.3s; }
+    .hp-text { font-size: 0.55rem; font-weight: 800; margin-top: 1px; text-shadow: 0 1px 2px black; }
+    
+    .bench-area { display: flex; gap: 4px; justify-content: center; padding: 4px; background: rgba(0,0,0,0.2); border-radius: 8px; }
+    .bench-card { width: 30px; height: 42px; border-radius: 3px; border: 1px solid var(--border-heavy); overflow: hidden; position: relative; }
+    .bench-card img { position: absolute; width: 100%; height: 100%; object-fit: cover; }
+
+    /* Tooltip */
+    .tooltip-bubble { position: fixed; z-index: 9999; background: rgba(8,11,18,0.96); border: 1px solid var(--pos-sf); padding: 10px; border-radius: 10px; color: var(--text-light); max-width: 220px; font-size: 0.7rem; opacity: 0; pointer-events: none; transition: 0.1s; }
+    .tooltip-bubble.visible { opacity: 1; }
     
     .targetable { border-color: var(--accent) !important; box-shadow: 0 0 15px var(--accent); }
-    .anim-atk { transform: translateY(-30px) scale(1.1); }
+    .anim-waft-up { transform: translateY(-40px) scale(1.1); }
     .anim-shake { animation: shake 0.4s; }
     @keyframes shake { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-5px);} 75%{transform:translateX(5px);} }
-
-    .action-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 2000; display: none; align-items: center; justify-content: center; }
-    .menu { background: var(--surf); border: 2px solid var(--accent); padding: 20px; border-radius: 12px; width: 220px; text-align: center; }
-
-    /* Shake for Invalid Drop */
-    .shake-invalid { animation: shake 0.5s; border-color: #FF5252 !important; }
   </style>
 </head>
-<body onclick="handleGlobalClick(event)">
+<body onclick="handleBodyClick(event)">
 
-<div id="drag-ghost" style="position:absolute; top:-1000px; background:var(--accent); color:white; padding:4px 12px; border-radius:20px; font-weight:bold; font-size:12px; border:1px solid white;">Ghost</div>
-<div id="tooltip" class="tooltip"></div>
+<div id="drag-ghost" style="position:absolute; top:-1000px; left:-1000px; background:var(--accent); color:white; padding:6px 16px; border-radius:40px; font-weight:800; font-size:0.8rem; pointer-events:none; z-index:2000; border: 1px solid white;">Ghost</div>
+<div id="tooltip" class="tooltip-bubble"></div>
 
 <div id="home-screen" class="screen active">
-  <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100vh; text-align:center; gap:20px;">
-    <h1 class="logo" style="font-size:3rem">NBA⚡BATTLE</h1>
-    <button class="btn-primary" style="padding:12px 30px; font-size:1rem" onclick="showScreen('draft-screen')">START DRAFT</button>
+  <div class="app-header"><div class="logo">NBA⚡BATTLE</div></div>
+  <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; text-align:center; gap:20px; padding: 20px;">
+    <h1>NBA CARD BATTLE</h1>
+    <button class="btn-primary" style="padding: 12px 24px; font-size: 1rem;" onclick="showScreen('draft-screen')">🤖 VS BOT</button>
   </div>
 </div>
 
@@ -112,47 +133,68 @@
   <div class="sticky-container">
     <div class="app-header">
       <div class="logo">DRAFT SQUAD</div>
-      <div id="draft-count" style="font-weight:900; color:var(--pf)">0/10</div>
+      <span id="draft-count-lbl" style="font-weight:800; color: #40C4FF; font-size: 1rem;">0/10</span>
     </div>
     <div id="draft-slots" class="slots-grid"></div>
     <div class="filter-bar">
-      <input type="text" id="draft-search" placeholder="Search..." oninput="renderDraft()">
-      <button class="btn-primary" id="btn-lock" onclick="goSetup()" disabled>LOCK IN</button>
+      <input type="text" id="draft-search" placeholder="Search Pool..." oninput="filterDraftGrid()">
+      <button class="btn-primary" id="draft-confirm-btn" onclick="goSetup()" disabled>LOCK IN TEAM</button>
     </div>
   </div>
   <div id="draft-grid" class="card-grid"></div>
 </div>
 
 <div id="setup-screen" class="screen">
-  <div class="app-header"><div class="logo">LINEUP</div></div>
-  <div id="setup-slots" class="slots-grid" style="padding:20px; justify-content:center; display:flex; gap:10px;"></div>
-  <div style="text-align:center; padding:10px;"><button class="btn-primary" id="btn-start" onclick="startBattle()" disabled>ENTER ARENA</button></div>
-  <div id="setup-bench" class="card-grid"></div>
+  <div class="sticky-container">
+    <div class="app-header"><div class="logo">LINEUP</div><span id="setup-count-lbl" style="font-weight:800; color: #69F0AE;">0/5</span></div>
+    <div id="setup-slots" class="slots-grid" style="display:flex; justify-content:center; gap:8px;"></div>
+    <div class="filter-bar" style="justify-content:center;"><button class="btn-primary" id="start-battle-btn" onclick="startBattle()" disabled>ENTER ARENA</button></div>
+  </div>
+  <div id="setup-bench-grid" class="card-grid"></div>
 </div>
 
 <div id="battle-screen" class="screen">
-  <div class="arena">
-    <div class="court">
-      <div class="battle-row" id="enemy-active" style="display:flex; justify-content:center; gap:10px;"></div>
-      <div class="battle-row" id="player-active" style="display:flex; justify-content:center; gap:10px;"></div>
+  <div class="arena-container">
+    <div class="court-area">
+      <div id="enemy-active-row" class="battle-row"></div>
+      <div id="player-active-row" class="battle-row"></div>
     </div>
-    <div style="width:240px; background:var(--surf); border-left:1px solid var(--border); display:flex; flex-direction:column;">
-       <div id="score" style="font-size:2rem; font-weight:900; text-align:center; padding:10px;">0 - 0</div>
-       <div id="log" style="flex:1; overflow-y:auto; padding:10px; font-size:0.7rem;"></div>
+    <div class="sidebar-area">
+      <div class="score-board"><div id="score-p" style="color:var(--pos-sf)">0</div><div style="color:var(--text-muted)">-</div><div id="score-e" style="color:var(--pos-sg)">0</div></div>
+      <div id="battle-log" class="sb-log" style="flex:1; overflow-y:auto; padding:10px;"></div>
+      <div style="padding:10px; background:var(--surface-2); text-align:center;"><div id="turn-id" style="font-weight:800; color:var(--accent); font-size:0.7rem;">TURN: PLAYER</div></div>
     </div>
-  </div>
-</div>
-
-<div id="action-overlay" class="action-overlay">
-  <div class="menu">
-    <button class="btn-primary" style="width:100%; margin-bottom:10px;" onclick="startTargeting()">⚔️ ATTACK</button>
-    <button class="btn-primary" style="width:100%; background:var(--muted)" onclick="$('action-overlay').style.display='none'">CANCEL</button>
   </div>
 </div>
 
 <script>
-const GITHUB = `https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/`;
-const POSITIONS = ['PG','SG','SF','PF','C'];
+// ==================== CORE FUNCTIONS (DEFINED FIRST TO PREVENT CRASHES) ====================
+function $(id) { return document.getElementById(id); }
+function shortName(n) { return n ? n.replace(/ \(.+?\)$/, '') : ''; }
+function escapeJS(s) { return s ? s.replace(/'/g, "\\'") : ''; }
+function escapeHtml(s) { return s ? s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;") : ''; }
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const target = $(id);
+  if (target) target.classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function getImgUrl(i, n) { 
+  const base = `https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/`;
+  return (!i || i.length < 3) ? `https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(shortName(n))}` : base + i; 
+}
+
+function handleImgError(el, n) { el.onerror=null; el.src=`https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(shortName(n))}`; }
+
+function getInitialFormat(name) {
+  let parts = shortName(name).split(' ');
+  return parts.length > 1 ? parts[0][0] + ". " + parts.slice(1).join(' ') : name;
+}
+
+// ==================== CARDS DATABASE ====================
+// === PASTE YOUR 117 PLAYERS BELOW THIS LINE ===
 
 // ==================== COMPRESSED CARDS DB ====================
 const CARDS = [
@@ -273,89 +315,92 @@ const CARDS = [
   {name:"Victor Wembanyama",pos:"C/PF",tier:"GOAT TIER",team:"San Antonio Spurs Future Series",hp:3700,dmg:500,spd:7,ab:"Alien",abdesc:"Wembanyama is a generational talent, sometimes, his combination of size and skill seems like it's out of this world. Opponents shorter than 7'1 are unable to block or contest his damaging skills and basic attacks. Opponents shorter than 7'1 are also not able to nullify his defensive skills.",image:"victor_wembanyama.png",skills:[{name:"Wingspan Block",dmg:"N/A (block)",desc:"Wembanyama uses his insane wingspan to deny his opponents with ease. Wembanyama blocks any damaging skills completely. This is used right after the opponent attacks and does not count as a move from him. Wembanyama may target any opponent. This can be used once each turn and for a maximum of 3 uses."},{name:"Three From Space",dmg:"1450",desc:"Wembanyama launches a three with his high arching jumpshot. This skill has a 50% chance of hitting, to be decided via coin flip. For a maximum of 2 uses."}]}
 ];
 
-// --- Logic ---
+// === PASTE YOUR 117 PLAYERS ABOVE THIS LINE ===
+
+// ==================== APP LOGIC ====================
+const POSITIONS = ['PG','SG','SF','PF','C'];
 let draftSquad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
 let activeLineup = { PG:null, SG:null, SF:null, PF:null, C:null, '6TH':null };
-let expandedCard = null, playerActive = [], enemyActive = [], pScore = 0, eScore = 0, selectedIdx = null, isTargeting = false;
+let benchRoster = [], playerActive = [], enemyActive = [], playerScore = 0, enemyScore = 0;
+let expandedCardDraft = null, isCollapsing = false;
 
-function $(id) { return document.getElementById(id); }
-function shortName(n) { return n.replace(/ \(.+?\)$/, ''); }
-function getInitials(n) { let p = n.split(' '); return p.length > 1 ? p[0][0] + '. ' + p.slice(1).join(' ') : n; }
-
-// Tooltip Edge detection
-function handleHover(e, name) {
-  const c = CARDS.find(x => x.name === name); if(!c) return;
+// Tooltips
+function showTooltip(e, name) {
+  const c = CARDS.find(x => x.name === name); if (!c) return;
   const tt = $('tooltip');
-  tt.innerHTML = `<b>${c.name}</b>Ability: ${c.ab}`;
+  tt.innerHTML = `<b>${getInitialFormat(c.name)}</b>Ability: ${c.ab}`;
   tt.classList.add('visible');
   let px = e.clientX + 15;
-  if(px + 240 > window.innerWidth) px = e.clientX - 250;
+  if(px + 220 > window.innerWidth) px = e.clientX - 235;
   tt.style.left = px + 'px'; tt.style.top = e.clientY + 'px';
 }
+function hideTooltip() { $('tooltip').classList.remove('visible'); }
 
-// Drafting
-function renderDraft() {
+// Drafting Logic
+function renderDraftSlots() {
   let html = '';
   [0, 1].forEach(i => POSITIONS.forEach(p => {
     let c = draftSquad[p][i];
-    html += `<div class="slot-card slot-${p} ${c?'filled':''}" ondragover="event.preventDefault()" ondrop="handleDrop(event,'${p}',${i})">
-      <div class="slot-pos">${p}</div><div class="slot-name">${c ? getInitials(shortName(c.name)) : ''}</div>
-      ${c ? `<button class="remove-slot" onclick="draftSquad['${p}'][${i}]=null;renderDraft()">✕</button>` : ''}
+    html += `<div id="dslot-${p}-${i}" class="slot-card slot-${p} ${c?'filled':''}" ondragover="event.preventDefault()" ondrop="dropDraft(event,'${p}',${i})">
+      <div class="slot-pos">${p}</div><div class="slot-name">${c ? getInitialFormat(c.name) : ''}</div>
+      ${c ? `<button class="remove-slot" onclick="draftSquad['${p}'][${i}]=null;renderDraftSlots();filterDraftGrid()">✕</button>` : ''}
     </div>`;
   }));
   $('draft-slots').innerHTML = html;
   
-  let count = 0; let hasHarden = false;
+  let count = 0, hasHarden = false;
   POSITIONS.forEach(p => draftSquad[p].forEach(c => { if(c){ count++; if(c.name.includes("Sixth Man")) hasHarden=true; } }));
-  $('draft-count').textContent = `${count}/${hasHarden?11:10}`;
-  $('btn-lock').disabled = count < 10;
+  $('draft-count-lbl').textContent = `${count}/${hasHarden?11:10}`;
+  $('draft-confirm-btn').disabled = count < 10;
+}
 
-  let q = $('draft-search').value.toLowerCase();
+function filterDraftGrid() {
+  const q = $('draft-search').value.toLowerCase();
   $('draft-grid').innerHTML = CARDS.filter(c => c.name.toLowerCase().includes(q)).map(c => {
-    if(c.name === expandedCard) return renderExpanded(c);
-    return `<div class="compact-card" draggable="true" ondragstart="e.dataTransfer.setData('text', '${c.name}')" onclick="expandedCard='${c.name}';renderDraft()">
-      <div class="card-img"><img src="${GITHUB+c.image}" onerror="this.src='https://placehold.co/200x280/000/fff?text=NBA'"></div>
+    if(c.name === expandedCardDraft) return renderExpandedRow(c, 'draft');
+    let inD = POSITIONS.some(p => draftSquad[p][0]?.name === c.name || draftSquad[p][1]?.name === c.name);
+    let safe = escapeJS(c.name);
+    return `<div class="compact-card" data-name="${safe}" ${!inD?`draggable="true" ondragstart="handleDragStart(event,'${safe}')"`:'style="opacity:0.2;pointer-events:none;"'} onclick="toggleExpand('${safe}','draft')" onmouseenter="showTooltip(event,'${safe}')" onmouseleave="hideTooltip()">
+      <div class="card-img-sm"><img src="${getImgUrl(c.image, c.name)}" onerror="handleImgError(this,'${safe}')"></div>
     </div>`;
   }).join('');
 }
 
-function handleDrop(e, pos, idx) {
-  let name = e.dataTransfer.getData('text');
-  let card = CARDS.find(x => x.name === name);
-  if(!card || !card.pos.includes(pos)) { e.currentTarget.classList.add('shake-invalid'); setTimeout(()=>e.currentTarget.classList.remove('shake-invalid'),500); return; }
-  draftSquad[pos][idx] = card; renderDraft();
+function handleDragStart(e, name) {
+  hideTooltip(); e.dataTransfer.setData('text/plain', name);
+  let ghost = $('drag-ghost'); ghost.textContent = getInitialFormat(name); e.dataTransfer.setDragImage(ghost, 0, 0);
 }
 
-function renderExpanded(c) {
-  return `<div class="expanded-row" onclick="expandedCard=null;renderDraft()">
-    <div class="expanded-card-container"><div class="flipper"><div class="back"></div><div class="front"><img src="${GITHUB+c.image}"></div></div></div>
-    <div class="scroll-info">
-      <div class="ec-title">${c.name}</div>
-      <div class="ec-stat"><span>HP</span> ${c.hp}</div><div class="ec-stat"><span>DMG</span> ${c.dmg}</div><div class="ec-stat"><span>SPD</span> ${c.spd}</div>
-      <div style="margin-top:10px;font-size:0.8rem">${c.abdesc}</div>
-    </div>
+function dropDraft(e, pos, idx) {
+  e.preventDefault(); let name = e.dataTransfer.getData('text/plain'); let card = CARDS.find(x=>x.name===name);
+  if(!card || !card.pos.includes(pos)) { e.currentTarget.classList.add('shake-invalid'); setTimeout(()=>e.currentTarget.classList.remove('shake-invalid'),500); return; }
+  draftSquad[pos][idx] = card; renderDraftSlots(); filterDraftGrid();
+}
+
+function toggleExpand(name, ctx) {
+  if (isCollapsing) return;
+  expandedCardDraft = (expandedCardDraft === name) ? null : name;
+  filterDraftGrid();
+}
+
+function renderExpandedRow(c, ctx) {
+  return `<div class="expanded-row" onclick="expandedCardDraft=null;filterDraftGrid()">
+    <div class="expanded-card-container"><div class="expanded-card-flipper"><div class="expanded-back"></div><div class="expanded-front"><img src="${getImgUrl(c.image, c.name)}"></div></div></div>
+    <div class="expanded-scroll-wrapper"><div class="ec-title">${c.name}</div><div class="ec-stat"><span>HP</span> ${c.hp}</div><div class="ec-stat"><span>DMG</span> ${c.dmg}</div><div style="margin-top:10px; font-size:0.8rem; color:var(--text-light);">${c.abdesc}</div></div>
   </div>`;
 }
 
+// Setup & Battle
 function goSetup() {
-  let roster = []; POSITIONS.forEach(p => draftSquad[p].forEach(c => { if(c) roster.push(c); }));
-  let hasH = roster.some(x => x.name.includes("Sixth Man"));
-  let slots = [...POSITIONS]; if(hasH) slots.push('6TH');
-  $('setup-slots').innerHTML = slots.map(p => `<div class="slot-card slot-${p}" ondragover="event.preventDefault()" ondrop="dropSetup(event,'${p}')"><div class="slot-pos">${p}</div><div class="slot-name">Empty</div></div>`).join('');
-  showScreen('setup-screen');
-  renderSetupBench(roster);
+  benchRoster = []; POSITIONS.forEach(p => draftSquad[p].forEach(c => { if(c) benchRoster.push(c); }));
+  let harden = benchRoster.find(x => x.name.includes("Sixth Man"));
+  let slots = [...POSITIONS]; if(harden) slots.push('6TH');
+  $('setup-slots').innerHTML = slots.map(p => `<div id="ss-${p}" class="slot-card slot-${p}" ondragover="event.preventDefault()" ondrop="dropSetup(event,'${p}')"><div class="slot-pos">${p==='6TH'?'6TH MAN':p}</div><div class="slot-name">Empty</div></div>`).join('');
+  showScreen('setup-screen'); renderSetupBench();
 }
 
-function dropSetup(e, pos) {
-  let name = e.dataTransfer.getData('text');
-  let card = CARDS.find(x => x.name === name);
-  activeLineup[pos] = card; e.currentTarget.classList.add('filled'); e.currentTarget.querySelector('.slot-name').textContent = shortName(card.name);
-  $('btn-start').disabled = Object.values(activeLineup).filter(x=>x).length < 5;
-}
-
-function renderSetupBench(roster) {
-  $('setup-bench').innerHTML = roster.map(c => `<div class="compact-card" draggable="true" ondragstart="e.dataTransfer.setData('text', '${c.name}')"><div class="card-img"><img src="${GITHUB+c.image}"></div></div>`).join('');
-}
+function dropSetup(e, p) { e.preventDefault(); let n = e.dataTransfer.getData('text/plain'); let c = benchRoster.find(x=>x.name===n); if(c) { activeLineup[p]=c; e.currentTarget.classList.add('filled'); e.currentTarget.querySelector('.slot-name').textContent = getInitialFormat(c.name); } $('start-battle-btn').disabled = Object.values(activeLineup).filter(x=>x).length < 5; renderSetupBench(); }
+function renderSetupBench() { $('setup-bench-grid').innerHTML = benchRoster.filter(c => !Object.values(activeLineup).includes(c)).map(c => `<div class="compact-card" draggable="true" ondragstart="handleDragStart(event,'${escapeJS(c.name)}')"><div class="card-img-sm"><img src="${getImgUrl(c.image, c.name)}"></div></div>`).join(''); }
 
 function startBattle() {
   playerActive = []; POSITIONS.forEach(p => { if(activeLineup[p]) playerActive.push({...activeLineup[p], cur: activeLineup[p].hp}); });
@@ -364,28 +409,14 @@ function startBattle() {
 }
 
 function renderArena() {
-  $('player-active').innerHTML = playerActive.map((c,i) => `<div class="battle-card" onclick="handleArenaClick(${i})">
-    <div class="card-face"><img src="${GITHUB+c.image}"></div>
-    <div class="hp-bar"><div class="hp-fill" style="width:${(c.cur/c.hp)*100}%"></div></div>
-  </div>`).join('');
-  $('enemy-active').innerHTML = enemyActive.map((c,i) => `<div class="battle-card ${isTargeting?'targetable':''}" onclick="if(isTargeting) hit(${i})">
-    <div class="card-face"><img src="${GITHUB+c.image}"></div>
-    <div class="hp-bar"><div class="hp-fill" style="width:${(c.cur/c.hp)*100}%"></div></div>
-  </div>`).join('');
+  $('player-active-row').innerHTML = playerActive.map((c,i) => `<div class="battle-card-wrapper"><div class="battle-card"><img src="${getImgUrl(c.image, c.name)}"></div><div class="hp-bar-container"><div class="hp-fill" style="width:${(c.cur/c.hp)*100}%"></div></div></div>`).join('');
+  $('enemy-active-row').innerHTML = enemyActive.map((c,i) => `<div class="battle-card-wrapper"><div class="hp-bar-container"><div class="hp-fill" style="width:${(c.cur/c.hp)*100}%"></div></div><div class="battle-card"><img src="${getImgUrl(c.image, c.name)}"></div></div>`).join('');
 }
 
-function handleArenaClick(i) { selectedIdx = i; $('action-overlay').style.display='flex'; }
-function startTargeting() { $('action-overlay').style.display='none'; isTargeting = true; renderArena(); }
+function handleSearchFilter(ctx) { if(ctx === 'draft') filterDraftGrid(); }
+function handleBodyClick(e) { if(!e.target.closest('.expanded-row') && !e.target.closest('.compact-card')) { expandedCardDraft = null; filterDraftGrid(); } }
 
-function hit(ei) {
-  let p = playerActive[selectedIdx]; let e = enemyActive[ei];
-  e.cur = Math.max(0, e.cur - p.dmg);
-  isTargeting = false; renderArena();
-}
-
-function handleGlobalClick(e) { if($('tooltip').classList.contains('visible')) hideTooltip(); }
-
-document.addEventListener('DOMContentLoaded', renderDraft);
+document.addEventListener('DOMContentLoaded', () => { renderDraftSlots(); filterDraftGrid(); });
 </script>
 </body>
 </html>
