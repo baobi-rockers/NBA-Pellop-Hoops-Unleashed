@@ -6,6 +6,59 @@
   <title>NBA Card Battle · TCG Pocket Edition</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script>
+    // --- 1. BODY CLICK FIX ---
+function handleBodyClick(e) {
+  let row = document.querySelector('.expanded-row');
+  if (row && !e.target.closest('.expanded-row') && !e.target.closest('.compact-card') && !e.target.closest('.sticky-container') && !e.target.closest('.app-header')) {
+    if (typeof closeExpandedWithAnim === 'function') {
+      closeExpandedWithAnim(typeof expandedCardCat !== 'undefined' && expandedCardCat ? 'cat' : 'draft');
+    }
+  }
+}
+    // --- 2. TOOLTIP FIXES ---
+let tooltipTimer;
+function showTooltip(e, name) {
+  clearTimeout(tooltipTimer);
+  const tooltip = document.getElementById('tooltip');
+  if (!tooltip) return;
+  
+  // Safely look for the card
+  const card = (typeof CARDS !== 'undefined') ? CARDS.find(c => getCardName(c) === name) : null;
+  if (!card) return;
+
+  let skillsHtml = (card.Skills || []).map(s => {
+    return `<b>${s.Name} (⚔️ ${s.Display_DMG})</b><br>${s.Description_UI}`;
+  }).join('<br><br>');
+
+  const abName = card.Ability?.Name || "No Ability";
+  const abDesc = card.Ability?.Description_UI || "";
+
+  tooltip.innerHTML = `
+    <div style="color:#FFD600; font-weight:bold; margin-bottom:4px; font-size:0.95rem;">${typeof shortName === 'function' ? shortName(name) : name}</div>
+    <b>✨ ${abName}</b>${abDesc}<br><br>
+    ${skillsHtml}
+  `;
+  
+  tooltip.classList.add('visible');
+  positionTooltip(e);
+}
+
+function hideTooltip() { 
+  clearTimeout(tooltipTimer); 
+  const tooltip = document.getElementById('tooltip');
+  if(tooltip) tooltip.classList.remove('visible'); 
+}
+
+function positionTooltip(e) {
+  const tooltip = document.getElementById('tooltip');
+  if(!tooltip || !tooltip.classList.contains('visible')) return;
+  let x = e.touches ? e.touches[0].clientX : e.clientX;
+  let y = e.touches ? e.touches[0].clientY : e.clientY;
+  let tw = tooltip.offsetWidth, th = tooltip.offsetHeight, pad = 10, px = x+15, py = y+15;
+  if(px + tw > window.innerWidth - pad) px = x - tw - 15;
+  if(py + th > window.innerHeight - pad) py = y - th - 15;
+  tooltip.style.left = `${Math.max(pad, px)}px`; tooltip.style.top = `${Math.max(pad, py)}px`;
+}
     window.onerror = function(msg, url, lineNo) {
       document.body.innerHTML += `<div style="position:fixed;top:0;left:0;right:0;background:#FF5252;color:white;padding:20px;z-index:99999;font-weight:bold;">CRITICAL ERROR: ${msg}<br>Line: ${lineNo}</div>`;
       return false;
@@ -355,6 +408,7 @@ function showScreen(id) {
   if (el) el.classList.add('active');
   window.scrollTo(0,0);
 }
+
 
 // ==================== NEW LOGIC-READY CARDS DB ====================
 const CARDS = [
