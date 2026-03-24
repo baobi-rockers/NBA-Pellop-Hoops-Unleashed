@@ -6869,14 +6869,31 @@ function showScreen(id) {
 }
 
 // ==================== TOOLTIPS ====================
+function $(id) { return document.getElementById(id); }
 let tooltipTimer;
 const tooltip = $('tooltip');
 function showTooltip(e, name) {
   clearTimeout(tooltipTimer);
-  const card = CARDS.find(c => c.name === name);
+  
+  // Update: Find the card using the Helper function getCardName
+  const card = CARDS.filter(c => c).find(c => getCardName(c) === name);
   if (!card) return;
-  let skillsHtml = (card.skills || []).map(s => `<b>${s.name} (⚔️ ${s.dmg})</b>${s.desc}`).join('<br><br>');
-  tooltip.innerHTML = `<div style="color:#FFD600; font-weight:bold; margin-bottom:4px; font-size:0.95rem;">${shortName(name)}</div><b>✨ ${card.ab}</b>${card.abdesc}<br><br>${skillsHtml}`;
+
+  // Update: Use the new nested Skills path
+  let skillsHtml = (card.Skills || []).map(s => {
+    return `<b>${s.Name} (⚔️ ${s.Display_DMG})</b><br>${s.Description_UI}`;
+  }).join('<br><br>');
+
+  // Update: Use new paths for Ability (ab) and Description (abdesc)
+  const abName = card.Ability?.Name || "No Ability";
+  const abDesc = card.Ability?.Description_UI || "";
+
+  tooltip.innerHTML = `
+    <div style="color:#FFD600; font-weight:bold; margin-bottom:4px; font-size:0.95rem;">${shortName(name)}</div>
+    <b>✨ ${abName}</b>${abDesc}<br><br>
+    ${skillsHtml}
+  `;
+  
   tooltip.classList.add('visible');
   positionTooltip(e);
 }
