@@ -7002,56 +7002,75 @@ function filterCat() {
 // ==================== PHASE 2: DRAFTING ====================
 /* ==================== DRAFT & EXPANSION LOGIC ==================== */
 
+/* ==================== DRAFTING LOGIC ==================== */
+
 function goDraft() { 
-    showScreen('draft-screen'); 
-    renderDraftSlots(); 
-    filterDraftGrid(); 
+  // Reset draft if starting over
+  draftSquad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
+  expandedCardDraft = null;
+  
+  showScreen('draft-screen'); 
+  renderDraftSlots(); 
+  filterDraftGrid(); 
 }
 
 function filterDraftGrid() {
-    let q = $('draft-search').value.toLowerCase();
-    let grid = $('draft-grid');
-    if (!grid) return;
+  let q = $('draft-search') ? $('draft-search').value.toLowerCase() : "";
+  let grid = $('draft-grid');
+  if (!grid) return;
 
-    grid.innerHTML = CARDS.filter(c => getCardName(c).toLowerCase().includes(q)).map(c => {
-        let name = getCardName(c); 
-        let sn = escapeJS(name);
-        
-        // Check if this specific card is currently spun/expanded
-        if (name === expandedCardDraft) return renderExpandedRow(c, 'draft');
+  grid.innerHTML = CARDS.filter(c => getCardName(c).toLowerCase().includes(q)).map(c => {
+    let name = getCardName(c); 
+    let sn = escapeJS(name);
+    
+    // Pokemon/Fairy Spin expansion check
+    if (typeof expandedCardDraft !== 'undefined' && name === expandedCardDraft) {
+        return renderExpandedRow(c, 'draft');
+    }
 
-        return `
-            <div class="compact-card" onclick="toggleExpand('${sn}', 'draft')">
-                <img src="${getImgUrl(getCardImg(c), name)}" onerror="handleImgError(this, '${sn}')">
-                <button class="btn-primary" style="position:absolute; bottom:5px; left:50%; transform:translateX(-50%); font-size:0.5rem; padding:4px 8px;" onclick="event.stopPropagation(); addDraft('${sn}')">ADD</button>
-            </div>`;
-    }).join('');
+    return `
+      <div class="compact-card" onclick="toggleExpand('${sn}', 'draft')">
+        <img src="${getImgUrl(getCardImg(c), name)}" onerror="handleImgError(this, '${sn}')">
+        <button class="btn-primary" style="position:absolute; bottom:5px; left:50%; transform:translateX(-50%); font-size:0.5rem; padding:4px 8px;" onclick="event.stopPropagation(); addDraft('${sn}')">ADD</button>
+      </div>`;
+  }).join('');
 }
 
 function renderDraftSlots() {
-    let h = ''; 
-    Object.keys(draftSquad).forEach(p => {
-        draftSquad[p].forEach((c, i) => {
-            h += `
-            <div class="slot-card" onclick="draftSquad['${p}'][${i}]=null;renderDraftSlots();filterDraftGrid();">
-                <div class="slot-pos" style="color:var(--pos-${p.toLowerCase()})">${p}</div>
-                <div class="slot-name">${c ? shortName(getCardName(c)) : 'Empty'}</div>
-            </div>`;
-        });
+  let h = ''; 
+  Object.keys(draftSquad).forEach(p => {
+    draftSquad[p].forEach((c, i) => {
+      h += `
+        <div class="slot-card" onclick="draftSquad['${p}'][${i}]=null;renderDraftSlots();filterDraftGrid();">
+          <div class="slot-pos" style="color:var(--pos-${p.toLowerCase()})">${p}</div>
+          <div class="slot-name">${c ? shortName(getCardName(c)) : 'Empty'}</div>
+        </div>`;
     });
-    $('draft-slots').innerHTML = h;
-    let count = Object.values(draftSquad).flat().filter(x => x).length;
-    $('draft-count-lbl').textContent = `${count}/10`;
-    $('draft-confirm-btn').disabled = count < 10;
+  });
+  $('draft-slots').innerHTML = h;
+  
+  let count = Object.values(draftSquad).flat().filter(x => x).length;
+  $('draft-count-lbl').textContent = `${count}/10`;
+  $('draft-confirm-btn').disabled = count < 10;
 }
 
 function addDraft(n) {
-    let c = CARDS.find(x => getCardName(x) === n);
-    if(!c) return;
-    let pos = getCardPos(c).split('/')[0].trim();
-    if(draftSquad[pos][0] && draftSquad[pos][1]) return; // Position full
-    if(!draftSquad[pos][0]) draftSquad[pos][0] = c; else draftSquad[pos][1] = c;
-    renderDraftSlots();
+  let c = CARDS.find(x => getCardName(x) === n);
+  if(!c) return;
+  let pos = getCardPos(c).split('/')[0].trim();
+  
+  // Check if position slots are full
+  if(draftSquad[pos][0] && draftSquad[pos][1]) {
+      alert(pos + " slots are full!");
+      return;
+  }
+  
+  if(!draftSquad[pos][0]) draftSquad[pos][0] = c; 
+  else draftSquad[pos][1] = c;
+  
+  renderDraftSlots();
+  filterDraftGrid();
+}
 }
 
 function toggleExpand(name, category) {
@@ -7522,12 +7541,29 @@ async function confirmMoves() {
     await executeAction(action);
   }
   
-  await handleDeadReplacements('player', playerActive, playerBench);
-  await handleDeadReplacements('enemy', enemyActive, enemyBench);
+  a// Add 'async' right here at the start!
+async function handleDeadReplacements(teamStr, activeArr, benchArr) {
+  for (let i = 0; i < activeArr.length; i++) {
+    if (activeArr[i] && activeArr[i].isDead) {
+      let deadPosArr = getCardPos(activeArr[i]).split('/').map(p => p.trim());
+      let validBench = benchArr.map((c, idx) => ({c, idx})).filter(bench => {
+         let benchPos = getCardPos(bench.c).split('/').map(p => p.trim());
+         return deadPosArr.some(dp => benchPos.includes(dp));
+      });
 
-  stagedActions = []; uiState = 'IDLE'; turnCount++;
-  if (playerScore < 8 && enemyScore < 8) {
-    isAnimating = false; renderArena();
+      if (validBench.length > 0) {
+        let rep = validBench[0]; 
+        logMsg(`🔄 <b>${shortName(getCardName(rep.c))}</b> stepped in to replace ${shortName(getCardName(activeArr[i]))}!`, 'sys');
+        
+        let temp = activeArr[i];
+        activeArr[i] = benchArr[rep.idx];
+        benchArr[rep.idx] = temp; 
+        
+        renderArena();
+        // This 'await' is what was causing the crash because 'async' was missing above
+        await new Promise(r => setTimeout(r, 800));
+      }
+    }
   }
 }
 
