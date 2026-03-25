@@ -7655,13 +7655,26 @@ async function playCombatAnimation(atkId, defId, dmg, targetObj) {
 }
 
 async function handleDeadReplacements(teamStr, activeArr, benchArr) {
-  for (let i = 0; i < activeArr.length; i++) {
-    if (activeArr[i] && activeArr[i].isDead) {
-      let deadPosArr = getCardPos(activeArr[i]).split('/').map(p => p.trim());
-      let validBench = benchArr.map((c, idx) => ({c, idx})).filter(bench => {
-         let benchPos = getCardPos(bench.c).split('/').map(p => p.trim());
-         return deadPosArr.some(dp => benchPos.includes(dp));
-      });
+if (validBench.length > 0) {
+        let rep = validBench[0]; 
+        
+        // 1. Announce the sub in the battle log
+        logMsg(`🔄 <b>${shortName(getCardName(rep.c))}</b> stepped in to replace ${shortName(getCardName(activeArr[i]))}!`, 'sys');
+        
+        // 2. Perform the swap
+        let temp = activeArr[i];
+        activeArr[i] = benchArr[rep.idx];
+        benchArr[rep.idx] = temp; 
+        
+        // 3. Re-draw the screen so we see the new card
+        renderArena();
+        
+        // 4. Wait a moment so the user can see what happened
+        await new Promise(r => setTimeout(r, 800));
+      }
+    }
+  }
+}
 
       if (validBench.length > 0) {
         let rep = validBench[0]; 
