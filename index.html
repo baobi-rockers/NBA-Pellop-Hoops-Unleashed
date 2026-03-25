@@ -1,966 +1,568 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>NBA Card Battle · TCG Pocket Edition</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script>
-
-let expandedCardCat = null;
-let expandedCardDraft = null;
-    
-    // --- 1. BODY CLICK FIX ---
-function handleBodyClick(e) {
-  let row = document.querySelector('.expanded-row');
-  if (row && !e.target.closest('.expanded-row') && !e.target.closest('.compact-card') && !e.target.closest('.sticky-container') && !e.target.closest('.app-header')) {
-    if (typeof closeExpandedWithAnim === 'function') {
-      closeExpandedWithAnim(typeof expandedCardCat !== 'undefined' && expandedCardCat ? 'cat' : 'draft');
+    {
+      "UI_Frontend_Data": {
+        "Name": "Stephen Curry (Splash Brother)",
+        "Image_File": "stephen_curry_(splash_brother).png",
+        "Formatted_Name": "S. Curry (Splash Brother)",
+        "Tier": "GOAT TIER",
+        "Team": "Golden State Warriors GOAT Series",
+        "Height": "6'2",
+        "Weight": 185,
+        "Positions": {
+          "Primary": "PG",
+          "Secondary": "SG",
+          "Third": null
+        },
+        "Stats": {
+          "HP": 2200,
+          "Base_DMG": 850,
+          "Speed": 9
+        }
+      },
+      "Ability": {
+        "Name": "Splash Brother",
+        "Description_UI": "Curry is one half of the Splash Brothers, contributing heavily with his unstoppable pull up shots while Klay helps to relieve defensive pressure off of Curry. When any Warriors Klay Thompson card is on the team with Curry, he will gain an additional 1000 HP and 1 SPD. When Klay is no longer on the team, he will lose the boost.",
+        "Logic_Engine": {
+          "Type": "Synergy_State",
+          "Effect": "IF 'Klay Thompson' (Warriors) in Active_Roster THEN HP += 1000, SPD += 1. Removes buff if Klay is wiped out."
+        }
+      },
+      "Skills": [
+        {
+          "Name": "Float Me One",
+          "Nature": "Close Shot",
+          "Display_DMG": "950",
+          "Description_UI": "Curry's floater is one of his favorite ways to score. He takes the high arcing shot over defenders with incredible precision. This skill cannot be blocked by defensive skills. For a maximum of 4 uses.",
+          "Logic_Engine": {
+            "Damage_Value": 950,
+            "Modifiers": ["Unblockable"],
+            "Max_Uses": 4,
+            "Requires_Coin_Flip": false
+          }
+        },
+        {
+          "Name": "Downtown Francisco",
+          "Nature": "Jump Shot",
+          "Display_DMG": "1400",
+          "Description_UI": "Curry is the heart and soul of the Golden State. His insane shot making abilities from deep terrorizes perimeter defenders. Curry takes a shot from way beyond the arc and swishes it in. For a maximum of 1 use.",
+          "Logic_Engine": {
+            "Damage_Value": 1400,
+            "Modifiers": [],
+            "Max_Uses": 1,
+            "Requires_Coin_Flip": false
+          }
+        }
+      ]
+    },
+    {
+      "UI_Frontend_Data": {
+        "Name": "Stephen Curry (Chef Curry)",
+        "Image_File": "stephen_curry_(chef_curry).png",
+        "Formatted_Name": "S. Curry (Chef Curry)",
+        "Tier": "GOAT TIER",
+        "Team": "Golden State Warriors GOAT Series",
+        "Height": "6'2",
+        "Weight": 185,
+        "Positions": {
+          "Primary": "PG",
+          "Secondary": "SG",
+          "Third": null
+        },
+        "Stats": {
+          "HP": 2800,
+          "Base_DMG": 850,
+          "Speed": 9
+        }
+      },
+      "Ability": {
+        "Name": "Chef Curry",
+        "Description_UI": "Curry will start cooking once he gets into his groove. When his shots start falling, his confidence grows. Curry will increase his basic attack by 400 DMG for the rest of the game for every \"Skyfucker\" skill he hits.",
+        "Logic_Engine": {
+          "Type": "Stacking_Buff",
+          "Effect": "IF 'Skyfucker' Success == True THEN Base_DMG += 400. Stacks infinitely."
+        }
+      },
+      "Skills": [
+        {
+          "Name": "Grand Theft Steph",
+          "Nature": "Defensive",
+          "Display_DMG": "250",
+          "Description_UI": "Curry's anticipation allows him to get an easy steal. He steals the ball and denies his opponent's card of making any move. He also damages his opponents slightly. This skill will move first (x2 priority) and he can target any opponent. This skill cannot be nullified. For a maximum of 1 use.",
+          "Logic_Engine": {
+            "Damage_Value": 250,
+            "Priority": "x2",
+            "Modifiers": ["Preemptive_Cancel", "Un-nullifiable"],
+            "Execution": "Interrupts and cancels target's selected move for the turn.",
+            "Max_Uses": 1,
+            "Requires_Coin_Flip": false
+          }
+        },
+        {
+          "Name": "Skyfucker",
+          "Nature": "Jump Shot",
+          "Display_DMG": "2000",
+          "Description_UI": "Curry pulls up from beyond the arc, anywhere on the court. This skill has a 50% chance of hitting, to be decided via coin flip. For a maximum of 2 uses.",
+          "Logic_Engine": {
+            "Damage_Value": 2000,
+            "Modifiers": [],
+            "Max_Uses": 2,
+            "Requires_Coin_Flip": true,
+            "Coin_Flip_Odds": 0.5
+          }
+        }
+      ]
+    },
+    {
+      "UI_Frontend_Data": {
+        "Name": "Luka Doncic (Luka Magic)",
+        "Image_File": "luka_doncic_(luka_magic).png",
+        "Formatted_Name": "L. Doncic (Luka Magic)",
+        "Tier": "GOAT TIER",
+        "Team": "Dallas Mavericks GOAT Series",
+        "Height": "6'7",
+        "Weight": 230,
+        "Positions": {
+          "Primary": "PG",
+          "Secondary": "SG",
+          "Third": null
+        },
+        "Stats": {
+          "HP": 2800,
+          "Base_DMG": 850,
+          "Speed": 7
+        }
+      },
+      "Ability": {
+        "Name": "Luka Magic",
+        "Description_UI": "Luka is a transcendent offensive player and he has shown that he has the clutch gene. Once a game, when Luka's HP has been reduced to 0, Luka will hold on to 1 HP. He will be untargetable for the rest of the turn and he will move first the next turn (x2 priority).",
+        "Logic_Engine": {
+          "Type": "Reactionary_Interrupt",
+          "Trigger": "IF Luka_HP <= 0",
+          "Effect": "Set Luka_HP = 1. Apply Status: Untargetable for remainder of current turn. Apply Priority x2 for the next turn. Max 1 use per game."
+        }
+      },
+      "Skills": [
+        {
+          "Name": "Step-Back Don",
+          "Nature": "Jump Shot",
+          "Display_DMG": "1000",
+          "Description_UI": "Luka, known for his effortless style of play, sizes up and steps back behind the arc for a 3 pointer. For a maximum of 5 uses.",
+          "Logic_Engine": {
+            "Damage_Value": 1000,
+            "Max_Uses": 5,
+            "Requires_Coin_Flip": false
+          }
+        },
+        {
+          "Name": "Cool Hand Luka",
+          "Nature": "Assist",
+          "Display_DMG": "1250",
+          "Description_UI": "Luka the floor general, slings a pinpoint laser to his open teammate for a good look. For a maximum of 1 use.",
+          "Logic_Engine": {
+            "Damage_Value": 1250,
+            "Max_Uses": 1,
+            "Requires_Coin_Flip": false
+          }
+        }
+      ]
+    },
+    {
+      "UI_Frontend_Data": {
+        "Name": "Luka Doncic (The Don of LA)",
+        "Image_File": "luka_doncic_(the_don_of_la).png",
+        "Formatted_Name": "L. Doncic (The Don of LA)",
+        "Tier": "GOAT TIER",
+        "Team": "Los Angeles Lakers GOAT Series",
+        "Height": "6'7",
+        "Weight": 230,
+        "Positions": {
+          "Primary": "PG",
+          "Secondary": "SG",
+          "Third": null
+        },
+        "Stats": {
+          "HP": 3550,
+          "Base_DMG": 850,
+          "Speed": 8
+        }
+      },
+      "Ability": {
+        "Name": "The Don of LA",
+        "Description_UI": "Luka has arrived in Los Angeles, bringing transcendent offense that demolishes defenses at will. Luka is an offensive maestro that defies circumstances. Once a game, when Luka's HP has been reduced to 0, Luka will be healed for 1700 HP. He will be untargetable for the rest of the turn.",
+        "Logic_Engine": {
+          "Type": "Reactionary_Interrupt",
+          "Trigger": "IF Luka_HP <= 0",
+          "Effect": "Heal Luka_HP = 1700. Apply Status: Untargetable for remainder of current turn. Max 1 use per game."
+        }
+      },
+      "Skills": [
+        {
+          "Name": "Size-Up Don",
+          "Nature": "Jump Shot",
+          "Display_DMG": "1100",
+          "Description_UI": "Luka sizes up his defender before shooting a three right in their face. For a maximum of 5 uses.",
+          "Logic_Engine": {
+            "Damage_Value": 1100,
+            "Max_Uses": 5,
+            "Requires_Coin_Flip": false
+          }
+        },
+        {
+          "Name": "Revenge Season",
+          "Nature": "Special",
+          "Display_DMG": "N/A (buff)",
+          "Description_UI": "Luka is out for revenge. He is ready to wreak havoc on the league. This skill will block all incoming basic attacks and skills targeting Luka for this turn. Luka will also gain an additional 2 SPD, 300 DMG for basic attack, and 250 DMG for his damaging skill for 3 turns, starting next turn. This skill cannot be stopped and will move first (x3 priority). For a maximum of 1 use.",
+          "Logic_Engine": {
+            "Damage_Value": 0,
+            "Priority": "x3",
+            "Modifiers": ["Block_All_Incoming", "Unstoppable"],
+            "Execution": "Blocks all attacks this turn. Next turn, apply Buff (SPD += 2, Base_DMG += 300, Skill_DMG += 250) for 3 turns.",
+            "Max_Uses": 1,
+            "Requires_Coin_Flip": false
+          }
+        }
+      ]
+    },
+    {
+      "UI_Frontend_Data": {
+        "Name": "Isiah Thomas",
+        "Image_File": "isiah_thomas.png",
+        "Formatted_Name": "I. Thomas",
+        "Tier": "GOAT TIER",
+        "Team": "Detroit Pistons GOAT Series",
+        "Height": "6'1",
+        "Weight": 180,
+        "Positions": {
+          "Primary": "PG",
+          "Secondary": null,
+          "Third": null
+        },
+        "Stats": {
+          "HP": 3200,
+          "Base_DMG": 500,
+          "Speed": 9
+        }
+      },
+      "Ability": {
+        "Name": "Zeke",
+        "Description_UI": "Isiah is an absolute pest on defense, hounding his assignment constantly. The opposing PG will focus only on Isiah, he cannot target other players with basic attacks or damage dealing skills. However, the opposing PG may still target other players with defensive skills. Additionally, all damage from skills dealt to Isiah will be halved.",
+        "Logic_Engine": {
+          "Type": "Taunt_And_Shield",
+          "Effect": "Opposing PG Valid_Targets is restricted to Isiah Thomas for offensive moves. Incoming_Skill_Damage to Isiah = Total_Damage * 0.5."
+        }
+      },
+      "Skills": [
+        {
+          "Name": "Piston PNR",
+          "Nature": "Assist",
+          "Display_DMG": "600",
+          "Description_UI": "Isiah runs the pick and roll, dishing the ball to his big man for a layup. For a maximum of 2 uses.",
+          "Logic_Engine": {
+            "Damage_Value": 600,
+            "Max_Uses": 2,
+            "Requires_Coin_Flip": false
+          }
+        },
+        {
+          "Name": "Bad Boy Pistons",
+          "Nature": "Defensive",
+          "Display_DMG": "N/A (effect)",
+          "Description_UI": "The Bad Boy Pistons' brand of physical and stifling defense causes every opponent's jumpshot skills used the following 3 turns will have a 50% chance to miss. A coin flip will be used to determine if it misses (opponent chooses side first). For skills that already require a coin flip, 2 consecutive coin flips will have to be done. Attempts will not be counted if it misses. For a maximum of 1 use.",
+          "Logic_Engine": {
+            "Damage_Value": 0,
+            "Modifiers": ["Global_Status_Aura"],
+            "Execution": "For 3 turns, IF Opponent uses Jump Shot THEN Force Coin_Flip. Misses do not deduct from Max_Uses.",
+            "Max_Uses": 1,
+            "Requires_Coin_Flip": false
+          }
+        }
+      ]
+    },
+    {
+      "UI_Frontend_Data": {
+        "Name": "Russell Westbrook",
+        "Image_File": "russell_westbrook.png",
+        "Formatted_Name": "R. Westbrook",
+        "Tier": "GOAT TIER",
+        "Team": "Oklahoma City Thunder GOAT Series",
+        "Height": "6'4",
+        "Weight": 200,
+        "Positions": {
+          "Primary": "PG",
+          "Secondary": "SG",
+          "Third": null
+        },
+        "Stats": {
+          "HP": 3400,
+          "Base_DMG": 900,
+          "Speed": 10
+        }
+      },
+      "Ability": {
+        "Name": "Brodie",
+        "Description_UI": "Westbrook holds a grudge against the Warriors and always excels against them. Westbrook will gain additional 1000 HP and 400 DMG for his basic attack when there is a Golden State Warrior on the opposing team. When there is no Warrior left on the opposing team, he will lose the boost.",
+        "Logic_Engine": {
+          "Type": "Rivalry_State",
+          "Effect": "IF Any_Opponent_Team_Tag == 'Golden State Warriors' THEN HP += 1000, Base_DMG += 400. Removes buff if all Warriors wiped out."
+        }
+      },
+      "Skills": [
+        {
+          "Name": "Thunderous Poster",
+          "Nature": "Close Shot",
+          "Display_DMG": "1100",
+          "Description_UI": "Westbrook rises up for a vicious dunk. For a maximum of 5 uses.",
+          "Logic_Engine": {
+            "Damage_Value": 1100,
+            "Max_Uses": 5,
+            "Requires_Coin_Flip": false
+          }
+        },
+        {
+          "Name": "Mr. Triple Double",
+          "Nature": "Rebound; Assist",
+          "Display_DMG": "N/A (assist)",
+          "Description_UI": "Westbrook holds the record for career triple doubles. Westbrook rebounds a missed, contested or blocked skill by any teammate, including himself and passes it to his teammate for an assist. The teammate will gain an extra move but can only use their basic attack during it. This skill is used after a teammate's skill misses, gets blocked or gets contested. This can be used once each turn and for a maximum of 2 uses.",
+          "Logic_Engine": {
+            "Damage_Value": 0,
+            "Trigger": "Reactionary. IF Teammate_Skill_Result == Miss OR Blocked OR Contested",
+            "Execution": "Grant that teammate an immediate extra Base Attack outside normal turn order.",
+            "Max_Uses_Per_Turn": 1,
+            "Max_Uses": 2,
+            "Requires_Coin_Flip": false
+          }
+        }
+      ]
+    },
+    {
+      "UI_Frontend_Data": {
+        "Name": "Shai Gilgeous-Alexander",
+        "Image_File": "shai_gilgeous-alexander.png",
+        "Formatted_Name": "S. Gilgeous-Alexander",
+        "Tier": "GOAT TIER",
+        "Team": "Oklahoma City Thunder Future Series",
+        "Height": "6'6",
+        "Weight": 180,
+        "Positions": {
+          "Primary": "PG",
+          "Secondary": "SG",
+          "Third": null
+        },
+        "Stats": {
+          "HP": 3200,
+          "Base_DMG": 700,
+          "Speed": 9
+        }
+      },
+      "Ability": {
+        "Name": "Thunder Boy",
+        "Description_UI": "Shai's explosive rise into superstardom has put his team on the map. His consistency has turned OKC into contenders overnight. Shai is Mr. Consistent, and no one is able to throw him off his game. Shai is unaffected by any defensive skills.",
+        "Logic_Engine": {
+          "Type": "Immunity",
+          "Effect": "Ignore_Opponent_Defensive_Skills = True"
+        }
+      },
+      "Skills": [
+        {
+          "Name": "Shoulder Bump Stepback",
+          "Nature": "Jump Shot",
+          "Display_DMG": "1000",
+          "Description_UI": "Shai uses his signature shoulder bumps and performs a stepback, before shooting a middy. For a maximum of 5 uses.",
+          "Logic_Engine": {
+            "Damage_Value": 1000,
+            "Max_Uses": 5,
+            "Requires_Coin_Flip": false
+          }
+        },
+        {
+          "Name": "Immaculate Vibes",
+          "Nature": "Special",
+          "Display_DMG": "1500",
+          "Description_UI": "OKC is a young, energetic and talented team. The vibes are immaculate. The synergy on the team makes Shai an unstoppable force. This skill can only be used when there is another OKC on his team. For a maximum of 1 use.",
+          "Logic_Engine": {
+            "Damage_Value": 1500,
+            "Execution_Condition": "IF Teammate_Tag == 'OKC'",
+            "Max_Uses": 1,
+            "Requires_Coin_Flip": false
+          }
+        }
+      ]
+    },
+    {
+      "UI_Frontend_Data": {
+        "Name": "Magic Johnson",
+        "Image_File": "magic_johnson.png",
+        "Formatted_Name": "M. Johnson",
+        "Tier": "GOAT TIER",
+        "Team": "Los Angeles Lakers GOAT Series",
+        "Height": "6'9",
+        "Weight": 220,
+        "Positions": {
+          "Primary": "PG",
+          "Secondary": "PF",
+          "Third": null
+        },
+        "Stats": {
+          "HP": 3150,
+          "Base_DMG": 900,
+          "Speed": 9
+        }
+      },
+      "Ability": {
+        "Name": "Showtime",
+        "Description_UI": "Magic and his Showtime Lakers played an exciting style of basketball. Magic controlled the floor which brought their offense to new heights. When there is another Los Angeles Laker on Magic's team, his SPD will increase by 1 and damage from all his skills will increase by 150 DMG. When there is no Laker left, he will lose his boost.",
+        "Logic_Engine": {
+          "Type": "Synergy_State",
+          "Effect": "IF Teammate_Tag == 'Lakers' THEN SPD += 1, All_Skill_DMG += 150."
+        }
+      },
+      "Skills": [
+        {
+          "Name": "Fast Break",
+          "Nature": "Assist",
+          "Display_DMG": "1150",
+          "Description_UI": "Magic runs the fast break and they get an easy bucket. For maximum of 4 uses.",
+          "Logic_Engine": {
+            "Damage_Value": 1150,
+            "Max_Uses": 4,
+            "Requires_Coin_Flip": false
+          }
+        },
+        {
+          "Name": "No-Look Pass",
+          "Nature": "Assist; Close Shot",
+          "Display_DMG": "x1.5 (SG/SF)",
+          "Description_UI": "Magic pulls off his iconic no-look pass leading to a layup that stuns the crowd. The damage dealt will be calculated by multiplying the basic attack of the SG or SF on Magic's team by 1.5. The damage will be directed to Magic's matchups. For a maximum of 4 uses.",
+          "Logic_Engine": {
+            "Damage_Value": 0,
+            "Modifiers": ["Multiplier_Assist"],
+            "Execution": "Final_DMG = Teammate(SG or SF)_Base_DMG * 1.5. Directed at Magic's valid matchup.",
+            "Max_Uses": 4,
+            "Requires_Coin_Flip": false
+          }
+        }
+      ]
+    },
+    {
+      "UI_Frontend_Data": {
+        "Name": "Oscar Robertson",
+        "Image_File": "oscar_robertson.png",
+        "Formatted_Name": "O. Robertson",
+        "Tier": "GOAT TIER",
+        "Team": "Sacramento Kings GOAT Series",
+        "Height": "6'5",
+        "Weight": 205,
+        "Positions": {
+          "Primary": "PG",
+          "Secondary": null,
+          "Third": null
+        },
+        "Stats": {
+          "HP": 3400,
+          "Base_DMG": 850,
+          "Speed": 10
+        }
+      },
+      "Ability": {
+        "Name": "Big O",
+        "Description_UI": "Oscar Robertson is the first NBA player to average a triple double over a season. His versatility poses a big threat to all defenders. Defenders cannot steal the ball from Robertson and they cannot intercept his assist skill.",
+        "Logic_Engine": {
+          "Type": "Immunity",
+          "Effect": "Immune_To_Steal = True AND Assist_Interceptable = False"
+        }
+      },
+      "Skills": [
+        {
+          "Name": "Overpower Drive",
+          "Nature": "Close Shot",
+          "Display_DMG": "1050",
+          "Description_UI": "Robertson's imposing frame and strength easily allows him to power past his defenders to get to the hoop. For a maximum of 5 uses.",
+          "Logic_Engine": {
+            "Damage_Value": 1050,
+            "Max_Uses": 5,
+            "Requires_Coin_Flip": false
+          }
+        },
+        {
+          "Name": "Oscar's Delivery",
+          "Nature": "Assist; Close Shot",
+          "Display_DMG": "x2 (PF/C)",
+          "Description_UI": "Robertson has great passing vision and amazing passing skills. He scans the floor for an open teammate and sends it directly to their hands for a dunk. The damage dealt will be calculated by multiplying the basic attack of the PF or C on Robertson's team by 2. The damage will be directed to the assist recipient's target. For a maximum of 1 use.",
+          "Logic_Engine": {
+            "Damage_Value": 0,
+            "Modifiers": ["Multiplier_Assist"],
+            "Execution": "Final_DMG = Teammate(PF or C)_Base_DMG * 2. Directed at the assisting teammate's valid target, bypassing Oscar's normal targeting matrix.",
+            "Max_Uses": 1,
+            "Requires_Coin_Flip": false
+          }
+        }
+      ]
+    },
+    {
+      "UI_Frontend_Data": {
+        "Name": "Gary Payton",
+        "Image_File": "gary_payton.png",
+        "Formatted_Name": "G. Payton",
+        "Tier": "GOAT TIER",
+        "Team": "Seattle Supersonics GOAT Series",
+        "Height": "6'4",
+        "Weight": 180,
+        "Positions": {
+          "Primary": "PG",
+          "Secondary": "SG",
+          "Third": null
+        },
+        "Stats": {
+          "HP": 3300,
+          "Base_DMG": 450,
+          "Speed": 9
+        }
+      },
+      "Ability": {
+        "Name": "The Glove",
+        "Description_UI": "Payton's presence disrupts the opponent's guards offense. The damage from the opponent's PG and SG's jumpshot skills will be halved when they are using the skills to damage Payton.",
+        "Logic_Engine": {
+          "Type": "Damage_Mitigation",
+          "Effect": "IF Target == Gary Payton AND Attacker == PG or SG AND Skill_Type == Jump Shot THEN Incoming_Damage = Incoming_Damage * 0.5"
+        }
+      },
+      "Skills": [
+        {
+          "Name": "Grabby Gary",
+          "Nature": "Defensive",
+          "Display_DMG": "N/A (steal)",
+          "Description_UI": "Payton is exceptional at stealing the ball. He rips it from his opponent and denies him of making any move. This skill will move first (x4 priority) and he can target any opponent. This skill does not count as a turn of Payton. This can be used once each turn and for a maximum of 2 uses.",
+          "Logic_Engine": {
+            "Damage_Value": 0,
+            "Priority": "x4",
+            "Modifiers": ["Preemptive_Cancel", "Zero_Move_Cost"],
+            "Execution": "Interrupts target's selected move, cancelling it.",
+            "Max_Uses_Per_Turn": 1,
+            "Max_Uses": 2,
+            "Requires_Coin_Flip": false
+          }
+        },
+        {
+          "Name": "Supersonic Clamps",
+          "Nature": "Defensive",
+          "Display_DMG": "N/A (disable)",
+          "Description_UI": "Payton is phenomenal at shutting opponent down and can entirely deny his opponent of making certain moves. Payton may choose one skill from an adjacent opponents, there will be a 50% chance that the skill will be disabled for 3 turns. A coin flip will be used to determine if it misses (opponent chooses side first). This skill cannot be nullified and will move first (x3 priority). This can be used once each turn and for a maximum of 2 uses.",
+          "Logic_Engine": {
+            "Damage_Value": 0,
+            "Priority": "x3",
+            "Modifiers": ["Status_Debuff", "Un-nullifiable"],
+            "Execution": "Select specific skill from adjacent opponent. IF Coin_Flip Success THEN Target_Skill is Disabled for 3 turns.",
+            "Max_Uses_Per_Turn": 1,
+            "Max_Uses": 2,
+            "Requires_Coin_Flip": true,
+            "Coin_Flip_Odds": 0.5
+          }
+        }
+      ]
     }
-  }
-}
-    // --- 2. TOOLTIP FIXES ---
-let tooltipTimer;
-function showTooltip(e, name) {
-  clearTimeout(tooltipTimer);
-  const tooltip = document.getElementById('tooltip');
-  if (!tooltip) return;
-  
-  // Safely look for the card
-  const card = (typeof CARDS !== 'undefined') ? CARDS.find(c => getCardName(c) === name) : null;
-  if (!card) return;
-
-  let skillsHtml = (card.Skills || []).map(s => {
-    return `<b>${s.Name} (⚔️ ${s.Display_DMG})</b><br>${s.Description_UI}`;
-  }).join('<br><br>');
-
-  const abName = card.Ability?.Name || "No Ability";
-  const abDesc = card.Ability?.Description_UI || "";
-
-  tooltip.innerHTML = `
-    <div style="color:#FFD600; font-weight:bold; margin-bottom:4px; font-size:0.95rem;">${typeof shortName === 'function' ? shortName(name) : name}</div>
-    <b>✨ ${abName}</b>${abDesc}<br><br>
-    ${skillsHtml}
-  `;
-  
-  tooltip.classList.add('visible');
-  positionTooltip(e);
+  ]
 }
 
-function hideTooltip() { 
-  clearTimeout(tooltipTimer); 
-  const tooltip = document.getElementById('tooltip');
-  if(tooltip) tooltip.classList.remove('visible'); 
-}
-
-function positionTooltip(e) {
-  const tooltip = document.getElementById('tooltip');
-  if(!tooltip || !tooltip.classList.contains('visible')) return;
-  let x = e.touches ? e.touches[0].clientX : e.clientX;
-  let y = e.touches ? e.touches[0].clientY : e.clientY;
-  let tw = tooltip.offsetWidth, th = tooltip.offsetHeight, pad = 10, px = x+15, py = y+15;
-  if(px + tw > window.innerWidth - pad) px = x - tw - 15;
-  if(py + th > window.innerHeight - pad) py = y - th - 15;
-  tooltip.style.left = `${Math.max(pad, px)}px`; tooltip.style.top = `${Math.max(pad, py)}px`;
-  
-}
-
-    // --- 3. DRAG AND DROP FIXES ---
-function handleDragStart(e, name) {
-  if (typeof hideTooltip === 'function') hideTooltip();
-  e.dataTransfer.setData('text/plain', name);
-  e.dataTransfer.effectAllowed = 'move';
-  let ghost = document.getElementById('drag-ghost');
-  if (ghost) {
-    ghost.textContent = typeof getDBShortName === 'function' ? getDBShortName(name) : name; 
-    e.dataTransfer.setDragImage(ghost, 0, 0);
-  }
-  setTimeout(() => { if (e.target && e.target.classList) e.target.classList.add('dragging'); }, 0);
-}
-
-function handleDragEnd(e) { 
-  if (e.target && e.target.classList) e.target.classList.remove('dragging'); 
-}
-
-function handleDragOver(e) { 
-  e.preventDefault(); 
-  if (e.currentTarget && e.currentTarget.classList) e.currentTarget.classList.add('drag-over'); 
-}
-
-function handleDragLeave(e) { 
-  if (e.currentTarget && e.currentTarget.classList) e.currentTarget.classList.remove('drag-over'); 
-}
-    function triggerInvalidDrop(slotEl) {
-  if (!slotEl) return;
-  slotEl.classList.add('shake-invalid');
-  let overlay = document.createElement('div'); 
-  overlay.className = 'invalid-overlay'; 
-  overlay.innerHTML = '🚫 INVALID ROLE';
-  slotEl.appendChild(overlay);
-  setTimeout(() => { slotEl.classList.remove('shake-invalid'); overlay.remove(); }, 1000);
-}
-    window.onerror = function(msg, url, lineNo) {
-      document.body.innerHTML += `<div style="position:fixed;top:0;left:0;right:0;background:#FF5252;color:white;padding:20px;z-index:99999;font-weight:bold;">CRITICAL ERROR: ${msg}<br>Line: ${lineNo}</div>`;
-      return false;
-    };
-  </script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    :root {
-      --bg: #080b12; --surface: #161c2d; --surface-2: #1d2438; --border: #252d44;
-      --border-heavy: #3a476b; --accent: #FF5722; --accent-dark: #e64a19;
-      --text: #EEF0FF; --text-light: #b0bbd5; --text-muted: #7986a8;
-      --pos-pg: #FFD600; --pos-sg: #FF5252; --pos-sf: #69F0AE; --pos-pf: #40C4FF; --pos-c: #B388FF; --pos-6th: #E040FB;
-    }
-    body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); overflow-y: scroll; height: 100vh; }
-    .screen { display: none; min-height: 100vh; background: var(--bg); padding-bottom: 60px; }
-    .screen.active { display: block; }
-    
-    /* UI Buttons & Header */
-    .app-header { background: rgba(8, 11, 18, 0.98); border-bottom: 1px solid var(--border); padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; z-index: 100; position: sticky; top:0; }
-    .logo { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.2rem; background: linear-gradient(135deg, #FF5722, #FFD600); -webkit-background-clip: text; color: transparent; }
-    .nav { display: flex; gap: 6px; background: var(--surface); padding: 4px; border-radius: 40px; border: 1px solid var(--border); }
-    .nav-btn { padding: 4px 14px; border-radius: 30px; font-weight: 600; font-size: 0.8rem; background: transparent; border: none; cursor: pointer; color: var(--text-light); }
-    .nav-btn.active, .nav-btn:hover { background: var(--border); color: white; }
-    .btn-primary { background: var(--accent); border: none; padding: 6px 16px; border-radius: 40px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
-    .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
-    .btn-primary:disabled { background: var(--border-heavy); cursor: not-allowed; color: var(--text-muted); }
-
-    /* --- NEW ACTION BUTTONS FIX --- */
-    .action-panel-left, .action-panel-right {
-        position: fixed; top: 50%; transform: translateY(-50%); display: none; flex-direction: column; gap: 15px; z-index: 9999;
-    }
-    .action-panel-left { left: 40px; }
-    .action-panel-right { right: 40px; }
-    .action-btn {
-        padding: 14px 28px; background: rgba(0, 0, 0, 0.9); border: 2px solid rgba(255,255,255,0.2); border-radius: 40px; color: white; cursor: pointer; font-weight: 800; font-size: 0.9rem; box-shadow: 0 8px 25px rgba(0,0,0,0.6); transition: 0.2s; text-align: center; pointer-events: auto;
-    }
-    .action-btn:hover { transform: scale(1.1); border-color: var(--accent); background: var(--surface-2); }
-
-    /* --- NEW CARD FANNING LAYOUT --- */
-    .active-cards-container { display: flex; justify-content: center; align-items: center; gap: -30px; margin: 20px 0; }
-    .battle-card-wrapper { transition: 0.3s; width: 170px; z-index: 5; position: relative; pointer-events: auto; }
-    /* Fan rotation for 3-lane style */
-    .active-cards-container .battle-card-wrapper:nth-child(1) { transform: rotate(-8deg) translateY(20px); }
-    .active-cards-container .battle-card-wrapper:nth-child(2) { transform: rotate(0deg) translateY(0px); z-index: 10; }
-    .active-cards-container .battle-card-wrapper:nth-child(3) { transform: rotate(8deg) translateY(20px); }
-    .active-cards-container .battle-card-wrapper:hover { transform: translateY(-25px) scale(1.1) rotate(0deg); z-index: 50; }
-
-    /* --- FB MESSENGER STYLE LOG (No Background) --- */
-    .sb-log-floating { position: fixed; bottom: 30px; right: 30px; width: 320px; max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; z-index: 9000; pointer-events: none; background: transparent; border: none; padding: 0; }
-    .log-entry { font-size: 0.75rem; color: white; background: transparent; padding: 2px 0; border: none; text-shadow: 1px 1px 3px rgba(0,0,0,0.8); line-height: 1.4; }
-    .log-entry.sys { text-align: center; color: var(--text-muted); font-style: italic; }
-    .log-entry.atk { text-align: left; }
-    .log-entry.def { text-align: right; }
-    .log-name-you { color: #69F0AE; font-weight: 900; }
-    .log-name-bot { color: #FF5252; font-weight: 900; }
-
-    /* --- 3D BENCH STACK --- */
-    .bench-stack { position: fixed; bottom: 40px; left: 40px; width: 100px; height: 140px; z-index: 8000; cursor: pointer; pointer-events: auto; }
-    .bench-stack .bench-card { position: absolute; width: 100px; height: 140px; transition: 0.4s; border: 2px solid var(--border-heavy); border-radius: 8px; background:#0f1320; overflow:hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
-    .bench-stack .bench-card:nth-child(1) { bottom: 0; left: 0; z-index: 3; }
-    .bench-stack .bench-card:nth-child(2) { bottom: 8px; left: 8px; z-index: 2; opacity: 0.8; }
-    .bench-stack .bench-card:nth-child(3) { bottom: 16px; left: 16px; z-index: 1; opacity: 0.6; }
-    .bench-card img { width: 100%; height: 100%; object-fit: cover; position: absolute; }
-
-    /* --- ARENA & GRID STYLES --- */
-    .arena-container { pointer-events: none; } /* Prevents invisible boxes from blocking clicks */
-    .court-area { pointer-events: auto; flex: 1; display: flex; flex-direction: column; background: radial-gradient(circle at center, #1d2438 0%, #080b12 100%); padding: 30px; justify-content: space-between; overflow: hidden; }
-    
-    .floating-scoreboard { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 9000; pointer-events: none; }
-    .score-board { display: flex; align-items: center; justify-content: center; gap: 20px; font-family: 'Plus Jakarta Sans', sans-serif; font-size: 3.5rem; font-weight: 900; background: rgba(0,0,0,0.5); padding: 5px 40px; border-radius: 15px; border: 2px solid var(--accent); backdrop-filter: blur(5px); }
-    
-    .hp-container { width: 100%; display: flex; flex-direction: column; align-items: center; margin-top: 8px; }
-    .hp-bar-bg { width: 90%; height: 8px; background: #000; border-radius: 10px; border: 1px solid var(--border-heavy); overflow: hidden; }
-    .hp-bar-fill { height: 100%; transition: width 0.4s; background: #69F0AE; }
-    
-    .battle-card { width: 100%; padding-bottom: 140%; border-radius: 12px; border: 3px solid var(--border-heavy); overflow: hidden; position: relative; background: #0f1320; }
-    .battle-card img { position: absolute; width: 100%; height: 100%; object-fit: cover; }
-
-    /* Draft/Catalogue Grids */
-    .slots-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 10px 16px; background: var(--bg); border-bottom: 1px solid var(--border); }
-    .slot-card { background: var(--surface); border-radius: 8px; border: 1px dashed var(--border-heavy); padding: 6px; min-height: 48px; text-align: center; }
-    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 16px; padding: 16px 24px; }
-    .compact-card { position: relative; width: 100%; padding-bottom: 140%; border-radius: 8px; overflow: hidden; border: 1px solid var(--border-heavy); }
-    .compact-card img { position: absolute; width: 100%; height: 100%; object-fit: cover; }
-
-    .checkout-panel { position: fixed; bottom: 30px; right: 30px; background: rgba(8,11,18,0.98); border: 2px solid #69F0AE; border-radius: 16px; padding: 24px; width: 320px; z-index: 9500; transform: translateY(150%); transition: 0.4s; pointer-events: auto; }
-    .checkout-panel.visible { transform: translateY(0); }
-/* --- THE FAIRY SPIN ANIMATION --- */
-    .expanded-row { 
-        grid-column: 1 / -1; display: flex; gap: 20px; padding: 24px; 
-        background: rgba(22, 28, 45, 0.9); border-radius: 16px; 
-        border: 1px solid var(--border-heavy); margin: 8px 0; 
-        transition: all 0.3s ease; cursor: pointer; 
-    }
-    
-    .expanded-card-flipper { 
-        position: relative; width: 220px; padding-bottom: 308px; 
-        transform-style: preserve-3d; 
-        animation: fairySpin 1.2s cubic-bezier(0.1, 0.9, 0.2, 1) forwards; 
-    }
-    
-    @keyframes fairySpin { 
-        0% { transform: rotateY(720deg) scale(0.5); opacity: 0; } 
-        100% { transform: rotateY(0deg) scale(1); opacity: 1; } 
-    }
-
-    .expanded-content { flex: 1; color: white; padding: 10px; }
-    .ec-title { font-size: 1.8rem; font-weight: 800; color: #FFD600; margin-bottom: 5px; }
-    .ec-ability { background: rgba(105, 240, 174, 0.1); padding: 10px; border-radius: 8px; border-left: 4px solid #69F0AE; margin: 10px 0; }
-    
-  </style>
-</head>
-<body onclick="handleBodyClick(event)">
-
-<div id="drag-ghost" style="position:absolute; top:-1000px; left:-1000px; background:var(--accent); color:white; padding:8px 18px; border-radius:40px; font-weight:800; font-family:'Plus Jakarta Sans', sans-serif; pointer-events:none; z-index:-1; box-shadow: 0 8px 20px rgba(0,0,0,0.8); border: 1px solid white; font-size: 0.9rem; white-space: nowrap;">Ghost</div>
-<div id="tooltip" class="tooltip-bubble"></div>
-
-<div id="home-screen" class="screen active">
-  <div class="app-header">
-    <div class="logo">NBA⚡BATTLE</div>
-    <div class="nav">
-      <button class="nav-btn active" onclick="showScreen('home-screen')">Home</button>
-      <button class="nav-btn" onclick="goCat()">Cards</button>
-    </div>
-  </div>
-  <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; text-align:center; gap:32px; padding: 20px;">
-    <div><h1 style="font-size: 3.5rem; font-weight:800; text-shadow: 0 4px 20px rgba(0,0,0,0.5);">NBA CARD BATTLE</h1><p style="color: var(--text-muted); font-size: 1.2rem; margin-top: 8px;">117 GOATs · Lane combat</p></div>
-    <div style="display:flex; gap: 16px; flex-wrap: wrap; justify-content: center;">
-      <button class="btn-primary" style="padding: 12px 24px; font-size: 1rem;" onclick="goDraft()">🤖 DRAFT TEAM</button>
-      <button class="btn-primary" style="background: var(--border-heavy); padding: 12px 24px; font-size: 1rem;" onclick="goCat()">📋 COLLECTION</button>
-    </div>
-  </div>
-</div>
-
-<div id="catalogue-screen" class="screen">
-  <div class="sticky-container">
-    <div class="app-header">
-      <div class="logo">NBA⚡BATTLE</div>
-      <div class="nav"><button class="nav-btn" onclick="showScreen('home-screen')">Home</button><button class="nav-btn active">Cards</button></div>
-    </div>
-    <div class="filter-bar">
-      <input type="text" id="cs" placeholder="Search player or team..." oninput="handleSearchFilter('cat')">
-      <select id="cp" onchange="handleSearchFilter('cat')"><option value="">All Positions</option><option value="PG">PG</option><option value="SG">SG</option><option value="SF">SF</option><option value="PF">PF</option><option value="C">C</option></select>
-      <select id="csort" onchange="handleSearchFilter('cat')"><option value="name">Name A-Z</option><option value="hp">HP ↓</option><option value="dmg">DMG ↓</option><option value="spd">SPD ↓</option></select>
-    </div>
-  </div>
-  <div id="cgrid" class="card-grid"></div>
-</div>
-
-<div id="draft-screen" class="screen">
-  <div class="sticky-container">
-    <div class="app-header" style="justify-content: center;">
-      <div class="logo" style="margin-right: auto;">⚡ DRAFT SQUAD</div>
-      <span id="draft-count-lbl" style="font-weight:800; color: #40C4FF; font-size: 1rem; margin-right: 12px;">0/10</span>
-    </div>
-    <div id="draft-slots" class="slots-grid"></div>
-    <div style="display:flex; justify-content:space-between; padding: 6px 16px; background:var(--surface-2); border-bottom:1px solid var(--border); align-items: center; flex-wrap: wrap; gap: 8px;">
-      <div style="display:flex; gap: 8px;">
-        <input type="text" id="draft-search" placeholder="Search..." oninput="handleSearchFilter('draft')" style="padding: 4px 10px; border-radius: 40px; border: 1px solid var(--border); background: var(--bg); color: white; font-size: 0.75rem; width: 120px;">
-        <select id="draft-sort" onchange="handleSearchFilter('draft')" style="padding: 4px 10px; border-radius: 40px; border: 1px solid var(--border); background: var(--bg); color: white; font-size: 0.75rem;">
-          <option value="name">A-Z</option><option value="hp">HP ↓</option><option value="dmg">DMG ↓</option><option value="spd">SPD ↓</option>
-        </select>
-      </div>
-      <div style="display:flex; gap: 8px; align-items: center;">
-        <span style="color: var(--text-muted); font-size: 0.65rem; margin-right: 4px;">Hover: Stats | Drag: Draft</span>
-        <button class="btn-primary" style="background: var(--border-heavy);" onclick="autoFillDraft()">🎲 Random</button>
-        <button class="btn-primary" id="draft-confirm-btn" onclick="goSetup()" disabled>SET UP TEAM</button>
-      </div>
-    </div>
-  </div>
-  <div id="draft-grid" class="card-grid"></div>
-</div>
-
-<div id="setup-screen" class="screen">
-  <div class="sticky-container">
-    <div class="app-header">
-      <div class="logo">📋 STARTING LINEUP</div>
-      <span id="setup-count-lbl" style="font-weight:800; color: #69F0AE; font-size: 1rem;">0/5</span>
-    </div>
-    <div style="text-align:center; font-size:0.75rem; padding:8px; color:var(--text-muted); background:var(--surface-2);">Drag your starting 5 from the bench below.</div>
-    <div id="setup-slots" class="slots-grid" style="display:flex; justify-content:center;"></div>
-    <div class="filter-bar" style="justify-content:center;">
-      <button class="btn-primary" id="start-battle-btn" onclick="startBattle()" disabled style="padding:10px 30px; font-size:1rem;">ENTER ARENA</button>
-    </div>
-  </div>
-  <div style="padding: 16px 24px; font-weight:800; color:var(--accent);">YOUR BENCH</div>
-  <div id="setup-bench-grid" class="card-grid"></div>
-</div>
-
-<div id="battle-screen" class="screen">
-  <div class="app-header" style="padding: 12px 30px;">
-    <div class="logo" style="font-size: 1.5rem;">⚡ BATTLEFIELD</div>
-    <button class="btn-primary" style="background:var(--border-heavy); font-size:0.85rem; padding:8px 20px;" onclick="location.reload()">FORFEIT</button>
-  </div>
-  
-  <div class="arena-container">
-    <div class="floating-scoreboard">
-      <div style="font-weight:900; color:var(--text-muted); font-size:0.7rem; letter-spacing:2px; margin-bottom:4px;">FIRST TO 8 KO's</div>
-      <div class="score-board">
-        <div style="color:#69F0AE;" id="score-player">0</div>
-        <div class="hoop-divider">🏀</div>
-        <div style="color:#FF5252;" id="score-enemy">0</div>
-      </div>
-    </div>
-
-    <div class="sb-log-floating" id="battle-log"></div>
-
-    <div id="action-panel-left" class="action-panel-left"></div>
-    <div id="action-panel-right" class="action-panel-right"></div>
-
-    <div id="player-bench-row" class="bench-stack" onclick="toggleBenchExpanded(event)"></div>
-
-    <div class="court-area" id="court-area-bg" onclick="handleCourtClick()">
-      <div style="text-align:center; font-weight:900; font-size:1rem; color:#FF5252; letter-spacing: 2px; margin-bottom: 20px;">ENEMY</div>
-      <div class="battle-row active-cards-container" id="enemy-active-row"></div>
-      
-      <div style="margin: 40px 0;"></div> <div class="battle-row active-cards-container" id="player-active-row"></div>
-      <div style="text-align:center; font-weight:900; font-size:1rem; color:#69F0AE; letter-spacing: 2px; margin-top: 20px;">YOU</div>
-    </div>
-
-    <div id="checkout-panel" class="checkout-panel">
-      <div style="font-weight:900; margin-bottom:16px; color:var(--text); font-size: 1.2rem; border-bottom: 2px solid var(--border-heavy); padding-bottom: 10px;">
-        MOVES STAGED (<span id="staged-count">0</span>)
-      </div>
-      <div id="staged-list" style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px; font-size:0.9rem; color:var(--text-light);"></div>
-      <button class="btn-primary" id="confirm-moves-btn" style="width:100%; padding: 16px; font-size: 1.1rem;" onclick="confirmMoves()">LOCK IN MOVES</button>
-    </div>
-  </div>
-</div>
-
-<script>
-// ==================== UTILS & SELECTORS MUST BE AT THE VERY TOP ====================
-function $(id) { return document.getElementById(id); }
-
-// ==================== CONFIGURATION ====================
-const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/`;
-
-// ==================== DATA BRIDGE HELPERS (CRASH-PROOF) ====================
-function getCardName(c) { return c?.UI_Frontend_Data?.Name || "Unknown Player"; }
-function getCardImg(c) { return c?.UI_Frontend_Data?.Image_File || ""; }
-function getCardHP(c) { return c?.UI_Frontend_Data?.Stats?.HP || 0; }
-function getCardDMG(c) { return c?.UI_Frontend_Data?.Stats?.Base_DMG || 0; }
-function getCardSPD(c) { return c?.UI_Frontend_Data?.Stats?.Speed || 0; }
-function getCardPos(c) { 
-  const p = c?.UI_Frontend_Data?.Positions;
-  if (!p) return "N/A";
-  return p.Primary + (p.Secondary ? '/' + p.Secondary : ''); 
-}
-
-function escapeJS(str) {
-  if (!str) return ""; 
-  return str.toString()
-    .replace(/\\/g, "\\\\")
-    .replace(/'/g, "\\'")
-    .replace(/"/g, '\\"')
-    .replace(/`/g, "\\`");
-}
-
-function shortName(n) { 
-  if (!n || typeof n !== 'string') return "Unknown"; 
-  return n.replace(/ \(.+?\)$/, ''); 
-}
-
-function escapeHtml(str) { 
-  if (!str || typeof str !== 'string') return ""; 
-  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;"); 
-}
-
-function getDBShortName(f) { 
-  if (!f || typeof f !== 'string') return "Unknown"; 
-  let m = f.match(/^(.*?)(\s\(.*)?$/); 
-  if(!m) return f; 
-  let b=m[1], v=m[2]||''; 
-  let p=b.split(' '); 
-  if(p.length > 1){ 
-    let first = p.shift(); 
-    return first.charAt(0) + '. ' + p.join(' ') + v; 
-  } 
-  return b + v; 
-}
-
-function getImgUrl(filename, name) { 
-  const n = (typeof name === 'string') ? name : "Player";
-  const f = (typeof filename === 'string') ? filename : "";
-  if (!f || f.length < 3) {
-    return `https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(shortName(n))}`; 
-  }
-  return `${GITHUB_RAW_BASE}${f}`; 
-}
-function handleImgError(el, name) { el.onerror=null; el.src=`https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(shortName(name))}`; }
-
-function showScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  let el = document.getElementById(id);
-  if (el) el.classList.add('active');
-  window.scrollTo(0,0);
-}
-
-
-// ==================== NEW LOGIC-READY CARDS DB ====================
-const CARDS = [
-  {
-    "UI_Frontend_Data": {
-      "Name": "Stephen Curry (Splash Brother)",
-      "Image_File": "stephen_curry_(splash_brother).png",
-      "Formatted_Name": "S. Curry (Splash Brother)",
-      "Tier": "GOAT TIER",
-      "Team": "Golden State Warriors GOAT Series",
-      "Height": "6'2",
-      "Weight": 185,
-      "Positions": {
-        "Primary": "PG",
-        "Secondary": "SG",
-        "Third": null
-      },
-      "Stats": {
-        "HP": 2200,
-        "Base_DMG": 850,
-        "Speed": 9
-      }
-    },
-    "Ability": {
-      "Name": "Splash Brother",
-      "Description_UI": "Curry is one half of the Splash Brothers, contributing heavily with his unstoppable pull up shots while Klay helps to relieve defensive pressure off of Curry. When any Warriors Klay Thompson card is on the team with Curry, he will gain an additional 1000 HP and 1 SPD. When Klay is no longer on the team, he will lose the boost.",
-      "Logic_Engine": {
-        "Type": "Synergy_State",
-        "Effect": "IF 'Klay Thompson' (Warriors) in Active_Roster THEN HP += 1000, SPD += 1. Removes buff if Klay is wiped out."
-      }
-    },
-    "Skills": [
-      {
-        "Name": "Float Me One",
-        "Nature": "Close Shot",
-        "Display_DMG": "950",
-        "Description_UI": "Curry's floater is one of his favorite ways to score. He takes the high arcing shot over defenders with incredible precision. This skill cannot be blocked by defensive skills. For a maximum of 4 uses.",
-        "Logic_Engine": {
-          "Damage_Value": 950,
-          "Modifiers": ["Unblockable"],
-          "Max_Uses": 4,
-          "Requires_Coin_Flip": false
-        }
-      },
-      {
-        "Name": "Downtown Francisco",
-        "Nature": "Jump Shot",
-        "Display_DMG": "1400",
-        "Description_UI": "Curry is the heart and soul of the Golden State. His insane shot making abilities from deep terrorizes perimeter defenders. Curry takes a shot from way beyond the arc and swishes it in. For a maximum of 1 use.",
-        "Logic_Engine": {
-          "Damage_Value": 1400,
-          "Modifiers": [],
-          "Max_Uses": 1,
-          "Requires_Coin_Flip": false
-        }
-      }
-    ]
-  },
-  {
-    "UI_Frontend_Data": {
-      "Name": "Stephen Curry (Chef Curry)",
-      "Image_File": "stephen_curry_(chef_curry).png",
-      "Formatted_Name": "S. Curry (Chef Curry)",
-      "Tier": "GOAT TIER",
-      "Team": "Golden State Warriors GOAT Series",
-      "Height": "6'2",
-      "Weight": 185,
-      "Positions": {
-        "Primary": "PG",
-        "Secondary": "SG",
-        "Third": null
-      },
-      "Stats": {
-        "HP": 2800,
-        "Base_DMG": 850,
-        "Speed": 9
-      }
-    },
-    "Ability": {
-      "Name": "Chef Curry",
-      "Description_UI": "Curry will start cooking once he gets into his groove. When his shots start falling, his confidence grows. Curry will increase his basic attack by 400 DMG for the rest of the game for every \"Skyfucker\" skill he hits.",
-      "Logic_Engine": {
-        "Type": "Stacking_Buff",
-        "Effect": "IF 'Skyfucker' Success == True THEN Base_DMG += 400. Stacks infinitely."
-      }
-    },
-    "Skills": [
-      {
-        "Name": "Grand Theft Steph",
-        "Nature": "Defensive",
-        "Display_DMG": "250",
-        "Description_UI": "Curry's anticipation allows him to get an easy steal. He steals the ball and denies his opponent's card of making any move. He also damages his opponents slightly. This skill will move first (x2 priority) and he can target any opponent. This skill cannot be nullified. For a maximum of 1 use.",
-        "Logic_Engine": {
-          "Damage_Value": 250,
-          "Priority": "x2",
-          "Modifiers": ["Preemptive_Cancel", "Un-nullifiable"],
-          "Execution": "Interrupts and cancels target's selected move for the turn.",
-          "Max_Uses": 1,
-          "Requires_Coin_Flip": false
-        }
-      },
-      {
-        "Name": "Skyfucker",
-        "Nature": "Jump Shot",
-        "Display_DMG": "2000",
-        "Description_UI": "Curry pulls up from beyond the arc, anywhere on the court. This skill has a 50% chance of hitting, to be decided via coin flip. For a maximum of 2 uses.",
-        "Logic_Engine": {
-          "Damage_Value": 2000,
-          "Modifiers": [],
-          "Max_Uses": 2,
-          "Requires_Coin_Flip": true,
-          "Coin_Flip_Odds": 0.5
-        }
-      }
-    ]
-  },
-  {
-    "UI_Frontend_Data": {
-      "Name": "Luka Doncic (Luka Magic)",
-      "Image_File": "luka_doncic_(luka_magic).png",
-      "Formatted_Name": "L. Doncic (Luka Magic)",
-      "Tier": "GOAT TIER",
-      "Team": "Dallas Mavericks GOAT Series",
-      "Height": "6'7",
-      "Weight": 230,
-      "Positions": {
-        "Primary": "PG",
-        "Secondary": "SG",
-        "Third": null
-      },
-      "Stats": {
-        "HP": 2800,
-        "Base_DMG": 850,
-        "Speed": 7
-      }
-    },
-    "Ability": {
-      "Name": "Luka Magic",
-      "Description_UI": "Luka is a transcendent offensive player and he has shown that he has the clutch gene. Once a game, when Luka's HP has been reduced to 0, Luka will hold on to 1 HP. He will be untargetable for the rest of the turn and he will move first the next turn (x2 priority).",
-      "Logic_Engine": {
-        "Type": "Reactionary_Interrupt",
-        "Trigger": "IF Luka_HP <= 0",
-        "Effect": "Set Luka_HP = 1. Apply Status: Untargetable for remainder of current turn. Apply Priority x2 for the next turn. Max 1 use per game."
-      }
-    },
-    "Skills": [
-      {
-        "Name": "Step-Back Don",
-        "Nature": "Jump Shot",
-        "Display_DMG": "1000",
-        "Description_UI": "Luka, known for his effortless style of play, sizes up and steps back behind the arc for a 3 pointer. For a maximum of 5 uses.",
-        "Logic_Engine": {
-          "Damage_Value": 1000,
-          "Max_Uses": 5,
-          "Requires_Coin_Flip": false
-        }
-      },
-      {
-        "Name": "Cool Hand Luka",
-        "Nature": "Assist",
-        "Display_DMG": "1250",
-        "Description_UI": "Luka the floor general, slings a pinpoint laser to his open teammate for a good look. For a maximum of 1 use.",
-        "Logic_Engine": {
-          "Damage_Value": 1250,
-          "Max_Uses": 1,
-          "Requires_Coin_Flip": false
-        }
-      }
-    ]
-  },
-  {
-    "UI_Frontend_Data": {
-      "Name": "Luka Doncic (The Don of LA)",
-      "Image_File": "luka_doncic_(the_don_of_la).png",
-      "Formatted_Name": "L. Doncic (The Don of LA)",
-      "Tier": "GOAT TIER",
-      "Team": "Los Angeles Lakers GOAT Series",
-      "Height": "6'7",
-      "Weight": 230,
-      "Positions": {
-        "Primary": "PG",
-        "Secondary": "SG",
-        "Third": null
-      },
-      "Stats": {
-        "HP": 3550,
-        "Base_DMG": 850,
-        "Speed": 8
-      }
-    },
-    "Ability": {
-      "Name": "The Don of LA",
-      "Description_UI": "Luka has arrived in Los Angeles, bringing transcendent offense that demolishes defenses at will. Luka is an offensive maestro that defies circumstances. Once a game, when Luka's HP has been reduced to 0, Luka will be healed for 1700 HP. He will be untargetable for the rest of the turn.",
-      "Logic_Engine": {
-        "Type": "Reactionary_Interrupt",
-        "Trigger": "IF Luka_HP <= 0",
-        "Effect": "Heal Luka_HP = 1700. Apply Status: Untargetable for remainder of current turn. Max 1 use per game."
-      }
-    },
-    "Skills": [
-      {
-        "Name": "Size-Up Don",
-        "Nature": "Jump Shot",
-        "Display_DMG": "1100",
-        "Description_UI": "Luka sizes up his defender before shooting a three right in their face. For a maximum of 5 uses.",
-        "Logic_Engine": {
-          "Damage_Value": 1100,
-          "Max_Uses": 5,
-          "Requires_Coin_Flip": false
-        }
-      },
-      {
-        "Name": "Revenge Season",
-        "Nature": "Special",
-        "Display_DMG": "N/A (buff)",
-        "Description_UI": "Luka is out for revenge. He is ready to wreak havoc on the league. This skill will block all incoming basic attacks and skills targeting Luka for this turn. Luka will also gain an additional 2 SPD, 300 DMG for basic attack, and 250 DMG for his damaging skill for 3 turns, starting next turn. This skill cannot be stopped and will move first (x3 priority). For a maximum of 1 use.",
-        "Logic_Engine": {
-          "Damage_Value": 0,
-          "Priority": "x3",
-          "Modifiers": ["Block_All_Incoming", "Unstoppable"],
-          "Execution": "Blocks all attacks this turn. Next turn, apply Buff (SPD += 2, Base_DMG += 300, Skill_DMG += 250) for 3 turns.",
-          "Max_Uses": 1,
-          "Requires_Coin_Flip": false
-        }
-      }
-    ]
-  },
-  {
-    "UI_Frontend_Data": {
-      "Name": "Isiah Thomas",
-      "Image_File": "isiah_thomas.png",
-      "Formatted_Name": "I. Thomas",
-      "Tier": "GOAT TIER",
-      "Team": "Detroit Pistons GOAT Series",
-      "Height": "6'1",
-      "Weight": 180,
-      "Positions": {
-        "Primary": "PG",
-        "Secondary": null,
-        "Third": null
-      },
-      "Stats": {
-        "HP": 3200,
-        "Base_DMG": 500,
-        "Speed": 9
-      }
-    },
-    "Ability": {
-      "Name": "Zeke",
-      "Description_UI": "Isiah is an absolute pest on defense, hounding his assignment constantly. The opposing PG will focus only on Isiah, he cannot target other players with basic attacks or damage dealing skills. However, the opposing PG may still target other players with defensive skills. Additionally, all damage from skills dealt to Isiah will be halved.",
-      "Logic_Engine": {
-        "Type": "Taunt_And_Shield",
-        "Effect": "Opposing PG Valid_Targets is restricted to Isiah Thomas for offensive moves. Incoming_Skill_Damage to Isiah = Total_Damage * 0.5."
-      }
-    },
-    "Skills": [
-      {
-        "Name": "Piston PNR",
-        "Nature": "Assist",
-        "Display_DMG": "600",
-        "Description_UI": "Isiah runs the pick and roll, dishing the ball to his big man for a layup. For a maximum of 2 uses.",
-        "Logic_Engine": {
-          "Damage_Value": 600,
-          "Max_Uses": 2,
-          "Requires_Coin_Flip": false
-        }
-      },
-      {
-        "Name": "Bad Boy Pistons",
-        "Nature": "Defensive",
-        "Display_DMG": "N/A (effect)",
-        "Description_UI": "The Bad Boy Pistons' brand of physical and stifling defense causes every opponent's jumpshot skills used the following 3 turns will have a 50% chance to miss. A coin flip will be used to determine if it misses (opponent chooses side first). For skills that already require a coin flip, 2 consecutive coin flips will have to be done. Attempts will not be counted if it misses. For a maximum of 1 use.",
-        "Logic_Engine": {
-          "Damage_Value": 0,
-          "Modifiers": ["Global_Status_Aura"],
-          "Execution": "For 3 turns, IF Opponent uses Jump Shot THEN Force Coin_Flip. Misses do not deduct from Max_Uses.",
-          "Max_Uses": 1,
-          "Requires_Coin_Flip": false
-        }
-      }
-    ]
-  },
-  {
-    "UI_Frontend_Data": {
-      "Name": "Russell Westbrook",
-      "Image_File": "russell_westbrook.png",
-      "Formatted_Name": "R. Westbrook",
-      "Tier": "GOAT TIER",
-      "Team": "Oklahoma City Thunder GOAT Series",
-      "Height": "6'4",
-      "Weight": 200,
-      "Positions": {
-        "Primary": "PG",
-        "Secondary": "SG",
-        "Third": null
-      },
-      "Stats": {
-        "HP": 3400,
-        "Base_DMG": 900,
-        "Speed": 10
-      }
-    },
-    "Ability": {
-      "Name": "Brodie",
-      "Description_UI": "Westbrook holds a grudge against the Warriors and always excels against them. Westbrook will gain additional 1000 HP and 400 DMG for his basic attack when there is a Golden State Warrior on the opposing team. When there is no Warrior left on the opposing team, he will lose the boost.",
-      "Logic_Engine": {
-        "Type": "Rivalry_State",
-        "Effect": "IF Any_Opponent_Team_Tag == 'Golden State Warriors' THEN HP += 1000, Base_DMG += 400. Removes buff if all Warriors wiped out."
-      }
-    },
-    "Skills": [
-      {
-        "Name": "Thunderous Poster",
-        "Nature": "Close Shot",
-        "Display_DMG": "1100",
-        "Description_UI": "Westbrook rises up for a vicious dunk. For a maximum of 5 uses.",
-        "Logic_Engine": {
-          "Damage_Value": 1100,
-          "Max_Uses": 5,
-          "Requires_Coin_Flip": false
-        }
-      },
-      {
-        "Name": "Mr. Triple Double",
-        "Nature": "Rebound; Assist",
-        "Display_DMG": "N/A (assist)",
-        "Description_UI": "Westbrook holds the record for career triple doubles. Westbrook rebounds a missed, contested or blocked skill by any teammate, including himself and passes it to his teammate for an assist. The teammate will gain an extra move but can only use their basic attack during it. This skill is used after a teammate's skill misses, gets blocked or gets contested. This can be used once each turn and for a maximum of 2 uses.",
-        "Logic_Engine": {
-          "Damage_Value": 0,
-          "Trigger": "Reactionary. IF Teammate_Skill_Result == Miss OR Blocked OR Contested",
-          "Execution": "Grant that teammate an immediate extra Base Attack outside normal turn order.",
-          "Max_Uses_Per_Turn": 1,
-          "Max_Uses": 2,
-          "Requires_Coin_Flip": false
-        }
-      }
-    ]
-  },
-  {
-    "UI_Frontend_Data": {
-      "Name": "Shai Gilgeous-Alexander",
-      "Image_File": "shai_gilgeous-alexander.png",
-      "Formatted_Name": "S. Gilgeous-Alexander",
-      "Tier": "GOAT TIER",
-      "Team": "Oklahoma City Thunder Future Series",
-      "Height": "6'6",
-      "Weight": 180,
-      "Positions": {
-        "Primary": "PG",
-        "Secondary": "SG",
-        "Third": null
-      },
-      "Stats": {
-        "HP": 3200,
-        "Base_DMG": 700,
-        "Speed": 9
-      }
-    },
-    "Ability": {
-      "Name": "Thunder Boy",
-      "Description_UI": "Shai's explosive rise into superstardom has put his team on the map. His consistency has turned OKC into contenders overnight. Shai is Mr. Consistent, and no one is able to throw him off his game. Shai is unaffected by any defensive skills.",
-      "Logic_Engine": {
-        "Type": "Immunity",
-        "Effect": "Ignore_Opponent_Defensive_Skills = True"
-      }
-    },
-    "Skills": [
-      {
-        "Name": "Shoulder Bump Stepback",
-        "Nature": "Jump Shot",
-        "Display_DMG": "1000",
-        "Description_UI": "Shai uses his signature shoulder bumps and performs a stepback, before shooting a middy. For a maximum of 5 uses.",
-        "Logic_Engine": {
-          "Damage_Value": 1000,
-          "Max_Uses": 5,
-          "Requires_Coin_Flip": false
-        }
-      },
-      {
-        "Name": "Immaculate Vibes",
-        "Nature": "Special",
-        "Display_DMG": "1500",
-        "Description_UI": "OKC is a young, energetic and talented team. The vibes are immaculate. The synergy on the team makes Shai an unstoppable force. This skill can only be used when there is another OKC on his team. For a maximum of 1 use.",
-        "Logic_Engine": {
-          "Damage_Value": 1500,
-          "Execution_Condition": "IF Teammate_Tag == 'OKC'",
-          "Max_Uses": 1,
-          "Requires_Coin_Flip": false
-        }
-      }
-    ]
-  },
-  {
-    "UI_Frontend_Data": {
-      "Name": "Magic Johnson",
-      "Image_File": "magic_johnson.png",
-      "Formatted_Name": "M. Johnson",
-      "Tier": "GOAT TIER",
-      "Team": "Los Angeles Lakers GOAT Series",
-      "Height": "6'9",
-      "Weight": 220,
-      "Positions": {
-        "Primary": "PG",
-        "Secondary": "PF",
-        "Third": null
-      },
-      "Stats": {
-        "HP": 3150,
-        "Base_DMG": 900,
-        "Speed": 9
-      }
-    },
-    "Ability": {
-      "Name": "Showtime",
-      "Description_UI": "Magic and his Showtime Lakers played an exciting style of basketball. Magic controlled the floor which brought their offense to new heights. When there is another Los Angeles Laker on Magic's team, his SPD will increase by 1 and damage from all his skills will increase by 150 DMG. When there is no Laker left, he will lose his boost.",
-      "Logic_Engine": {
-        "Type": "Synergy_State",
-        "Effect": "IF Teammate_Tag == 'Lakers' THEN SPD += 1, All_Skill_DMG += 150."
-      }
-    },
-    "Skills": [
-      {
-        "Name": "Fast Break",
-        "Nature": "Assist",
-        "Display_DMG": "1150",
-        "Description_UI": "Magic runs the fast break and they get an easy bucket. For maximum of 4 uses.",
-        "Logic_Engine": {
-          "Damage_Value": 1150,
-          "Max_Uses": 4,
-          "Requires_Coin_Flip": false
-        }
-      },
-      {
-        "Name": "No-Look Pass",
-        "Nature": "Assist; Close Shot",
-        "Display_DMG": "x1.5 (SG/SF)",
-        "Description_UI": "Magic pulls off his iconic no-look pass leading to a layup that stuns the crowd. The damage dealt will be calculated by multiplying the basic attack of the SG or SF on Magic's team by 1.5. The damage will be directed to Magic's matchups. For a maximum of 4 uses.",
-        "Logic_Engine": {
-          "Damage_Value": 0,
-          "Modifiers": ["Multiplier_Assist"],
-          "Execution": "Final_DMG = Teammate(SG or SF)_Base_DMG * 1.5. Directed at Magic's valid matchup.",
-          "Max_Uses": 4,
-          "Requires_Coin_Flip": false
-        }
-      }
-    ]
-  },
-  {
-    "UI_Frontend_Data": {
-      "Name": "Oscar Robertson",
-      "Image_File": "oscar_robertson.png",
-      "Formatted_Name": "O. Robertson",
-      "Tier": "GOAT TIER",
-      "Team": "Sacramento Kings GOAT Series",
-      "Height": "6'5",
-      "Weight": 205,
-      "Positions": {
-        "Primary": "PG",
-        "Secondary": null,
-        "Third": null
-      },
-      "Stats": {
-        "HP": 3400,
-        "Base_DMG": 850,
-        "Speed": 10
-      }
-    },
-    "Ability": {
-      "Name": "Big O",
-      "Description_UI": "Oscar Robertson is the first NBA player to average a triple double over a season. His versatility poses a big threat to all defenders. Defenders cannot steal the ball from Robertson and they cannot intercept his assist skill.",
-      "Logic_Engine": {
-        "Type": "Immunity",
-        "Effect": "Immune_To_Steal = True AND Assist_Interceptable = False"
-      }
-    },
-    "Skills": [
-      {
-        "Name": "Overpower Drive",
-        "Nature": "Close Shot",
-        "Display_DMG": "1050",
-        "Description_UI": "Robertson's imposing frame and strength easily allows him to power past his defenders to get to the hoop. For a maximum of 5 uses.",
-        "Logic_Engine": {
-          "Damage_Value": 1050,
-          "Max_Uses": 5,
-          "Requires_Coin_Flip": false
-        }
-      },
-      {
-        "Name": "Oscar's Delivery",
-        "Nature": "Assist; Close Shot",
-        "Display_DMG": "x2 (PF/C)",
-        "Description_UI": "Robertson has great passing vision and amazing passing skills. He scans the floor for an open teammate and sends it directly to their hands for a dunk. The damage dealt will be calculated by multiplying the basic attack of the PF or C on Robertson's team by 2. The damage will be directed to the assist recipient's target. For a maximum of 1 use.",
-        "Logic_Engine": {
-          "Damage_Value": 0,
-          "Modifiers": ["Multiplier_Assist"],
-          "Execution": "Final_DMG = Teammate(PF or C)_Base_DMG * 2. Directed at the assisting teammate's valid target, bypassing Oscar's normal targeting matrix.",
-          "Max_Uses": 1,
-          "Requires_Coin_Flip": false
-        }
-      }
-    ]
-  },
-  {
-    "UI_Frontend_Data": {
-      "Name": "Gary Payton",
-      "Image_File": "gary_payton.png",
-      "Formatted_Name": "G. Payton",
-      "Tier": "GOAT TIER",
-      "Team": "Seattle Supersonics GOAT Series",
-      "Height": "6'4",
-      "Weight": 180,
-      "Positions": {
-        "Primary": "PG",
-        "Secondary": "SG",
-        "Third": null
-      },
-      "Stats": {
-        "HP": 3300,
-        "Base_DMG": 450,
-        "Speed": 9
-      }
-    },
-    "Ability": {
-      "Name": "The Glove",
-      "Description_UI": "Payton's presence disrupts the opponent's guards offense. The damage from the opponent's PG and SG's jumpshot skills will be halved when they are using the skills to damage Payton.",
-      "Logic_Engine": {
-        "Type": "Damage_Mitigation",
-        "Effect": "IF Target == Gary Payton AND Attacker == PG or SG AND Skill_Type == Jump Shot THEN Incoming_Damage = Incoming_Damage * 0.5"
-      }
-    },
-    "Skills": [
-      {
-        "Name": "Grabby Gary",
-        "Nature": "Defensive",
-        "Display_DMG": "N/A (steal)",
-        "Description_UI": "Payton is exceptional at stealing the ball. He rips it from his opponent and denies him of making any move. This skill will move first (x4 priority) and he can target any opponent. This skill does not count as a turn of Payton. This can be used once each turn and for a maximum of 2 uses.",
-        "Logic_Engine": {
-          "Damage_Value": 0,
-          "Priority": "x4",
-          "Modifiers": ["Preemptive_Cancel", "Zero_Move_Cost"],
-          "Execution": "Interrupts target's selected move, cancelling it.",
-          "Max_Uses_Per_Turn": 1,
-          "Max_Uses": 2,
-          "Requires_Coin_Flip": false
-        }
-      },
-      {
-        "Name": "Supersonic Clamps",
-        "Nature": "Defensive",
-        "Display_DMG": "N/A (disable)",
-        "Description_UI": "Payton is phenomenal at shutting opponent down and can entirely deny his opponent of making certain moves. Payton may choose one skill from an adjacent opponents, there will be a 50% chance that the skill will be disabled for 3 turns. A coin flip will be used to determine if it misses (opponent chooses side first). This skill cannot be nullified and will move first (x3 priority). This can be used once each turn and for a maximum of 2 uses.",
-        "Logic_Engine": {
-          "Damage_Value": 0,
-          "Priority": "x3",
-          "Modifiers": ["Status_Debuff", "Un-nullifiable"],
-          "Execution": "Select specific skill from adjacent opponent. IF Coin_Flip Success THEN Target_Skill is Disabled for 3 turns.",
-          "Max_Uses_Per_Turn": 1,
-          "Max_Uses": 2,
-          "Requires_Coin_Flip": true,
-          "Coin_Flip_Odds": 0.5
-        }
-      }
-    ]
-  },
+[
   {
     "UI_Frontend_Data": {
       "Name": "Tony Parker",
@@ -2630,7 +2232,10 @@ const CARDS = [
         }
       }
     ]
-  },
+  }
+]
+
+[
   {
     "UI_Frontend_Data": {
       "Name": "Sidney Moncrief",
@@ -4049,7 +3654,10 @@ const CARDS = [
         }
       }
     ]
-  },
+  }
+]
+
+[
   {
     "UI_Frontend_Data": {
       "Name": "Elgin Baylor",
@@ -5468,7 +5076,10 @@ const CARDS = [
         }
       }
     ]
-  },
+  }
+]
+
+[
   {
     "UI_Frontend_Data": {
       "Name": "Wilt Chamberlain (The Stilt)",
@@ -6894,840 +6505,5 @@ const CARDS = [
       }
     ]
   }
-];
-// ==================== STATE MANAGEMENT ====================
-let draftSquad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
-let activeLineup = { PG:null, SG:null, SF:null, PF:null, C:null, '6TH':null };
-let benchRoster = [];
-let hasSixthMan = false;
-const POSITIONS = ['PG','SG','SF','PF','C'];
+]
 
-let playerActive = [], playerBench = [], enemyActive = [], enemyBench = [];
-let playerScore = 0, enemyScore = 0;
-
-let expandedCardCat = null;
-let expandedCardDraft = null;
-let isCollapsing = false;
-let searchTimeout;
-
-// --- BATTLE ENGINE STATE ---
-let currentTurn = 'player'; 
-let turnCount = 1;
-let activePlayerIndex = 0; 
-let activeEnemyIndex = 0; 
-let isAnimating = false;
-let stagedActions = []; 
-let uiState = 'IDLE';
-let pendingAction = null;
-
-// ==================== GLOBAL RULES ====================
-const TARGET_MATRIX = {
-  "PG": ["PG", "SG"],
-  "SG": ["SG", "SF"],
-  "SF": ["SG", "SF", "PF"],
-  "PF": ["PF", "C"],
-  "C": ["PF", "C"]
-};
-
-// ==================== PHASE 1: CATALOGUE ====================
-// --- THE EXPANSION BRAIN ---
-function toggleExpand(name, category) {
-    if (category === 'cat') {
-        expandedCardCat = (expandedCardCat === name) ? null : name;
-        filterCat(); // Redraw the grid to show the expanded row
-    } else {
-        expandedCardDraft = (expandedCardDraft === name) ? null : name;
-        filterDraftGrid();
-    }
-}
-
-function renderExpandedRow(c, category) {
-    const name = getCardName(c);
-    const sn = shortName(name);
-    const abName = c.Ability?.Name || "None";
-    const abDesc = c.Ability?.Description_UI || "";
-    
-    // Build the skills list
-    let skillsHtml = (c.Skills || []).map(s => 
-        `<div style="margin-top:8px;"><b>${s.Name}</b>: ${s.Description_UI}</div>`
-    ).join('');
-
-    return `
-    <div class="expanded-row" onclick="toggleExpand('${escapeJS(name)}', '${category}')">
-        <div class="expanded-card-container" style="width:220px;">
-            <div class="expanded-card-flipper">
-                <div class="battle-card"><img src="${getImgUrl(getCardImg(c), name)}"></div>
-            </div>
-        </div>
-        <div class="expanded-content">
-            <div class="ec-title">${sn}</div>
-            <div style="color:var(--accent); font-weight:bold;">${c.UI_Frontend_Data.Team}</div>
-            <div class="ec-ability">
-                <div style="font-weight:bold; color:#69F0AE;">✨ ${abName}</div>
-                <div style="font-size:0.8rem; margin-top:4px;">${abDesc}</div>
-            </div>
-            <div style="font-size:0.85rem;">${skillsHtml}</div>
-        </div>
-    </div>`;
-}
-  function goCat() {
-  showScreen('catalogue-screen');
-}
-
-function filterCat() {
-  if(isCollapsing) return;
-  let q = $('cs').value.toLowerCase(), posF = $('cp').value, sort = $('csort').value;
-  
-  let cleanCards = CARDS.filter(c => c && c.UI_Frontend_Data);
-  let filtered = cleanCards.filter(c => {
-    let name = (getCardName(c) || "").toLowerCase();
-    let team = (c.UI_Frontend_Data.Team || "").toLowerCase();
-    let pos = getCardPos(c);
-    return (!q || name.includes(q) || team.includes(q)) && (!posF || pos.split('/').some(p=>p.trim()===posF));
-  });
-
-  if (sort === 'hp') filtered.sort((a,b)=>getCardHP(b)-getCardHP(a)); 
-  else if (sort === 'dmg') filtered.sort((a,b)=>getCardDMG(b)-getCardDMG(a)); 
-  else if (sort === 'spd') filtered.sort((a,b)=>getCardSPD(b)-getCardSPD(a)); 
-  else filtered.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
-  
-  $('cgrid').innerHTML = filtered.map(c => {
-    let name = getCardName(c);
-    if (name === expandedCardCat) return renderExpandedRow(c, 'cat');
-    let safeName = escapeJS(name);
-    return `<div class="compact-card" onclick="toggleExpand('${safeName}', 'cat')" onmouseenter="showTooltip(event, '${safeName}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c), name)}" onerror="handleImgError(this, '${safeName}')"></div></div>`;
-  }).join('');
-}
-
-// ==================== PHASE 2: DRAFTING ====================
-/* ==================== DRAFT & EXPANSION LOGIC ==================== */
-
-/* ==================== DRAFTING LOGIC ==================== */
-
-function goDraft() { 
-  // Reset draft if starting over
-  draftSquad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
-  expandedCardDraft = null;
-  
-  showScreen('draft-screen'); 
-  renderDraftSlots(); 
-  filterDraftGrid(); 
-}
-
-function filterDraftGrid() {
-  let q = $('draft-search') ? $('draft-search').value.toLowerCase() : "";
-  let grid = $('draft-grid');
-  if (!grid) return;
-
-  grid.innerHTML = CARDS.filter(c => getCardName(c).toLowerCase().includes(q)).map(c => {
-    let name = getCardName(c); 
-    let sn = escapeJS(name);
-    
-    // Pokemon/Fairy Spin expansion check
-    if (typeof expandedCardDraft !== 'undefined' && name === expandedCardDraft) {
-        return renderExpandedRow(c, 'draft');
-    }
-
-    return `
-      <div class="compact-card" onclick="toggleExpand('${sn}', 'draft')">
-        <img src="${getImgUrl(getCardImg(c), name)}" onerror="handleImgError(this, '${sn}')">
-        <button class="btn-primary" style="position:absolute; bottom:5px; left:50%; transform:translateX(-50%); font-size:0.5rem; padding:4px 8px;" onclick="event.stopPropagation(); addDraft('${sn}')">ADD</button>
-      </div>`;
-  }).join('');
-}
-
-function renderDraftSlots() {
-  let h = ''; 
-  Object.keys(draftSquad).forEach(p => {
-    draftSquad[p].forEach((c, i) => {
-      h += `
-        <div class="slot-card" onclick="draftSquad['${p}'][${i}]=null;renderDraftSlots();filterDraftGrid();">
-          <div class="slot-pos" style="color:var(--pos-${p.toLowerCase()})">${p}</div>
-          <div class="slot-name">${c ? shortName(getCardName(c)) : 'Empty'}</div>
-        </div>`;
-    });
-  });
-  $('draft-slots').innerHTML = h;
-  
-  let count = Object.values(draftSquad).flat().filter(x => x).length;
-  $('draft-count-lbl').textContent = `${count}/10`;
-  $('draft-confirm-btn').disabled = count < 10;
-}
-
-function addDraft(n) {
-  let c = CARDS.find(x => getCardName(x) === n);
-  if(!c) return;
-  let pos = getCardPos(c).split('/')[0].trim();
-  
-  // Check if position slots are full
-  if(draftSquad[pos][0] && draftSquad[pos][1]) {
-      alert(pos + " slots are full!");
-      return;
-  }
-  
-  if(!draftSquad[pos][0]) draftSquad[pos][0] = c; 
-  else draftSquad[pos][1] = c;
-  
-  renderDraftSlots();
-  filterDraftGrid();
-}
-}
-
-function toggleExpand(name, category) {
-    if (category === 'cat') {
-        expandedCardCat = (expandedCardCat === name) ? null : name;
-        filterCat(); 
-    } else {
-        expandedCardDraft = (expandedCardDraft === name) ? null : name;
-        filterDraftGrid();
-    }
-}
-
-function renderExpandedRow(c, category) {
-    const name = getCardName(c);
-    const sn = escapeJS(name);
-    const abName = c.Ability?.Name || "None";
-    const abDesc = c.Ability?.Description_UI || "";
-    
-    return `
-    <div class="expanded-row" style="grid-column: 1 / -1;" onclick="toggleExpand('${sn}', '${category}')">
-        <div class="expanded-card-flipper">
-            <div class="battle-card"><img src="${getImgUrl(getCardImg(c), name)}"></div>
-        </div>
-        <div class="expanded-content">
-            <div class="ec-title">${shortName(name)}</div>
-            <div style="color:var(--accent); font-weight:bold; margin-bottom:10px;">${c.UI_Frontend_Data.Team}</div>
-            <div class="ec-ability">
-                <div style="font-weight:bold; color:#69F0AE;">✨ ${abName}</div>
-                <p style="font-size:0.75rem; margin-top:4px;">${abDesc}</p>
-            </div>
-            <button class="btn-primary" style="margin-top:15px;" onclick="event.stopPropagation(); addDraft('${sn}')">ADD TO SQUAD</button>
-        </div>
-    </div>`;
-}
-  
-  let max = hasSixthMan ? 11 : 10;
-  $('draft-count-lbl').textContent = `${count}/${max}`;
-  $('draft-confirm-btn').disabled = count < 10; 
-
-function dropDraft(e, pos, idx) {
-  e.preventDefault(); if (e.currentTarget && e.currentTarget.classList) e.currentTarget.classList.remove('drag-over');
-  let card = CARDS.find(c => getCardName(c) === e.dataTransfer.getData('text/plain'));
-  if (!card || isCardInDraft(card)) return;
-  if (!getCardPos(card).split('/').map(p=>p.trim()).includes(pos)) return triggerInvalidDrop($(`dslot-${pos}-${idx}`));
-  
-  draftSquad[pos][idx] = card; renderDraftSlots(); filterDraftGrid();
-}
-
-function removeDraft(pos, idx) { draftSquad[pos][idx] = null; renderDraftSlots(); filterDraftGrid(); }
-
-function autoFillDraft() {
-  draftSquad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
-  let shuf = [...CARDS].sort(()=>Math.random()-0.5);
-  POSITIONS.forEach(pos => { let m = shuf.filter(c => getCardPos(c).includes(pos) && !isCardInDraft(c)); if(m[0]) draftSquad[pos][0]=m[0]; if(m[1]) draftSquad[pos][1]=m[1]; });
-  renderDraftSlots(); filterDraftGrid();
-}
-
-// ==================== PHASE 3: SETUP ====================
-function goSetup() {
-  benchRoster = [];
-  POSITIONS.forEach(p => [0,1].forEach(i => { if(draftSquad[p][i]) benchRoster.push(draftSquad[p][i]); }));
-  activeLineup = { PG:null, SG:null, SF:null, PF:null, C:null, '6TH':null };
-  showScreen('setup-screen'); renderSetupSlots(); renderSetupBench();
-}
-
-function renderSetupSlots() {
-  let slots = [...POSITIONS]; if(hasSixthMan) slots.push('6TH');
-  $('setup-slots').innerHTML = slots.map(pos => {
-    let c = activeLineup[pos]; let is6 = pos === '6TH';
-    return `
-      <div id="sslots-${pos}" class="slot-card slot-${is6 ? '6TH' : pos} ${c?'filled':''}" style="${is6 ? 'display:flex;' : ''}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropSetup(event, '${pos}')">
-        <div class="slot-pos">${is6 ? 'SIXTH MAN' : pos}</div>
-        ${c ? `<div class="slot-name">${getDBShortName(getCardName(c))}</div><button class="remove-slot" onclick="activeLineup['${pos}']=null;renderSetupSlots();renderSetupBench()">✕</button>` : `<div style="opacity:0.3;font-size:0.65rem;">${is6 ? 'Harden Only' : 'Drop'}</div>`}
-      </div>`;
-  }).join('');
-  let c = Object.values(activeLineup).filter(x=>x).length;
-  $('setup-count-lbl').textContent = `${c}/${hasSixthMan?6:5}`;
-  $('start-battle-btn').disabled = c < 5;
-}
-
-function dropSetup(e, pos) {
-  e.preventDefault(); if (e.currentTarget && e.currentTarget.classList) e.currentTarget.classList.remove('drag-over');
-  let card = benchRoster.find(c => getCardName(c) === e.dataTransfer.getData('text/plain'));
-  if(!card) return;
-  if(pos === '6TH' && !getCardName(card).includes("Sixth Man")) return triggerInvalidDrop($(`sslots-${pos}`));
-  if(pos !== '6TH' && !getCardPos(card).split('/').map(p=>p.trim()).includes(pos)) return triggerInvalidDrop($(`sslots-${pos}`));
-  activeLineup[pos] = card; renderSetupSlots(); renderSetupBench();
-}
-
-function renderSetupBench() {
-  $('setup-bench-grid').innerHTML = benchRoster.map(c => {
-    let inA = Object.values(activeLineup).some(ac => ac && getCardName(ac) === getCardName(c));
-    if(inA) return '';
-    let name = getCardName(c);
-    let safeName = escapeJS(name);
-    return `<div class="compact-card" data-name="${escapeHtml(name)}" draggable="true" ondragstart="handleDragStart(event, '${safeName}')" ondragend="handleDragEnd(event)" onmouseenter="showTooltip(event, '${safeName}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c), name)}" onerror="handleImgError(this, '${safeName}')"></div></div>`;
-  }).join('');
-}
-
-
-// ==================== PHASE 4: BATTLE & ENGINE ====================
-function startBattle() {
-  document.body.classList.add('battle-active'); // Enables the 3D Fanning CSS
-  playerActive = [];
-  let positions = hasSixthMan ? ['PG','SG','SF','PF','C','6TH'] : ['PG','SG','SF','PF','C'];
-  positions.forEach(p => { 
-    if(activeLineup[p]) {
-        let cardCopy = JSON.parse(JSON.stringify(activeLineup[p]));
-        cardCopy.currentHp = getCardHP(cardCopy);
-        cardCopy.isDead = false;
-        playerActive.push(cardCopy);
-    } 
-  });
-  playerBench = benchRoster.filter(c => !playerActive.some(ac => getCardName(ac) === getCardName(c)));
-  
-  let shuf = [...CARDS].sort(()=>Math.random()-0.5);
-  let enemyCount = Math.random() > 0.8 ? 6 : 5;
-  enemyActive = shuf.slice(0,enemyCount).map(c => {
-      let cardCopy = JSON.parse(JSON.stringify(c));
-      cardCopy.currentHp = getCardHP(cardCopy);
-      cardCopy.isDead = false;
-      return cardCopy;
-  });
-  enemyBench = shuf.slice(enemyCount,10);
-  
-  playerScore = 0; enemyScore = 0; turnCount = 1;
-  stagedActions = []; uiState = 'IDLE';
-  
-  $('battle-log').innerHTML = `<div class="log-entry sys" style="text-align:center;">Match Starting... First to 8 KOs.</div>`;
-  $('score-player').textContent = '0'; $('score-enemy').textContent = '0';
-  
-  showScreen('battle-screen'); 
-  renderArena();
-  renderCheckout();
-}
-
-function renderArena() {
-  $('enemy-bench-row').innerHTML = enemyBench.map(c => `<div class="bench-card face-down"><img src="${GITHUB_RAW_BASE}goat-tier-back.png" onerror="this.style.display='none'"></div>`).join('');
-  $('enemy-active-row').innerHTML = enemyActive.map((c, i) => buildCardHtml(c, i, true)).join('');
-  $('player-active-row').innerHTML = playerActive.map((c, i) => buildCardHtml(c, i, false)).join('');
-  $('player-bench-row').innerHTML = playerBench.map((c, i) => {
-      let name = getCardName(c);
-      let safeName = escapeJS(name);
-      return `<div class="bench-card" onclick="onBenchClick(${i}, event)"><img src="${getImgUrl(getCardImg(c), name)}" onerror="handleImgError(this, '${safeName}')"></div>`;
-  }).join('');
-}
-
-function buildCardHtml(c, index, isE) {
-  let name = getCardName(c);
-  let hpMax = getCardHP(c);
-  let pct = Math.max(0, (c.currentHp / hpMax) * 100);
-  let hpClass = pct > 50 ? 'hp-high' : pct > 20 ? 'hp-med' : 'hp-low';
-
-  let pos = getCardPos(c);
-  let pc = pos.includes('PG')?'var(--pos-pg)':pos.includes('SG')?'var(--pos-sg)':pos.includes('SF')?'var(--pos-sf)':pos.includes('PF')?'var(--pos-pf)':'var(--pos-c)';
-  let safeName = escapeJS(name);
-  let teamStr = isE ? 'enemy' : 'player';
-  
-  let isStaged = !isE && stagedActions.some(a => a.actorIdx === index);
-  let isValidTarget = isE && uiState === 'AWAITING_TARGET' && getValidTargets(playerActive[pendingAction.actorIdx], enemyActive).some(v => v.i === index);
-  
-  return `
-    <div class="battle-card-wrapper" id="wrap-${teamStr}-${index}" onclick="onCardClick('${teamStr}', ${index}, event)" onmouseenter="showTooltip(event, '${safeName}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)">
-      
-      ${isE ? `
-        <div class="hp-container">
-           <div class="hp-bar-bg"><div class="hp-bar-fill ${hpClass}" id="hpf-${teamStr}-${index}" style="width:${pct}%;"></div></div>
-        </div>
-      ` : ''}
-      
-      <div class="battle-card ${c.isDead ? 'dead-card' : ''} ${isStaged ? 'staged' : ''} ${isValidTarget ? 'valid-target' : ''}" id="card-${teamStr}-${index}" style="border-color:${pc};">
-        <img src="${getImgUrl(getCardImg(c), name)}" onerror="handleImgError(this, '${safeName}')">
-        ${isStaged ? `<div class="undo-btn" onclick="event.stopPropagation(); undoAction(${index})">✕</div>` : ''}
-      </div>
-
-      ${!isE ? `
-        <div class="hp-container">
-           <div class="hp-bar-bg"><div class="hp-bar-fill ${hpClass}" id="hpf-${teamStr}-${index}" style="width:${pct}%;"></div></div>
-        </div>
-      ` : ''}
-      <div class="hp-text" id="hpt-${teamStr}-${index}">${c.currentHp}/${hpMax}</div>
-    </div>`;
-}
-
-// --- FB MESSENGER LOG ---
-function logMsg(txt, t) {
-  let log = $('battle-log');
-  
-  // Format the text to say [You] or [Bot] if it's an attack/defense
-  let prefix = "";
-  if(t === 'atk') prefix = `<span class="log-name-you">[You]</span> `;
-  if(t === 'def') prefix = `<span class="log-name-bot">[Bot]</span> `;
-  
-  log.innerHTML += `<div class="log-entry ${t}">${prefix}${txt}</div>`;
-  log.scrollTop = log.scrollHeight;
-}
-
-// --- TARGETING LOGIC (DO NOT CHANGE) ---
-function getValidTargets(attackerCard, targetTeam) {
-  let validTargetPositions = new Set();
-  let posStr = getCardPos(attackerCard);
-  let name = getCardName(attackerCard);
-  
-  if (posStr === '6TH' || name.includes("Sixth Man")) {
-    return targetTeam.map((c, i) => ({c, i})).filter(x => !x.c.isDead);
-  }
-
-  posStr.split('/').forEach(p => {
-    let basePos = p.trim();
-    if (TARGET_MATRIX[basePos]) TARGET_MATRIX[basePos].forEach(vp => validTargetPositions.add(vp));
-  });
-
-  return targetTeam.map((c, i) => ({c, i})).filter(def => {
-    if(def.c.isDead) return false;
-    let defPositions = getCardPos(def.c).split('/').map(p => p.trim());
-    return defPositions.some(dp => validTargetPositions.has(dp));
-  });
-}
-
-// --- ACTION PANELS & SELECTION ---
-function handleCourtClick() { 
-  if(uiState !== 'IDLE') { 
-    uiState = 'IDLE'; 
-    let l = $('action-panel-left'); if(l) l.style.display = 'none'; 
-    let r = $('action-panel-right'); if(r) r.style.display = 'none';
-    logMsg("Action Cancelled.", "sys"); renderArena(); 
-  } 
-}
-
-function onCardClick(team, idx, e) {
-  e.stopPropagation();
-  if (isAnimating) return;
-
-  if (uiState === 'AWAITING_TARGET') {
-    if (team === 'enemy' && !enemyActive[idx].isDead) {
-      let validTargets = getValidTargets(playerActive[pendingAction.actorIdx], enemyActive);
-      if (validTargets.some(v => v.i === idx)) {
-        stagedActions.push({ ...pendingAction, targetIdx: idx, targetTeam: 'enemy' });
-        uiState = 'IDLE'; renderArena(); renderCheckout();
-      } else { logMsg("Invalid Target! Check Positional Rules.", "def"); }
-    }
-    return;
-  }
-
-  if (team === 'player' && uiState === 'IDLE') {
-    let card = playerActive[idx];
-    if (card.isDead) return;
-    if (stagedActions.some(a => a.actorIdx === idx)) { logMsg("Card already acting this turn.", "sys"); return; }
-    
-    let maxMoves = Math.min(2, playerActive.filter(c => !c.isDead).length);
-    if (stagedActions.length >= maxMoves) { logMsg("Max moves staged! Click Lock In.", "sys"); return; }
-
-    function showActionMenu(card, idx) {
-  let leftPanel = document.getElementById('action-panel-left');
-  let rightPanel = document.getElementById('action-panel-right');
-
-  // If the elements don't exist, stop immediately to prevent errors
-  if (!leftPanel || !rightPanel) return;
-
-  // 1. Define 'dmg' so it's not undefined
-  let dmg = getCardDMG(card); 
-
-  // 2. Build the LEFT side (Utility)
-  let leftHtml = `<div style="color:var(--text-muted); text-align:center; font-size:0.75rem; margin-bottom:5px; font-weight:bold;">UTILITY</div>`;
-  
-  // Safe check for the bench
-  if (typeof playerBench !== 'undefined' && playerBench.length > 0) {
-      leftHtml += `<button class="action-btn" style="border-left: 4px solid var(--pos-pg);" onclick="selectAction(${idx}, 'swap', 0)">🔄 SWAP CARD</button>`;
-  }
-  leftHtml += `<button class="action-btn" style="border-left: 4px solid var(--border-heavy);" onclick="selectAction(${idx}, 'pass', 0)">⏭️ PASS TURN</button>`;
-
-  // 3. Build the RIGHT side (Offense)
-  let rightHtml = `<div style="color:var(--text-muted); text-align:center; font-size:0.75rem; margin-bottom:5px; font-weight:bold;">OFFENSE</div>`;
-  rightHtml += `<button class="action-btn" style="border-right: 4px solid white;" onclick="selectAction(${idx}, 'basic', 0)">⚔️ BASIC ATTACK (${dmg})</button>`;
-  
-  // Loop through skills if they exist
-  if (card && card.Skills) {
-      card.Skills.forEach((sk, sIdx) => {
-          rightHtml += `<button class="action-btn" style="border-right: 4px solid var(--pos-c);" onclick="selectAction(${idx}, 'skill', ${sIdx})">✨ ${sk.Name}</button>`;
-      });
-  }
-
-  // 4. Inject into the page and show them
-  leftPanel.innerHTML = leftHtml;
-  rightPanel.innerHTML = rightHtml;
-  leftPanel.style.display = 'flex';
-  rightPanel.style.display = 'flex';
-}
-  
-}
-
-// --- FLOATING LEFT/RIGHT BUTTONS ---
-function showActionMenu(card, idx) {
-  let leftPanel = $('action-panel-left');
-  let rightPanel = $('action-panel-right');
-
-  // We define 'dmg' here so the computer knows what it is below
-  let dmg = getCardDMG(card); 
-
-  // LEFT SIDE: Pass or Swap
-  let leftHtml = `<div style="color:var(--text-muted); text-align:center; font-size:0.75rem; margin-bottom:5px; font-weight:bold;">UTILITY</div>`;
-  
-  // Only show swap button if there are players on the bench
-  if (playerBench && playerBench.length > 0) {
-      leftHtml += `<button class="action-btn" style="border-left: 4px solid var(--pos-pg);" onclick="selectAction(${idx}, 'swap', 0)">🔄 SWAP CARD</button>`;
-  }
-  
-  leftHtml += `<button class="action-btn" style="border-left: 4px solid var(--border-heavy);" onclick="selectAction(${idx}, 'pass', 0)">⏭️ PASS TURN</button>`;
-
-  // RIGHT SIDE: Attacks and Skills
-  let rightHtml = `<div style="color:var(--text-muted); text-align:center; font-size:0.75rem; margin-bottom:5px; font-weight:bold;">OFFENSE</div>`;
-  rightHtml += `<button class="action-btn" style="border-right: 4px solid white;" onclick="selectAction(${idx}, 'basic', 0)">⚔️ BASIC ATTACK (${dmg})</button>`;
-  
-  // Loop through the card's specific skills
-  if (card && card.Skills) {
-      card.Skills.forEach((sk, sIdx) => {
-          rightHtml += `<button class="action-btn" style="border-right: 4px solid var(--pos-c);" onclick="selectAction(${idx}, 'skill', ${sIdx})">✨ ${sk.Name}</button>`;
-      });
-  }
-
-  // Display the panels on the screen
-  leftPanel.innerHTML = leftHtml;
-  rightPanel.innerHTML = rightHtml;
-  leftPanel.style.display = 'flex';
-  rightPanel.style.display = 'flex';
-}
-  
-function selectAction(actorIdx, type, skillIdx) {
-  $('action-panel-left').style.display = 'none';
-  $('action-panel-right').style.display = 'none';
-  
-  let card = playerActive[actorIdx];
-  let name = getCardName(card);
-  let priority = 1;
-  if(type === 'skill') {
-      let desc = card.Skills[skillIdx].Description_UI || "";
-      let prioMatch = desc.match(/x(\d) priority/i);
-      if (prioMatch) priority = parseInt(prioMatch[1]);
-  }
-
-  pendingAction = { actorIdx, actionType: type, skillIdx, priority, speed: getCardSPD(card), pos: getCardPos(card) };
-  
-  if (type === 'pass') {
-    stagedActions.push({ ...pendingAction, targetIdx: null, targetTeam: null });
-    renderArena(); renderCheckout();
-  } else if (type === 'swap') {
-    uiState = 'AWAITING_BENCH';
-    logMsg(`Select a bench card to swap with <b>${shortName(name)}</b>.`, "sys");
-  } else {
-    let validEnemies = getValidTargets(card, enemyActive);
-    if (validEnemies.length === 0) {
-      logMsg(`<b>${shortName(name)}</b> has no valid targets in their lane!`, "def"); return;
-    }
-    uiState = 'AWAITING_TARGET';
-    logMsg(`Select a valid target for <b>${shortName(name)}</b>.`, "sys");
-    renderArena(); 
-  }
-}
-
-  let leftHtml = `<div style="color:var(--text-muted); text-align:center; font-size:0.75rem; margin-bottom:5px; font-weight:bold;">UTILITY</div>`;
-  if (playerBench.length > 0) leftHtml += `<button class="action-btn" style="border-left: 4px solid var(--pos-pg);" onclick="selectAction(${idx}, 'swap', 0)">🔄 SWAP CARD</button>`;
-  leftHtml += `<button class="action-btn" style="border-left: 4px solid var(--border-heavy);" onclick="selectAction(${idx}, 'pass', 0)">⏭️ PASS TURN</button>`;
-  
-  let rightHtml = `<div style="color:var(--text-muted); text-align:center; font-size:0.75rem; margin-bottom:5px; font-weight:bold;">OFFENSE</div>`;
-  rightHtml += `<button class="action-btn" style="border-right: 4px solid white;" onclick="selectAction(${idx}, 'basic', 0)">⚔️ BASIC ATTACK (${dmg})</button>`;
-  (card.Skills || []).forEach((sk, sIdx) => {
-      rightHtml += `<button class="action-btn" style="border-right: 4px solid var(--pos-c);" onclick="selectAction(${idx}, 'skill', ${sIdx})">✨ ${sk.Name}</button>`;
-  });
-
-  leftPanel.innerHTML = leftHtml; rightPanel.innerHTML = rightHtml;
-  leftPanel.style.display = 'flex'; rightPanel.style.display = 'flex';
-
-function selectAction(actorIdx, type, skillIdx) {
-  $('action-panel-left').style.display = 'none';
-  $('action-panel-right').style.display = 'none';
-  
-  let card = playerActive[actorIdx];
-  let name = getCardName(card);
-  let priority = 1;
-  if(type === 'skill') {
-      let desc = card.Skills[skillIdx].Description_UI || "";
-      let prioMatch = desc.match(/x(\d) priority/i);
-      if (prioMatch) priority = parseInt(prioMatch[1]);
-  }
-
-  pendingAction = { actorIdx, actionType: type, skillIdx, priority, speed: getCardSPD(card), pos: getCardPos(card) };
-  
-  if (type === 'pass') {
-    stagedActions.push({ ...pendingAction, targetIdx: null, targetTeam: null });
-    renderArena(); renderCheckout();
-  } else if (type === 'swap') {
-    uiState = 'AWAITING_BENCH';
-    logMsg(`Select a bench card to swap with <b>${shortName(name)}</b>.`, "sys");
-  } else {
-    let validEnemies = getValidTargets(card, enemyActive);
-    if (validEnemies.length === 0) {
-      logMsg(`<b>${shortName(name)}</b> has no valid targets in their lane!`, "def"); return;
-    }
-    uiState = 'AWAITING_TARGET';
-    logMsg(`Select a valid target for <b>${shortName(name)}</b>.`, "sys");
-    renderArena(); 
-  }
-}
-
-function onBenchClick(idx, e) {
-  e.stopPropagation();
-  if (uiState === 'AWAITING_BENCH') {
-    stagedActions.push({ ...pendingAction, targetIdx: idx, targetTeam: 'bench' });
-    uiState = 'IDLE'; renderArena(); renderCheckout();
-  }
-}
-
-function undoAction(idx) {
-  stagedActions = stagedActions.filter(a => a.actorIdx !== idx);
-  uiState = 'IDLE'; renderArena(); renderCheckout();
-}
-
-function renderCheckout() {
-  let panel = $('checkout-panel');
-  let maxMoves = Math.min(2, playerActive.filter(c => !c.isDead).length);
-  $('staged-count').textContent = `${stagedActions.length}/${maxMoves}`;
-  
-  if (stagedActions.length > 0) {
-    panel.classList.add('visible');
-    $('staged-list').innerHTML = stagedActions.map(a => {
-      let actor = playerActive[a.actorIdx];
-      let actorName = getCardName(actor);
-      let actName = a.actionType === 'pass' ? 'Pass' : a.actionType === 'swap' ? `Swap in ${shortName(getCardName(playerBench[a.targetIdx]))}` : a.actionType === 'skill' ? actor.Skills[a.skillIdx].Name : 'Basic Attack';
-      let tgtName = a.targetTeam === 'enemy' ? ` ➔ ${shortName(getCardName(enemyActive[a.targetIdx]))}` : '';
-      return `<div><span style="color:#69F0AE;">▶</span> <b>${shortName(actorName)}</b>: ${actName}${tgtName}</div>`;
-    }).join('');
-    $('confirm-moves-btn').disabled = stagedActions.length < maxMoves && playerActive.filter(c=>!c.isDead).length > stagedActions.length;
-  } else {
-    panel.classList.remove('visible');
-  }
-}
-
-// --- QUEUE RESOLUTION ---
-async function confirmMoves() {
-  $('checkout-panel').classList.remove('visible');
-  isAnimating = true;
-  
-  logMsg(`--- TURN ${turnCount} EXECUTION ---`, "sys");
-
-  let enemyStaged = generateEnemyAI();
-  
-  let masterQueue = [];
-  stagedActions.forEach(a => masterQueue.push({...a, execTeam: 'player', card: playerActive[a.actorIdx]}));
-  enemyStaged.forEach(a => masterQueue.push({...a, execTeam: 'enemy', card: enemyActive[a.actorIdx]}));
-  
-  const POS_HIERARCHY = { 'PG':5, 'SG':4, 'SF':3, 'PF':2, 'C':1 };
-  
-  masterQueue.sort((a, b) => {
-    if (a.priority !== b.priority) return b.priority - a.priority;
-    let aIs6 = a.card.Ability?.Name === "Sixth Man" || a.pos === "6TH";
-    let bIs6 = b.card.Ability?.Name === "Sixth Man" || b.pos === "6TH";
-    if (aIs6 && !bIs6) return 1;
-    if (!aIs6 && bIs6) return -1;
-    if (a.speed !== b.speed) return b.speed - a.speed;
-    let aP = POS_HIERARCHY[a.pos.split('/')[0].trim()] || 0;
-    let bP = POS_HIERARCHY[b.pos.split('/')[0].trim()] || 0;
-    if (aP !== bP) return bP - aP;
-    return Math.random() > 0.5 ? 1 : -1;
-  });
-  
-  for (let action of masterQueue) {
-    if(playerScore >= 8 || enemyScore >= 8) break;
-    await executeAction(action);
-  }
-  
-  a// Add 'async' right here at the start!
-async function handleDeadReplacements(teamStr, activeArr, benchArr) {
-  for (let i = 0; i < activeArr.length; i++) {
-    if (activeArr[i] && activeArr[i].isDead) {
-      let deadPosArr = getCardPos(activeArr[i]).split('/').map(p => p.trim());
-      let validBench = benchArr.map((c, idx) => ({c, idx})).filter(bench => {
-         let benchPos = getCardPos(bench.c).split('/').map(p => p.trim());
-         return deadPosArr.some(dp => benchPos.includes(dp));
-      });
-
-      if (validBench.length > 0) {
-        let rep = validBench[0]; 
-        logMsg(`🔄 <b>${shortName(getCardName(rep.c))}</b> stepped in to replace ${shortName(getCardName(activeArr[i]))}!`, 'sys');
-        
-        let temp = activeArr[i];
-        activeArr[i] = benchArr[rep.idx];
-        benchArr[rep.idx] = temp; 
-        
-        renderArena();
-        // This 'await' is what was causing the crash because 'async' was missing above
-        await new Promise(r => setTimeout(r, 800));
-      }
-    }
-  }
-}
-
-function generateEnemyAI() {
-  let actions = [];
-  let aliveEnemies = enemyActive.map((c,i) => ({c,i})).filter(x => !x.c.isDead);
-  let moves = Math.min(2, aliveEnemies.length);
-  
-  for(let i=0; i<moves; i++) {
-    let actor = aliveEnemies[i];
-    let validTargets = getValidTargets(actor.c, playerActive);
-    
-    if(validTargets.length > 0) {
-      let target = validTargets[Math.floor(Math.random() * validTargets.length)];
-      let isSkill = Math.random() > 0.4 && actor.c.Skills && actor.c.Skills.length > 0;
-      
-      let priority = 1;
-      if(isSkill) {
-          let desc = actor.c.Skills[0].Description_UI || "";
-          let prioMatch = desc.match(/x(\d) priority/i);
-          if (prioMatch) priority = parseInt(prioMatch[1]);
-      }
-
-      actions.push({ actorIdx: actor.i, actionType: isSkill ? 'skill' : 'basic', skillIdx: 0, targetIdx: target.i, priority, speed: getCardSPD(actor.c) });
-    } else {
-       actions.push({ actorIdx: actor.i, actionType: 'pass', skillIdx: 0, targetIdx: null, priority: 1, speed: getCardSPD(actor.c) });
-    }
-  }
-  return actions;
-}
-
-async function executeAction(action) {
-  let { actorIdx, actionType, skillIdx, targetIdx, execTeam } = action;
-  let isP = execTeam === 'player';
-  let attackers = isP ? playerActive : enemyActive;
-  let defenders = isP ? enemyActive : playerActive;
-  let attacker = attackers[actorIdx];
-  let aName = getCardName(attacker);
-  
-  if (attacker.isDead) return;
-
-  if (actionType === 'pass') { logMsg(`<b>${shortName(aName)}</b> passes.`, "sys"); return; }
-  if (actionType === 'swap') {
-     let bArr = isP ? playerBench : enemyBench;
-     let temp = attackers[actorIdx];
-     attackers[actorIdx] = bArr[targetIdx];
-     bArr[targetIdx] = temp;
-     logMsg(`🔄 <b>${shortName(getCardName(temp))}</b> swapped out for <b>${shortName(getCardName(attackers[actorIdx]))}</b>!`, isP ? 'atk' : 'def');
-     renderArena(); await new Promise(r => setTimeout(r, 600)); return;
-  }
-
-  let defender = defenders[targetIdx];
-  if (defender.isDead) { 
-    let validTgtArr = getValidTargets(attacker, defenders);
-    if(validTgtArr.length === 0) { logMsg(`<b>${shortName(aName)}</b> has no targets left to hit!`, "sys"); return; }
-    targetIdx = validTgtArr[0].i; 
-    defender = defenders[targetIdx];
-  }
-
-  let dName = getCardName(defender);
-  let skill = actionType === 'skill' ? attacker.Skills[skillIdx] : null;
-  let dmgString = skill ? skill.Display_DMG : getCardDMG(attacker).toString();
-  let moveName = skill ? skill.Name : 'Basic Attack';
-
-  logMsg(`<b>${shortName(aName)}</b> uses <b>${moveName}</b> on ${shortName(dName)}!`, isP ? 'atk' : 'def');
-
-  let finalDmg = 0;
-  if (!isNaN(parseInt(dmgString)) && !dmgString.includes("N/A")) {
-    finalDmg = parseInt(dmgString);
-  } else {
-    logMsg(`✨ Activated Status Effect / Defense!`, 'sys');
-    let atkEl = $(`wrap-${isP?'player':'enemy'}-${actorIdx}`);
-    if(atkEl) { atkEl.classList.add('anim-waft-up'); await new Promise(r => setTimeout(r, 600)); atkEl.classList.remove('anim-waft-up'); }
-    return;
-  }
-
-  await playCombatAnimation(`${isP?'player':'enemy'}-${actorIdx}`, `${isP?'enemy':'player'}-${targetIdx}`, finalDmg, defender);
-  
-  if(defender.currentHp <= 0) {
-    defender.isDead = true;
-    if(isP) playerScore++; else enemyScore++;
-    $('score-player').textContent = playerScore; $('score-enemy').textContent = enemyScore;
-    $(`card-${isP?'enemy':'player'}-${targetIdx}`).classList.add('dead-card');
-    logMsg(`💀 <b>${shortName(dName)}</b> WAS KNOCKED OUT!`, isP ? 'atk' : 'def');
-    if(playerScore >= 8) logMsg("🏆 YOU WON THE MATCH!", "atk");
-    if(enemyScore >= 8) logMsg("❌ YOU LOST THE MATCH.", "def");
-  }
-}
-
-async function playCombatAnimation(atkId, defId, dmg, targetObj) {
-  let atkEl = $(`wrap-${atkId}`); let defEl = $(`wrap-${defId}`); 
-  if(atkEl) atkEl.classList.add('anim-waft-up'); 
-  await new Promise(r => setTimeout(r, 500));
-  
-  if(defEl) {
-      defEl.classList.add('anim-shake');
-      let pop = document.createElement('div'); pop.className = 'dmg-popup'; pop.innerHTML = `💥 -${dmg}`; defEl.appendChild(pop);
-  }
-  
-  let hpMax = getCardHP(targetObj);
-  targetObj.currentHp = Math.max(0, targetObj.currentHp - dmg);
-  let pct = Math.max(0, (targetObj.currentHp / hpMax) * 100);
-  
-  let fill = $(`hpf-${defId}`);
-  if(fill) {
-      fill.style.width = pct + '%';
-      fill.classList.remove('hp-high', 'hp-med', 'hp-low');
-      if (pct > 50) fill.classList.add('hp-high');
-      else if (pct > 20) fill.classList.add('hp-med');
-      else fill.classList.add('hp-low');
-  }
-  
-  let hpt = $(`hpt-${defId}`);
-  if(hpt) hpt.textContent = `${targetObj.currentHp}/${hpMax}`;
-  
-  await new Promise(r => setTimeout(r, 800));
-  if(atkEl) atkEl.classList.remove('anim-waft-up'); 
-  if(defEl) {
-      defEl.classList.remove('anim-shake'); 
-      let pop = defEl.querySelector('.dmg-popup');
-      if(pop) pop.remove();
-  }
-}
-
-async function handleDeadReplacements(teamStr, activeArr, benchArr) {
-if (validBench.length > 0) {
-        let rep = validBench[0]; 
-        
-        // 1. Announce the sub in the battle log
-        logMsg(`🔄 <b>${shortName(getCardName(rep.c))}</b> stepped in to replace ${shortName(getCardName(activeArr[i]))}!`, 'sys');
-        
-        // 2. Perform the swap
-        let temp = activeArr[i];
-        activeArr[i] = benchArr[rep.idx];
-        benchArr[rep.idx] = temp; 
-        
-        // 3. Re-draw the screen so we see the new card
-        renderArena();
-        
-        // 4. Wait a moment so the user can see what happened
-        await new Promise(r => setTimeout(r, 800));
-      }
-    }
-  }
-
-
-      if (validBench.length > 0) {
-        let rep = validBench[0]; 
-        logMsg(`🔄 <b>${shortName(getCardName(rep.c))}</b> stepped in to replace ${shortName(getCardName(activeArr[i]))}!`, 'sys');
-        
-        let temp = activeArr[i];
-        activeArr[i] = benchArr[rep.idx];
-        benchArr[rep.idx] = temp; 
-        
-        renderArena();
-        await new Promise(r => setTimeout(r, 600));
-      }
-
-document.addEventListener('DOMContentLoaded', () => { 
-  showScreen('home-screen'); 
-  filterCat(); 
-});
-</script>
-
-
-</body>
-</html>
