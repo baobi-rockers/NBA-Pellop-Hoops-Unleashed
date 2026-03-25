@@ -58,6 +58,33 @@ function positionTooltip(e) {
   if(px + tw > window.innerWidth - pad) px = x - tw - 15;
   if(py + th > window.innerHeight - pad) py = y - th - 15;
   tooltip.style.left = `${Math.max(pad, px)}px`; tooltip.style.top = `${Math.max(pad, py)}px`;
+  
+}
+
+    // --- 3. DRAG AND DROP FIXES ---
+function handleDragStart(e, name) {
+  if (typeof hideTooltip === 'function') hideTooltip();
+  e.dataTransfer.setData('text/plain', name);
+  e.dataTransfer.effectAllowed = 'move';
+  let ghost = document.getElementById('drag-ghost');
+  if (ghost) {
+    ghost.textContent = typeof getDBShortName === 'function' ? getDBShortName(name) : name; 
+    e.dataTransfer.setDragImage(ghost, 0, 0);
+  }
+  setTimeout(() => { if (e.target && e.target.classList) e.target.classList.add('dragging'); }, 0);
+}
+
+function handleDragEnd(e) { 
+  if (e.target && e.target.classList) e.target.classList.remove('dragging'); 
+}
+
+function handleDragOver(e) { 
+  e.preventDefault(); 
+  if (e.currentTarget && e.currentTarget.classList) e.currentTarget.classList.add('drag-over'); 
+}
+
+function handleDragLeave(e) { 
+  if (e.currentTarget && e.currentTarget.classList) e.currentTarget.classList.remove('drag-over'); 
 }
     window.onerror = function(msg, url, lineNo) {
       document.body.innerHTML += `<div style="position:fixed;top:0;left:0;right:0;background:#FF5252;color:white;padding:20px;z-index:99999;font-weight:bold;">CRITICAL ERROR: ${msg}<br>Line: ${lineNo}</div>`;
