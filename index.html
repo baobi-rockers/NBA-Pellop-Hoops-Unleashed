@@ -6961,7 +6961,6 @@ const CARDS = [
     ]
   }
 ];
-
 // ==================== STATE MANAGEMENT ====================
 let draftSquad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
 let activeLineup = { PG:null, SG:null, SF:null, PF:null, C:null, '6TH':null };
@@ -6978,11 +6977,14 @@ let isCollapsing = false;
 let searchTimeout;
 
 // --- BATTLE ENGINE STATE ---
-let currentTurn = 'player'; // 'player' or 'enemy'
+let currentTurn = 'player'; 
 let turnCount = 1;
-let activePlayerIndex = 0; // Which player card is currently acting
+let activePlayerIndex = 0; 
 let activeEnemyIndex = 0; 
 let isAnimating = false;
+let stagedActions = []; 
+let uiState = 'IDLE';
+let pendingAction = null;
 
 // ==================== GLOBAL RULES ====================
 const TARGET_MATRIX = {
@@ -7002,10 +7004,7 @@ function filterCat() {
   if(isCollapsing) return;
   let q = $('cs').value.toLowerCase(), posF = $('cp').value, sort = $('csort').value;
   
-  // 1. Clean the array to avoid crashes
   let cleanCards = CARDS.filter(c => c && c.UI_Frontend_Data);
-  
-  // 2. Filter using the CLEAN array
   let filtered = cleanCards.filter(c => {
     let name = (getCardName(c) || "").toLowerCase();
     let team = (c.UI_Frontend_Data.Team || "").toLowerCase();
@@ -7030,9 +7029,7 @@ function filterCat() {
 function goDraft() {
   draftSquad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
   expandedCardDraft = null;
-  
   showScreen('draft-screen');
-  
   if (typeof renderDraftSlots === "function") renderDraftSlots();
   if (typeof filterDraftGrid === "function") filterDraftGrid();
 }
@@ -7043,7 +7040,6 @@ function filterDraftGrid() {
   const sort = $('draft-sort').value;
   
   let cleanCards = CARDS.filter(c => c && c.UI_Frontend_Data);
-  
   let list = cleanCards.filter(c => {
     let name = (getCardName(c) || "").toLowerCase();
     let team = (c.UI_Frontend_Data.Team || "").toLowerCase();
@@ -7058,10 +7054,8 @@ function filterDraftGrid() {
   $('draft-grid').innerHTML = list.map(c => {
     let name = getCardName(c);
     if (name === expandedCardDraft) return renderExpandedRow(c, 'draft');
-    
     let inD = isCardInDraft(c);
     let safeName = escapeJS(name);
-    
     return `
       <div class="compact-card" 
            ${!inD ? `draggable="true" ondragstart="handleDragStart(event, '${safeName}')" ondragend="handleDragEnd(event)"` : 'style="opacity:0.3;pointer-events:none;"'} 
@@ -7170,6 +7164,7 @@ function renderSetupBench() {
 
 // ==================== PHASE 4: BATTLE & ENGINE ====================
 function startBattle() {
+  document.body.classList.add('battle-active'); // Enables the 3D Fanning CSS
   playerActive = [];
   let positions = hasSixthMan ? ['PG','SG','SF','PF','C','6TH'] : ['PG','SG','SF','PF','C'];
   positions.forEach(p => { 
@@ -7219,6 +7214,7 @@ function buildCardHtml(c, index, isE) {
   let hpMax = getCardHP(c);
   let pct = Math.max(0, (c.currentHp / hpMax) * 100);
   let hpClass = pct > 50 ? 'hp-high' : pct > 20 ? 'hp-med' : 'hp-low';
+
   let pos = getCardPos(c);
   let pc = pos.includes('PG')?'var(--pos-pg)':pos.includes('SG')?'var(--pos-sg)':pos.includes('SF')?'var(--pos-sf)':pos.includes('PF')?'var(--pos-pf)':'var(--pos-c)';
   let safeName = escapeJS(name);
@@ -7229,17 +7225,27 @@ function buildCardHtml(c, index, isE) {
   
   return `
     <div class="battle-card-wrapper" id="wrap-${teamStr}-${index}" onclick="onCardClick('${teamStr}', ${index}, event)" onmouseenter="showTooltip(event, '${safeName}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)">
-      ${isE ? `<div class="hp-container"><div class="hp-bar-bg"><div class="hp-bar-fill ${hpClass}" id="hpf-${teamStr}-${index}" style="width:${pct}%;"></div></div></div>` : ''}
+      
+      ${isE ? `
+        <div class="hp-container">
+           <div class="hp-bar-bg"><div class="hp-bar-fill ${hpClass}" id="hpf-${teamStr}-${index}" style="width:${pct}%;"></div></div>
+        </div>
+      ` : ''}
       
       <div class="battle-card ${c.isDead ? 'dead-card' : ''} ${isStaged ? 'staged' : ''} ${isValidTarget ? 'valid-target' : ''}" id="card-${teamStr}-${index}" style="border-color:${pc};">
         <img src="${getImgUrl(getCardImg(c), name)}" onerror="handleImgError(this, '${safeName}')">
         ${isStaged ? `<div class="undo-btn" onclick="event.stopPropagation(); undoAction(${index})">✕</div>` : ''}
       </div>
 
-      ${!isE ? `<div class="hp-container"><div class="hp-bar-bg"><div class="hp-bar-fill ${hpClass}" id="hpf-${teamStr}-${index}" style="width:${pct}%;"></div></div></div>` : ''}
+      ${!isE ? `
+        <div class="hp-container">
+           <div class="hp-bar-bg"><div class="hp-bar-fill ${hpClass}" id="hpf-${teamStr}-${index}" style="width:${pct}%;"></div></div>
+        </div>
+      ` : ''}
       <div class="hp-text" id="hpt-${teamStr}-${index}">${c.currentHp}/${hpMax}</div>
     </div>`;
 }
+
 function logMsg(txt, t) {
   let log = $('battle-log');
   let clr = t==='atk'?'#69F0AE':t==='def'?'#FF5252':'#40C4FF';
@@ -7269,7 +7275,15 @@ function getValidTargets(attackerCard, targetTeam) {
   });
 }
 
-// --- INTERACTION LOGIC ---
+// --- ACTION PANELS & SELECTION ---
+function handleCourtClick() { 
+  if(uiState !== 'IDLE') { 
+    uiState = 'IDLE'; 
+    let l = $('action-panel-left'); if(l) l.style.display = 'none'; 
+    let r = $('action-panel-right'); if(r) r.style.display = 'none';
+    logMsg("Action Cancelled.", "sys"); renderArena(); 
+  } 
+}
 
 function onCardClick(team, idx, e) {
   e.stopPropagation();
@@ -7294,28 +7308,11 @@ function onCardClick(team, idx, e) {
     let maxMoves = Math.min(2, playerActive.filter(c => !c.isDead).length);
     if (stagedActions.length >= maxMoves) { logMsg("Max moves staged! Click Lock In.", "sys"); return; }
 
-    showActionMenu(card, idx, e.clientX, e.clientY);
+    showActionMenu(card, idx);
   }
 }
 
-function onBenchClick(idx, e) {
-  e.stopPropagation();
-  if (uiState === 'AWAITING_BENCH') {
-    stagedActions.push({ ...pendingAction, targetIdx: idx, targetTeam: 'bench' });
-    uiState = 'IDLE'; renderArena(); renderCheckout();
-  }
-}
-
-function handleCourtClick() { 
-  if(uiState !== 'IDLE') { 
-    uiState = 'IDLE'; 
-    let l = $('action-panel-left'); if(l) l.style.display = 'none'; 
-    let r = $('action-panel-right'); if(r) r.style.display = 'none';
-    logMsg("Action Cancelled.", "sys"); renderArena(); 
-  } 
-}
-
-function showActionMenu(card, idx, x, y) {
+function showActionMenu(card, idx) {
   let leftPanel = $('action-panel-left');
   let rightPanel = $('action-panel-right');
   let name = getCardName(card);
@@ -7366,6 +7363,15 @@ function selectAction(actorIdx, type, skillIdx) {
     renderArena(); 
   }
 }
+
+function onBenchClick(idx, e) {
+  e.stopPropagation();
+  if (uiState === 'AWAITING_BENCH') {
+    stagedActions.push({ ...pendingAction, targetIdx: idx, targetTeam: 'bench' });
+    uiState = 'IDLE'; renderArena(); renderCheckout();
+  }
+}
+
 function undoAction(idx) {
   stagedActions = stagedActions.filter(a => a.actorIdx !== idx);
   uiState = 'IDLE'; renderArena(); renderCheckout();
@@ -7553,25 +7559,6 @@ async function playCombatAnimation(atkId, defId, dmg, targetObj) {
       if(pop) pop.remove();
   }
 }
-  
-  let hpMax = getCardHP(targetObj);
-  targetObj.currentHp = Math.max(0, targetObj.currentHp - dmg);
-  let pct = Math.max(0, (targetObj.currentHp / hpMax) * 100);
-  let fill = $(`hpf-${defId}`);
-  if(fill) {
-      fill.style.width = pct + '%'; fill.style.background = pct > 50 ? '#69F0AE' : pct > 20 ? '#FFD600' : '#FF5252';
-  }
-  let hpt = $(`hpt-${defId}`);
-  if(hpt) hpt.textContent = `${targetObj.currentHp}/${hpMax}`;
-  
-  await new Promise(r => setTimeout(r, 800));
-  if(atkEl) atkEl.classList.remove('anim-waft-up'); 
-  if(defEl) {
-      defEl.classList.remove('anim-shake'); 
-      let pop = defEl.querySelector('.dmg-popup');
-      if(pop) pop.remove();
-  }
-}
 
 async function handleDeadReplacements(teamStr, activeArr, benchArr) {
   for (let i = 0; i < activeArr.length; i++) {
@@ -7602,5 +7589,7 @@ document.addEventListener('DOMContentLoaded', () => {
   filterCat(); 
 });
 </script>
+
+
 </body>
 </html>
