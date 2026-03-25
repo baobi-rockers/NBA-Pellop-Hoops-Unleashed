@@ -7221,8 +7221,43 @@ function onCardClick(team, idx, e) {
     let maxMoves = Math.min(2, playerActive.filter(c => !c.isDead).length);
     if (stagedActions.length >= maxMoves) { logMsg("Max moves staged! Click Lock In.", "sys"); return; }
 
-    showActionMenu(card, idx);
+    function showActionMenu(card, idx) {
+  let leftPanel = document.getElementById('action-panel-left');
+  let rightPanel = document.getElementById('action-panel-right');
+
+  // If the elements don't exist, stop immediately to prevent errors
+  if (!leftPanel || !rightPanel) return;
+
+  // 1. Define 'dmg' so it's not undefined
+  let dmg = getCardDMG(card); 
+
+  // 2. Build the LEFT side (Utility)
+  let leftHtml = `<div style="color:var(--text-muted); text-align:center; font-size:0.75rem; margin-bottom:5px; font-weight:bold;">UTILITY</div>`;
+  
+  // Safe check for the bench
+  if (typeof playerBench !== 'undefined' && playerBench.length > 0) {
+      leftHtml += `<button class="action-btn" style="border-left: 4px solid var(--pos-pg);" onclick="selectAction(${idx}, 'swap', 0)">🔄 SWAP CARD</button>`;
   }
+  leftHtml += `<button class="action-btn" style="border-left: 4px solid var(--border-heavy);" onclick="selectAction(${idx}, 'pass', 0)">⏭️ PASS TURN</button>`;
+
+  // 3. Build the RIGHT side (Offense)
+  let rightHtml = `<div style="color:var(--text-muted); text-align:center; font-size:0.75rem; margin-bottom:5px; font-weight:bold;">OFFENSE</div>`;
+  rightHtml += `<button class="action-btn" style="border-right: 4px solid white;" onclick="selectAction(${idx}, 'basic', 0)">⚔️ BASIC ATTACK (${dmg})</button>`;
+  
+  // Loop through skills if they exist
+  if (card && card.Skills) {
+      card.Skills.forEach((sk, sIdx) => {
+          rightHtml += `<button class="action-btn" style="border-right: 4px solid var(--pos-c);" onclick="selectAction(${idx}, 'skill', ${sIdx})">✨ ${sk.Name}</button>`;
+      });
+  }
+
+  // 4. Inject into the page and show them
+  leftPanel.innerHTML = leftHtml;
+  rightPanel.innerHTML = rightHtml;
+  leftPanel.style.display = 'flex';
+  rightPanel.style.display = 'flex';
+}
+  
 }
 
 // --- FLOATING LEFT/RIGHT BUTTONS ---
