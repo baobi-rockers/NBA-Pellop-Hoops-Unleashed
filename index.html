@@ -7090,7 +7090,6 @@ function renderExpandedRow(c, category) {
   let max = hasSixthMan ? 11 : 10;
   $('draft-count-lbl').textContent = `${count}/${max}`;
   $('draft-confirm-btn').disabled = count < 10; 
-}
 
 function dropDraft(e, pos, idx) {
   e.preventDefault(); if (e.currentTarget && e.currentTarget.classList) e.currentTarget.classList.remove('drag-over');
