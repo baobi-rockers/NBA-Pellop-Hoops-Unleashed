@@ -6,6 +6,10 @@
   <title>NBA Card Battle · TCG Pocket Edition</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script>
+
+let expandedCardCat = null;
+let expandedCardDraft = null;
+    
     // --- 1. BODY CLICK FIX ---
 function handleBodyClick(e) {
   let row = document.querySelector('.expanded-row');
@@ -6996,74 +7000,92 @@ function filterCat() {
 }
 
 // ==================== PHASE 2: DRAFTING ====================
-function goDraft() {
-  draftSquad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
-  expandedCardDraft = null;
-  showScreen('draft-screen');
-  if (typeof renderDraftSlots === "function") renderDraftSlots();
-  if (typeof filterDraftGrid === "function") filterDraftGrid();
+/* ==================== DRAFT & EXPANSION LOGIC ==================== */
+
+function goDraft() { 
+    showScreen('draft-screen'); 
+    renderDraftSlots(); 
+    filterDraftGrid(); 
 }
 
 function filterDraftGrid() {
-  if (isCollapsing) return;
-  const q = $('draft-search').value.toLowerCase();
-  const sort = $('draft-sort').value;
-  
-  let cleanCards = CARDS.filter(c => c && c.UI_Frontend_Data);
-  let list = cleanCards.filter(c => {
-    let name = (getCardName(c) || "").toLowerCase();
-    let team = (c.UI_Frontend_Data.Team || "").toLowerCase();
-    return !q || name.includes(q) || team.includes(q);
-  });
+    let q = $('draft-search').value.toLowerCase();
+    let grid = $('draft-grid');
+    if (!grid) return;
 
-  if (sort === 'hp') list.sort((a,b) => getCardHP(b) - getCardHP(a)); 
-  else if (sort === 'dmg') list.sort((a,b) => getCardDMG(b) - getCardDMG(a)); 
-  else if (sort === 'spd') list.sort((a,b) => getCardSPD(b) - getCardSPD(a)); 
-  else list.sort((a,b) => getCardName(a).localeCompare(getCardName(b)));
-  
-  $('draft-grid').innerHTML = list.map(c => {
-    let name = getCardName(c);
-    if (name === expandedCardDraft) return renderExpandedRow(c, 'draft');
-    let inD = isCardInDraft(c);
-    let safeName = escapeJS(name);
-    return `
-      <div class="compact-card" 
-           ${!inD ? `draggable="true" ondragstart="handleDragStart(event, '${safeName}')" ondragend="handleDragEnd(event)"` : 'style="opacity:0.3;pointer-events:none;"'} 
-           onclick="toggleExpand('${safeName}', 'draft')" 
-           onmouseenter="showTooltip(event, '${safeName}')" 
-           onmouseleave="hideTooltip()" 
-           onmousemove="positionTooltip(event)">
-        <div class="card-img-sm"><img src="${getImgUrl(getCardImg(c), name)}" onerror="handleImgError(this, '${safeName}')"></div>
-      </div>`;
-  }).join('');
-}
+    grid.innerHTML = CARDS.filter(c => getCardName(c).toLowerCase().includes(q)).map(c => {
+        let name = getCardName(c); 
+        let sn = escapeJS(name);
+        
+        // Check if this specific card is currently spun/expanded
+        if (name === expandedCardDraft) return renderExpandedRow(c, 'draft');
 
-function isCardInDraft(card) { 
-  let name = getCardName(card);
-  return POSITIONS.some(p => (getCardName(draftSquad[p][0]) === name) || (getCardName(draftSquad[p][1]) === name)); 
+        return `
+            <div class="compact-card" onclick="toggleExpand('${sn}', 'draft')">
+                <img src="${getImgUrl(getCardImg(c), name)}" onerror="handleImgError(this, '${sn}')">
+                <button class="btn-primary" style="position:absolute; bottom:5px; left:50%; transform:translateX(-50%); font-size:0.5rem; padding:4px 8px;" onclick="event.stopPropagation(); addDraft('${sn}')">ADD</button>
+            </div>`;
+    }).join('');
 }
 
 function renderDraftSlots() {
-  let html = '';
-  [0, 1].forEach(idx => {
-    POSITIONS.forEach(pos => {
-      let c = draftSquad[pos][idx];
-      let cName = c ? getCardName(c) : null;
-      html += `
-        <div id="dslot-${pos}-${idx}" class="slot-card slot-${pos} ${c?'filled':''}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropDraft(event, '${pos}', ${idx})">
-          <div class="slot-pos">${pos}</div>
-          ${c ? `<div class="slot-name">${getDBShortName(cName)}</div><button class="remove-slot" onclick="removeDraft('${pos}', ${idx})">✕</button>` : '<div style="opacity:0.3;font-size:0.65rem;margin-top:2px;">Drop Here</div>'}
-        </div>`;
+    let h = ''; 
+    Object.keys(draftSquad).forEach(p => {
+        draftSquad[p].forEach((c, i) => {
+            h += `
+            <div class="slot-card" onclick="draftSquad['${p}'][${i}]=null;renderDraftSlots();filterDraftGrid();">
+                <div class="slot-pos" style="color:var(--pos-${p.toLowerCase()})">${p}</div>
+                <div class="slot-name">${c ? shortName(getCardName(c)) : 'Empty'}</div>
+            </div>`;
+        });
     });
-  });
-  $('draft-slots').innerHTML = html;
-  
-  let count = 0; hasSixthMan = false;
-  POSITIONS.forEach(p => [0,1].forEach(i => { 
-    if(draftSquad[p][i]){ 
-      count++; 
-      if(getCardName(draftSquad[p][i]).includes("Sixth Man")) hasSixthMan = true; 
-    } 
+    $('draft-slots').innerHTML = h;
+    let count = Object.values(draftSquad).flat().filter(x => x).length;
+    $('draft-count-lbl').textContent = `${count}/10`;
+    $('draft-confirm-btn').disabled = count < 10;
+}
+
+function addDraft(n) {
+    let c = CARDS.find(x => getCardName(x) === n);
+    if(!c) return;
+    let pos = getCardPos(c).split('/')[0].trim();
+    if(draftSquad[pos][0] && draftSquad[pos][1]) return; // Position full
+    if(!draftSquad[pos][0]) draftSquad[pos][0] = c; else draftSquad[pos][1] = c;
+    renderDraftSlots();
+}
+
+function toggleExpand(name, category) {
+    if (category === 'cat') {
+        expandedCardCat = (expandedCardCat === name) ? null : name;
+        filterCat(); 
+    } else {
+        expandedCardDraft = (expandedCardDraft === name) ? null : name;
+        filterDraftGrid();
+    }
+}
+
+function renderExpandedRow(c, category) {
+    const name = getCardName(c);
+    const sn = escapeJS(name);
+    const abName = c.Ability?.Name || "None";
+    const abDesc = c.Ability?.Description_UI || "";
+    
+    return `
+    <div class="expanded-row" style="grid-column: 1 / -1;" onclick="toggleExpand('${sn}', '${category}')">
+        <div class="expanded-card-flipper">
+            <div class="battle-card"><img src="${getImgUrl(getCardImg(c), name)}"></div>
+        </div>
+        <div class="expanded-content">
+            <div class="ec-title">${shortName(name)}</div>
+            <div style="color:var(--accent); font-weight:bold; margin-bottom:10px;">${c.UI_Frontend_Data.Team}</div>
+            <div class="ec-ability">
+                <div style="font-weight:bold; color:#69F0AE;">✨ ${abName}</div>
+                <p style="font-size:0.75rem; margin-top:4px;">${abDesc}</p>
+            </div>
+            <button class="btn-primary" style="margin-top:15px;" onclick="event.stopPropagation(); addDraft('${sn}')">ADD TO SQUAD</button>
+        </div>
+    </div>`;
+}
   }));
   
   let max = hasSixthMan ? 11 : 10;
