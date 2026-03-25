@@ -99,6 +99,514 @@ function handleDragLeave(e) {
       document.body.innerHTML += `<div style="position:fixed;top:0;left:0;right:0;background:#FF5252;color:white;padding:20px;z-index:99999;font-weight:bold;">CRITICAL ERROR: ${msg}<br>Line: ${lineNo}</div>`;
       return false;
     };
+    // ==================== DEFENSIVE SKILL SYSTEM ====================
+// Classify every skill by how it fires
+// Returns: 'reactive-block' | 'reactive-steal' | 'reactive-intercept' | 
+//          'reactive-contest' | 'reactive-rebound' | 'pre-turn-aura' | 
+//          'nullify-reactive' | 'standard' | 'freeze'
+
+function getSkillCategory(skill) {
+  if (!skill) return 'standard';
+  const nature = (skill.Nature || '').toLowerCase();
+  const desc = (skill.Description_UI || '').toLowerCase();
+  const logic = skill.Logic_Engine || {};
+  const mods = logic.Modifiers || [];
+
+  // Freeze/dribble
+  if (nature.includes('dribble')) return 'freeze';
+
+  // Nullify-reactive (fires after opponent uses a defensive skill on us)
+  if (mods.includes('Reactionary_Anti_Defense')) return 'nullify-reactive';
+
+  // Pre-turn global auras (selected on your turn)
+  if (mods.includes('Global_Status_Aura') || mods.includes('Global_Status_Disable')) return 'pre-turn-aura';
+
+  // Targeted disable (selected on your turn)
+  if (mods.includes('Hard_Disable') && !desc.includes('right after')) return 'pre-turn-aura';
+
+  // Screen / buffer (selected on your turn)
+  if (mods.includes('Buffer_State')) return 'standard';
+
+  // Reactive: fires AFTER enemy attack
+  if (mods.includes('Reactionary_Block')) return 'reactive-block';
+  if (mods.includes('Reactionary_Mitigation')) return 'reactive-block';
+  if (mods.includes('Reactionary_Intercept')) return 'reactive-intercept';
+  if (mods.includes('Reactionary_Contest') || mods.includes('Reactionary_Status_Aura')) return 'reactive-contest';
+  if (mods.includes('Preemptive_Cancel')) return 'reactive-steal';
+  if (mods.includes('Reactionary_Redirect')) return 'reactive-block';
+  if (mods.includes('Reactionary_Assist') || mods.includes('Reactionary_Self_Buff')) return 'reactive-rebound';
+  if (nature.includes('rebound') && desc.includes('right after')) return 'reactive-rebound';
+  if (nature.includes('rebound') && desc.includes('this is used right')) return 'reactive-rebound';
+
+  return 'standard';
+}
+
+function canSelectOnYourTurn(skill) {
+  const cat = getSkillCategory(skill);
+  return ['standard', 'pre-turn-aura', 'freeze'].includes(cat);
+}
+
+// ==================== GLOBAL AURA STATE ====================
+// Tracks active aura effects that persist across turns
+let activeAuras = []; 
+// Each aura: { type, turnsLeft, sourceTeam, sourceName }
+// type: 'jumpshot-miss-chance' | 'closeshot-miss-chance' | 'all-skills-disabled'
+
+function applyAuraEffectsToAction(action, execTeam) {
+  // Check if this action is blocked by active auras
+  let attackers = execTeam === 'player' ? playerActive : enemyActive;
+  let attacker = attackers[action.actorIdx];
+  let skill = action.actionType === 'skill' ? attacker.Skills[action.skillIdx] : null;
+  if (!skill) return { blocked: false };
+
+  const nature = (skill.Nature || '').toLowerCase();
+  
+  for (let aura of activeAuras) {
+    if (aura.sourceTeam === execTeam) continue; // auras don't affect own team
+    
+    if (aura.type === 'all-skills-disabled') {
+      return { blocked: true, reason: `${skill.Name} was disabled by ${aura.sourceName}!` };
+    }
+    if (aura.type === 'jumpshot-miss-chance' && nature.includes('jump shot')) {
+      // 50% chance to miss (already handled by coin flip in desc, simulate here)
+      if (Math.random() < 0.5) {
+        return { blocked: true, reason: `${skill.Name} MISSED due to ${aura.sourceName}!` };
+      }
+    }
+    if (aura.type === 'closeshot-miss-chance' && nature.includes('close shot')) {
+      if (Math.random() < 0.5) {
+        return { blocked: true, reason: `${skill.Name} MISSED due to ${aura.sourceName}!` };
+      }
+    }
+  }
+  return { blocked: false };
+}
+
+function tickDownAuras() {
+  activeAuras = activeAuras.map(a => ({ ...a, turnsLeft: a.turnsLeft - 1 })).filter(a => a.turnsLeft > 0);
+}
+
+// ==================== REACTIVE DEFENSE UI ====================
+// After enemy confirms moves each turn, player can respond with reactive skills
+
+let pendingEnemyActions = []; // filled by AI, shown to player for reactive response
+let reactiveResponses = []; // player's chosen reactive responses
+
+async function promptReactiveDefense(enemyQueue) {
+  // For each enemy offensive action, check if player has usable reactive skills
+  let reactivePossible = false;
+  
+  for (let action of enemyQueue) {
+    let enemies = enemyActive;
+    let attacker = enemies[action.actorIdx];
+    if (!attacker || attacker.isDead) continue;
+    
+    let skill = action.actionType === 'skill' ? attacker.Skills[action.skillIdx] : null;
+    let nature = skill ? (skill.Nature || '').toLowerCase() : 'basic';
+    let isJumpShot = nature.includes('jump shot');
+    let isCloseShot = nature.includes('close shot');
+    let isAssist = nature.includes('assist');
+    
+    // Check each player card for reactive skills that could respond
+    for (let [pi, pCard] of playerActive.entries()) {
+      if (pCard.isDead) continue;
+      for (let [si, sk] of (pCard.Skills || []).entries()) {
+        let cat = getSkillCategory(sk);
+        if (!['reactive-block', 'reactive-steal', 'reactive-intercept', 'reactive-contest'].includes(cat)) continue;
+        
+        let mods = sk.Logic_Engine?.Modifiers || [];
+        let valid = false;
+        
+        // Steals: can target any opponent's action
+        if (mods.includes('Preemptive_Cancel')) valid = true;
+        // Blocks: respond to basic attacks or skill attacks
+        if (mods.includes('Reactionary_Block') || mods.includes('Reactionary_Mitigation') || mods.includes('Reactionary_Redirect')) valid = true;
+        // Intercept: only vs assist skills
+        if (mods.includes('Reactionary_Intercept') && isAssist) valid = true;
+        // Contest: only vs jump shots or close shots (depending on skill)
+        if (mods.includes('Reactionary_Contest') || mods.includes('Reactionary_Status_Aura')) {
+          let desc = (sk.Description_UI || '').toLowerCase();
+          if ((isJumpShot && desc.includes('jump')) || (isCloseShot && desc.includes('close'))) valid = true;
+        }
+        
+        if (valid) { reactivePossible = true; break; }
+      }
+      if (reactivePossible) break;
+    }
+    if (reactivePossible) break;
+  }
+  
+  return reactivePossible;
+}
+
+// ==================== UPDATED showActionMenu — FILTERS OUT REACTIVE SKILLS ====================
+// ADD this function — it replaces the skill button rendering inside showActionMenu
+// Find your existing showActionMenu function and change the Skills loop to use this filter:
+
+/*
+  CHANGE THIS in your existing showActionMenu():
+  
+  (card.Skills || []).forEach((sk, sIdx) => {
+    html += `<button ...>✨ ${sk.Name}</button>`;
+  });
+  
+  TO:
+  
+  (card.Skills || []).forEach((sk, sIdx) => {
+    if (!canSelectOnYourTurn(sk)) return; // <-- ADD THIS ONE LINE
+    html += `<button ...>✨ ${sk.Name}</button>`;
+  });
+*/
+
+// ==================== UPDATED confirmMoves — REACTIVE DEFENSE PHASE ====================
+// This patches confirmMoves to add a reactive defense step BEFORE executing
+
+const _originalConfirmMoves = confirmMoves; // save reference if needed
+
+async function confirmMovesWithDefense() {
+  $('checkout-panel').classList.remove('visible');
+  isAnimating = true;
+  logMsg(`--- TURN ${turnCount} EXECUTION ---`, "sys");
+
+  let enemyStaged = generateEnemyAI();
+
+  // === REACTIVE DEFENSE PHASE ===
+  // Show player what enemy is about to do, let them play reactive skills
+  reactiveResponses = [];
+  await runReactivePhase(enemyStaged);
+
+  // === BUILD MASTER QUEUE ===
+  let masterQueue = [];
+  stagedActions.forEach(a => masterQueue.push({...a, execTeam: 'player', card: playerActive[a.actorIdx]}));
+  enemyStaged.forEach(a => masterQueue.push({...a, execTeam: 'enemy', card: enemyActive[a.actorIdx]}));
+
+  const POS_HIERARCHY = { 'PG':5, 'SG':4, 'SF':3, 'PF':2, 'C':1 };
+
+  masterQueue.sort((a, b) => {
+    if (a.priority !== b.priority) return b.priority - a.priority;
+    let aIs6 = a.pos === "6TH";
+    let bIs6 = b.pos === "6TH";
+    if (aIs6 && !bIs6) return 1;
+    if (!aIs6 && bIs6) return -1;
+    if (a.speed !== b.speed) return b.speed - a.speed;
+    let aP = POS_HIERARCHY[(a.pos||'').split('/')[0].trim()] || 0;
+    let bP = POS_HIERARCHY[(b.pos||'').split('/')[0].trim()] || 0;
+    if (aP !== bP) return bP - aP;
+    return Math.random() > 0.5 ? 1 : -1;
+  });
+
+  for (let action of masterQueue) {
+    if(playerScore >= 8 || enemyScore >= 8) break;
+    
+    // Check if a reactive steal/intercept has already cancelled this action
+    let wasIntercepted = reactiveResponses.some(r => r.cancelledAction === action._id);
+    if (wasIntercepted) {
+      logMsg(`🛡️ Action was already intercepted/stolen — skipped!`, 'sys');
+      continue;
+    }
+
+    // Check aura effects
+    let auraResult = applyAuraEffectsToAction(action, action.execTeam);
+    if (auraResult.blocked) {
+      logMsg(`🚫 ${auraResult.reason}`, action.execTeam === 'player' ? 'def' : 'atk');
+      continue;
+    }
+
+    await executeAction(action);
+  }
+
+  await handleDeadReplacements('player', playerActive, playerBench);
+  await handleDeadReplacements('enemy', enemyActive, enemyBench);
+
+  tickDownAuras();
+  stagedActions = []; reactiveResponses = []; uiState = 'IDLE'; turnCount++;
+  
+  if (playerScore < 8 && enemyScore < 8) {
+    isAnimating = false; renderArena();
+  }
+}
+
+// === REACTIVE PHASE RUNNER ===
+// Shows the "Enemy is about to attack — respond?" UI
+let reactiveResolve = null;
+
+async function runReactivePhase(enemyQueue) {
+  // Tag enemy actions with IDs for tracking
+  enemyQueue.forEach((a, i) => a._id = `enemy_${turnCount}_${i}`);
+  
+  let hasReactive = await promptReactiveDefense(enemyQueue);
+  if (!hasReactive) return;
+  
+  // Show reactive panel
+  return new Promise(resolve => {
+    reactiveResolve = resolve;
+    showReactivePanel(enemyQueue);
+  });
+}
+
+function showReactivePanel(enemyQueue) {
+  let panel = $('checkout-panel');
+  
+  let enemySummary = enemyQueue.filter(a => {
+    let atk = enemyActive[a.actorIdx];
+    return atk && !atk.isDead && a.actionType !== 'pass';
+  }).map(a => {
+    let atk = enemyActive[a.actorIdx];
+    let sk = a.actionType === 'skill' ? atk.Skills[a.skillIdx] : null;
+    let moveName = sk ? sk.Name : 'Basic Attack';
+    let tgt = a.targetTeam === 'player' && a.targetIdx != null ? shortName(getCardName(playerActive[a.targetIdx])) : '?';
+    return `<div>⚔️ <b>${shortName(getCardName(atk))}</b>: ${moveName} ➔ ${tgt}</div>`;
+  }).join('');
+
+  // Find available reactive skills
+  let reactiveOptions = '';
+  for (let [pi, pCard] of playerActive.entries()) {
+    if (pCard.isDead) continue;
+    for (let [si, sk] of (pCard.Skills || []).entries()) {
+      let cat = getSkillCategory(sk);
+      if (!['reactive-block', 'reactive-steal', 'reactive-intercept', 'reactive-contest', 'reactive-rebound'].includes(cat)) continue;
+      reactiveOptions += `<button class="btn-primary" style="background:var(--pos-pf); font-size:0.8rem;" onclick="selectReactiveSkill(${pi}, ${si})">${shortName(getCardName(pCard))}: 🛡️ ${sk.Name}</button>`;
+    }
+  }
+
+  $('staged-count').textContent = 'REACT';
+  $('staged-list').innerHTML = `
+    <div style="font-size:0.8rem; color:var(--text-muted); margin-bottom:8px;">ENEMY IS ATTACKING:</div>
+    ${enemySummary}
+    <div style="font-size:0.8rem; color:#40C4FF; margin: 10px 0 6px;">YOUR REACTIVE OPTIONS:</div>
+    ${reactiveOptions || '<div style="color:var(--text-muted); font-size:0.8rem;">None available</div>'}
+  `;
+  $('confirm-moves-btn').textContent = 'SKIP (No Defense)';
+  $('confirm-moves-btn').disabled = false;
+  $('confirm-moves-btn').onclick = finishReactivePhase;
+  panel.classList.add('visible');
+}
+
+function selectReactiveSkill(playerCardIdx, skillIdx) {
+  let pCard = playerActive[playerCardIdx];
+  let sk = pCard.Skills[skillIdx];
+  let cat = getSkillCategory(sk);
+  let mods = sk.Logic_Engine?.Modifiers || [];
+  let name = getCardName(pCard);
+
+  // Steals/intercepts cancel an enemy action entirely
+  if (mods.includes('Preemptive_Cancel') || mods.includes('Reactionary_Intercept')) {
+    // Let player pick which enemy action to cancel
+    pendingReactiveAction = { playerCardIdx, skillIdx, cat };
+    logMsg(`🛡️ ${shortName(name)}: ${sk.Name} — click an enemy card to target`, 'sys');
+    // Temporarily show enemy cards as targetable (reuse uiState)
+    uiState = 'AWAITING_REACTIVE_TARGET';
+    renderArena();
+    return;
+  }
+
+  // Blocks / mitigations / contests — apply globally or to the most relevant incoming attack
+  reactiveResponses.push({ playerCardIdx, skillIdx, cat, appliedTo: 'next_incoming' });
+  logMsg(`🛡️ ${shortName(name)}: ${sk.Name} staged as defense!`, 'atk');
+  executeReactiveSkillEffect(playerCardIdx, skillIdx);
+}
+
+function executeReactiveSkillEffect(playerCardIdx, skillIdx) {
+  let pCard = playerActive[playerCardIdx];
+  let sk = pCard.Skills[skillIdx];
+  let mods = sk.Logic_Engine?.Modifiers || [];
+  let name = getCardName(pCard);
+  
+  // Block (damage reduction) — applied when executeAction runs against that target
+  if (mods.includes('Reactionary_Block') || mods.includes('Reactionary_Mitigation') || mods.includes('Reactionary_Redirect')) {
+    // Store as a pending block for the next incoming damage calculation
+    pendingBlocks.push({ playerCardIdx, skillIdx, sk });
+    logMsg(`🛡️ ${shortName(name)}: ${sk.Name} ready to block next attack!`, 'atk');
+  }
+}
+
+// Storage for pending blocks to apply during damage calculation
+let pendingBlocks = [];
+
+function applyPendingBlocks(incomingDmg, targetTeam) {
+  if (targetTeam !== 'player' || pendingBlocks.length === 0) return incomingDmg;
+  
+  let block = pendingBlocks.shift(); // consume first block
+  let sk = block.sk;
+  let mods = sk.Logic_Engine?.Modifiers || [];
+  let name = getCardName(playerActive[block.playerCardIdx]);
+  
+  // Reactionary_Redirect (Garnett/McHale switcher) — halve damage
+  if (mods.includes('Reactionary_Redirect')) {
+    let reduced = Math.floor(incomingDmg * 0.5);
+    logMsg(`🛡️ ${shortName(name)}: ${sk.Name} took the hit! DMG halved to ${reduced}`, 'atk');
+    return reduced;
+  }
+  
+  // Reactionary_Mitigation (Clamps - flat reduction)
+  if (mods.includes('Reactionary_Mitigation')) {
+    let reduction = 500; // Iguodala's Clamps
+    let execStr = sk.Logic_Engine?.Execution || '';
+    let match = execStr.match(/(\d+)/);
+    if (match) reduction = parseInt(match[1]);
+    let reduced = Math.max(0, incomingDmg - reduction);
+    logMsg(`🛡️ ${shortName(name)}: ${sk.Name} reduced DMG by ${reduction}! (${incomingDmg} → ${reduced})`, 'atk');
+    return reduced;
+  }
+  
+  // Reactionary_Block — check how much it blocks
+  let execStr = sk.Logic_Engine?.Execution || '';
+  if (execStr.includes('Attack_Blocked = True')) {
+    logMsg(`🛡️ ${shortName(name)}: ${sk.Name} BLOCKED the attack completely!`, 'atk');
+    return 0;
+  }
+  
+  // Partial block (e.g. Wade's Can't Take The Heat — up to 800)
+  let match = execStr.match(/up to (\d+)/i) || execStr.match(/(\d+) DMG/i);
+  if (match) {
+    let cap = parseInt(match[1]);
+    let blocked = Math.min(incomingDmg, cap);
+    let reduced = incomingDmg - blocked;
+    logMsg(`🛡️ ${shortName(name)}: ${sk.Name} blocked ${blocked} DMG! (${incomingDmg} → ${reduced})`, 'atk');
+    return reduced;
+  }
+  
+  return incomingDmg;
+}
+
+function finishReactivePhase() {
+  $('confirm-moves-btn').textContent = 'LOCK IN MOVES';
+  $('confirm-moves-btn').onclick = confirmMovesWithDefense;
+  $('checkout-panel').classList.remove('visible');
+  if (reactiveResolve) { reactiveResolve(); reactiveResolve = null; }
+}
+
+// ==================== PRE-TURN AURA SKILLS — add to selectAction ====================
+// When player selects a skill whose category is 'pre-turn-aura', 
+// register the aura instead of picking a target.
+// ADD this inside selectAction(), after the skill category check:
+
+/*
+  In selectAction(), ADD before the "let validEnemies" block:
+  
+  if (type === 'skill') {
+    let sk = card.Skills[skillIdx];
+    let cat = getSkillCategory(sk);
+    let mods = sk.Logic_Engine?.Modifiers || [];
+    
+    if (cat === 'pre-turn-aura') {
+      // Register the global aura effect
+      let turns = 3; // default
+      let desc = sk.Description_UI || '';
+      let match = desc.match(/next (\d+) turn/i);
+      if (match) turns = parseInt(match[1]);
+      
+      let auraType = 'jumpshot-miss-chance';
+      if (mods.includes('Global_Status_Disable')) auraType = 'all-skills-disabled';
+      else if (desc.toLowerCase().includes('close shot')) auraType = 'closeshot-miss-chance';
+      
+      activeAuras.push({ type: auraType, turnsLeft: turns, sourceTeam: 'player', sourceName: sk.Name });
+      stagedActions.push({ ...pendingAction, targetIdx: null, targetTeam: null });
+      logMsg(`✨ ${shortName(name)}: ${sk.Name} activated — aura lasts ${turns} turns!`, 'atk');
+      renderArena(); renderCheckout();
+      return;
+    }
+    
+    // Hard disable (targeted) — needs enemy target
+    if (mods.includes('Hard_Disable') && cat === 'pre-turn-aura') {
+      uiState = 'AWAITING_TARGET';
+      logMsg(`Select enemy card to SHUT DOWN with ${sk.Name}.`, 'sys');
+      renderArena();
+      return;
+    }
+  }
+*/
+
+// ==================== ENEMY DRAFT FIX ====================
+// Replace generateEnemyAI draft with proper positional drafting
+
+function buildEnemyRoster() {
+  const POSITIONS_NEEDED = ['PG','SG','SF','PF','C'];
+  let enemyDraft = { PG:[], SG:[], SF:[], PF:[], C:[] };
+  
+  // Shuffle all cards
+  let pool = [...CARDS].sort(() => Math.random() - 0.5);
+  
+  // Fill each position with 2 cards
+  for (let card of pool) {
+    let positions = getCardPos(card).split('/').map(p => p.trim());
+    for (let pos of positions) {
+      if (POSITIONS_NEEDED.includes(pos) && enemyDraft[pos].length < 2) {
+        // Make sure card isn't already drafted
+        let alreadyUsed = POSITIONS_NEEDED.some(p => enemyDraft[p].some(c => getCardName(c) === getCardName(card)));
+        if (!alreadyUsed) {
+          enemyDraft[pos].push(card);
+          break; // only assign to one position slot
+        }
+      }
+    }
+    // Stop if all positions filled
+    if (POSITIONS_NEEDED.every(p => enemyDraft[p].length >= 2)) break;
+  }
+  
+  // Pick 1 starter per position (index 0), rest go to bench
+  let starters = [];
+  let bench = [];
+  
+  POSITIONS_NEEDED.forEach(pos => {
+    let cards = enemyDraft[pos];
+    if (cards[0]) {
+      let c = JSON.parse(JSON.stringify(cards[0]));
+      c.currentHp = getCardHP(c);
+      c.isDead = false;
+      c.battleRole = pos; // <-- CRITICAL: assign the role they're playing
+      starters.push(c);
+    }
+    if (cards[1]) {
+      let c = JSON.parse(JSON.stringify(cards[1]));
+      c.currentHp = getCardHP(c);
+      c.isDead = false;
+      c.battleRole = pos;
+      bench.push(c);
+    }
+  });
+  
+  return { starters, bench };
+}
+
+// ==================== BATTLE ROLE ASSIGNMENT ====================
+// When building player active lineup, also stamp battleRole
+
+function buildPlayerActiveWithRoles() {
+  let result = [];
+  let positions = hasSixthMan ? ['PG','SG','SF','PF','C','6TH'] : ['PG','SG','SF','PF','C'];
+  positions.forEach(pos => {
+    if (activeLineup[pos]) {
+      let c = JSON.parse(JSON.stringify(activeLineup[pos]));
+      c.currentHp = getCardHP(c);
+      c.isDead = false;
+      c.battleRole = pos; // stamp the role they're filling
+      result.push(c);
+    }
+  });
+  return result;
+}
+
+// ==================== FIXED TARGET MATRIX (uses battleRole) ====================
+const ROLE_TARGET_MATRIX = {
+  "PG": ["PG", "SG"],
+  "SG": ["SG", "SF"],
+  "SF": ["SG", "SF", "PF"],
+  "PF": ["PF", "C"],
+  "C":  ["C",  "PF"],
+  "6TH": ["PG","SG","SF","PF","C"] // 6th man can target anyone their teammate can
+};
+
+function getValidTargetsByRole(attackerCard, targetTeam) {
+  let role = attackerCard.battleRole || getCardPos(attackerCard).split('/')[0].trim();
+  let validRoles = ROLE_TARGET_MATRIX[role] || [];
+  
+  return targetTeam.map((c, i) => ({c, i})).filter(def => {
+    if (def.c.isDead) return false;
+    let defRole = def.c.battleRole || getCardPos(def.c).split('/')[0].trim();
+    return validRoles.includes(defRole);
+  });
+}
   </script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -372,7 +880,7 @@ function handleDragLeave(e) {
         MOVES STAGED (<span id="staged-count">0</span>)
       </div>
       <div id="staged-list" style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px; font-size:0.9rem; color:var(--text-light);"></div>
-      <button class="btn-primary" id="confirm-moves-btn" style="width:100%; padding: 16px; font-size: 1.1rem;" onclick="confirmMoves()">LOCK IN MOVES</button>
+     <button class="btn-primary" id="confirm-moves-btn" style="width:100%; padding: 16px; font-size: 1.1rem;" onclick="confirmMovesWithDefense()">LOCK IN MOVES</button>
     </div>
   </div>
 </div>
@@ -7152,27 +7660,12 @@ function renderSetupBench() {
 
 // ==================== PHASE 4: BATTLE & ENGINE ====================
 function startBattle() {
-  playerActive = [];
-  let positions = hasSixthMan ? ['PG','SG','SF','PF','C','6TH'] : ['PG','SG','SF','PF','C'];
-  positions.forEach(p => { 
-    if(activeLineup[p]) {
-        let cardCopy = JSON.parse(JSON.stringify(activeLineup[p]));
-        cardCopy.currentHp = getCardHP(cardCopy);
-        cardCopy.isDead = false;
-        playerActive.push(cardCopy);
-    } 
-  });
+ playerActive = buildPlayerActiveWithRoles();
   playerBench = benchRoster.filter(c => !playerActive.some(ac => getCardName(ac) === getCardName(c)));
   
-  let shuf = [...CARDS].sort(()=>Math.random()-0.5);
-  let enemyCount = Math.random() > 0.8 ? 6 : 5;
-  enemyActive = shuf.slice(0,enemyCount).map(c => {
-      let cardCopy = JSON.parse(JSON.stringify(c));
-      cardCopy.currentHp = getCardHP(cardCopy);
-      cardCopy.isDead = false;
-      return cardCopy;
-  });
-  enemyBench = shuf.slice(enemyCount,10);
+  let { starters: eStarters, bench: eBench } = buildEnemyRoster();
+enemyActive = eStarters;
+enemyBench = eBench;
   
   playerScore = 0; enemyScore = 0; turnCount = 1;
   stagedActions = []; uiState = 'IDLE';
@@ -7232,6 +7725,8 @@ function logMsg(txt, t) {
 
 // --- TARGETING LOGIC ---
 function getValidTargets(attackerCard, targetTeam) {
+  if (attackerCard.battleRole) return getValidTargetsByRole(attackerCard, targetTeam);
+  // ... rest of existing code unchanged
   let validTargetPositions = new Set();
   let posStr = getCardPos(attackerCard);
   let name = getCardName(attackerCard);
@@ -7297,9 +7792,10 @@ function showActionMenu(card, idx, x, y) {
   let html = `<div style="font-weight:900; color:var(--text); margin-bottom:4px; font-size:1rem;">${shortName(name)}</div>`;
   html += `<button class="btn-primary" onclick="selectAction(${idx}, 'basic', 0)">⚔️ BASIC ATTACK (${dmg})</button>`;
   
-  (card.Skills || []).forEach((sk, sIdx) => {
+(card.Skills || []).forEach((sk, sIdx) => {
+    if (!canSelectOnYourTurn(sk)) return; // defensive skills cannot be selected here
     html += `<button class="btn-primary" style="background:var(--pos-c);" onclick="selectAction(${idx}, 'skill', ${sIdx})">✨ ${sk.Name}</button>`;
-  });
+});
   
   if (playerBench.length > 0) html += `<button class="btn-primary" style="background:var(--pos-pg);" onclick="selectAction(${idx}, 'swap', 0)">🔄 SWAP CARD</button>`;
   html += `<button class="btn-primary" style="background:var(--border-heavy);" onclick="selectAction(${idx}, 'pass', 0)">⏭️ PASS TURN</button>`;
@@ -7479,8 +7975,7 @@ async function executeAction(action) {
     if(atkEl) { atkEl.classList.add('anim-waft-up'); await new Promise(r => setTimeout(r, 600)); atkEl.classList.remove('anim-waft-up'); }
     return;
   }
-
-  await playCombatAnimation(`${isP?'player':'enemy'}-${actorIdx}`, `${isP?'enemy':'player'}-${targetIdx}`, finalDmg, defender);
+await playCombatAnimation(`${isP?'player':'enemy'}-${actorIdx}`, `${isP?'enemy':'player'}-${targetIdx}`, finalDmg, defender, execTeam);
   
   if(defender.currentHp <= 0) {
     defender.isDead = true;
@@ -7493,18 +7988,18 @@ async function executeAction(action) {
   }
 }
 
-async function playCombatAnimation(atkId, defId, dmg, targetObj) {
+async function playCombatAnimation(atkId, defId, dmg, targetObj, execTeam) {
   let atkEl = $(`wrap-${atkId}`); let defEl = $(`wrap-${defId}`); 
   if(atkEl) atkEl.classList.add('anim-waft-up'); 
   await new Promise(r => setTimeout(r, 500));
   
   if(defEl) {
       defEl.classList.add('anim-shake');
-      let pop = document.createElement('div'); pop.className = 'dmg-popup'; pop.innerHTML = `💥 -${dmg}`; defEl.appendChild(pop);
-  }
+      let pop = document.createElement('div'); pop.className = 'dmg-popup'; pop.innerHTML = `💥 -${effectiveDmg ?? dmg}`; defEl.appendChild(pop);
   
   let hpMax = getCardHP(targetObj);
-  targetObj.currentHp = Math.max(0, targetObj.currentHp - dmg);
+let effectiveDmg = (execTeam === 'enemy') ? applyPendingBlocks(dmg, 'player') : dmg;
+  targetObj.currentHp = Math.max(0, targetObj.currentHp - effectiveDmg);
   let pct = Math.max(0, (targetObj.currentHp / hpMax) * 100);
   let fill = $(`hpf-${defId}`);
   if(fill) {
