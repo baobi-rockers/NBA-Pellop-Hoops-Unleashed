@@ -7230,37 +7230,37 @@ function showActionMenu(card, idx) {
   let leftPanel = $('action-panel-left');
   let rightPanel = $('action-panel-right');
 
-  // FIX: You must define 'dmg' before using it in the HTML string!
+  // We define 'dmg' here so the computer knows what it is below
   let dmg = getCardDMG(card); 
 
-  // LEFT SIDE: Utility
+  // LEFT SIDE: Pass or Swap
   let leftHtml = `<div style="color:var(--text-muted); text-align:center; font-size:0.75rem; margin-bottom:5px; font-weight:bold;">UTILITY</div>`;
   
-  // Ensure playerBench is defined and has cards
-  if (typeof playerBench !== 'undefined' && playerBench.length > 0) {
+  // Only show swap button if there are players on the bench
+  if (playerBench && playerBench.length > 0) {
       leftHtml += `<button class="action-btn" style="border-left: 4px solid var(--pos-pg);" onclick="selectAction(${idx}, 'swap', 0)">🔄 SWAP CARD</button>`;
   }
   
   leftHtml += `<button class="action-btn" style="border-left: 4px solid var(--border-heavy);" onclick="selectAction(${idx}, 'pass', 0)">⏭️ PASS TURN</button>`;
 
-  // RIGHT SIDE: Offense
+  // RIGHT SIDE: Attacks and Skills
   let rightHtml = `<div style="color:var(--text-muted); text-align:center; font-size:0.75rem; margin-bottom:5px; font-weight:bold;">OFFENSE</div>`;
   rightHtml += `<button class="action-btn" style="border-right: 4px solid white;" onclick="selectAction(${idx}, 'basic', 0)">⚔️ BASIC ATTACK (${dmg})</button>`;
   
-  // Safely loop through skills
+  // Loop through the card's specific skills
   if (card && card.Skills) {
       card.Skills.forEach((sk, sIdx) => {
           rightHtml += `<button class="action-btn" style="border-right: 4px solid var(--pos-c);" onclick="selectAction(${idx}, 'skill', ${sIdx})">✨ ${sk.Name}</button>`;
       });
   }
 
-  // Inject and show
+  // Display the panels on the screen
   leftPanel.innerHTML = leftHtml;
   rightPanel.innerHTML = rightHtml;
   leftPanel.style.display = 'flex';
   rightPanel.style.display = 'flex';
 }
-
+  
 function selectAction(actorIdx, type, skillIdx) {
   $('action-panel-left').style.display = 'none';
   $('action-panel-right').style.display = 'none';
