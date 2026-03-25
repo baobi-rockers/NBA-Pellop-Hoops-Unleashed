@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>NBA Card Battle · TCG Pocket Edition</title>
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -18,7 +18,7 @@
     .screen.active { display: block; }
 
     .app-header { background: rgba(8, 11, 18, 0.98); border-bottom: 1px solid var(--border); padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; z-index: 100; position: sticky; top:0; }
-    .logo { font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; font-size: 1.4rem; background: linear-gradient(135deg, #FF5722, #FFD600); -webkit-background-clip: text; color: transparent; }
+    .logo { font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 800; font-size: 1.2rem; background: linear-gradient(135deg, #FF5722, #FFD600); -webkit-background-clip: text; color: transparent; }
     .nav { display: flex; gap: 6px; background: var(--surface); padding: 4px; border-radius: 40px; border: 1px solid var(--border); }
     .nav-btn { padding: 4px 14px; border-radius: 30px; font-weight: 600; font-size: 0.8rem; background: transparent; border: none; cursor: pointer; color: var(--text-light); }
     .nav-btn.active, .nav-btn:hover { background: var(--border); color: white; }
@@ -27,316 +27,134 @@
     .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
     .btn-primary:disabled { background: var(--border-heavy); cursor: not-allowed; color: var(--text-muted); }
 
-    /* ========== TOOLTIP ========== */
-    .tooltip-bubble {
-      position: fixed; z-index: 9999;
-      background: rgba(8,11,18,0.82);
-      border: 0.5px solid rgba(235,235,210,0.25);
-      padding: 8px 10px; border-radius: 10px;
-      color: var(--text-light); max-width: 220px;
-      font-size: 0.68rem; line-height: 1.25;
-      box-shadow: 0 10px 28px rgba(0,0,0,0.85);
-      backdrop-filter: blur(10px);
-      opacity: 0; pointer-events: none; transition: opacity 0.15s;
-      font-family: 'Inter', sans-serif; font-weight: 300;
-    }
-    .tooltip-bubble .tt-name { color: #FFD600; font-weight: 600; font-size: 0.8rem; margin-bottom: 3px; }
-    .tooltip-bubble .tt-ability-name { color: white; font-weight: 600; }
-    .tooltip-bubble .tt-skill-name { color: white; font-weight: 600; margin-top: 4px; }
-    .tooltip-bubble.visible { opacity: 1; }
-
-    /* ========== STICKY CONTAINER ========== */
     .sticky-container { position: sticky; top: 0; z-index: 90; background: var(--bg); box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
-    .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; padding: 5px 16px; background: var(--surface); border-bottom: 1px solid var(--border); align-items: center; }
-    .filter-bar input, .filter-bar select { padding: 4px 10px; border-radius: 40px; border: 1px solid var(--border); background: var(--surface-2); color: white; font-size: 0.75rem; }
-    .filter-bar input { flex: 1; min-width: 100px; height: 28px; }
+    .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; padding: 8px 16px; background: var(--surface); border-bottom: 1px solid var(--border); align-items: center; }
+    .filter-bar input, .filter-bar select { padding: 6px 12px; border-radius: 40px; border: 1px solid var(--border); background: var(--surface-2); color: white; font-size: 0.8rem; }
+    .filter-bar input { flex: 1; min-width: 130px; }
 
-    /* ========== DRAFT SCREEN LAYOUT ========== */
-    .draft-layout { display: flex; min-height: calc(100vh - 45px); }
-    .draft-main { flex: 1; overflow-y: auto; }
-
-    /* Vertical draft slots sidebar */
-    .draft-sidebar {
-      width: 160px; flex-shrink: 0;
-      background: var(--surface);
-      border-left: 1px solid var(--border);
-      display: flex; flex-direction: column;
-      padding: 10px 8px 10px;
-      gap: 5px;
-      position: sticky; top: 45px; height: calc(100vh - 45px);
-      overflow-y: auto;
-    }
-    .draft-count-display {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 2rem; letter-spacing: 2px;
-      text-align: center;
-      color: #40C4FF;
-      text-shadow: 0 0 12px rgba(64,196,255,0.6), 2px 2px 0 rgba(0,0,0,0.8);
-      margin-bottom: 8px; padding-bottom: 8px;
-      border-bottom: 1px solid var(--border);
-    }
-    .slot-card {
-      background: var(--surface-2); border-radius: 6px;
-      border: 1px dashed var(--border-heavy);
-      padding: 5px 6px; min-height: 36px;
-      text-align: center; position: relative;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      transition: all 0.2s; cursor: default;
-    }
-    .slot-card.filled { border-style: solid; background: rgba(255,255,255,0.02); border-width: 1.5px; }
-    .slot-pos { font-weight: 900; font-size: 0.9rem; letter-spacing: 1px; pointer-events: none; }
-    .slot-name { font-weight: 600; font-size: 0.62rem; color: white; white-space: normal; line-height: 1.2; pointer-events: none; word-wrap: break-word; width: 100%; margin-top: 1px; }
-    .slot-card.drag-over { background: rgba(255,255,255,0.08); transform: scale(1.03); border-style: solid; }
-    .remove-slot { color: #FF5252; font-size: 0.6rem; cursor: pointer; background: rgba(0,0,0,0.6); border: 1px solid #FF5252; position: absolute; top: 2px; right: 2px; font-weight: bold; width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 5; }
+    .slots-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; padding: 10px 16px; background: var(--bg); border-bottom: 1px solid var(--border); }
+    .slot-card { background: var(--surface); border-radius: 8px; border: 1px dashed var(--border-heavy); padding: 6px; min-height: 48px; text-align: center; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; }
+    .slot-card.filled { border-style: solid; background: rgba(255,255,255,0.02); border-width: 2px; }
+    .slot-pos { font-weight: 900; font-size: 0.65rem; margin-bottom: 2px; pointer-events: none; }
+    .slot-name { font-weight: 700; font-size: 0.7rem; color: white; white-space: normal; line-height: 1.2; pointer-events: none; word-wrap: break-word; width: 100%; }
+    .slot-card.drag-over { background: rgba(255, 255, 255, 0.08); transform: scale(1.05); border-style: solid; }
+    .remove-slot { color: #FF5252; font-size: 0.7rem; cursor: pointer; background: rgba(0,0,0,0.6); border: 1px solid #FF5252; position: absolute; top: 2px; right: 2px; font-weight: bold; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 5; }
     .remove-slot:hover { background: #FF5252; color: white; }
+
     .slot-PG.filled, .slot-PG.drag-over { border-color: var(--pos-pg); } .slot-PG .slot-pos { color: var(--pos-pg); }
     .slot-SG.filled, .slot-SG.drag-over { border-color: var(--pos-sg); } .slot-SG .slot-pos { color: var(--pos-sg); }
     .slot-SF.filled, .slot-SF.drag-over { border-color: var(--pos-sf); } .slot-SF .slot-pos { color: var(--pos-sf); }
     .slot-PF.filled, .slot-PF.drag-over { border-color: var(--pos-pf); } .slot-PF .slot-pos { color: var(--pos-pf); }
-    .slot-C.filled, .slot-C.drag-over   { border-color: var(--pos-c); }  .slot-C .slot-pos  { color: var(--pos-c); }
+    .slot-C.filled,  .slot-C.drag-over  { border-color: var(--pos-c); }  .slot-C .slot-pos  { color: var(--pos-c); }
+    .slot-6TH { display: none; }
     .slot-6TH.filled, .slot-6TH.drag-over { border-color: var(--pos-6th); } .slot-6TH .slot-pos { color: var(--pos-6th); }
 
-    @keyframes shakeInvalid { 0%,100%{transform:translateX(0);} 20%,60%{transform:translateX(-5px); border-color:#FF5252; background:rgba(255,82,82,0.1);} 40%,80%{transform:translateX(5px);border-color:#FF5252;background:rgba(255,82,82,0.1);} }
+    @keyframes shakeInvalid { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-5px); border-color: #FF5252; background: rgba(255, 82, 82, 0.1); } 40%, 80% { transform: translateX(5px); border-color: #FF5252; background: rgba(255, 82, 82, 0.1); } }
     .shake-invalid { animation: shakeInvalid 0.5s ease-in-out; }
-    .invalid-overlay { position:absolute; inset:0; background:rgba(255,82,82,0.95); color:white; font-weight:900; display:flex; align-items:center; justify-content:center; border-radius:6px; z-index:10; font-size:0.65rem; text-transform:uppercase; }
+    .invalid-overlay { position: absolute; inset: 0; background: rgba(255, 82, 82, 0.95); color: white; font-weight: 900; display: flex; align-items: center; justify-content: center; border-radius: 6px; z-index: 10; font-size: 0.7rem; text-shadow: 0 2px 4px rgba(0,0,0,0.5); text-transform: uppercase; }
 
-    /* ========== CARD GRID — BIGGER CARDS ========== */
-    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; padding: 14px 18px; align-items: start; }
-    .compact-card { position: relative; width: 100%; padding-bottom: 140%; background: transparent; border-radius: 10px; overflow: hidden; box-shadow: 0 6px 15px rgba(0,0,0,0.5); transition: transform 0.25s, box-shadow 0.25s; cursor: pointer; border: 1px solid var(--border-heavy); }
-    .compact-card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 14px 30px rgba(255,214,0,0.2); border-color: var(--pos-pg); }
-    .compact-card.dragging { opacity: 0.15; }
-    .compact-card.in-draft { opacity: 0.3; pointer-events: none; }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 16px; padding: 16px 24px; align-items: start; }
+    .compact-card { position: relative; width: 100%; padding-bottom: 140%; background: transparent; border-radius: 8px; overflow: hidden; box-shadow: 0 6px 15px rgba(0,0,0,0.5); transition: transform 0.2s, box-shadow 0.2s; cursor: pointer; border: 1px solid var(--border-heavy); }
+    .compact-card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px rgba(255, 214, 0, 0.2); border-color: var(--pos-pg); }
+    .compact-card.dragging { opacity: 0.4; }
     .card-img-sm { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #0f1320; pointer-events: none; }
     .card-img-sm img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* ========== EXPANDED ROW ========== */
-    .expanded-row {
-      grid-column: 1 / -1;
-      display: flex; gap: 0; padding: 20px;
-      background: rgba(16, 20, 38, 0.97);
-      border-radius: 14px; border: 1px solid var(--border-heavy);
-      margin: 6px 0; overflow: hidden;
-      align-items: flex-start;
-      cursor: default;
-      position: relative;
-    }
-    .expanded-row.collapsing { opacity: 0; max-height: 0 !important; padding: 0; margin: 0; border-width: 0; overflow: hidden; transform: scaleY(0.9); transition: all 0.3s ease; }
+    .tooltip-bubble { position: fixed; z-index: 9999; background: rgba(8,11,18,0.96); border: 1px solid var(--pos-sf); padding: 12px 14px; border-radius: 12px; color: var(--text-light); max-width: 260px; font-size: 0.75rem; line-height: 1.4; box-shadow: 0 15px 35px rgba(0,0,0,0.9); backdrop-filter: blur(8px); opacity: 0; pointer-events: none; transition: opacity 0.15s; }
+    .tooltip-bubble b { color: white; display: block; margin-bottom: 2px; font-size: 0.8rem; }
+    .tooltip-bubble.visible { opacity: 1; }
 
-    /* Card takes left side, content fills right - squarish */
-    .expanded-card-container { perspective: 1500px; width: 200px; flex-shrink: 0; z-index: 10; margin-right: 20px; }
-    .expanded-card-flipper { position: relative; width: 100%; padding-bottom: 140%; transform-style: preserve-3d; animation: fairySpin 3s cubic-bezier(0.08, 0.95, 0.2, 1) forwards; }
+    /* Expanded row — fairySpin fixed */
+    .expanded-row { grid-column: 1 / -1; display: flex; gap: 20px; padding: 24px; background: rgba(22, 28, 45, 0.8); border-radius: 16px; border: 1px solid var(--border-heavy); margin: 8px 0; overflow: hidden; align-items: flex-start; flex-wrap: wrap; cursor: pointer; }
+    .expanded-row.collapsing { opacity: 0; max-height: 0 !important; padding-top: 0; padding-bottom: 0; margin-top: 0; margin-bottom: 0; border-width: 0; overflow: hidden; transform: scaleY(0.9); transition: all 0.3s ease; }
+
+    .expanded-card-container { perspective: 1500px; width: min(100%, 250px); flex-shrink: 0; z-index: 10; margin: 0 auto; }
+    .expanded-card-flipper { position: relative; width: 100%; padding-bottom: 140%; transform-style: preserve-3d; animation: fairySpin 2s cubic-bezier(0.1, 0.9, 0.2, 1) forwards; }
 
     @keyframes fairySpin {
-      0%   { transform: rotateY(1080deg) scale(0.5); opacity: 0; filter: brightness(2) saturate(2); }
-      10%  { opacity: 1; filter: brightness(1.5) saturate(1.5); }
-      40%  { filter: brightness(1.2) saturate(1.2); }
-      70%  { transform: rotateY(0deg) scale(1.04); filter: brightness(1); }
-      85%  { transform: rotateY(-8deg) scale(1.01); }
-      100% { transform: rotateY(0deg) scale(1); opacity: 1; filter: brightness(1); }
-    }
-    @keyframes fairySpinClose {
-      0%   { transform: rotateY(0deg) scale(1); opacity: 1; }
-      40%  { transform: rotateY(90deg) scale(0.9); opacity: 0.6; }
-      100% { transform: rotateY(180deg) scale(0.7); opacity: 0; }
+      0%   { transform: rotateY(1260deg) scale(0.6); opacity: 0; }
+      15%  { opacity: 1; }
+      100% { transform: rotateY(0deg) scale(1); opacity: 1; }
     }
 
-    @keyframes sparkle {
-      0%,100% { opacity: 0; transform: translate(-50%,-50%) scale(0); }
-      50% { opacity: 1; transform: translate(-50%,-50%) scale(1); }
-    }
-
-    .expanded-front, .expanded-back { position: absolute; inset: 0; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 12px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.8); border: 1.5px solid var(--border-heavy); background: #0f1320; }
+    .expanded-front, .expanded-back { position: absolute; inset: 0; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 14px; overflow: hidden; box-shadow: 0 25px 50px rgba(0,0,0,0.8); border: 2px solid var(--border-heavy); background: #0f1320; }
     .expanded-front { transform: rotateY(0deg); }
     .expanded-front img, .expanded-back img { width: 100%; height: 100%; object-fit: cover; }
     .expanded-back { transform: rotateY(180deg); }
 
-    /* Fairy sparkle particles */
-    .fairy-particle {
-      position: absolute; width: 6px; height: 6px;
-      border-radius: 50%; pointer-events: none;
-      animation: sparkle 0.8s ease-in-out forwards;
-      z-index: 20;
-    }
+    .expanded-scroll-wrapper { flex: 1; min-width: 250px; overflow: hidden; max-width: 0; opacity: 0; animation: scrollReveal 1s cubic-bezier(0.16, 1, 0.3, 1) 0.7s forwards; background: transparent; pointer-events: none; }
+    @keyframes scrollReveal { 0% { max-width: 0; opacity: 0; } 10% { opacity: 1; } 100% { max-width: 1200px; opacity: 1; padding-left: 16px; padding-right: 16px; } }
 
-    /* Content area - squarish wrap */
-    .expanded-scroll-wrapper { flex: 1; min-width: 0; overflow: hidden; max-width: 0; opacity: 0; animation: scrollReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.9s forwards; }
-    @keyframes scrollReveal { 0%{max-width:0;opacity:0;} 10%{opacity:1;} 100%{max-width:600px;opacity:1;} }
+    .expanded-content { width: 100%; padding: 12px 0; color: var(--text); }
+    .ec-header { border-bottom: 1px solid var(--border-heavy); padding-bottom: 10px; margin-bottom: 16px; }
+    .ec-title { font-size: 1.5rem; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.1; color: white; }
+    .ec-team { color: var(--accent); font-weight: 700; font-size: 0.8rem; letter-spacing: 1px; text-transform: uppercase; margin-top: 4px; }
+    .ec-stats-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+    .ec-stat { background: rgba(0,0,0,0.4); padding: 6px 12px; border-radius: 8px; font-weight: 800; border: 1px solid var(--border); font-size: 0.95rem; display: flex; align-items: center; gap: 6px; }
+    .ec-stat span { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; }
+    .ec-ability { background: rgba(64, 196, 255, 0.05); border-left: 3px solid #40C4FF; padding: 12px 16px; border-radius: 0 8px 8px 0; margin-bottom: 20px; }
+    .ec-ability-name { font-weight: 800; color: #40C4FF; font-size: 1rem; margin-bottom: 4px; }
+    .ec-ability-desc { font-size: 0.85rem; line-height: 1.5; color: var(--text-light); }
+    .ec-skills-grid { display: flex; flex-direction: column; gap: 10px; }
+    .ec-skill { background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 12px 16px; border-radius: 10px; }
+    .ec-skill-header { display: flex; justify-content: space-between; font-weight: 800; font-size: 0.95rem; margin-bottom: 6px; color: white; }
+    .ec-skill-dmg { color: #FF5252; background: rgba(255, 82, 82, 0.1); padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; }
+    .ec-skill-desc { font-size: 0.8rem; color: var(--text-light); line-height: 1.5; }
 
-    .expanded-content { width: 100%; padding: 4px 0 4px 14px; color: var(--text); }
-    .ec-header { border-bottom: 1px solid var(--border-heavy); padding-bottom: 8px; margin-bottom: 10px; }
-    .ec-title { font-size: 1.3rem; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.1; color: white; }
-    .ec-team { color: var(--accent); font-weight: 700; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; margin-top: 3px; }
-    .ec-stats-row { display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
-    .ec-stat { background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 6px; font-weight: 800; border: 1px solid var(--border); font-size: 0.85rem; display: flex; align-items: center; gap: 4px; }
-    .ec-stat span { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; }
-    .ec-ability { background: rgba(64,196,255,0.05); border-left: 2px solid #40C4FF; padding: 8px 12px; border-radius: 0 6px 6px 0; margin-bottom: 12px; }
-    .ec-ability-name { font-weight: 800; color: #40C4FF; font-size: 0.9rem; margin-bottom: 3px; }
-    .ec-ability-desc { font-size: 0.78rem; line-height: 1.45; color: var(--text-light); }
-    .ec-skills-grid { display: flex; flex-direction: column; gap: 8px; }
-    .ec-skill { background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 8px 12px; border-radius: 8px; }
-    .ec-skill-header { display: flex; justify-content: space-between; font-weight: 800; font-size: 0.85rem; margin-bottom: 4px; color: white; }
-    .ec-skill-dmg { color: #FF5252; background: rgba(255,82,82,0.1); padding: 1px 5px; border-radius: 3px; font-size: 0.75rem; }
-    .ec-skill-desc { font-size: 0.74rem; color: var(--text-light); line-height: 1.4; }
-
-    /* close button for expanded */
-    .expanded-close { position: absolute; top: 10px; right: 10px; background: rgba(255,82,82,0.15); border: 1px solid #FF5252; color: #FF5252; border-radius: 50%; width: 24px; height: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; z-index: 30; transition: 0.2s; }
-    .expanded-close:hover { background: #FF5252; color: white; }
-
-    /* ========== SETUP SCREEN ========== */
-    .setup-slots-row { display: flex; justify-content: center; gap: 12px; padding: 12px 16px; flex-wrap: wrap; }
-    .setup-slot-card { width: 110px; height: 155px; background: var(--surface); border-radius: 10px; border: 2px dashed var(--border-heavy); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; position: relative; overflow: hidden; }
-    .setup-slot-card.filled { border-style: solid; border-width: 2px; }
-    .setup-slot-card img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
-    .setup-slot-pos { font-weight: 900; font-size: 1.1rem; letter-spacing: 1px; z-index: 2; }
-    .setup-slot-drop-text { font-size: 0.6rem; opacity: 0.4; margin-top: 4px; z-index: 2; }
-    .setup-slot-card.drag-over { transform: scale(1.05); }
-    .setup-slot-PG.filled { border-color: var(--pos-pg); } .setup-slot-PG .setup-slot-pos { color: var(--pos-pg); }
-    .setup-slot-SG.filled { border-color: var(--pos-sg); } .setup-slot-SG .setup-slot-pos { color: var(--pos-sg); }
-    .setup-slot-SF.filled { border-color: var(--pos-sf); } .setup-slot-SF .setup-slot-pos { color: var(--pos-sf); }
-    .setup-slot-PF.filled { border-color: var(--pos-pf); } .setup-slot-PF .setup-slot-pos { color: var(--pos-pf); }
-    .setup-slot-C.filled  { border-color: var(--pos-c); }  .setup-slot-C .setup-slot-pos  { color: var(--pos-c); }
-    .setup-remove { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.75); border: 1px solid #FF5252; color: #FF5252; border-radius: 50%; width: 18px; height: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; z-index: 10; }
-    .setup-remove:hover { background: #FF5252; color: white; }
-
-    /* ========== BATTLE ========== */
+    /* BATTLE */
     .arena-container { display: flex; height: calc(100vh - 45px); width: 100%; overflow: hidden; position: relative; }
-    .court-area { flex: 1; display: flex; flex-direction: column; background: radial-gradient(circle at center, #1d2438 0%, #080b12 100%); padding: 20px 30px; justify-content: space-between; overflow-y: auto; width: 100%; }
+    .court-area { flex: 1; display: flex; flex-direction: column; background: radial-gradient(circle at center, #1d2438 0%, #080b12 100%); padding: 30px; justify-content: space-between; overflow-y: auto; width: 100%; }
 
-    .battle-row { display: flex; justify-content: center; gap: 20px; align-items: center; min-height: 220px; flex-wrap: wrap; }
-    .battle-card-wrapper { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 150px; transition: all 0.3s; position: relative; cursor: pointer; }
-    .battle-card { width: 100%; padding-bottom: 140%; border-radius: 10px; border: 2px solid var(--border-heavy); overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.8); position: relative; background: #0f1320; transition: 0.2s; }
+    .battle-row { display: flex; justify-content: center; gap: 24px; align-items: center; min-height: 240px; flex-wrap: wrap; }
+    .battle-card-wrapper { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 160px; transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); position: relative; cursor: pointer; }
+    .battle-card { width: 100%; padding-bottom: 140%; border-radius: 12px; border: 3px solid var(--border-heavy); overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.8); position: relative; background: #0f1320; transition: 0.2s; }
     .battle-card img { position: absolute; width: 100%; height: 100%; object-fit: cover; }
-    .battle-card.face-down { background: url('https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/goat-tier-back.png') center/cover; }
-    .battle-card.face-down img { display: none; }
+    .battle-card.face-down { background-image: url('https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/goat-tier-back.png'); background-size: cover; background-position: center; }
     .dead-card { filter: grayscale(100%) brightness(0.3); pointer-events: none; opacity: 0.7; }
-    .battle-card.staged { border-color: #69F0AE !important; box-shadow: 0 0 25px 4px rgba(105,240,174,0.5); transform: translateY(-6px); }
-    .battle-card.valid-target { border-color: #FF5252 !important; box-shadow: 0 0 20px 4px rgba(255,82,82,0.5); animation: pulseTarget 1.5s infinite; }
-    @keyframes pulseTarget { 0%{transform:scale(1);} 50%{transform:scale(1.05);} 100%{transform:scale(1);} }
 
-    .undo-btn { position: absolute; bottom: 8px; right: -8px; background: #FF5252; color: white; border: 2px solid #fff; border-radius: 50%; width: 26px; height: 26px; font-weight: 900; cursor: pointer; z-index: 50; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: 0.2s; }
-    .undo-btn:hover { transform: scale(1.15); }
+    .battle-card.staged { border-color: #69F0AE !important; box-shadow: 0 0 30px 5px rgba(105, 240, 174, 0.5); transform: translateY(-8px); }
+    .battle-card.valid-target { border-color: #FF5252 !important; box-shadow: 0 0 25px 5px rgba(255, 82, 82, 0.5); animation: pulseTarget 1.5s infinite; }
+    @keyframes pulseTarget { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
 
-    .hp-bar-container { width: 100%; height: 8px; background: #000; border-radius: 4px; border: 1px solid var(--border-heavy); overflow: hidden; }
+    .undo-btn { position: absolute; bottom: 10px; right: -10px; background: #FF5252; color: white; border: 2px solid #fff; border-radius: 50%; width: 32px; height: 32px; font-weight: 900; cursor: pointer; z-index: 50; display: flex; align-items: center; justify-content: center; font-size: 1rem; box-shadow: 0 4px 10px rgba(0,0,0,0.5); transition: 0.2s; }
+    .undo-btn:hover { transform: scale(1.15); background: #d50000; }
+
+    .hp-bar-container { width: 100%; height: 12px; background: #000; border-radius: 6px; border: 1px solid var(--border-heavy); overflow: hidden; }
     .hp-fill { height: 100%; background: #69F0AE; width: 100%; transition: width 0.3s, background 0.3s; }
-    .hp-text { font-size: 0.75rem; font-weight: 900; text-align: center; width: 100%; margin-top: 1px; text-shadow: 0 1px 3px black; }
+    .hp-text { font-size: 0.85rem; font-weight: 900; text-align: center; width: 100%; margin-top: 2px; text-shadow: 0 1px 3px black; }
 
-    /* Bench cards — fanned out */
-    .bench-area { display: flex; justify-content: center; padding: 12px; min-height: 100px; position: relative; align-items: flex-end; }
-    .bench-fan-wrapper { position: relative; display: flex; align-items: flex-end; justify-content: center; }
-    .bench-card-wrap { position: relative; transition: all 0.3s ease; }
-    .bench-card { width: 65px; height: 91px; border-radius: 7px; border: 2px solid var(--border-heavy); overflow: hidden; background: #0f1320; position: relative; cursor: pointer; transition: all 0.3s; display: block; }
-    .bench-card:hover { border-color: white; box-shadow: 0 0 18px rgba(255,255,255,0.35); transform: translateY(-12px) scale(1.08) !important; z-index: 30 !important; }
+    .bench-area { display: flex; gap: 16px; justify-content: center; padding: 16px; background: rgba(0,0,0,0.5); border-radius: 16px; min-height: 120px; flex-wrap: wrap; }
+    .bench-card { width: 75px; height: 105px; border-radius: 8px; border: 2px solid var(--border-heavy); overflow: hidden; background: #0f1320; position: relative; cursor: pointer; transition: 0.2s; }
+    .bench-card:hover { transform: translateY(-5px); border-color: white; box-shadow: 0 5px 15px rgba(255,255,255,0.2); }
     .bench-card img { position: absolute; width: 100%; height: 100%; object-fit: cover; }
-    .bench-card.face-down { background: url('https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/goat-tier-back.png') center/cover; }
-    .bench-card.face-down img { display: none; }
-    .enemy-bench-popup { position: absolute; background: rgba(8,11,18,0.95); border: 1px solid var(--border-heavy); border-radius: 10px; padding: 10px 14px; z-index: 200; font-size: 0.78rem; color: var(--text-light); pointer-events: none; white-space: nowrap; box-shadow: 0 8px 24px rgba(0,0,0,0.8); }
 
-    /* ========== SCOREBOARD — centered top ========== */
-    .floating-scoreboard {
-      position: fixed; top: 52px; left: 50%; transform: translateX(-50%);
-      background: rgba(22,28,45,0.97); border: 2px solid var(--border-heavy);
-      padding: 8px 24px; border-radius: 0 0 14px 14px;
-      display: flex; flex-direction: column; align-items: center; gap: 4px;
-      font-family: 'Bebas Neue', sans-serif; z-index: 50;
-      box-shadow: 0 8px 30px rgba(0,0,0,0.9); backdrop-filter: blur(8px);
-    }
-    .score-board { display: flex; gap: 16px; font-size: 2.8rem; line-height: 1; }
+    .anim-waft-up { transform: translateY(-80px) scale(1.2) rotate(3deg); z-index: 60; box-shadow: 0 40px 80px rgba(0,0,0,0.9); }
+    @keyframes shake { 0%,100%{transform:translateX(0);} 20%,60%{transform:translateX(-12px) rotate(-5deg);} 40%,80%{transform:translateX(12px) rotate(5deg);} }
+    .anim-shake { animation: shake 0.4s; border-color: #FF5252 !important; box-shadow: inset 0 0 40px rgba(255,82,82,0.8); }
+    .dmg-popup { position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 900; font-size: 3.5rem; color: #FFD600; text-shadow: 0 5px 0 #FF5252, 0 0 30px rgba(255,82,82,1); z-index: 70; pointer-events: none; animation: popUp 1.2s forwards; opacity: 0; white-space: nowrap; }
+    @keyframes popUp { 0%{opacity:0; transform:translate(-50%, 20px) scale(0.5);} 15%{opacity:1; transform:translate(-50%, -20px) scale(1.3);} 80%{opacity:1; transform:translate(-50%, -40px) scale(1);} 100%{opacity:0; transform:translate(-50%, -70px) scale(0.8);} }
 
-    /* ========== BATTLE LOG — chat-box style bottom-right ========== */
-    .sb-log-floating {
-      position: fixed; bottom: 0; right: 0;
-      width: 300px; background: rgba(8,11,18,0.95);
-      border: 1px solid var(--border-heavy); border-bottom: none; border-right: none;
-      border-radius: 12px 0 0 0;
-      font-size: 0.75rem; z-index: 40;
-      backdrop-filter: blur(8px);
-      display: flex; flex-direction: column;
-      transition: height 0.3s ease;
-      overflow: hidden;
-    }
-    .sb-log-floating.expanded { height: 280px; }
-    .sb-log-floating.minimized { height: 36px; }
-    .log-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 6px 12px; background: rgba(37,45,68,0.9);
-      font-weight: 700; font-size: 0.75rem; cursor: pointer;
-      border-bottom: 1px solid var(--border); flex-shrink: 0;
-    }
-    .log-minimize-btn { font-size: 0.7rem; color: var(--text-muted); }
-    .log-body { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
-    .log-entry { background: rgba(255,255,255,0.04); padding: 8px 12px; border-radius: 6px; border-left: 3px solid var(--border-heavy); line-height: 1.4; font-size: 0.72rem; }
+    .floating-scoreboard { position: fixed; top: 80px; right: 30px; background: rgba(22, 28, 45, 0.95); border: 2px solid var(--border-heavy); padding: 16px 30px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; font-family: 'Plus Jakarta Sans', sans-serif; z-index: 50; box-shadow: 0 10px 40px rgba(0,0,0,0.9); backdrop-filter: blur(8px); }
+    .score-board { display: flex; gap: 24px; font-size: 3.2rem; font-weight: 900; }
+
+    .sb-log-floating { position: fixed; top: 220px; right: 30px; width: 350px; max-height: 350px; background: rgba(8, 11, 18, 0.9); border: 2px solid var(--border-heavy); border-radius: 12px; padding: 16px; overflow-y: auto; font-size: 0.85rem; z-index: 40; display: flex; flex-direction: column; gap: 10px; backdrop-filter: blur(8px); }
+    .log-entry { background: rgba(255,255,255,0.05); padding: 12px 16px; border-radius: 8px; border-left: 4px solid var(--border-heavy); line-height: 1.5; }
     .log-entry.atk { border-left-color: #69F0AE; }
     .log-entry.def { border-left-color: #FF5252; }
     .log-entry.sys { border-left-color: #40C4FF; font-style: italic; }
-    /* Position colors for log */
-    .lc-PG { color: var(--pos-pg); font-weight: 700; }
-    .lc-SG { color: var(--pos-sg); font-weight: 700; }
-    .lc-SF { color: var(--pos-sf); font-weight: 700; }
-    .lc-PF { color: var(--pos-pf); font-weight: 700; }
-    .lc-C  { color: var(--pos-c);  font-weight: 700; }
 
-    /* ========== ACTION MENU — fixed left side where benched cards were ========== */
-    .action-menu-fixed {
-      position: fixed; bottom: 120px; left: 20px;
-      width: 220px; display: none;
-      flex-direction: column; gap: 6px;
-      z-index: 200;
-    }
-    .action-menu-title { font-weight: 900; color: var(--text); font-size: 0.9rem; margin-bottom: 4px; font-family: 'Plus Jakarta Sans', sans-serif; }
-    .action-col { display: flex; flex-direction: column; gap: 5px; }
-    .action-col-right { position: fixed; bottom: 120px; left: 250px; width: 220px; display: none; flex-direction: column; gap: 6px; z-index: 200; }
+    .action-menu { position: fixed; display: none; background: rgba(22, 28, 45, 0.98); border: 2px solid var(--border-heavy); padding: 12px; border-radius: 12px; z-index: 200; flex-direction: column; gap: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); backdrop-filter: blur(12px); min-width: 220px; }
+    .action-menu button { text-align: left; padding: 12px 16px; font-size: 0.9rem; }
 
-    /* ========== CHECKOUT PANEL ========== */
-    .checkout-panel { position: fixed; bottom: 40px; right: 310px; background: rgba(8,11,18,0.98); border: 2px solid #69F0AE; border-radius: 14px; padding: 16px; width: 280px; z-index: 100; box-shadow: 0 15px 40px rgba(105,240,174,0.2); backdrop-filter: blur(12px); transition: 0.4s cubic-bezier(0.175,0.885,0.32,1.275); transform: translateY(150%); }
+    .checkout-panel { position: fixed; bottom: 40px; right: 40px; background: rgba(8,11,18,0.98); border: 2px solid #69F0AE; border-radius: 16px; padding: 24px; width: 350px; z-index: 100; box-shadow: 0 15px 50px rgba(105, 240, 174, 0.25); backdrop-filter: blur(12px); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translateY(150%); }
     .checkout-panel.visible { transform: translateY(0); }
-    .checkout-title { font-weight: 900; margin-bottom: 10px; color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.95rem; border-bottom: 1px solid var(--border-heavy); padding-bottom: 8px; }
-
-    /* ========== ANIM ========== */
-    .anim-waft-up { transform: translateY(-70px) scale(1.15) rotate(2deg); z-index: 60; box-shadow: 0 35px 60px rgba(0,0,0,0.9); }
-    @keyframes shake { 0%,100%{transform:translateX(0);} 20%,60%{transform:translateX(-10px) rotate(-4deg);} 40%,80%{transform:translateX(10px) rotate(4deg);} }
-    .anim-shake { animation: shake 0.4s; border-color: #FF5252 !important; box-shadow: inset 0 0 30px rgba(255,82,82,0.8); }
-    .dmg-popup { position: absolute; top: 20%; left: 50%; transform: translate(-50%,-50%); font-family: 'Bebas Neue', sans-serif; font-weight: 900; font-size: 3rem; letter-spacing: 2px; color: #FFD600; text-shadow: 0 4px 0 #FF5252, 0 0 20px rgba(255,82,82,1); z-index: 70; pointer-events: none; animation: popUp 1.2s forwards; opacity: 0; white-space: nowrap; }
-    @keyframes popUp { 0%{opacity:0;transform:translate(-50%,20px) scale(0.5);} 15%{opacity:1;transform:translate(-50%,-20px) scale(1.3);} 80%{opacity:1;transform:translate(-50%,-40px) scale(1);} 100%{opacity:0;transform:translate(-50%,-60px) scale(0.8);} }
-
-    /* ========== DRAG GHOST ========== */
-    #drag-ghost { position: absolute; top: -1000px; left: -1000px; background: var(--accent); color: white; padding: 6px 14px; border-radius: 40px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; pointer-events: none; z-index: -1; box-shadow: 0 6px 16px rgba(0,0,0,0.8); border: 1px solid white; font-size: 0.85rem; white-space: nowrap; }
-
-    /* ========== ARENA INTRO POPUP ========== */
-    .arena-intro-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); z-index: 9000; display: flex; align-items: center; justify-content: center; }
-    .arena-intro-box { background: rgba(16,20,38,0.98); border: 2px solid var(--border-heavy); border-radius: 18px; padding: 36px 40px; max-width: 480px; width: 90%; box-shadow: 0 30px 80px rgba(0,0,0,0.9); animation: fadeInUp 0.4s ease; }
-    @keyframes fadeInUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
-    .arena-intro-title { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 3px; color: #FFD600; margin-bottom: 12px; text-align: center; }
-    .arena-intro-text { color: var(--text-light); font-size: 0.88rem; line-height: 1.65; margin-bottom: 24px; }
-    .arena-intro-btns { display: flex; gap: 12px; justify-content: space-between; }
-    .arena-intro-btns button { flex: 1; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 0.9rem; cursor: pointer; border: none; }
-    .btn-back-intro { background: var(--surface-2); color: var(--text-light); border: 1px solid var(--border-heavy) !important; }
-    .btn-enter-intro { background: linear-gradient(135deg, #FF5722, #FFD600); color: black; }
-
-    /* ========== MOVES STAGED REACT PANEL ========== */
-    .react-skill-btn {
-      background: rgba(64,196,255,0.15); border: 1px solid #40C4FF;
-      color: white; padding: 8px 12px; border-radius: 8px;
-      font-size: 0.78rem; cursor: pointer; text-align: left;
-      transition: 0.2s; position: relative;
-    }
-    .react-skill-btn:hover { background: rgba(64,196,255,0.3); }
-    .react-skill-tooltip { position: absolute; bottom: 110%; left: 0; background: rgba(20,24,40,0.92); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 6px 8px; font-size: 0.66rem; color: #aaa; white-space: normal; width: 200px; z-index: 999; pointer-events: none; display: none; line-height: 1.35; }
-    .react-skill-btn:hover .react-skill-tooltip { display: block; }
-
-    /* Bench hover tooltip for enemy benched count */
-    .enemy-bench-hover { display: none; }
-
-    /* Setup bench dragging — card moves itself */
-    .setup-bench-card.dragging-real { opacity: 0.05; }
   </style>
 </head>
 <body>
 
-<div id="drag-ghost">Ghost</div>
+<div id="drag-ghost" style="position:absolute; top:-1000px; left:-1000px; background:var(--accent); color:white; padding:8px 18px; border-radius:40px; font-weight:800; font-family:'Plus Jakarta Sans', sans-serif; pointer-events:none; z-index:-1; box-shadow: 0 8px 20px rgba(0,0,0,0.8); border: 1px solid white; font-size: 0.9rem; white-space: nowrap;">Ghost</div>
 <div id="tooltip" class="tooltip-bubble"></div>
 
-<!-- ==================== HOME ==================== -->
 <div id="home-screen" class="screen active">
   <div class="app-header">
     <div class="logo">NBA⚡BATTLE</div>
@@ -345,16 +163,15 @@
       <button class="nav-btn" onclick="goCat()">Cards</button>
     </div>
   </div>
-  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;text-align:center;gap:32px;padding:20px;">
-    <div><h1 style="font-family:'Bebas Neue',sans-serif;font-size:4rem;letter-spacing:4px;text-shadow:0 4px 20px rgba(0,0,0,0.5);">NBA CARD BATTLE</h1><p style="color:var(--text-muted);font-size:1.1rem;margin-top:8px;">117 GOATs · Lane Combat</p></div>
-    <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;">
-      <button class="btn-primary" style="padding:12px 24px;font-size:1rem;" onclick="goDraft()">🤖 DRAFT TEAM</button>
-      <button class="btn-primary" style="background:var(--border-heavy);padding:12px 24px;font-size:1rem;" onclick="goCat()">📋 COLLECTION</button>
+  <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:80vh; text-align:center; gap:32px; padding: 20px;">
+    <div><h1 style="font-size: 3.5rem; font-weight:800; text-shadow: 0 4px 20px rgba(0,0,0,0.5);">NBA CARD BATTLE</h1><p style="color: var(--text-muted); font-size: 1.2rem; margin-top: 8px;">117 GOATs · Lane combat</p></div>
+    <div style="display:flex; gap: 16px; flex-wrap: wrap; justify-content: center;">
+      <button class="btn-primary" style="padding: 12px 24px; font-size: 1rem;" onclick="goDraft()">🤖 DRAFT TEAM</button>
+      <button class="btn-primary" style="background: var(--border-heavy); padding: 12px 24px; font-size: 1rem;" onclick="goCat()">📋 COLLECTION</button>
     </div>
   </div>
 </div>
 
-<!-- ==================== CATALOGUE ==================== -->
 <div id="catalogue-screen" class="screen">
   <div class="sticky-container">
     <div class="app-header">
@@ -364,67 +181,62 @@
     <div class="filter-bar">
       <input type="text" id="cs" placeholder="Search player or team..." oninput="handleSearchFilter('cat')">
       <select id="cp" onchange="handleSearchFilter('cat')"><option value="">All Positions</option><option value="PG">PG</option><option value="SG">SG</option><option value="SF">SF</option><option value="PF">PF</option><option value="C">C</option></select>
-      <select id="csort" onchange="handleSearchFilter('cat')"><option value="name">A-Z</option><option value="hp">HP ↓</option><option value="dmg">DMG ↓</option><option value="spd">SPD ↓</option></select>
+      <select id="csort" onchange="handleSearchFilter('cat')"><option value="name">Name A-Z</option><option value="hp">HP ↓</option><option value="dmg">DMG ↓</option><option value="spd">SPD ↓</option></select>
     </div>
   </div>
   <div id="cgrid" class="card-grid"></div>
 </div>
 
-<!-- ==================== DRAFT ==================== -->
 <div id="draft-screen" class="screen">
   <div class="sticky-container">
-    <div class="app-header" style="justify-content:space-between;">
-      <div class="logo">⚡ DRAFT SQUAD</div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <input type="text" id="draft-search" placeholder="Search..." oninput="handleSearchFilter('draft')" style="padding:3px 10px;border-radius:40px;border:1px solid var(--border);background:var(--bg);color:white;font-size:0.75rem;width:110px;height:26px;">
-        <select id="draft-sort" onchange="handleSearchFilter('draft')" style="padding:3px 8px;border-radius:40px;border:1px solid var(--border);background:var(--bg);color:white;font-size:0.75rem;height:26px;">
+    <div class="app-header" style="justify-content: center;">
+      <div class="logo" style="margin-right: auto;">⚡ DRAFT SQUAD</div>
+      <span id="draft-count-lbl" style="font-weight:800; color: #40C4FF; font-size: 1rem; margin-right: 12px;">0/10</span>
+    </div>
+    <div id="draft-slots" class="slots-grid"></div>
+    <div style="display:flex; justify-content:space-between; padding: 6px 16px; background:var(--surface-2); border-bottom:1px solid var(--border); align-items: center; flex-wrap: wrap; gap: 8px;">
+      <div style="display:flex; gap: 8px;">
+        <input type="text" id="draft-search" placeholder="Search..." oninput="handleSearchFilter('draft')" style="padding: 4px 10px; border-radius: 40px; border: 1px solid var(--border); background: var(--bg); color: white; font-size: 0.75rem; width: 120px;">
+        <select id="draft-sort" onchange="handleSearchFilter('draft')" style="padding: 4px 10px; border-radius: 40px; border: 1px solid var(--border); background: var(--bg); color: white; font-size: 0.75rem;">
           <option value="name">A-Z</option><option value="hp">HP ↓</option><option value="dmg">DMG ↓</option><option value="spd">SPD ↓</option>
         </select>
-        <span style="color:var(--text-muted);font-size:0.6rem;">Hover: Stats | Drag: Draft</span>
-        <button class="btn-primary" style="background:var(--border-heavy);padding:4px 12px;" onclick="autoFillDraft()">🎲 RANDOM</button>
-        <button class="btn-primary" id="draft-confirm-btn" onclick="goSetup()" disabled style="padding:4px 12px;">SET UP TEAM</button>
+      </div>
+      <div style="display:flex; gap: 8px; align-items: center;">
+        <span style="color: var(--text-muted); font-size: 0.65rem; margin-right: 4px;">Hover: Stats | Drag: Draft</span>
+        <button class="btn-primary" style="background: var(--border-heavy);" onclick="autoFillDraft()">🎲 Random</button>
+        <button class="btn-primary" id="draft-confirm-btn" onclick="goSetup()" disabled>SET UP TEAM</button>
       </div>
     </div>
   </div>
-  <div class="draft-layout">
-    <div class="draft-main">
-      <div id="draft-grid" class="card-grid"></div>
-    </div>
-    <div class="draft-sidebar">
-      <div class="draft-count-display" id="draft-count-lbl">0/10</div>
-      <div id="draft-slots-vertical"></div>
-    </div>
-  </div>
+  <div id="draft-grid" class="card-grid"></div>
 </div>
 
-<!-- ==================== SETUP ==================== -->
 <div id="setup-screen" class="screen">
   <div class="sticky-container">
     <div class="app-header">
       <div class="logo">📋 STARTING LINEUP</div>
-      <span id="setup-count-lbl" style="font-weight:800;color:#69F0AE;font-size:1rem;">0/5</span>
+      <span id="setup-count-lbl" style="font-weight:800; color: #69F0AE; font-size: 1rem;">0/5</span>
     </div>
-    <div style="text-align:center;font-size:0.7rem;padding:6px;color:var(--text-muted);background:var(--surface-2);">Drag your starting 5 from the bench below.</div>
-    <div id="setup-slots" class="setup-slots-row"></div>
-    <div style="display:flex;justify-content:center;padding:8px;background:var(--surface-2);border-bottom:1px solid var(--border);">
-      <button class="btn-primary" id="start-battle-btn" onclick="confirmStartBattle()" disabled style="padding:10px 32px;font-size:1rem;">ENTER ARENA</button>
+    <div style="text-align:center; font-size:0.75rem; padding:8px; color:var(--text-muted); background:var(--surface-2);">Drag your starting 5 from the bench below.</div>
+    <div id="setup-slots" class="slots-grid" style="display:flex; justify-content:center;"></div>
+    <div class="filter-bar" style="justify-content:center;">
+      <button class="btn-primary" id="start-battle-btn" onclick="startBattle()" disabled style="padding:10px 30px; font-size:1rem;">ENTER ARENA</button>
     </div>
   </div>
-  <div style="padding:12px 20px;font-weight:800;color:var(--accent);">YOUR BENCH</div>
+  <div style="padding: 16px 24px; font-weight:800; color:var(--accent);">YOUR BENCH</div>
   <div id="setup-bench-grid" class="card-grid"></div>
 </div>
 
-<!-- ==================== BATTLE ==================== -->
 <div id="battle-screen" class="screen">
-  <div class="app-header" style="padding:10px 24px;">
-    <div class="logo" style="font-size:1.4rem;">⚡ BATTLEFIELD</div>
-    <div id="turn-indicator" style="font-weight:900;font-family:'Bebas Neue',sans-serif;color:var(--text-muted);font-size:1.1rem;letter-spacing:2px;">STAGING PHASE</div>
-    <button class="btn-primary" style="background:var(--border-heavy);" onclick="location.reload()">FORFEIT</button>
+  <div class="app-header" style="padding: 12px 30px;">
+    <div class="logo" style="font-size: 1.5rem;">⚡ BATTLEFIELD</div>
+    <div id="turn-indicator" style="font-weight:900; font-family:'Plus Jakarta Sans', sans-serif; color:#69F0AE; font-size:1.4rem; text-transform:uppercase;">STAGING PHASE</div>
+    <button class="btn-primary" style="background:var(--border-heavy); font-size:0.85rem; padding:8px 20px;" onclick="location.reload()">FORFEIT</button>
   </div>
 
   <div class="arena-container">
-    <!-- Centered scoreboard -->
     <div class="floating-scoreboard">
+      <div style="font-weight:900; color:var(--text-muted); font-size:0.9rem; letter-spacing:1px;">FIRST TO 8 KO's</div>
       <div class="score-board">
         <div style="color:#69F0AE;" id="score-player">0</div>
         <div style="color:var(--border-heavy);">-</div>
@@ -432,57 +244,29 @@
       </div>
     </div>
 
-    <!-- Battle log — chat style -->
-    <div class="sb-log-floating expanded" id="battle-log-container">
-      <div class="log-header" onclick="toggleLog()">
-        <span>📋 BATTLE LOG</span>
-        <span class="log-minimize-btn" id="log-min-icon">▼ minimize</span>
-      </div>
-      <div class="log-body" id="battle-log"></div>
-    </div>
+    <div class="sb-log-floating" id="battle-log"></div>
 
-    <!-- Action menus — fixed left -->
-    <div class="action-menu-fixed" id="action-menu-left">
-      <div class="action-col" id="action-col-left"></div>
-    </div>
-    <div class="action-col-right" id="action-menu-right">
-      <div class="action-col" id="action-col-right"></div>
-    </div>
-
-    <div class="court-area" id="court-area-bg" onclick="handleCourtClick(event)">
+    <div class="court-area" id="court-area-bg" onclick="handleCourtClick()">
       <div>
-        <div style="text-align:center;font-weight:900;font-size:1rem;color:#FF5252;margin-bottom:12px;font-family:'Bebas Neue',sans-serif;letter-spacing:3px;">ENEMY TEAM</div>
+        <div style="text-align:center; font-weight:900; font-size:1.2rem; color:#FF5252; margin-bottom:16px; font-family:'Plus Jakarta Sans', sans-serif; letter-spacing: 2px;">ENEMY TEAM</div>
         <div class="battle-row" id="enemy-active-row"></div>
-        <div class="bench-area" id="enemy-bench-row" style="margin-top:20px;"></div>
+        <div class="bench-area" id="enemy-bench-row" style="margin-top:30px;"></div>
       </div>
       <div>
-        <div class="bench-area" id="player-bench-row" style="margin-bottom:20px;"></div>
+        <div class="bench-area" id="player-bench-row" style="margin-bottom:30px;"></div>
         <div class="battle-row" id="player-active-row"></div>
-        <div style="text-align:center;font-weight:900;font-size:1rem;color:#69F0AE;margin-top:12px;font-family:'Bebas Neue',sans-serif;letter-spacing:3px;">YOUR TEAM</div>
+        <div style="text-align:center; font-weight:900; font-size:1.2rem; color:#69F0AE; margin-top:16px; font-family:'Plus Jakarta Sans', sans-serif; letter-spacing: 2px;">YOUR TEAM</div>
       </div>
     </div>
 
-    <!-- Checkout / Moves Staged panel -->
-    <div id="checkout-panel" class="checkout-panel">
-      <div class="checkout-title">MOVES STAGED (<span id="staged-count">0</span>)</div>
-      <div id="staged-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px;font-size:0.82rem;color:var(--text-light);"></div>
-      <button class="btn-primary" id="confirm-moves-btn" style="width:100%;padding:12px;font-size:0.95rem;" onclick="confirmMovesWithDefense()">LOCK IN MOVES</button>
-    </div>
-  </div>
-</div>
+    <div id="action-menu" class="action-menu"></div>
 
-<!-- ==================== ARENA INTRO POPUP ==================== -->
-<div id="arena-intro-overlay" class="arena-intro-overlay" style="display:none;">
-  <div class="arena-intro-box">
-    <div class="arena-intro-title">⚡ ENTER THE ARENA ⚡</div>
-    <div class="arena-intro-text">
-      <b style="color:#FFD600;">First to 8 KO's wins.</b><br><br>
-      ENTER THE REST OF BATTLE INSTRUCTIONS HERE.<br><br>
-      Each turn, stage up to 2 moves before locking in. Position matchups determine valid targets — PGs face PGs/SGs, Cs face PFs/Cs, etc. After your moves, the enemy reacts. Reactive skills can be used to block, intercept, or redirect incoming attacks. Speed and priority determine execution order.
-    </div>
-    <div class="arena-intro-btns">
-      <button class="btn-back-intro" onclick="closeArenaIntro(true)">← BACK</button>
-      <button class="btn-enter-intro" onclick="closeArenaIntro(false)">ENTER →</button>
+    <div id="checkout-panel" class="checkout-panel">
+      <div style="font-weight:900; margin-bottom:16px; color:var(--text); font-family:'Plus Jakarta Sans', sans-serif; font-size: 1.2rem; border-bottom: 2px solid var(--border-heavy); padding-bottom: 10px;">
+        MOVES STAGED (<span id="staged-count">0</span>)
+      </div>
+      <div id="staged-list" style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px; font-size:0.9rem; color:var(--text-light);"></div>
+      <button class="btn-primary" id="confirm-moves-btn" style="width:100%; padding: 16px; font-size: 1.1rem;" onclick="confirmMovesWithDefense()">LOCK IN MOVES</button>
     </div>
   </div>
 </div>
@@ -491,7 +275,6 @@
 // ==================== UTILS ====================
 function $(id) { return document.getElementById(id); }
 const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/`;
-const BACK_IMG = `${GITHUB_RAW_BASE}goat-tier-back.png`;
 
 // ==================== DATA HELPERS ====================
 function getCardName(c) { return c?.UI_Frontend_Data?.Name || "Unknown Player"; }
@@ -507,7 +290,11 @@ function getCardPos(c)  {
 
 function escapeJS(str) {
   if (!str) return "";
-  return str.toString().replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/`/g,"\\`");
+  return str.toString()
+    .replace(/\\/g, "\\\\")
+    .replace(/'/g, "\\'")
+    .replace(/"/g, '\\"')
+    .replace(/`/g, "\\`");
 }
 function shortName(n) {
   if (!n || typeof n !== 'string') return "Unknown";
@@ -542,35 +329,27 @@ function showScreen(id) {
 }
 
 // ==================== TOOLTIP ====================
-let _tooltipEnabled = true;
-function setTooltipEnabled(v) { _tooltipEnabled = v; if (!v) hideTooltip(); }
-
+let tooltipTimer;
 function showTooltip(e, name) {
-  if (!_tooltipEnabled) return;
-  const tooltip = $('tooltip');
+  clearTimeout(tooltipTimer);
+  const tooltip = document.getElementById('tooltip');
   if (!tooltip) return;
   const card = (typeof CARDS !== 'undefined') ? CARDS.find(c => getCardName(c) === name) : null;
   if (!card) return;
-  let abName = card.Ability?.Name || "No Ability";
-  let abDesc = card.Ability?.Description_UI || "";
-  let skillsHtml = (card.Skills || []).map(s =>
-    `<div class="tt-skill-name">${s.Name} <span style="color:#FF5252;font-weight:300;">(${s.Display_DMG})</span></div><div style="color:var(--text-muted);margin-top:1px;">${s.Description_UI}</div>`
-  ).join('');
-  tooltip.innerHTML = `
-    <div class="tt-name">${shortName(name)}</div>
-    <div class="tt-ability-name">✨ ${abName}</div>
-    <div style="color:var(--text-muted);margin-bottom:4px;">${abDesc}</div>
-    ${skillsHtml}
-  `;
+  let skillsHtml = (card.Skills || []).map(s => `<b>${s.Name} (⚔️ ${s.Display_DMG})</b><br>${s.Description_UI}`).join('<br><br>');
+  const abName = card.Ability?.Name || "No Ability";
+  const abDesc = card.Ability?.Description_UI || "";
+  tooltip.innerHTML = `<div style="color:#FFD600; font-weight:bold; margin-bottom:4px; font-size:0.95rem;">${shortName(name)}</div><b>✨ ${abName}</b>${abDesc}<br><br>${skillsHtml}`;
   tooltip.classList.add('visible');
   positionTooltip(e);
 }
 function hideTooltip() {
-  const tooltip = $('tooltip');
+  clearTimeout(tooltipTimer);
+  const tooltip = document.getElementById('tooltip');
   if (tooltip) tooltip.classList.remove('visible');
 }
 function positionTooltip(e) {
-  const tooltip = $('tooltip');
+  const tooltip = document.getElementById('tooltip');
   if (!tooltip || !tooltip.classList.contains('visible')) return;
   let x = e.touches ? e.touches[0].clientX : e.clientX;
   let y = e.touches ? e.touches[0].clientY : e.clientY;
@@ -582,279 +361,688 @@ function positionTooltip(e) {
 }
 
 // ==================== BODY CLICK ====================
-document.addEventListener('click', function(e) {
+function handleBodyClick(e) {
   let row = document.querySelector('.expanded-row');
-  if (row) {
-    // Close if click is outside expanded row, on expanded-row background (not card image or action elements)
-    let clickedInsideRow = e.target.closest('.expanded-row');
-    let clickedCardImg = e.target.closest('.expanded-card-container');
-    if (!clickedInsideRow && !e.target.closest('.compact-card') && !e.target.closest('.sticky-container') && !e.target.closest('.app-header')) {
-      if (typeof closeExpandedWithAnim === 'function') {
-        closeExpandedWithAnim(typeof expandedCardCat !== 'undefined' && expandedCardCat ? 'cat' : 'draft');
-      }
-    } else if (clickedInsideRow && !clickedCardImg && !e.target.closest('.expanded-close')) {
-      // Click on bubble background (not card) = close
-      if (typeof closeExpandedWithAnim === 'function') {
-        closeExpandedWithAnim(typeof expandedCardCat !== 'undefined' && expandedCardCat ? 'cat' : 'draft');
-      }
+  if (row && !e.target.closest('.expanded-row') && !e.target.closest('.compact-card') && !e.target.closest('.sticky-container') && !e.target.closest('.app-header')) {
+    if (typeof closeExpandedWithAnim === 'function') {
+      closeExpandedWithAnim(typeof expandedCardCat !== 'undefined' && expandedCardCat ? 'cat' : 'draft');
     }
   }
-});
+}
+document.addEventListener('click', handleBodyClick);
 
 // ==================== DRAG AND DROP ====================
-let _isDragging = false;
 function handleDragStart(e, name) {
   hideTooltip();
-  _isDragging = true;
   e.dataTransfer.setData('text/plain', name);
   e.dataTransfer.effectAllowed = 'move';
-  let ghost = $('drag-ghost');
+  let ghost = document.getElementById('drag-ghost');
   if (ghost) { ghost.textContent = getDBShortName(name); e.dataTransfer.setDragImage(ghost, 0, 0); }
   setTimeout(() => { if (e.target && e.target.classList) e.target.classList.add('dragging'); }, 0);
 }
-function handleDragEnd(e) {
-  _isDragging = false;
-  if (e.target && e.target.classList) e.target.classList.remove('dragging');
-}
-function handleDragOver(e) { e.preventDefault(); if (e.currentTarget && e.currentTarget.classList) e.currentTarget.classList.add('drag-over'); }
+function handleDragEnd(e)   { if (e.target && e.target.classList) e.target.classList.remove('dragging'); }
+function handleDragOver(e)  { e.preventDefault(); if (e.currentTarget && e.currentTarget.classList) e.currentTarget.classList.add('drag-over'); }
 function handleDragLeave(e) { if (e.currentTarget && e.currentTarget.classList) e.currentTarget.classList.remove('drag-over'); }
 
 function triggerInvalidDrop(slotEl) {
   if (!slotEl) return;
   slotEl.classList.add('shake-invalid');
   let overlay = document.createElement('div');
-  overlay.className = 'invalid-overlay'; overlay.innerHTML = '🚫 INVALID';
+  overlay.className = 'invalid-overlay';
+  overlay.innerHTML = '🚫 INVALID ROLE';
   slotEl.appendChild(overlay);
-  setTimeout(() => { slotEl.classList.remove('shake-invalid'); overlay.remove(); }, 900);
+  setTimeout(() => { slotEl.classList.remove('shake-invalid'); overlay.remove(); }, 1000);
 }
 
-// ==================== SKILL SYSTEM ====================
+// ============================================================
+// COMPLETE REACTIVE ENGINE 
+// ============================================================
+
+// ─── GAME STATE ─────────────────────────────────────────────
+let activeAuras     = [];   // [{type, turnsLeft, sourceTeam, sourceName, scope?, cardIdx?}]
+let pendingBlocks   = [];   // [{playerCardIdx, skillIdx, sk, blockType, cap?}]
+let frozenCards     = {};   // {teamStr+idx: true}  — lasts one turn
+let shutdownCards   = {};   // {teamStr+idx: {turnsLeft, noSkills, noTarget}}
+let disabledSkills  = {};   // {teamStr+idx+skillIdx: turnsLeft}
+let drainedNextTurn = {};   // {teamStr+idx: true}
+let screenGuarantee = false;// set by Unseld / Draymond Death screen skill
+let invulnerable    = {};   // {teamStr+idx: true}  — lasts one turn
+let stolenSkills    = {};   // {teamStr+actorIdx: {sk, originalOwnerTeamIdx}}
+// Aura sub-types:
+//   jump_miss | close_miss | any_miss | intercept_all_assists
+//   | all_skills_disabled | jumpshot_contest_aura (Jason Kidd "No J")
+//   | battleship_anchor (David Robinson all-jumpshots off)
+
+// ─── SKILL CATEGORY ─────────────────────────────────────────
+// Returns a canonical category string used throughout the engine.
 function getSkillCategory(skill) {
   if (!skill) return 'standard';
-  const nature = (skill.Nature || '').toLowerCase();
-  const desc   = (skill.Description_UI || '').toLowerCase();
-  const mods   = (skill.Logic_Engine?.Modifiers) || [];
-  if (nature.includes('dribble')) return 'freeze';
-  if (mods.includes('Reactionary_Anti_Defense')) return 'nullify-reactive';
-  if (mods.includes('Global_Status_Aura') || mods.includes('Global_Status_Disable')) return 'pre-turn-aura';
-  if (mods.includes('Hard_Disable') && !desc.includes('right after')) return 'pre-turn-aura';
-  if (mods.includes('Buffer_State')) return 'standard';
-  if (mods.includes('Reactionary_Block'))      return 'reactive-block';
-  if (mods.includes('Reactionary_Mitigation')) return 'reactive-block';
-  if (mods.includes('Reactionary_Redirect'))   return 'reactive-block';
-  if (mods.includes('Reactionary_Intercept'))  return 'reactive-intercept';
-  if (mods.includes('Reactionary_Contest') || mods.includes('Reactionary_Status_Aura')) return 'reactive-contest';
-  if (mods.includes('Preemptive_Cancel'))      return 'reactive-steal';
-  if (mods.includes('Reactionary_Assist') || mods.includes('Reactionary_Self_Buff')) return 'reactive-rebound';
-  if (nature.includes('rebound') && (desc.includes('right after') || desc.includes('this is used right'))) return 'reactive-rebound';
+  const exec  = (skill.Logic_Engine?.Execution  || skill.S_Execution || '').toUpperCase();
+  const mods  = (skill.Logic_Engine?.Modifiers  || skill.S_Modifiers || []);
+  const modsStr = Array.isArray(mods) ? mods.join(' ') : String(mods);
+  const nat   = (skill.Nature  || '').toLowerCase();
+  const cls   = (skill.S_Class || skill.Logic_Engine?.Class || '').toUpperCase();
+  const timing= (skill.S_Timing|| skill.Logic_Engine?.Timing|| '').toUpperCase();
+
+  // ── FREE_ACTION skills (move first, don't consume turn) ──
+  if (timing === 'FREE_ACTION' || cls === 'FREE_ACTION') {
+    if (exec.includes('FREEZE'))            return 'freeze';
+    if (exec.includes('STEAL_CANCEL'))      return 'steal-cancel';
+    if (exec.includes('STEAL_SKILL'))       return 'steal-skill';
+    if (exec.includes('DISABLE_ALL_SKILLS')) return 'global-disable-all';
+    if (exec.includes('AURA_ANY_MISS'))     return 'aura-any-miss';
+    if (exec.includes('AURA_JUMP_MISS'))    return 'aura-jump-miss';
+    if (exec.includes('STATUS_EFFECT') && nat.includes('dribble')) return 'freeze';
+    if (exec.includes('STATUS_EFFECT'))     return 'free-status';
+    if (exec.includes('GRANT_EXTRA_MOVE'))  return 'grant-extra-move';
+    if (exec.includes('INVULNERABLE'))      return 'invulnerable';
+    if (exec.includes('STAT_BUFF'))         return 'stat-buff-self';
+    if (modsStr.includes('Unnullifiable') && modsStr.includes('Preemptive_Cancel')) return 'steal-cancel-unnull';
+    if (modsStr.includes('Preemptive_Cancel')) return 'steal-cancel';
+    if (modsStr.includes('Freeze_Target')) return 'freeze';
+    if (modsStr.includes('Steal_Opponent_Skill')) return 'steal-skill';
+    if (modsStr.includes('Unnullifiable') && modsStr.includes('Global_Hard_Disable_All')) return 'global-disable-all';
+    if (modsStr.includes('Global_AnySkill_MissChance')) return 'aura-any-miss';
+    if (modsStr.includes('Steal_Opponent_Skill')) return 'steal-skill';
+    return 'free-status';
+  }
+
+  // ── REACTIVE skills (fire after enemy acts, no turn consumed) ──
+  if (timing === 'REACTIVE' || cls === 'REACTIVE') {
+    if (exec.includes('BLOCK_FULL'))         return 'reactive-block-full';
+    if (exec.includes('BLOCK_PARTIAL'))      return 'reactive-block-partial';
+    if (exec.includes('REDIRECT_HALF'))      return 'reactive-redirect';
+    if (exec.includes('CONTEST_JUMP'))       return 'reactive-contest-jump';
+    if (exec.includes('CONTEST_CLOSE'))      return 'reactive-contest-close';
+    if (exec.includes('INTERCEPT_ASSIST') && exec.includes('SCREEN_GUARANTEE')) return 'reactive-screen-guarantee';
+    if (exec.includes('INTERCEPT_ASSIST'))   return 'reactive-intercept';
+    if (exec.includes('PUTBACK_DMG'))        return 'reactive-putback';
+    if (exec.includes('GRANT_EXTRA_MOVE'))   return 'reactive-extra-move';
+    if (exec.includes('DUAL_USE'))           return 'reactive-dual-use';
+    // STATUS_EFFECT reactive — figure out what kind from nature/name
+    if (exec.includes('STATUS_EFFECT')) {
+      if (nat.includes('rebound'))           return 'reactive-rebound-pass';
+      if (nat.includes('block') || (skill.Name||'').toLowerCase().includes('block') || (skill.Name||'').toLowerCase().includes('clamps')) return 'reactive-block-full';
+      return 'reactive-block-full'; // default reactive status
+    }
+    // Mod-based fallback
+    if (modsStr.includes('Reactionary_Block'))         return 'reactive-block-full';
+    if (modsStr.includes('Reactionary_Mitigation'))    return 'reactive-block-partial';
+    if (modsStr.includes('Reactionary_Redirect'))      return 'reactive-redirect';
+    if (modsStr.includes('Reactionary_Contest_Jump'))  return 'reactive-contest-jump';
+    if (modsStr.includes('Reactionary_Contest_Close')) return 'reactive-contest-close';
+    if (modsStr.includes('Reactionary_Intercept'))     return 'reactive-intercept';
+    if (modsStr.includes('Reactionary_Putback_Dmg'))   return 'reactive-putback';
+    if (modsStr.includes('Reactionary_Grant_Extra_Move')) return 'reactive-extra-move';
+    if (modsStr.includes('Dual_Use_Offense_Defense'))  return 'reactive-dual-use';
+    if (modsStr.includes('Screen_Guarantee_Next_Skill')) return 'reactive-screen-guarantee';
+  }
+
+  // ── DEFENSIVE (STANDARD timing — auras, disable, nullify, heal, buff) ──
+  if (cls === 'DEFENSIVE' || cls === 'ASSIST') {
+    if (exec.includes('AURA_JUMP_MISS'))      return 'aura-jump-miss';
+    if (exec.includes('AURA_CLOSE_MISS'))     return 'aura-close-miss';
+    if (exec.includes('AURA_ANY_MISS'))       return 'aura-any-miss';
+    if (exec.includes('INTERCEPT_ALL_ASSISTS')) return 'aura-intercept-all-assists';
+    if (exec.includes('NULLIFY_DEFENSE'))     return 'nullify-defense';
+    if (exec.includes('STAT_BUFF'))           return 'stat-buff-self';
+    if (exec.includes('HEAL'))                return 'heal';
+    if (exec.includes('GRANT_EXTRA_MOVE'))    return 'grant-extra-move';
+    if (exec.includes('STATUS_EFFECT')) {
+      // Kidd "No J" — jumpshot contest aura; Robinson "Battleship Anchor" — same
+      if ((skill.Name||'').toLowerCase().includes('no j') || (skill.Description_UI||'').toLowerCase().includes('contests all jumpshot')) return 'aura-jumpshot-contest';
+      if ((skill.Description_UI||'').toLowerCase().includes('contests any jumpshot')) return 'aura-jumpshot-contest';
+      return 'standard'; // e.g. Screen Navigator (Klay) — buff, handled as standard
+    }
+    if (modsStr.includes('Global_JumpShot_MissChance'))  return 'aura-jump-miss';
+    if (modsStr.includes('Global_CloseShot_MissChance')) return 'aura-close-miss';
+    if (modsStr.includes('Global_AnySkill_MissChance'))  return 'aura-any-miss';
+    if (modsStr.includes('Global_Intercept_All_Assists')) return 'aura-intercept-all-assists';
+    if (modsStr.includes('Nullify_Defensive_Skill'))     return 'nullify-defense';
+    if (modsStr.includes('Heal_Target'))                 return 'heal';
+    if (modsStr.includes('Self_Stat_Buff'))              return 'stat-buff-self';
+    if (modsStr.includes('Reactionary_Grant_Extra_Move')) return 'grant-extra-move';
+  }
+
+  // ── OFFENSIVE_DEFENSIVE (Draymond Shutdown) ──
+  if (cls === 'OFFENSIVE_DEFENSIVE') return 'shutdown';
+
+  // ── SPECIAL cases by Execution ──
+  if (exec.includes('DEAL_ASSIST_DMG'))  return 'assist-dmg';
+  if (exec.includes('DUAL_USE'))         return 'reactive-dual-use';
+  if (exec.includes('CONDITIONAL_DMG'))  return 'conditional-dmg';
+  if (exec.includes('SELF_DRAIN'))       return 'standard'; // offensive but drains
+  if (exec.includes('SHUTDOWN_TARGET'))  return 'shutdown';
+  if (exec.includes('STEAL_SKILL'))      return 'steal-skill';
+
   return 'standard';
 }
+
+// Categories that the player can SELECT on their own turn (consume a move slot)
 function canSelectOnYourTurn(skill) {
-  return ['standard','pre-turn-aura','freeze'].includes(getSkillCategory(skill));
+  const cat = getSkillCategory(skill);
+  return [
+    'standard', 'assist-dmg', 'aura-jump-miss', 'aura-close-miss', 'aura-any-miss',
+    'aura-intercept-all-assists', 'aura-jumpshot-contest', 'nullify-defense',
+    'stat-buff-self', 'heal', 'grant-extra-move', 'shutdown', 'conditional-dmg',
+    'steal-skill', 'reactive-dual-use' // dual-use CAN be used offensively
+  ].includes(cat);
 }
 
-// ==================== ASSIST DMG CALC ====================
-function calcAssistDmg(skill, actorTeam) {
-  let dmgStr = skill.Display_DMG || '';
-  // e.g. "x1.5 (SG/SF)" or "x2 (PF/C)"
-  let multMatch = dmgStr.match(/x([\d.]+)\s*\(([^)]+)\)/);
-  if (!multMatch) {
-    let addMatch = dmgStr.match(/\(([A-Z/]+)\)\s*\+\s*(\d+)/);
-    if (!addMatch) return null;
-    let pos = addMatch[1]; let bonus = parseInt(addMatch[2]);
-    let teammate = actorTeam.find(c => !c.isDead && getCardPos(c).split('/').some(p => pos.split('/').includes(p.trim())));
-    if (!teammate) return null;
-    return getCardDMG(teammate) + bonus;
+// Free-actions that DON'T consume a move slot
+function isFreeAction(skill) {
+  const cat = getSkillCategory(skill);
+  return [
+    'freeze', 'steal-cancel', 'steal-cancel-unnull', 'free-status',
+    'invulnerable', 'stat-buff-self', 'aura-any-miss', 'aura-jump-miss',
+    'global-disable-all', 'steal-skill', 'grant-extra-move'
+  ].includes(cat);
+}
+
+// ─── ASSIST DMG CALCULATOR ──────────────────────────────────
+// formula examples: "MULT:1.5*TEAMMATE_BASE_DMG[SG,SF]"
+//                   "ADD:200+TEAMMATE_BASE_DMG[PG,PF]"
+function executeAssistDmg(formula, executingTeam) {
+  if (!formula) return 0;
+  const team = executingTeam === 'player' ? playerActive : enemyActive;
+  const posMatch = formula.match(/\[([^\]]+)\]/);
+  const positions = posMatch ? posMatch[1].split(',').map(p => p.trim()) : [];
+  const teammate = team.find(c => c && !c.isDead && positions.includes(c.battleRole));
+  if (!teammate) return 0; // no valid teammate → skill fizzles
+  const base = getCardDMG(teammate);
+  if (formula.startsWith('MULT:')) {
+    const mult = parseFloat(formula.match(/MULT:([\d.]+)/)[1]);
+    return Math.floor(mult * base);
   }
-  let mult = parseFloat(multMatch[1]);
-  let posStr = multMatch[2];
-  let positions = posStr.split('/').map(p => p.trim());
-  // Find teammate matching position
-  let teammate = actorTeam.find(c => !c.isDead && getCardPos(c).split('/').some(p => positions.includes(p.trim())));
-  if (!teammate) return null;
-  return Math.floor(getCardDMG(teammate) * mult);
+  if (formula.startsWith('ADD:')) {
+    const bonus = parseInt(formula.match(/ADD:(\d+)/)[1]);
+    return base + bonus;
+  }
+  return 0;
 }
 
-// ==================== AURA STATE ====================
-let activeAuras = [];
+// ─── RESOLVE SKILL DAMAGE ───────────────────────────────────
+// Returns the numeric damage for any skill or 0 for non-damage.
+// Also handles coin flips inline. Returns { dmg, missed }
+function resolveSkillDmg(skill, actorCard, executingTeam) {
+  const cat = getSkillCategory(skill);
+  const formula = skill.Logic_Engine?.DMG_Formula || skill.S_Formula || '';
+  const raw     = skill.Display_DMG || skill.Logic_Engine?.Damage_Value || 'N/A';
+
+  // Coin flip
+  const coinFlip = skill.Logic_Engine?.Requires_Coin_Flip === true ||
+                   (skill.S_CoinFlip||'').toUpperCase() === 'YES';
+  if (coinFlip) {
+    const hit = Math.random() < 0.5;
+    if (!hit) return { dmg: 0, missed: true };
+  }
+
+  if (cat === 'assist-dmg') {
+    return { dmg: executeAssistDmg(formula, executingTeam), missed: false };
+  }
+
+  // Dual-use offensive portion
+  if (cat === 'reactive-dual-use') {
+    const dualMatch = formula.match(/DUAL:(\d+)\//);
+    if (dualMatch) return { dmg: parseInt(dualMatch[1]), missed: false };
+  }
+
+  // Conditional DMG (Kawhi Homecoming) — higher dmg if more KOs on your side
+  if (cat === 'conditional-dmg') {
+    const parts = formula.match(/DUAL:([\d]+)\/([\d]+)/);
+    if (parts) {
+      const playerKOs = enemyActive.filter(c => c.isDead).length;
+      const enemyKOs  = playerActive.filter(c => c.isDead).length;
+      const execTeamKOs = executingTeam === 'player' ? playerKOs : enemyKOs;
+      return { dmg: execTeamKOs > 0 ? parseInt(parts[2]) : parseInt(parts[1]), missed: false };
+    }
+  }
+
+  const numericDmg = parseInt(raw);
+  if (isNaN(numericDmg) || String(raw).includes('N/A')) return { dmg: 0, missed: false };
+  return { dmg: numericDmg, missed: false };
+}
+
+// ─── AURA CHECKS ────────────────────────────────────────────
 function applyAuraEffectsToAction(action, execTeam) {
-  let attackers = execTeam === 'player' ? playerActive : enemyActive;
-  let attacker  = attackers[action.actorIdx];
-  let skill = action.actionType === 'skill' ? attacker.Skills[action.skillIdx] : null;
-  if (!skill) return { blocked: false };
-  const nature = (skill.Nature || '').toLowerCase();
-  for (let aura of activeAuras) {
-    if (aura.sourceTeam === execTeam) continue;
-    if (aura.type === 'all-skills-disabled') return { blocked: true, reason: `${skill.Name} was disabled by ${aura.sourceName}!` };
-    if (aura.type === 'jumpshot-miss-chance' && nature.includes('jump shot') && Math.random() < 0.5)
-      return { blocked: true, reason: `${skill.Name} MISSED (50% chance)!` };
-    if (aura.type === 'closeshot-miss-chance' && nature.includes('close shot') && Math.random() < 0.5)
-      return { blocked: true, reason: `${skill.Name} MISSED (50% chance)!` };
+  const attackers = execTeam === 'player' ? playerActive : enemyActive;
+  const attacker  = attackers[action.actorIdx];
+  if (!attacker) return { blocked: false };
+
+  const skill     = action.actionType === 'skill' ? attacker.Skills[action.skillIdx] : null;
+  const nat       = skill ? (skill.Nature || '').toLowerCase() : 'basic';
+  const isJump    = nat.includes('jump shot');
+  const isClose   = nat.includes('close shot');
+  const isAssist  = nat.includes('assist');
+  const isDamaging= action.actionType === 'basic' || (skill && !['N/A', 'N/A (effect)', 'N/A (assist)'].includes(String(skill.Display_DMG)));
+  const cardKey   = `${execTeam}-${action.actorIdx}`;
+
+  // --- Check frozen ---
+  if (frozenCards[cardKey]) {
+    frozenCards[cardKey] = false;
+    return { blocked: true, reason: `${shortName(getCardName(attacker))} is frozen — action skipped!` };
   }
+
+  // --- Check shutdown ---
+  if (shutdownCards[cardKey]) {
+    const s = shutdownCards[cardKey];
+    if (action.actionType === 'skill' && s.noSkills) return { blocked: true, reason: `${shortName(getCardName(attacker))} is shut down — no skills!` };
+  }
+
+  // --- Check self-drain (used last turn) ---
+  if (drainedNextTurn[cardKey]) {
+    drainedNextTurn[cardKey] = false;
+    return { blocked: true, reason: `${shortName(getCardName(attacker))} is recovering — action skipped!` };
+  }
+
+  // --- Check disabled skill ---
+  if (action.actionType === 'skill') {
+    const dKey = `${cardKey}-${action.skillIdx}`;
+    if (disabledSkills[dKey] > 0) {
+      return { blocked: true, reason: `${shortName(getCardName(attacker))}'s ${skill.Name} is disabled!` };
+    }
+  }
+
+  // --- Check active auras from opposing team ---
+  for (const aura of activeAuras) {
+    if (aura.sourceTeam === execTeam) continue; 
+    
+    if (aura.type === 'all_skills_disabled' && action.actionType === 'skill' && isDamaging) {
+      return { blocked: true, reason: `${skill.Name} disabled by ${aura.sourceName}!` };
+    }
+    if (aura.type === 'jump_miss' && isJump) {
+      if (Math.random() < 0.5) return { blocked: true, reason: `${skill?.Name || 'Jumpshot'} MISSED! (50% chance from ${aura.sourceName})` };
+    }
+    if (aura.type === 'close_miss' && isClose) {
+      if (Math.random() < 0.5) return { blocked: true, reason: `${skill?.Name || 'Close Shot'} MISSED! (50% chance from ${aura.sourceName})` };
+    }
+    if (aura.type === 'any_miss' && isDamaging) {
+      if (Math.random() < 0.5) return { blocked: true, reason: `${skill?.Name || 'Attack'} MISSED! (50% chance from ${aura.sourceName})` };
+    }
+    if (aura.type === 'intercept_all_assists' && isAssist) {
+      return { blocked: true, reason: `Assist intercepted by ${aura.sourceName}!` };
+    }
+    if (aura.type === 'jumpshot_contest' && isJump) {
+      return { blocked: true, reason: `Jumpshot CONTESTED by ${aura.sourceName}!` };
+    }
+  }
+
+  // --- Screen Guarantee (Unseld / Draymond Death) ---
+  if (screenGuarantee && execTeam === 'player' && isDamaging) {
+    screenGuarantee = false;
+    if (skill) skill._screenGuaranteeActive = true;
+  }
+
   return { blocked: false };
 }
+
 function tickDownAuras() {
-  activeAuras = activeAuras.map(a => ({...a, turnsLeft: a.turnsLeft - 1})).filter(a => a.turnsLeft > 0);
+  activeAuras = activeAuras.map(a => ({ ...a, turnsLeft: a.turnsLeft - 1 })).filter(a => a.turnsLeft > 0);
+  for (const k in shutdownCards) {
+    shutdownCards[k].turnsLeft--;
+    if (shutdownCards[k].turnsLeft <= 0) delete shutdownCards[k];
+  }
+  for (const k in disabledSkills) {
+    disabledSkills[k]--;
+    if (disabledSkills[k] <= 0) delete disabledSkills[k];
+  }
 }
 
-// ==================== PENDING BLOCKS ====================
-let pendingBlocks = [];
-function applyPendingBlocks(incomingDmg, targetTeam) {
-  if (targetTeam !== 'player' || pendingBlocks.length === 0) return incomingDmg;
-  let block = pendingBlocks.shift();
-  let sk = block.sk; let mods = sk.Logic_Engine?.Modifiers || [];
-  let name = getCardName(playerActive[block.playerCardIdx]);
-  if (mods.includes('Reactionary_Redirect')) {
-    let reduced = Math.floor(incomingDmg * 0.5);
-    logMsg(`🛡️ <span class="lc-${playerActive[block.playerCardIdx].battleRole||'PF'}">${shortName(name)} • ${playerActive[block.playerCardIdx].battleRole||''}</span>: ${sk.Name} took the hit! DMG halved to ${reduced}`, 'atk');
-    return reduced;
-  }
-  if (mods.includes('Reactionary_Mitigation')) {
-    let reduction = 500;
-    let m = (sk.Logic_Engine?.Execution || '').match(/(\d+)/);
-    if (m) reduction = parseInt(m[1]);
-    let reduced = Math.max(0, incomingDmg - reduction);
-    logMsg(`🛡️ <span class="lc-${playerActive[block.playerCardIdx].battleRole||'PF'}">${shortName(name)} • ${playerActive[block.playerCardIdx].battleRole||''}</span>: ${sk.Name} reduced DMG by ${reduction}!`, 'atk');
-    return reduced;
-  }
-  let execStr = sk.Logic_Engine?.Execution || '';
-  if (execStr.includes('Attack_Blocked = True')) {
-    logMsg(`🛡️ <span class="lc-${playerActive[block.playerCardIdx].battleRole||'PF'}">${shortName(name)}</span>: ${sk.Name} BLOCKED the attack!`, 'atk');
+// ─── PENDING BLOCKS ─────────────────────────────────────────
+function applyPendingBlocks(incomingDmg, targetTeam, defIdx) {
+  if (pendingBlocks.length === 0) return incomingDmg;
+  const targetKey = `${targetTeam}-${defIdx}`;
+
+  const inv = targetTeam === 'player' ? invulnerable[`player-${defIdx}`] : invulnerable[`enemy-${defIdx}`];
+  if (inv) {
+    logMsg(`🛡️ ${targetTeam === 'player' ? shortName(getCardName(playerActive[defIdx])) : 'target'} is INVULNERABLE — attack negated!`, 'atk');
     return 0;
   }
-  let m2 = execStr.match(/up to (\d+)/i) || execStr.match(/(\d+) DMG/i);
-  if (m2) {
-    let cap = parseInt(m2[1]), blocked = Math.min(incomingDmg, cap), reduced = incomingDmg - blocked;
-    logMsg(`🛡️ ${shortName(name)}: ${sk.Name} blocked ${blocked} DMG!`, 'atk');
+
+  const idx = pendingBlocks.findIndex(b => {
+    return b.scope === 'ANY_TEAMMATE' || b.scope === 'ANY_ENEMY' || b.lane === targetKey;
+  });
+  if (idx < 0) return incomingDmg;
+
+  const block = pendingBlocks.splice(idx, 1)[0];
+  const sk    = block.sk;
+  const mods  = Array.isArray(sk.Logic_Engine?.Modifiers) ? sk.Logic_Engine.Modifiers.join(' ') : String(sk.Logic_Engine?.Modifiers || '');
+  const exec  = (sk.Logic_Engine?.Execution || '').toUpperCase();
+  const name  = getCardName(playerActive[block.playerCardIdx]);
+
+  if (exec.includes('REDIRECT_HALF') || mods.includes('Reactionary_Redirect')) {
+    const reduced = Math.floor(incomingDmg * 0.5);
+    const blocker = playerActive[block.playerCardIdx];
+    if (blocker) {
+      const maxHp = getCardHP(blocker);
+      blocker.currentHp = Math.max(0, blocker.currentHp - reduced);
+      logMsg(`🛡️ ${shortName(name)}: ${sk.Name} took the hit! Took ${reduced} DMG (halved) instead of teammate.`, 'atk');
+      const fill = document.getElementById(`hpf-player-${block.playerCardIdx}`);
+      if (fill) { const p = (blocker.currentHp/maxHp)*100; fill.style.width = p+'%'; fill.style.background = p>50?'#69F0AE':p>20?'#FFD600':'#FF5252'; }
+      const hpt = document.getElementById(`hpt-player-${block.playerCardIdx}`);
+      if (hpt) hpt.textContent = `${blocker.currentHp}/${maxHp}`;
+      if (blocker.currentHp <= 0) { blocker.isDead = true; logMsg(`💀 ${shortName(name)} sacrificed themselves!`, 'atk'); }
+    }
+    return 0; 
+  }
+
+  if (exec.includes('BLOCK_FULL') || mods.includes('Reactionary_Block')) {
+    logMsg(`🛡️ ${shortName(name)}: ${sk.Name} BLOCKED the attack completely!`, 'atk');
+    triggerAfterBlock('player', block.playerCardIdx, targetKey);
+    return 0;
+  }
+
+  if (exec.includes('BLOCK_PARTIAL') || mods.includes('Reactionary_Mitigation')) {
+    let cap = block.cap || 800;
+    const reduced = Math.max(0, incomingDmg - cap);
+    logMsg(`🛡️ ${shortName(name)}: ${sk.Name} reduced incoming DMG by ${Math.min(incomingDmg, cap)}! (${incomingDmg}→${reduced})`, 'atk');
+    if (sk.Name === 'Swat Swat Revolution') {
+      pendingWiltCounter = { actorIdx: block.playerCardIdx };
+    }
     return reduced;
   }
+
+  if (exec.includes('CONTEST_JUMP') || exec.includes('CONTEST_CLOSE') || mods.includes('Reactionary_Contest_Jump') || mods.includes('Reactionary_Contest_Close')) {
+    logMsg(`🛡️ ${shortName(name)}: ${sk.Name} CONTESTED the shot — nullified!`, 'atk');
+    triggerAfterBlock('player', block.playerCardIdx, targetKey);
+    return 0;
+  }
+
   return incomingDmg;
 }
 
-// ==================== REACTIVE PHASE ====================
-let reactiveResponses = [];
-let reactiveResolve   = null;
+let pendingWiltCounter = null;
+
+function triggerAfterBlock(teamStr, blockerIdx, targetKey) {
+  const team = teamStr === 'player' ? playerActive : enemyActive;
+  for (const [i, c] of team.entries()) {
+    if (!c || c.isDead) continue;
+    for (const sk of (c.Skills || [])) {
+      const cat = getSkillCategory(sk);
+      if (cat === 'reactive-rebound-pass' || cat === 'reactive-extra-move' || cat === 'grant-extra-move') {
+        const usesLeft = (sk._usesLeft !== undefined) ? sk._usesLeft : (sk.Logic_Engine?.Max_Uses || sk.S_MaxUses || 1);
+        if (usesLeft > 0) {
+          logMsg(`🏀 ${shortName(getCardName(c))}: ${sk.Name} — rebound! Extra move granted.`, 'atk');
+          sk._usesLeft = usesLeft - 1;
+          grantExtraMove(c, teamStr, sk);
+          return;
+        }
+      }
+      if (cat === 'reactive-putback') {
+        const usesLeft = (sk._usesLeft !== undefined) ? sk._usesLeft : (sk.Logic_Engine?.Max_Uses || 3);
+        if (usesLeft > 0) {
+          sk._usesLeft = usesLeft - 1;
+          pendingPutbacks = pendingPutbacks || [];
+          pendingPutbacks.push({ actorIdx: i, sk, teamStr });
+        }
+      }
+    }
+  }
+}
+
+let pendingPutbacks = [];
+
+function grantExtraMove(granterCard, teamStr, sk) {
+  const desc  = (sk.Description_UI || sk.S_Description || '').toLowerCase();
+  const team  = teamStr === 'player' ? playerActive : enemyActive;
+  let targetPos = null;
+  if (desc.includes('pg or sg') || desc.includes('pg/sg'))       targetPos = ['PG','SG'];
+  else if (desc.includes('sg or sf') || desc.includes('sg/sf'))  targetPos = ['SG','SF'];
+  else if (desc.includes('sf or pf') || desc.includes('sf/pf'))  targetPos = ['SF','PF'];
+  else if (desc.includes('pf or c')  || desc.includes('pf/c'))   targetPos = ['PF','C'];
+  else if (desc.includes('any teammate') || desc.includes('including himself') || !targetPos)
+    targetPos = ['PG','SG','SF','PF','C','6TH'];
+
+  const recipient = team.find(c => c && !c.isDead && targetPos.includes(c.battleRole));
+  if (!recipient) return;
+  pendingExtraMoves = pendingExtraMoves || [];
+  pendingExtraMoves.push({ card: recipient, teamStr });
+  logMsg(`🏀 ${shortName(getCardName(recipient))} gets an extra basic attack!`, 'sys');
+}
+let pendingExtraMoves = [];
+
+// ─── REACTIVE PHASE ─────────────────────────────────────────
+let reactiveResponses   = [];
+let reactiveResolve     = null;
 let pendingReactiveAction = null;
 
 async function promptReactiveDefense(enemyQueue) {
-  for (let action of enemyQueue) {
-    let attacker = enemyActive[action.actorIdx];
-    if (!attacker || attacker.isDead) continue;
-    let skill  = action.actionType === 'skill' ? attacker.Skills[action.skillIdx] : null;
-    let nature = skill ? (skill.Nature || '').toLowerCase() : 'basic';
-    let isJump  = nature.includes('jump shot');
-    let isClose = nature.includes('close shot');
-    let isAssist= nature.includes('assist');
-    for (let [pi, pCard] of playerActive.entries()) {
-      if (pCard.isDead) continue;
-      for (let sk of (pCard.Skills || [])) {
-        let cat  = getSkillCategory(sk);
-        if (!['reactive-block','reactive-steal','reactive-intercept','reactive-contest','reactive-rebound'].includes(cat)) continue;
-        let mods = sk.Logic_Engine?.Modifiers || [];
-        let valid = false;
-        if (mods.includes('Preemptive_Cancel')) valid = true;
-        if (mods.includes('Reactionary_Block') || mods.includes('Reactionary_Mitigation') || mods.includes('Reactionary_Redirect')) valid = true;
-        if (mods.includes('Reactionary_Intercept') && isAssist) valid = true;
-        if (mods.includes('Reactionary_Contest') || mods.includes('Reactionary_Status_Aura')) {
-          let desc = (sk.Description_UI || '').toLowerCase();
-          if ((isJump && desc.includes('jump')) || (isClose && desc.includes('close'))) valid = true;
-        }
-        if (valid) return true;
+  for (const action of enemyQueue) {
+    const atk = enemyActive[action.actorIdx];
+    if (!atk || atk.isDead) continue;
+    const skill  = action.actionType === 'skill' ? atk.Skills[action.skillIdx] : null;
+    const nat    = skill ? (skill.Nature || '').toLowerCase() : 'basic';
+    const isJump    = nat.includes('jump shot');
+    const isClose   = nat.includes('close shot');
+    const isAssist  = nat.includes('assist');
+    const isDmg     = action.actionType === 'basic' || (skill && !String(skill.Display_DMG).includes('N/A'));
+
+    for (const pCard of playerActive) {
+      if (!pCard || pCard.isDead) continue;
+      for (const sk of (pCard.Skills || [])) {
+        if (reactiveSkillIsValid(sk, { isJump, isClose, isAssist, isDmg })) return true;
       }
     }
   }
   return false;
 }
 
+function reactiveSkillIsValid(sk, { isJump, isClose, isAssist, isDmg }) {
+  const cat  = getSkillCategory(sk);
+  const uses = (sk._usesLeft !== undefined) ? sk._usesLeft : (sk.Logic_Engine?.Max_Uses || sk.S_MaxUses || 1);
+  if (uses <= 0) return false;
+  switch (cat) {
+    case 'reactive-block-full':
+    case 'reactive-block-partial':
+    case 'reactive-redirect':     return isDmg;
+    case 'reactive-contest-jump': return isJump;
+    case 'reactive-contest-close': return isClose;
+    case 'reactive-intercept':    return isAssist;
+    case 'reactive-screen-guarantee': return isDmg;
+    case 'reactive-dual-use':     return isDmg;
+    case 'reactive-putback':      return isDmg;
+    case 'standard':
+      if (sk.Logic_Engine?.Execution?.includes('STATUS_EFFECT') && sk.S_Timing === 'REACTIVE') return isDmg;
+      return false;
+    default: return false;
+  }
+}
+
 async function runReactivePhase(enemyQueue) {
-  enemyQueue.forEach((a,i) => a._id = `enemy_${turnCount}_${i}`);
-  let hasReactive = await promptReactiveDefense(enemyQueue);
+  enemyQueue.forEach((a, i) => a._id = `enemy_${turnCount}_${i}`);
+  const hasReactive = await promptReactiveDefense(enemyQueue);
   if (!hasReactive) return;
   return new Promise(resolve => { reactiveResolve = resolve; showReactivePanel(enemyQueue); });
 }
 
 function showReactivePanel(enemyQueue) {
-  let panel = $('checkout-panel');
-  let enemySummary = enemyQueue.filter(a => {
-    let atk = enemyActive[a.actorIdx];
-    return atk && !atk.isDead && a.actionType !== 'pass';
-  }).map(a => {
-    let atk = enemyActive[a.actorIdx];
-    let sk  = a.actionType === 'skill' ? atk.Skills[a.skillIdx] : null;
-    let moveName = sk ? sk.Name : 'Basic Attack';
-    let tgt = (a.targetTeam === 'player' && a.targetIdx != null) ? shortName(getCardName(playerActive[a.targetIdx])) : '?';
-    let roleColor = getRoleColor(atk.battleRole);
-    return `<div style="font-size:0.78rem;">⚔️ <b style="color:${roleColor}">BOT</b> ${shortName(getCardName(atk))}: ${moveName} ➔ ${tgt}</div>`;
-  }).join('');
+  const panel = $('checkout-panel');
+
+  const enemySummary = enemyQueue
+    .filter(a => { const atk = enemyActive[a.actorIdx]; return atk && !atk.isDead && a.actionType !== 'pass'; })
+    .map(a => {
+      const atk = enemyActive[a.actorIdx];
+      const sk  = a.actionType === 'skill' ? atk.Skills[a.skillIdx] : null;
+      const moveName = sk ? sk.Name : 'Basic Attack';
+      const dmgStr   = sk ? ` (${sk.Display_DMG})` : ` (${getCardDMG(atk)})`;
+      const tgt  = (a.targetTeam === 'player' && a.targetIdx != null) ? shortName(getCardName(playerActive[a.targetIdx])) : '?';
+      return `<div style="font-size:0.75rem;">⚔️ <b>${shortName(getCardName(atk))}</b>: ${moveName}${dmgStr} → ${tgt}</div>`;
+    }).join('');
+
+  const incomingAttrs = { isJump: false, isClose: false, isAssist: false, isDmg: false };
+  enemyQueue.forEach(a => {
+    const atk = enemyActive[a.actorIdx];
+    if (!atk || atk.isDead) return;
+    const skill = a.actionType === 'skill' ? atk.Skills[a.skillIdx] : null;
+    const nat   = skill ? (skill.Nature || '').toLowerCase() : 'basic';
+    if (nat.includes('jump shot')) incomingAttrs.isJump  = true;
+    if (nat.includes('close shot')) incomingAttrs.isClose = true;
+    if (nat.includes('assist'))    incomingAttrs.isAssist = true;
+    if (a.actionType === 'basic' || (skill && !String(skill.Display_DMG).includes('N/A'))) incomingAttrs.isDmg = true;
+  });
 
   let reactiveOptions = '';
-  for (let [pi, pCard] of playerActive.entries()) {
-    if (pCard.isDead) continue;
-    for (let [si, sk] of (pCard.Skills || []).entries()) {
-      let cat = getSkillCategory(sk);
-      if (!['reactive-block','reactive-steal','reactive-intercept','reactive-contest','reactive-rebound'].includes(cat)) continue;
-      // John Stockton Stock Taking — it's a "pre-emptive cancel" (steal) but moves differently
-      // It's NOT a reaction despite defensive nature — check for Preemptive_Cancel
-      let mods = sk.Logic_Engine?.Modifiers || [];
-      // Stock Taking (Hard_Disable) — block from reactive panel (stops card from acting)
-      // But it IS listed in Logic_Engine so we keep it
+  for (const [pi, pCard] of playerActive.entries()) {
+    if (!pCard || pCard.isDead) continue;
+    for (const [si, sk] of (pCard.Skills || []).entries()) {
+      if (!reactiveSkillIsValid(sk, incomingAttrs)) continue;
+      const cat       = getSkillCategory(sk);
+      const usesLeft  = (sk._usesLeft !== undefined) ? sk._usesLeft : (sk.Logic_Engine?.Max_Uses || sk.S_MaxUses || 1);
+      const label     = buildReactiveLabel(cat, sk, pCard);
+      const safeDesc  = escapeHtml(sk.Description_UI || sk.S_Description || '');
+      const bg = reactiveButtonColor(cat);
       reactiveOptions += `
-        <button class="react-skill-btn" onclick="selectReactiveSkill(${pi},${si})">
-          <span style="color:${getRoleColor(pCard.battleRole)};font-weight:700;">YOU</span> ${shortName(getCardName(pCard))}: 🛡️ ${sk.Name}
-          <div class="react-skill-tooltip">${escapeHtml(sk.Description_UI)}</div>
-        </button>`;
+        <div class="reactive-skill-wrap" style="margin-bottom: 6px;">
+          <button class="btn-primary" style="background:${bg};font-size:0.76rem;width:100%;text-align:left;" onclick="selectReactiveSkill(${pi},${si})">
+            ${shortName(getCardName(pCard))}: ${label} (${usesLeft} left)
+          </button>
+          <div class="reactive-skill-tip" style="font-size:0.7rem; color:var(--text-muted); margin-top:2px; margin-left:4px;">${safeDesc}</div>
+        </div>`;
     }
   }
 
   $('staged-count').textContent = 'REACT';
   $('staged-list').innerHTML = `
-    <div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:6px;font-weight:700;">ENEMY IS ATTACKING:</div>
+    <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:0.5px;">ENEMY IS ATTACKING:</div>
     ${enemySummary}
-    <div style="font-size:0.72rem;color:#40C4FF;margin:8px 0 5px;font-weight:700;">YOUR REACTIVE OPTIONS:</div>
-    ${reactiveOptions || '<div style="color:var(--text-muted);font-size:0.75rem;">None available</div>'}
+    <div style="font-size:0.7rem;color:#40C4FF;margin:12px 0 6px;text-transform:uppercase;letter-spacing:0.5px;">YOUR REACTIVE OPTIONS:</div>
+    ${reactiveOptions || '<div style="color:var(--text-muted);font-size:0.72rem;">None available this turn</div>'}
   `;
+  $('confirm-moves-btn').textContent = 'SKIP (No Defense)';
   $('confirm-moves-btn').style.background = '#FF5722';
-  $('confirm-moves-btn').textContent = 'SKIP (NO DEFENSE)';
   $('confirm-moves-btn').disabled    = false;
   $('confirm-moves-btn').onclick     = finishReactivePhase;
   panel.classList.add('visible');
 }
 
+function buildReactiveLabel(cat, sk, pCard) {
+  const icons = {
+    'reactive-block-full':    '🛡️ BLOCK (full)',
+    'reactive-block-partial': '🛡️ BLOCK (partial)',
+    'reactive-redirect':      '🔀 SWITCH & ABSORB',
+    'reactive-contest-jump':  '✋ CONTEST JUMP',
+    'reactive-contest-close': '✋ CONTEST CLOSE',
+    'reactive-intercept':     '🤚 INTERCEPT ASSIST',
+    'reactive-screen-guarantee': '📺 SCREEN GUARANTEE',
+    'reactive-dual-use':      '⚡ USE DEFENSIVELY',
+    'reactive-putback':       '💥 PUTBACK',
+    'standard':               '🛡️ CLAMPS',
+  };
+  return `${icons[cat] || '🛡️'} ${sk.Name}`;
+}
+
+function reactiveButtonColor(cat) {
+  const colors = {
+    'reactive-block-full':    'var(--pos-pf)',
+    'reactive-block-partial': 'var(--pos-pf)',
+    'reactive-redirect':      'var(--pos-c)',
+    'reactive-contest-jump':  '#FF6B35',
+    'reactive-contest-close':  '#FF6B35',
+    'reactive-intercept':     'var(--pos-sf)',
+    'reactive-screen-guarantee': 'var(--pos-pg)',
+    'reactive-dual-use':      'var(--pos-sg)',
+    'reactive-putback':       'var(--accent)',
+  };
+  return colors[cat] || 'var(--pos-pf)';
+}
+
 function selectReactiveSkill(playerCardIdx, skillIdx) {
-  let pCard = playerActive[playerCardIdx];
-  let sk    = pCard.Skills[skillIdx];
-  let mods  = sk.Logic_Engine?.Modifiers || [];
-  let name  = getCardName(pCard);
+  const pCard = playerActive[playerCardIdx];
+  const sk    = pCard.Skills[skillIdx];
+  const cat   = getSkillCategory(sk);
+  const name  = getCardName(pCard);
 
-  // Minnesota Switcher — redirect damage to Garnett (half)
-  if (mods.includes('Reactionary_Redirect') || (sk.Name && sk.Name.toLowerCase().includes('switcher'))) {
-    reactiveResponses.push({ playerCardIdx, skillIdx, appliedTo: 'next_incoming' });
-    pendingBlocks.push({ playerCardIdx, skillIdx, sk });
-    logMsg(`🛡️ <span class="lc-${pCard.battleRole}">${shortName(name)} • ${pCard.battleRole}</span>: ${sk.Name} staged — will absorb 50% of next incoming hit!`, 'atk');
-    return;
-  }
+  if (sk._usesLeft === undefined) sk._usesLeft = sk.Logic_Engine?.Max_Uses || sk.S_MaxUses || 1;
+  sk._usesLeft = Math.max(0, sk._usesLeft - 1);
 
-  if (mods.includes('Preemptive_Cancel') || mods.includes('Reactionary_Intercept')) {
-    pendingReactiveAction = { playerCardIdx, skillIdx };
-    // Disable tooltip while selecting target
-    setTooltipEnabled(false);
-    logMsg(`🛡️ ${shortName(name)}: ${sk.Name} — click an enemy card to target`, 'sys');
-    uiState = 'AWAITING_REACTIVE_TARGET';
-    renderArena();
-    return;
+  switch (cat) {
+    case 'reactive-block-full': {
+      const cap = extractBlockCap(sk);
+      pendingBlocks.push({ playerCardIdx, skillIdx, sk, scope: extractScope(sk), cap, blockType: 'full' });
+      logMsg(`🛡️ ${shortName(name)}: ${sk.Name} staged — will BLOCK next attack completely!`, 'atk');
+      break;
+    }
+    case 'reactive-block-partial': {
+      const cap = extractBlockCap(sk) || 800;
+      pendingBlocks.push({ playerCardIdx, skillIdx, sk, scope: extractScope(sk), cap, blockType: 'partial' });
+      logMsg(`🛡️ ${shortName(name)}: ${sk.Name} staged — will reduce next attack by up to ${cap} DMG!`, 'atk');
+      break;
+    }
+    case 'reactive-redirect': {
+      pendingBlocks.push({ playerCardIdx, skillIdx, sk, scope: 'ANY_TEAMMATE', blockType: 'redirect' });
+      logMsg(`🔀 ${shortName(name)}: ${sk.Name} staged — will take half the damage for a teammate!`, 'atk');
+      break;
+    }
+    case 'reactive-contest-jump': {
+      pendingBlocks.push({ playerCardIdx, skillIdx, sk, scope: 'ANY_TEAMMATE', blockType: 'contest-jump' });
+      logMsg(`✋ ${shortName(name)}: ${sk.Name} staged — will contest next jumpshot!`, 'atk');
+      break;
+    }
+    case 'reactive-contest-close': {
+      pendingBlocks.push({ playerCardIdx, skillIdx, sk, scope: 'ANY_TEAMMATE', blockType: 'contest-close' });
+      logMsg(`✋ ${shortName(name)}: ${sk.Name} staged — will contest next close shot!`, 'atk');
+      break;
+    }
+    case 'reactive-intercept': {
+      pendingReactiveAction = { playerCardIdx, skillIdx, cat };
+      logMsg(`🤚 ${shortName(name)}: ${sk.Name} — click an enemy card to intercept their assist!`, 'sys');
+      uiState = 'AWAITING_REACTIVE_TARGET';
+      renderArena();
+      return; 
+    }
+    case 'reactive-screen-guarantee': {
+      screenGuarantee = true;
+      logMsg(`📺 ${shortName(name)}: ${sk.Name} — next ally skill cannot miss, be blocked, contested or intercepted!`, 'atk');
+      break;
+    }
+    case 'reactive-dual-use': {
+      const dualFormula = sk.Logic_Engine?.DMG_Formula || '';
+      const blockCap    = extractDualBlockCap(dualFormula);
+      pendingBlocks.push({ playerCardIdx, skillIdx, sk, scope: 'ANY_TEAMMATE', cap: blockCap, blockType: 'partial' });
+      logMsg(`⚡ ${shortName(name)}: ${sk.Name} used DEFENSIVELY — will block up to ${blockCap} DMG!`, 'atk');
+      break;
+    }
+    case 'reactive-putback': {
+      pendingPutbacks = pendingPutbacks || [];
+      pendingPutbacks.push({ actorIdx: playerCardIdx, sk });
+      logMsg(`💥 ${shortName(name)}: ${sk.Name} staged — will slam it back if a teammate misses!`, 'atk');
+      break;
+    }
+    case 'standard':
+    default: {
+      if ((sk.Logic_Engine?.Execution || '').includes('STATUS_EFFECT') && sk.S_Timing === 'REACTIVE') {
+        const cap = 500;
+        pendingBlocks.push({ playerCardIdx, skillIdx, sk, scope: 'ANY_TEAMMATE', cap, blockType: 'partial' });
+        logMsg(`🛡️ ${shortName(name)}: ${sk.Name} staged — reduces next incoming by 500 DMG!`, 'atk');
+      }
+      break;
+    }
   }
-  reactiveResponses.push({ playerCardIdx, skillIdx, appliedTo: 'next_incoming' });
-  logMsg(`🛡️ <span class="lc-${pCard.battleRole}">${shortName(name)} • ${pCard.battleRole}</span>: ${sk.Name} staged as defense!`, 'atk');
-  if (mods.includes('Reactionary_Block') || mods.includes('Reactionary_Mitigation')) {
-    pendingBlocks.push({ playerCardIdx, skillIdx, sk });
-    logMsg(`🛡️ ${shortName(name)}: ${sk.Name} ready to block next attack!`, 'atk');
-  }
+  reactiveResponses.push({ playerCardIdx, skillIdx });
+}
+
+function extractBlockCap(sk) {
+  const desc = sk.Description_UI || sk.S_Description || '';
+  const m = desc.match(/up to (\d+) DMG/i) || desc.match(/block.{0,30}(\d{3,4}) DMG/i) || desc.match(/reducing.{0,20}(\d{3,4}) DMG/i);
+  return m ? parseInt(m[1]) : null;
+}
+
+function extractDualBlockCap(formula) {
+  const m = formula.match(/DUAL:\d+\/(\d+)/);
+  return m ? parseInt(m[1]) : 800;
+}
+
+function extractScope(sk) {
+  const scope = sk.S_Scope || sk.Logic_Engine?.Target_Scope || '';
+  if (scope.includes('ANY_TEAMMATE') || scope.includes('LANE_MATCHUP')) return 'ANY_TEAMMATE';
+  if (scope.includes('ANY_ENEMY')) return 'ANY_ENEMY';
+  return 'ANY_TEAMMATE';
 }
 
 function finishReactivePhase() {
-  $('confirm-moves-btn').style.background = '';
   $('confirm-moves-btn').textContent = 'LOCK IN MOVES';
-  $('confirm-moves-btn').onclick     = confirmMovesWithDefense;
+  $('confirm-moves-btn').style.background = '';
+  $('confirm-moves-btn').onclick = confirmMovesWithDefense;
   $('checkout-panel').classList.remove('visible');
   if (reactiveResolve) { reactiveResolve(); reactiveResolve = null; }
 }
@@ -864,6 +1052,7 @@ function buildEnemyRoster() {
   const POSITIONS_NEEDED = ['PG','SG','SF','PF','C'];
   let enemyDraft = { PG:[], SG:[], SF:[], PF:[], C:[] };
   let pool = [...CARDS].sort(() => Math.random() - 0.5);
+
   for (let card of pool) {
     let positions = getCardPos(card).split('/').map(p => p.trim());
     for (let pos of positions) {
@@ -874,15 +1063,25 @@ function buildEnemyRoster() {
     }
     if (POSITIONS_NEEDED.every(p => enemyDraft[p].length >= 2)) break;
   }
+
   let starters = [], bench = [];
   POSITIONS_NEEDED.forEach(pos => {
     let cards = enemyDraft[pos];
-    if (cards[0]) { let c = JSON.parse(JSON.stringify(cards[0])); c.currentHp = getCardHP(c); c.isDead = false; c.battleRole = pos; starters.push(c); }
-    if (cards[1]) { let c = JSON.parse(JSON.stringify(cards[1])); c.currentHp = getCardHP(c); c.isDead = false; c.battleRole = pos; bench.push(c); }
+    if (cards[0]) {
+      let c = JSON.parse(JSON.stringify(cards[0]));
+      c.currentHp = getCardHP(c); c.isDead = false; c.battleRole = pos;
+      starters.push(c);
+    }
+    if (cards[1]) {
+      let c = JSON.parse(JSON.stringify(cards[1]));
+      c.currentHp = getCardHP(c); c.isDead = false; c.battleRole = pos;
+      bench.push(c);
+    }
   });
   return { starters, bench };
 }
 
+// ==================== PLAYER ROSTER BUILD ====================
 function buildPlayerActiveWithRoles() {
   let result = [];
   let positions = hasSixthMan ? ['PG','SG','SF','PF','C','6TH'] : ['PG','SG','SF','PF','C'];
@@ -903,28 +1102,29 @@ const ROLE_TARGET_MATRIX = { "PG":["PG","SG"], "SG":["SG","SF"], "SF":["SG","SF"
 function getValidTargetsByRole(attackerCard, targetTeam) {
   let role = attackerCard.battleRole || getCardPos(attackerCard).split('/')[0].trim();
   let validRoles = ROLE_TARGET_MATRIX[role] || [];
-  return targetTeam.map((c,i) => ({c,i})).filter(def => {
+  return targetTeam.map((c, i) => ({c, i})).filter(def => {
     if (def.c.isDead) return false;
     let defRole = def.c.battleRole || getCardPos(def.c).split('/')[0].trim();
     return validRoles.includes(defRole);
   });
 }
+
 function getValidTargets(attackerCard, targetTeam) {
   if (attackerCard.battleRole) return getValidTargetsByRole(attackerCard, targetTeam);
   let validTargetPositions = new Set();
   let posStr = getCardPos(attackerCard);
-  if (posStr === '6TH') return targetTeam.map((c,i) => ({c,i})).filter(x => !x.c.isDead);
-  posStr.split('/').forEach(p => { let bp = p.trim(); if (TARGET_MATRIX[bp]) TARGET_MATRIX[bp].forEach(vp => validTargetPositions.add(vp)); });
-  return targetTeam.map((c,i) => ({c,i})).filter(def => {
+  if (posStr === '6TH' || getCardName(attackerCard).includes("Sixth Man")) {
+    return targetTeam.map((c, i) => ({c, i})).filter(x => !x.c.isDead);
+  }
+  posStr.split('/').forEach(p => {
+    let basePos = p.trim();
+    if (TARGET_MATRIX[basePos]) TARGET_MATRIX[basePos].forEach(vp => validTargetPositions.add(vp));
+  });
+  return targetTeam.map((c, i) => ({c, i})).filter(def => {
     if (def.c.isDead) return false;
     let defPositions = getCardPos(def.c).split('/').map(p => p.trim());
     return defPositions.some(dp => validTargetPositions.has(dp));
   });
-}
-
-function getRoleColor(role) {
-  const map = { 'PG':'var(--pos-pg)', 'SG':'var(--pos-sg)', 'SF':'var(--pos-sf)', 'PF':'var(--pos-pf)', 'C':'var(--pos-c)', '6TH':'var(--pos-6th)' };
-  return map[role] || 'white';
 }
 
 // ==================== STATE ====================
@@ -932,7 +1132,7 @@ let draftSquad  = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,nul
 let activeLineup = { PG:null, SG:null, SF:null, PF:null, C:null, '6TH':null };
 let benchRoster = [];
 let hasSixthMan = false;
-const POSITIONS = ['PG','SG','SF','PF','C'];
+const POSITIONS  = ['PG','SG','SF','PF','C'];
 
 let playerActive = [], playerBench = [], enemyActive = [], enemyBench = [];
 let playerScore  = 0, enemyScore = 0;
@@ -946,7 +1146,6 @@ let isAnimating  = false;
 let uiState      = 'IDLE';
 let pendingAction = null;
 let stagedActions = [];
-let _expandedOpen = false;
 
 // ==================== SEARCH FILTER ROUTER ====================
 function handleSearchFilter(mode) {
@@ -955,21 +1154,21 @@ function handleSearchFilter(mode) {
 }
 
 // ==================== CATALOGUE ====================
-function goCat() { showScreen('catalogue-screen'); if (typeof CARDS !== 'undefined') filterCat(); }
+function goCat() { showScreen('catalogue-screen'); }
 
 function filterCat() {
   if (isCollapsing) return;
-  let q    = ($('cs') && $('cs').value || '').toLowerCase();
-  let posF = $('cp') && $('cp').value || '';
-  let sort = $('csort') && $('csort').value || 'name';
-  let cleanCards = (typeof CARDS !== 'undefined') ? CARDS.filter(c => c && c.UI_Frontend_Data) : [];
-  let filtered = cleanCards.filter(c => {
+  let q    = $('cs').value.toLowerCase();
+  let posF = $('cp').value;
+  let sort = $('csort').value;
+  let cleanCards = CARDS.filter(c => c && c.UI_Frontend_Data);
+  let filtered   = cleanCards.filter(c => {
     let name = (getCardName(c) || "").toLowerCase();
     let team = (c.UI_Frontend_Data.Team || "").toLowerCase();
     let pos  = getCardPos(c);
     return (!q || name.includes(q) || team.includes(q)) && (!posF || pos.split('/').some(p => p.trim() === posF));
   });
-  if (sort === 'hp')  filtered.sort((a,b) => getCardHP(b) - getCardHP(a));
+  if (sort === 'hp')  filtered.sort((a,b) => getCardHP(b)  - getCardHP(a));
   else if (sort === 'dmg') filtered.sort((a,b) => getCardDMG(b) - getCardDMG(a));
   else if (sort === 'spd') filtered.sort((a,b) => getCardSPD(b) - getCardSPD(a));
   else filtered.sort((a,b) => getCardName(a).localeCompare(getCardName(b)));
@@ -984,26 +1183,23 @@ function filterCat() {
 // ==================== EXPANDED ROW ====================
 function toggleExpand(name, mode) {
   if (isCollapsing) return;
-  let card = (typeof CARDS !== 'undefined') ? CARDS.find(c => getCardName(c) === name) : null;
+  let card = CARDS.find(c => getCardName(c) === name);
   if (!card) return;
-  hideTooltip();
   if (mode === 'cat') {
     if (expandedCardCat === name) { closeExpandedWithAnim('cat'); return; }
-    expandedCardCat = name; filterCat();
+    expandedCardCat = name;
+    filterCat();
   } else {
     if (expandedCardDraft === name) { closeExpandedWithAnim('draft'); return; }
-    expandedCardDraft = name; filterDraftGrid();
+    expandedCardDraft = name;
+    filterDraftGrid();
   }
 }
 
 function closeExpandedWithAnim(mode) {
-  if (isCollapsing) return;
   isCollapsing = true;
   let row = document.querySelector('.expanded-row');
   if (row) {
-    // Spin card back on close
-    let flipper = row.querySelector('.expanded-card-flipper');
-    if (flipper) { flipper.style.animation = 'fairySpinClose 0.5s forwards'; }
     row.classList.add('collapsing');
     setTimeout(() => {
       if (mode === 'cat')   expandedCardCat   = null;
@@ -1011,7 +1207,7 @@ function closeExpandedWithAnim(mode) {
       isCollapsing = false;
       if (mode === 'cat')   filterCat();
       if (mode === 'draft') filterDraftGrid();
-    }, 350);
+    }, 300);
   } else {
     if (mode === 'cat')   expandedCardCat   = null;
     if (mode === 'draft') expandedCardDraft = null;
@@ -1019,26 +1215,11 @@ function closeExpandedWithAnim(mode) {
   }
 }
 
-function spawnFairyParticles(container) {
-  const colors = ['#FFD600','#69F0AE','#B388FF','#FF5722','#40C4FF','#FFFFFF'];
-  for (let i = 0; i < 12; i++) {
-    let p = document.createElement('div');
-    p.className = 'fairy-particle';
-    p.style.background = colors[Math.floor(Math.random() * colors.length)];
-    p.style.left = (20 + Math.random() * 160) + 'px';
-    p.style.top  = (20 + Math.random() * 200) + 'px';
-    p.style.animationDelay = (Math.random() * 1.5) + 's';
-    p.style.width = p.style.height = (3 + Math.random() * 5) + 'px';
-    container.appendChild(p);
-    setTimeout(() => p.remove(), 2500);
-  }
-}
-
 function renderExpandedRow(card, mode) {
   let name = getCardName(card);
   let team = card.UI_Frontend_Data?.Team || '';
-  let hp = getCardHP(card), dmg = getCardDMG(card), spd = getCardSPD(card);
-  let pos = getCardPos(card);
+  let hp   = getCardHP(card), dmg = getCardDMG(card), spd = getCardSPD(card);
+  let pos  = getCardPos(card);
   let abName = card.Ability?.Name || 'No Ability';
   let abDesc = card.Ability?.Description_UI || '';
   let skillsHtml = (card.Skills || []).map(s => `
@@ -1046,18 +1227,12 @@ function renderExpandedRow(card, mode) {
       <div class="ec-skill-header"><span>${s.Name}</span><span class="ec-skill-dmg">⚔️ ${s.Display_DMG}</span></div>
       <div class="ec-skill-desc">${s.Description_UI}</div>
     </div>`).join('');
-  // Trigger fairy particles after render
-  setTimeout(() => {
-    let row = document.querySelector('.expanded-row');
-    if (row) spawnFairyParticles(row);
-  }, 100);
   return `
-    <div class="expanded-row">
-      <button class="expanded-close" onclick="closeExpandedWithAnim('${mode}')">✕</button>
-      <div class="expanded-card-container" onclick="onExpandedCardClick(event,'${mode}')">
+    <div class="expanded-row" onclick="closeExpandedWithAnim('${mode}')">
+      <div class="expanded-card-container">
         <div class="expanded-card-flipper">
-          <div class="expanded-front"><img src="${getImgUrl(getCardImg(card),name)}" onerror="handleImgError(this,'${escapeJS(name)}')"></div>
-          <div class="expanded-back"><img src="${BACK_IMG}" alt="card back"></div>
+          <div class="expanded-front"><img src="${getImgUrl(getCardImg(card), name)}" onerror="handleImgError(this,'${escapeJS(name)}')"></div>
+          <div class="expanded-back"></div>
         </div>
       </div>
       <div class="expanded-scroll-wrapper">
@@ -1081,17 +1256,6 @@ function renderExpandedRow(card, mode) {
     </div>`;
 }
 
-function onExpandedCardClick(e, mode) {
-  e.stopPropagation(); // Don't close
-  // Spin card again gently
-  let flipper = document.querySelector('.expanded-card-flipper');
-  if (flipper) {
-    flipper.style.animation = 'none';
-    void flipper.offsetWidth;
-    flipper.style.animation = 'fairySpin 2s cubic-bezier(0.1, 0.9, 0.2, 1) forwards';
-  }
-}
-
 // ==================== DRAFT ====================
 function goDraft() {
   draftSquad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
@@ -1103,15 +1267,15 @@ function goDraft() {
 
 function filterDraftGrid() {
   if (isCollapsing) return;
-  const q    = ($('draft-search') && $('draft-search').value || '').toLowerCase();
-  const sort = $('draft-sort') && $('draft-sort').value || 'name';
-  let cleanCards = (typeof CARDS !== 'undefined') ? CARDS.filter(c => c && c.UI_Frontend_Data) : [];
+  const q    = $('draft-search').value.toLowerCase();
+  const sort = $('draft-sort').value;
+  let cleanCards = CARDS.filter(c => c && c.UI_Frontend_Data);
   let list = cleanCards.filter(c => {
     let name = (getCardName(c) || "").toLowerCase();
     let team = (c.UI_Frontend_Data.Team || "").toLowerCase();
     return !q || name.includes(q) || team.includes(q);
   });
-  if (sort === 'hp')       list.sort((a,b) => getCardHP(b) - getCardHP(a));
+  if (sort === 'hp')       list.sort((a,b) => getCardHP(b)  - getCardHP(a));
   else if (sort === 'dmg') list.sort((a,b) => getCardDMG(b) - getCardDMG(a));
   else if (sort === 'spd') list.sort((a,b) => getCardSPD(b) - getCardSPD(a));
   else list.sort((a,b) => getCardName(a).localeCompare(getCardName(b)));
@@ -1120,11 +1284,7 @@ function filterDraftGrid() {
     if (name === expandedCardDraft) return renderExpandedRow(c, 'draft');
     let inD = isCardInDraft(c);
     let safeName = escapeJS(name);
-    return `<div class="compact-card ${inD?'in-draft':''}" ${!inD?`draggable="true" ondragstart="handleDragStart(event,'${safeName}')" ondragend="handleDragEnd(event)"`:''}
-      onclick="${!inD?`toggleExpand('${safeName}','draft')`:'void(0)'}"
-      onmouseenter="${!inD?`showTooltip(event,'${safeName}')`:'void(0)'}" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)">
-      <div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),name)}" onerror="handleImgError(this,'${safeName}')"></div>
-    </div>`;
+    return `<div class="compact-card" ${!inD ? `draggable="true" ondragstart="handleDragStart(event,'${safeName}')" ondragend="handleDragEnd(event)"` : 'style="opacity:0.3;pointer-events:none;"'} onclick="toggleExpand('${safeName}','draft')" onmouseenter="showTooltip(event,'${safeName}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),name)}" onerror="handleImgError(this,'${safeName}')"></div></div>`;
   }).join('');
 }
 
@@ -1139,14 +1299,13 @@ function renderDraftSlots() {
     POSITIONS.forEach(pos => {
       let c = draftSquad[pos][idx];
       let cName = c ? getCardName(c) : null;
-      html += `<div id="dslot-${pos}-${idx}" class="slot-card slot-${pos} ${c?'filled':''}"
-        ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropDraft(event,'${pos}',${idx})">
+      html += `<div id="dslot-${pos}-${idx}" class="slot-card slot-${pos} ${c?'filled':''}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropDraft(event,'${pos}',${idx})">
         <div class="slot-pos">${pos}</div>
-        ${c ? `<div class="slot-name">${getDBShortName(cName)}</div><button class="remove-slot" onclick="removeDraft('${pos}',${idx})">✕</button>` : ''}
+        ${c ? `<div class="slot-name">${getDBShortName(cName)}</div><button class="remove-slot" onclick="removeDraft('${pos}',${idx})">✕</button>` : '<div style="opacity:0.3;font-size:0.65rem;margin-top:2px;">Drop Here</div>'}
       </div>`;
     });
   });
-  $('draft-slots-vertical').innerHTML = html;
+  $('draft-slots').innerHTML = html;
   let count = 0; hasSixthMan = false;
   POSITIONS.forEach(p => [0,1].forEach(i => {
     if (draftSquad[p][i]) { count++; if (getCardName(draftSquad[p][i]).includes("Sixth Man")) hasSixthMan = true; }
@@ -1159,20 +1318,16 @@ function renderDraftSlots() {
 function dropDraft(e, pos, idx) {
   e.preventDefault();
   if (e.currentTarget && e.currentTarget.classList) e.currentTarget.classList.remove('drag-over');
-  let name = e.dataTransfer.getData('text/plain');
-  let card = (typeof CARDS !== 'undefined') ? CARDS.find(c => getCardName(c) === name) : null;
+  let card = CARDS.find(c => getCardName(c) === e.dataTransfer.getData('text/plain'));
   if (!card || isCardInDraft(card)) return;
   if (!getCardPos(card).split('/').map(p => p.trim()).includes(pos)) return triggerInvalidDrop($(`dslot-${pos}-${idx}`));
   draftSquad[pos][idx] = card; renderDraftSlots(); filterDraftGrid();
-  // Block expanded from reopening
-  expandedCardDraft = null;
 }
 
 function removeDraft(pos, idx) { draftSquad[pos][idx] = null; renderDraftSlots(); filterDraftGrid(); }
 
 function autoFillDraft() {
   draftSquad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
-  if (typeof CARDS === 'undefined') return;
   let shuf = [...CARDS].sort(() => Math.random() - 0.5);
   POSITIONS.forEach(pos => {
     let m = shuf.filter(c => getCardPos(c).includes(pos) && !isCardInDraft(c));
@@ -1180,8 +1335,6 @@ function autoFillDraft() {
     if (m[1]) draftSquad[pos][1] = m[1];
   });
   renderDraftSlots(); filterDraftGrid();
-  // Don't reopen expanded
-  expandedCardDraft = null;
 }
 
 // ==================== SETUP ====================
@@ -1196,15 +1349,14 @@ function renderSetupSlots() {
   let slots = [...POSITIONS]; if (hasSixthMan) slots.push('6TH');
   $('setup-slots').innerHTML = slots.map(pos => {
     let c = activeLineup[pos]; let is6 = pos === '6TH';
-    let imgHtml = c ? `<img src="${getImgUrl(getCardImg(c),getCardName(c))}" onerror="handleImgError(this,'${escapeJS(getCardName(c))}')"><button class="setup-remove" onclick="activeLineup['${pos}']=null;renderSetupSlots();renderSetupBench()">✕</button>` : '';
-    return `<div id="sslots-${pos}" class="setup-slot-card setup-slot-${pos} ${c?'filled':''}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropSetup(event,'${pos}')">
-      ${imgHtml}
-      ${!c ? `<div class="setup-slot-pos" style="color:${is6?'var(--pos-6th)':''}">${is6?'6TH':pos}</div><div class="setup-slot-drop-text">Drop Here</div>` : ''}
+    return `<div id="sslots-${pos}" class="slot-card slot-${is6?'6TH':pos} ${c?'filled':''}" style="${is6?'display:flex;':''}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropSetup(event,'${pos}')">
+      <div class="slot-pos">${is6?'SIXTH MAN':pos}</div>
+      ${c ? `<div class="slot-name">${getDBShortName(getCardName(c))}</div><button class="remove-slot" onclick="activeLineup['${pos}']=null;renderSetupSlots();renderSetupBench()">✕</button>` : `<div style="opacity:0.3;font-size:0.65rem;">${is6?'Harden Only':'Drop'}</div>`}
     </div>`;
   }).join('');
-  let cnt = Object.values(activeLineup).filter(x => x).length;
-  $('setup-count-lbl').textContent = `${cnt}/${hasSixthMan?6:5}`;
-  $('start-battle-btn').disabled = cnt < 5;
+  let c = Object.values(activeLineup).filter(x => x).length;
+  $('setup-count-lbl').textContent = `${c}/${hasSixthMan?6:5}`;
+  $('start-battle-btn').disabled = c < 5;
 }
 
 function dropSetup(e, pos) {
@@ -1223,22 +1375,8 @@ function renderSetupBench() {
     if (inA) return '';
     let name = getCardName(c);
     let safeName = escapeJS(name);
-    return `<div class="compact-card" data-name="${escapeHtml(name)}" draggable="true"
-      ondragstart="handleDragStart(event,'${safeName}')" ondragend="handleDragEnd(event)"
-      onmouseenter="showTooltip(event,'${safeName}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)">
-      <div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),name)}" onerror="handleImgError(this,'${safeName}')"></div>
-    </div>`;
+    return `<div class="compact-card" data-name="${escapeHtml(name)}" draggable="true" ondragstart="handleDragStart(event,'${safeName}')" ondragend="handleDragEnd(event)" onmouseenter="showTooltip(event,'${safeName}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),name)}" onerror="handleImgError(this,'${safeName}')"></div></div>`;
   }).join('');
-}
-
-// ==================== ARENA INTRO ==================== 
-function confirmStartBattle() {
-  $('arena-intro-overlay').style.display = 'flex';
-}
-function closeArenaIntro(goBack) {
-  $('arena-intro-overlay').style.display = 'none';
-  if (goBack) return;
-  startBattle();
 }
 
 // ==================== BATTLE START ====================
@@ -1246,175 +1384,95 @@ function startBattle() {
   playerActive = buildPlayerActiveWithRoles();
   playerBench  = benchRoster.filter(c => !playerActive.some(ac => getCardName(ac) === getCardName(c)));
   let { starters: eStarters, bench: eBench } = buildEnemyRoster();
-  enemyActive = eStarters; enemyBench = eBench;
+  enemyActive = eStarters;
+  enemyBench  = eBench;
   playerScore = 0; enemyScore = 0; turnCount = 1;
-  stagedActions = []; uiState = 'IDLE'; pendingBlocks = []; reactiveResponses = []; activeAuras = [];
+  stagedActions = []; uiState = 'IDLE';
+
+  initSkillUses(playerActive); initSkillUses(enemyActive);
+  initSkillUses(playerBench);  initSkillUses(enemyBench);
+  activeAuras=[]; pendingBlocks=[]; frozenCards={}; shutdownCards={}; disabledSkills={};
+  drainedNextTurn={}; screenGuarantee=false; invulnerable={}; stolenSkills={}; 
+  pendingPutbacks=[]; pendingExtraMoves=[]; pendingWiltCounter=null; reactiveResponses=[];
+
   $('battle-log').innerHTML = `<div class="log-entry sys" style="text-align:center;">Match Starting... First to 8 KOs.</div>`;
   $('score-player').textContent = '0'; $('score-enemy').textContent = '0';
-  hideActionMenus();
   showScreen('battle-screen');
-  renderArena(); renderCheckout();
-}
-
-// ==================== LOG ====================
-let logMinimized = false;
-function toggleLog() {
-  logMinimized = !logMinimized;
-  let el = $('battle-log-container');
-  let icon = $('log-min-icon');
-  if (logMinimized) {
-    el.classList.remove('expanded'); el.classList.add('minimized');
-    // Fold sideways animation
-    el.style.transform = 'translateX(0)';
-    if (icon) icon.textContent = '▶ expand';
-  } else {
-    el.classList.remove('minimized'); el.classList.add('expanded');
-    if (icon) icon.textContent = '▼ minimize';
-  }
-}
-function logMsg(txt, t) {
-  let log = $('battle-log');
-  if (!log) return;
-  log.innerHTML += `<div class="log-entry ${t}">${txt}</div>`;
-  log.scrollTop = log.scrollHeight;
+  renderArena();
+  renderCheckout();
 }
 
 // ==================== ARENA RENDER ====================
 function renderArena() {
-  // Enemy bench — face down, fanned
-  renderBenchFanned($('enemy-bench-row'), enemyBench, true);
-  // Enemy active
-  $('enemy-active-row').innerHTML = enemyActive.map((c,i) => buildCardHtml(c, i, true)).join('');
-  // Player active
-  $('player-active-row').innerHTML = playerActive.map((c,i) => buildCardHtml(c, i, false)).join('');
-  // Player bench — fanned
-  renderBenchFanned($('player-bench-row'), playerBench, false);
-}
-
-function renderBenchFanned(container, bench, isEnemy) {
-  if (!container) return;
-  let n = bench.length;
-  if (n === 0) { container.innerHTML = ''; return; }
-  let fanAngle = Math.min(12, 60 / n); // degrees per card
-  let totalAngle = fanAngle * (n - 1);
-  let startAngle = -totalAngle / 2;
-  let cards = bench.map((c, i) => {
-    let angle = startAngle + fanAngle * i;
-    let tx = i * 18 - (n * 18 / 2) + 9;
-    let safeName = escapeJS(getCardName(c));
-    if (isEnemy) {
-      return `<div class="bench-card-wrap" style="transform:rotate(${angle}deg) translateX(${tx}px);transform-origin:bottom center;margin:0 -6px;z-index:${i};"
-        onmouseenter="showEnemyBenchTooltip(event, ${i})" onmouseleave="hideEnemyBenchTooltip()">
-        <div class="bench-card face-down"></div>
-      </div>`;
-    } else {
-      return `<div class="bench-card-wrap" style="transform:rotate(${angle}deg) translateX(${tx}px);transform-origin:bottom center;margin:0 -6px;z-index:${i};"
-        onmouseenter="showTooltip(event,'${safeName}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)">
-        <div class="bench-card" onclick="onBenchClick(${i},event)">
-          <img src="${getImgUrl(getCardImg(c),getCardName(c))}" onerror="handleImgError(this,'${safeName}')">
-        </div>
-      </div>`;
-    }
+  $('enemy-bench-row').innerHTML  = enemyBench.map(c => `<div class="bench-card face-down"></div>`).join('');
+  $('enemy-active-row').innerHTML = enemyActive.map((c, i) => buildCardHtml(c, i, true)).join('');
+  $('player-active-row').innerHTML= playerActive.map((c, i) => buildCardHtml(c, i, false)).join('');
+  $('player-bench-row').innerHTML = playerBench.map((c, i) => {
+    let name = getCardName(c);
+    let safeName = escapeJS(name);
+    return `<div class="bench-card" onclick="onBenchClick(${i},event)"><img src="${getImgUrl(getCardImg(c),name)}" onerror="handleImgError(this,'${safeName}')"></div>`;
   }).join('');
-  container.innerHTML = `<div class="bench-fan-wrapper">${cards}</div>`;
 }
-
-let _enemyBenchPopup = null;
-function showEnemyBenchTooltip(e, idx) {
-  hideEnemyBenchTooltip();
-  let popup = document.createElement('div');
-  popup.className = 'enemy-bench-popup';
-  popup.style.top = (e.clientY - 60) + 'px';
-  popup.style.left = (e.clientX + 10) + 'px';
-  popup.style.position = 'fixed';
-  popup.style.zIndex = '9999';
-  popup.innerHTML = `<b style="color:#FF5252;">Enemy Bench</b><br>${enemyBench.length} card(s) remaining<br><span style="color:var(--text-muted);font-size:0.68rem;">Card details hidden</span>`;
-  document.body.appendChild(popup);
-  _enemyBenchPopup = popup;
-}
-function hideEnemyBenchTooltip() { if (_enemyBenchPopup) { _enemyBenchPopup.remove(); _enemyBenchPopup = null; } }
 
 function buildCardHtml(c, index, isE) {
-  let name    = getCardName(c);
-  let hpMax   = getCardHP(c);
-  let pct     = Math.max(0, (c.currentHp / hpMax) * 100);
-  let clr     = pct > 50 ? '#69F0AE' : pct > 20 ? '#FFD600' : '#FF5252';
-  let pos     = c.battleRole || getCardPos(c);
-  let pc      = getRoleColor(pos);
+  let name   = getCardName(c);
+  let hpMax  = getCardHP(c);
+  let pct    = Math.max(0, (c.currentHp / hpMax) * 100);
+  let clr    = pct > 50 ? '#69F0AE' : pct > 20 ? '#FFD600' : '#FF5252';
+  let pos    = c.battleRole || getCardPos(c);
+  let pc     = pos.includes('PG')?'var(--pos-pg)':pos.includes('SG')?'var(--pos-sg)':pos.includes('SF')?'var(--pos-sf)':pos.includes('PF')?'var(--pos-pf)':'var(--pos-c)';
   let safeName = escapeJS(name);
   let teamStr  = isE ? 'enemy' : 'player';
   let isStaged = !isE && stagedActions.some(a => a.actorIdx === index);
   let isValidTarget = isE && uiState === 'AWAITING_TARGET' && pendingAction && getValidTargets(playerActive[pendingAction.actorIdx], enemyActive).some(v => v.i === index);
-  // Enemy cards show face-down back image
-  let cardInner = isE ?
-    `<div class="battle-card face-down ${c.isDead?'dead-card':''}  ${isValidTarget?'valid-target':''}" id="card-${teamStr}-${index}" style="border-color:${pc};"></div>` :
-    `<div class="battle-card ${c.isDead?'dead-card':''} ${isStaged?'staged':''}" id="card-${teamStr}-${index}" style="border-color:${pc};">
-      <img src="${getImgUrl(getCardImg(c),name)}" onerror="handleImgError(this,'${safeName}')">
-      ${isStaged ? `<div class="undo-btn" onclick="event.stopPropagation();undoAction(${index})">✕</div>` : ''}
-    </div>`;
-
-  // Valid target highlight for enemy
-  if (isE && isValidTarget) {
-    cardInner = `<div class="battle-card face-down valid-target" id="card-${teamStr}-${index}" style="border-color:#FF5252;"></div>`;
-  }
-
   return `
-    <div class="battle-card-wrapper" id="wrap-${teamStr}-${index}"
-      onclick="onCardClick('${teamStr}',${index},event)"
-      onmouseenter="${!isE && !_enemyHoverDisabled?`showTooltip(event,'${safeName}')`:'void(0)'}"
-      onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)">
-      ${isE ? `<div class="hp-bar-container"><div class="hp-fill" id="hpf-${teamStr}-${index}" style="width:${pct}%;background:${clr};"></div></div>` : ''}
-      ${cardInner}
-      ${!isE ? `<div class="hp-bar-container"><div class="hp-fill" id="hpf-${teamStr}-${index}" style="width:${pct}%;background:${clr};"></div></div>` : ''}
+    <div class="battle-card-wrapper" id="wrap-${teamStr}-${index}" onclick="onCardClick('${teamStr}',${index},event)" onmouseenter="showTooltip(event,'${safeName}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)">
+      ${isE ? `<div class="hp-bar-container"><div class="hp-fill" id="hpf-${teamStr}-${index}" style="width:${pct}%; background:${clr};"></div></div>` : ''}
+      <div class="battle-card ${c.isDead?'dead-card':''} ${isStaged?'staged':''} ${isValidTarget?'valid-target':''}" id="card-${teamStr}-${index}" style="border-color:${pc};">
+        <img src="${getImgUrl(getCardImg(c),name)}" onerror="handleImgError(this,'${safeName}')">
+        ${isStaged ? `<div class="undo-btn" onclick="event.stopPropagation();undoAction(${index})">✕</div>` : ''}
+      </div>
+      ${!isE ? `<div class="hp-bar-container"><div class="hp-fill" id="hpf-${teamStr}-${index}" style="width:${pct}%; background:${clr};"></div></div>` : ''}
       <div class="hp-text" id="hpt-${teamStr}-${index}">${c.currentHp}/${hpMax}</div>
     </div>`;
 }
 
-let _enemyHoverDisabled = false;
-
-// ==================== INTERACTION ====================
-function handleCourtClick(e) {
-  if (!e) return;
-  // Only close action menus if clicking outside them
-  let tgt = e.target;
-  if (tgt.closest('.action-menu-fixed') || tgt.closest('.action-col-right')) return;
-  if (tgt.closest('.battle-card-wrapper')) return;
-  if (uiState === 'AWAITING_TARGET' || uiState === 'AWAITING_BENCH') {
-    uiState = 'IDLE'; _enemyHoverDisabled = false;
-    setTooltipEnabled(true);
-    logMsg("Action cancelled.", "sys");
-    renderArena(); hideActionMenus();
-  }
-  if (uiState === 'IDLE') hideActionMenus();
+function logMsg(txt, t) {
+  let log = $('battle-log');
+  let clr = t==='atk'?'#69F0AE':t==='def'?'#FF5252':'#40C4FF';
+  log.innerHTML += `<div class="log-entry ${t}" style="border-left-color:${clr}">${txt}</div>`;
+  log.scrollTop = log.scrollHeight;
 }
 
-function hideActionMenus() {
-  $('action-menu-left').style.display = 'none';
-  $('action-menu-right').style.display = 'none';
+// ==================== INTERACTION ====================
+function handleCourtClick() {
+  if (uiState !== 'IDLE') {
+    uiState = 'IDLE';
+    $('action-menu').style.display = 'none';
+    logMsg("Action Cancelled.", "sys");
+    renderArena();
+  }
 }
 
 function onCardClick(team, idx, e) {
   e.stopPropagation();
   if (isAnimating) return;
-  hideTooltip();
 
   if (uiState === 'AWAITING_TARGET') {
     if (team === 'enemy' && !enemyActive[idx].isDead) {
       let validTargets = getValidTargets(playerActive[pendingAction.actorIdx], enemyActive);
       if (validTargets.some(v => v.i === idx)) {
         stagedActions.push({ ...pendingAction, targetIdx: idx, targetTeam: 'enemy' });
-        uiState = 'IDLE'; _enemyHoverDisabled = false; setTooltipEnabled(true);
-        renderArena(); renderCheckout(); hideActionMenus();
-      } else { logMsg("Invalid Target! Check positional rules.", "def"); }
+        uiState = 'IDLE'; renderArena(); renderCheckout();
+      } else { logMsg("Invalid Target! Check Positional Rules.", "def"); }
     }
     return;
   }
   if (uiState === 'AWAITING_REACTIVE_TARGET') {
     if (team === 'enemy' && !enemyActive[idx].isDead && pendingReactiveAction) {
       reactiveResponses.push({ ...pendingReactiveAction, cancelledEnemyIdx: idx });
-      logMsg(`🛡️ Targeted ${shortName(getCardName(enemyActive[idx]))} — card blocked from acting this turn!`, 'atk');
+      logMsg(`🛡️ Steal/Intercept targeted at ${shortName(getCardName(enemyActive[idx]))}!`, 'atk');
       uiState = 'IDLE'; pendingReactiveAction = null;
-      setTooltipEnabled(true); _enemyHoverDisabled = false;
       renderArena();
     }
     return;
@@ -1423,10 +1481,10 @@ function onCardClick(team, idx, e) {
   if (team === 'player' && uiState === 'IDLE') {
     let card = playerActive[idx];
     if (card.isDead) return;
-    if (stagedActions.some(a => a.actorIdx === idx)) { logMsg("Card already staged this turn.", "sys"); return; }
+    if (stagedActions.some(a => a.actorIdx === idx)) { logMsg("Card already acting this turn.", "sys"); return; }
     let maxMoves = Math.min(2, playerActive.filter(c => !c.isDead).length);
     if (stagedActions.length >= maxMoves) { logMsg("Max moves staged! Click Lock In.", "sys"); return; }
-    showActionMenuFixed(card, idx);
+    showActionMenu(card, idx, e.clientX, e.clientY);
   }
 }
 
@@ -1434,38 +1492,38 @@ function onBenchClick(idx, e) {
   e.stopPropagation();
   if (uiState === 'AWAITING_BENCH') {
     stagedActions.push({ ...pendingAction, targetIdx: idx, targetTeam: 'bench' });
-    uiState = 'IDLE'; renderArena(); renderCheckout(); hideActionMenus();
+    uiState = 'IDLE'; renderArena(); renderCheckout();
   }
 }
 
-function showActionMenuFixed(card, idx) {
+function showActionMenu(card, idx, x, y) {
+  let menu = $('action-menu');
   let name = getCardName(card);
   let dmg  = getCardDMG(card);
-  // Left side: pass / swap
-  let leftHtml = `<div class="action-menu-title" style="color:${getRoleColor(card.battleRole)};">${shortName(name)}</div>`;
-  if (playerBench.length > 0) leftHtml += `<button class="btn-primary" style="background:var(--pos-pg);text-align:left;" onclick="selectAction(${idx},'swap',0)">🔄 SWAP CARD</button>`;
-  leftHtml += `<button class="btn-primary" style="background:var(--border-heavy);text-align:left;" onclick="selectAction(${idx},'pass',0)">⏭️ PASS TURN</button>`;
-  // Right side: attacks
-  let rightHtml = `<button class="btn-primary" style="background:#b04020;text-align:left;" onclick="selectAction(${idx},'basic',0)">⚔️ BASIC ATTACK (${dmg})</button>`;
+  let html = `<div style="font-weight:900; color:var(--text); margin-bottom:4px; font-size:1rem;">${shortName(name)}</div>`;
+  html += `<button class="btn-primary" onclick="selectAction(${idx},'basic',0)">⚔️ BASIC ATTACK (${dmg})</button>`;
   (card.Skills || []).forEach((sk, sIdx) => {
     if (!canSelectOnYourTurn(sk)) return;
-    rightHtml += `<button class="btn-primary" style="background:var(--pos-c);text-align:left;" onclick="selectAction(${idx},'skill',${sIdx})">✨ ${sk.Name}</button>`;
+    let previewDmg = getSkillDisplayDmg(sk, card, 'player');
+    html += `<button class="btn-primary" style="background:var(--pos-c);" onclick="selectAction(${idx},'skill',${sIdx})">✨ ${sk.Name} (${previewDmg})</button>`;
   });
-  $('action-col-left').innerHTML = leftHtml;
-  $('action-col-right').innerHTML = rightHtml;
-  $('action-menu-left').style.display = 'flex';
-  $('action-menu-right').style.display = 'flex';
+  if (playerBench.length > 0) html += `<button class="btn-primary" style="background:var(--pos-pg);" onclick="selectAction(${idx},'swap',0)">🔄 SWAP CARD</button>`;
+  html += `<button class="btn-primary" style="background:var(--border-heavy);" onclick="selectAction(${idx},'pass',0)">⏭️ PASS TURN</button>`;
+  menu.innerHTML = html;
+  menu.style.left = (x + 20) + 'px'; menu.style.top = (y - 50) + 'px';
+  menu.style.display = 'flex';
 }
 
 function selectAction(actorIdx, type, skillIdx) {
-  hideActionMenus();
+  $('action-menu').style.display = 'none';
   let card = playerActive[actorIdx];
   let name = getCardName(card);
   let priority = 1;
   if (type === 'skill') {
-    let sk  = card.Skills[skillIdx];
+    let sk = card.Skills[skillIdx];
     let cat = getSkillCategory(sk);
     let mods = sk.Logic_Engine?.Modifiers || [];
+
     if (cat === 'pre-turn-aura') {
       let turns = 3;
       let desc  = sk.Description_UI || '';
@@ -1477,9 +1535,11 @@ function selectAction(actorIdx, type, skillIdx) {
       activeAuras.push({ type: auraType, turnsLeft: turns, sourceTeam: 'player', sourceName: sk.Name });
       pendingAction = { actorIdx, actionType: type, skillIdx, priority: 1, speed: getCardSPD(card), pos: card.battleRole || getCardPos(card) };
       stagedActions.push({ ...pendingAction, targetIdx: null, targetTeam: null });
-      logMsg(`✨ <span class="lc-${card.battleRole}">YOU ${shortName(name)} • ${card.battleRole}</span>: ${sk.Name} activated — aura lasts ${turns} turns!`, 'atk');
-      renderArena(); renderCheckout(); return;
+      logMsg(`✨ ${shortName(name)}: ${sk.Name} activated — aura lasts ${turns} turns!`, 'atk');
+      renderArena(); renderCheckout();
+      return;
     }
+
     let prioMatch = (sk.Description_UI || '').match(/x(\d) priority/i);
     if (prioMatch) priority = parseInt(prioMatch[1]);
   }
@@ -1491,21 +1551,12 @@ function selectAction(actorIdx, type, skillIdx) {
     renderArena(); renderCheckout();
   } else if (type === 'swap') {
     uiState = 'AWAITING_BENCH';
-    logMsg(`Select a bench card to swap in for <b>${shortName(name)}</b>.`, "sys");
+    logMsg(`Select a bench card to swap with <b>${shortName(name)}</b>.`, "sys");
   } else {
-    // Assist skills that target teammates
-    let isAssist = type === 'skill' && card.Skills[skillIdx] && (card.Skills[skillIdx].Nature || '').toLowerCase().includes('assist');
-    if (isAssist) {
-      // Assist — target a teammate enemy match
-      let validEnemies = getValidTargets(card, enemyActive);
-      if (validEnemies.length === 0) { logMsg(`No valid targets for ${shortName(name)}!`, "def"); return; }
-    }
     let validEnemies = getValidTargets(card, enemyActive);
-    if (validEnemies.length === 0) { logMsg(`<b>${shortName(name)}</b> has no valid targets!`, "def"); return; }
-    // Disable hover tooltip while selecting target
-    _enemyHoverDisabled = true; setTooltipEnabled(false);
+    if (validEnemies.length === 0) { logMsg(`<b>${shortName(name)}</b> has no valid targets in their lane!`, "def"); return; }
     uiState = 'AWAITING_TARGET';
-    logMsg(`Select target for <b>${shortName(name)}</b>.`, "sys");
+    logMsg(`Select a valid target for <b>${shortName(name)}</b>.`, "sys");
     renderArena();
   }
 }
@@ -1522,31 +1573,28 @@ function renderCheckout() {
   if (stagedActions.length > 0) {
     panel.classList.add('visible');
     $('staged-list').innerHTML = stagedActions.map(a => {
-      let actor = playerActive[a.actorIdx];
-      let actorName = getCardName(actor);
-      let roleColor = getRoleColor(actor.battleRole);
-      let actName = a.actionType === 'pass' ? 'Pass'
+      let actor    = playerActive[a.actorIdx];
+      let actorName= getCardName(actor);
+      let actName  = a.actionType === 'pass' ? 'Pass'
         : a.actionType === 'swap'  ? `Swap in ${shortName(getCardName(playerBench[a.targetIdx]))}`
         : a.actionType === 'skill' ? actor.Skills[a.skillIdx].Name
         : 'Basic Attack';
       let tgtName = a.targetTeam === 'enemy' ? ` ➔ ${shortName(getCardName(enemyActive[a.targetIdx]))}` : '';
-      return `<div><span style="color:#69F0AE;">▶</span> <b style="color:${roleColor}">YOU</b> <span class="lc-${actor.battleRole}">${shortName(actorName)} • ${actor.battleRole}</span>: ${actName}${tgtName}</div>`;
+      return `<div><span style="color:#69F0AE;">▶</span> <b>${shortName(actorName)}</b>: ${actName}${tgtName}</div>`;
     }).join('');
-    $('confirm-moves-btn').style.background = '';
     $('confirm-moves-btn').textContent = 'LOCK IN MOVES';
-    $('confirm-moves-btn').onclick = confirmMovesWithDefense;
-    $('confirm-moves-btn').disabled = stagedActions.length < maxMoves && playerActive.filter(c => !c.isDead).length > stagedActions.length;
+    $('confirm-moves-btn').onclick     = confirmMovesWithDefense;
+    $('confirm-moves-btn').disabled    = stagedActions.length < maxMoves && playerActive.filter(c => !c.isDead).length > stagedActions.length;
   } else {
     panel.classList.remove('visible');
   }
 }
 
-// ==================== CONFIRM MOVES ====================
+// ==================== CONFIRM MOVES WITH DEFENSE ====================
 async function confirmMovesWithDefense() {
   $('checkout-panel').classList.remove('visible');
-  hideActionMenus();
   isAnimating = true;
-  logMsg(`--- TURN ${turnCount} ---`, "sys");
+  logMsg(`--- TURN ${turnCount} EXECUTION ---`, "sys");
 
   let enemyStaged = generateEnemyAI();
   reactiveResponses = [];
@@ -1557,10 +1605,11 @@ async function confirmMovesWithDefense() {
   enemyStaged.forEach(a => masterQueue.push({ ...a, execTeam: 'enemy', card: enemyActive[a.actorIdx] }));
 
   const POS_HIERARCHY = { 'PG':5, 'SG':4, 'SF':3, 'PF':2, 'C':1 };
-  masterQueue.sort((a,b) => {
+  masterQueue.sort((a, b) => {
     if (a.priority !== b.priority) return b.priority - a.priority;
     let aIs6 = a.pos === "6TH", bIs6 = b.pos === "6TH";
-    if (aIs6 && !bIs6) return 1; if (!aIs6 && bIs6) return -1;
+    if (aIs6 && !bIs6) return 1;
+    if (!aIs6 && bIs6) return -1;
     if (a.speed !== b.speed) return b.speed - a.speed;
     let aP = POS_HIERARCHY[(a.pos||'').split('/')[0].trim()] || 0;
     let bP = POS_HIERARCHY[(b.pos||'').split('/')[0].trim()] || 0;
@@ -1571,139 +1620,433 @@ async function confirmMovesWithDefense() {
   for (let action of masterQueue) {
     if (playerScore >= 8 || enemyScore >= 8) break;
     let wasIntercepted = reactiveResponses.some(r => r.cancelledAction === action._id);
-    if (wasIntercepted) { logMsg(`🛡️ Action intercepted — skipped!`, 'sys'); continue; }
+    if (wasIntercepted) { logMsg(`🛡️ Action intercepted/stolen — skipped!`, 'sys'); continue; }
     let auraResult = applyAuraEffectsToAction(action, action.execTeam);
     if (auraResult.blocked) { logMsg(`🚫 ${auraResult.reason}`, action.execTeam === 'player' ? 'def' : 'atk'); continue; }
     await executeAction(action);
   }
 
   await handleDeadReplacements('player', playerActive, playerBench);
-  await handleDeadReplacements('enemy', enemyActive, enemyBench);
+  await handleDeadReplacements('enemy',  enemyActive,  enemyBench);
+
+  cleanStolenSkills();
+
   tickDownAuras();
   stagedActions = []; reactiveResponses = []; uiState = 'IDLE'; turnCount++;
-  if (playerScore < 8 && enemyScore < 8) { isAnimating = false; renderArena(); renderCheckout(); }
+  if (playerScore < 8 && enemyScore < 8) { isAnimating = false; renderArena(); }
 }
 
-// ==================== ENEMY AI ====================
+// ─── ENEMY AI — UPGRADED ─────────────────────────────────────
 function generateEnemyAI() {
-  let actions = [];
-  let aliveEnemies = enemyActive.map((c,i) => ({c,i})).filter(x => !x.c.isDead);
-  let moves = Math.min(2, aliveEnemies.length);
+  const actions = [];
+  const alive   = enemyActive.map((c, i) => ({ c, i })).filter(x => !x.c.isDead);
+  const moves   = Math.min(2, alive.length);
+
   for (let i = 0; i < moves; i++) {
-    let actor = aliveEnemies[i];
-    let validTargets = getValidTargets(actor.c, playerActive);
+    const actor = alive[i];
+    const c     = actor.c;
+
+    const eKey = `enemy-${actor.i}`;
+    if (frozenCards[eKey])    { frozenCards[eKey] = false; continue; }
+    if (drainedNextTurn[eKey]) { drainedNextTurn[eKey] = false; continue; }
+
+    const validTargets = getValidTargets(c, playerActive);
+
+    const offSkills = (c.Skills || []).map((sk, si) => ({ sk, si })).filter(({ sk }) => {
+      const cat = getSkillCategory(sk);
+      const uses = (sk._usesLeft !== undefined) ? sk._usesLeft : (sk.Logic_Engine?.Max_Uses || sk.S_MaxUses || 1);
+      if (uses <= 0) return false;
+      if (disabledSkills[`${eKey}-${si}`] > 0) return false;
+      return canSelectOnYourTurn(sk);
+    });
+
+    const useSkill = Math.random() > 0.35 && offSkills.length > 0;
+    let chosen;
+    if (useSkill) {
+      chosen = offSkills.sort((a, b) => {
+        const ad = parseInt(a.sk.Display_DMG) || 0;
+        const bd = parseInt(b.sk.Display_DMG) || 0;
+        return bd - ad;
+      })[0];
+    }
+
     if (validTargets.length > 0) {
-      let target = validTargets[Math.floor(Math.random() * validTargets.length)];
-      let offSkills = (actor.c.Skills || []).map((sk,si) => ({sk,si})).filter(({sk}) => canSelectOnYourTurn(sk) && !String(sk.Display_DMG || '').includes('N/A'));
-      let isSkill = Math.random() > 0.4 && offSkills.length > 0;
-      let chosenSkillIdx = isSkill ? offSkills[0].si : 0;
-      let priority = 1;
-      if (isSkill) { let pm = (actor.c.Skills[chosenSkillIdx].Description_UI || '').match(/x(\d) priority/i); if (pm) priority = parseInt(pm[1]); }
-      actions.push({ actorIdx: actor.i, actionType: isSkill ? 'skill' : 'basic', skillIdx: chosenSkillIdx, targetIdx: target.i, targetTeam: 'player', priority, speed: getCardSPD(actor.c), pos: actor.c.battleRole || getCardPos(actor.c), _id: `enemy_${turnCount}_${i}` });
+      const target = validTargets[Math.floor(Math.random() * validTargets.length)];
+      const priority = chosen ? (parseInt(chosen.sk.S_Priority || chosen.sk.Logic_Engine?.Priority || 1)) : 1;
+      actions.push({
+        actorIdx:   actor.i,
+        actionType: chosen ? 'skill' : 'basic',
+        skillIdx:   chosen ? chosen.si : 0,
+        targetIdx:  target.i,
+        targetTeam: 'player',
+        priority,
+        speed:      getCardSPD(c),
+        pos:        c.battleRole || getCardPos(c),
+        _id:        `enemy_${turnCount}_${i}`
+      });
     } else {
-      actions.push({ actorIdx: actor.i, actionType: 'pass', skillIdx: 0, targetIdx: null, priority: 1, speed: getCardSPD(actor.c), pos: actor.c.battleRole || getCardPos(actor.c), _id: `enemy_${turnCount}_${i}` });
+      actions.push({
+        actorIdx: actor.i, actionType: 'pass', skillIdx: 0,
+        targetIdx: null, priority: 1,
+        speed: getCardSPD(c), pos: c.battleRole || getCardPos(c),
+        _id: `enemy_${turnCount}_${i}`
+      });
     }
   }
   return actions;
 }
 
-// ==================== EXECUTE ACTION ====================
+// ─── EXECUTE ACTION (FULL REWRITE) ──────────────────────────
 async function executeAction(action) {
-  let { actorIdx, actionType, skillIdx, targetIdx, execTeam } = action;
-  let isP       = execTeam === 'player';
-  let attackers = isP ? playerActive : enemyActive;
-  let defenders = isP ? enemyActive  : playerActive;
-  let attacker  = attackers[actorIdx];
-  let aName     = getCardName(attacker);
-  let roleStr   = attacker.battleRole || '';
-  let whoLabel  = isP ? `<span class="lc-${roleStr}">YOU</span>` : `<span class="lc-${roleStr}">BOT</span>`;
+  const { actorIdx, actionType, skillIdx, targetIdx, execTeam } = action;
+  const isP       = execTeam === 'player';
+  const attackers = isP ? playerActive : enemyActive;
+  const defenders = isP ? enemyActive  : playerActive;
+  const attacker  = attackers[actorIdx];
+  if (!attacker || attacker.isDead) return;
 
-  if (attacker.isDead) return;
-  if (actionType === 'pass') { logMsg(`${whoLabel} <span class="lc-${roleStr}">${shortName(aName)} • ${roleStr}</span> passes.`, "sys"); return; }
+  const aName     = getCardName(attacker);
+  const teamLabel = isP ? 'YOU' : 'BOT';
+
+  if (actionType === 'pass') {
+    logMsg(`<b>${shortName(aName)}</b> passes.`, 'sys', attacker, teamLabel);
+    return;
+  }
 
   if (actionType === 'swap') {
-    let bArr = isP ? playerBench : enemyBench;
-    let temp = attackers[actorIdx];
-    attackers[actorIdx] = bArr[targetIdx]; bArr[targetIdx] = temp;
-    logMsg(`🔄 ${whoLabel}: <span class="lc-${roleStr}">${shortName(getCardName(temp))}</span> swapped for ${shortName(getCardName(attackers[actorIdx]))}!`, isP?'atk':'def');
-    renderArena(); await delay(600); return;
+    const bArr = isP ? playerBench : enemyBench;
+    const temp = attackers[actorIdx];
+    attackers[actorIdx]  = bArr[targetIdx];
+    bArr[targetIdx]      = temp;
+    logMsg(`🔄 <b>${shortName(getCardName(temp))}</b> swapped out for <b>${shortName(getCardName(attackers[actorIdx]))}</b>!`, isP ? 'atk' : 'def', attacker, teamLabel);
+    renderArena();
+    await new Promise(r => setTimeout(r, 600));
+    return;
+  }
+
+  const skill = actionType === 'skill' ? attacker.Skills[skillIdx] : null;
+  const cat   = skill ? getSkillCategory(skill) : 'standard';
+
+  if (skill) {
+    const exec = (skill.Logic_Engine?.Execution || '').toUpperCase();
+    const mods = Array.isArray(skill.Logic_Engine?.Modifiers) ? skill.Logic_Engine.Modifiers.join(' ') : String(skill.Logic_Engine?.Modifiers || '');
+    if (exec.includes('SELF_DRAIN') || mods.includes('Self_Drain_Next_Turn')) {
+      drainedNextTurn[`${execTeam}-${actorIdx}`] = true;
+    }
+  }
+
+  if (skill) {
+    if (cat === 'freeze') {
+      const target = findFreezeTarget(skill, defenders);
+      if (target !== null) {
+        frozenCards[`${isP ? 'enemy' : 'player'}-${target}`] = true;
+        const tName = getCardName(defenders[target]);
+        logMsg(`❄️ ${shortName(aName)}: ${skill.Name} — ${shortName(tName)} is FROZEN this turn!`, isP ? 'atk' : 'def', attacker, teamLabel);
+      }
+      return;
+    }
+
+    if (cat === 'steal-cancel' || cat === 'steal-cancel-unnull') {
+      await handleStealCancel(skill, attacker, actorIdx, execTeam, isP, teamLabel);
+      return;
+    }
+
+    if (cat === 'steal-skill') {
+      handleStealSkillUI(skill, attacker, actorIdx, execTeam, isP, teamLabel);
+      return; 
+    }
+
+    if (cat === 'global-disable-all') {
+      const turns = 2;
+      activeAuras.push({ type: 'all_skills_disabled', turnsLeft: turns, sourceTeam: execTeam, sourceName: skill.Name });
+      logMsg(`🚫 ${shortName(aName)}: ${skill.Name} — ALL enemy damaging skills disabled for ${turns} turns!`, isP ? 'atk' : 'def', attacker, teamLabel);
+      return;
+    }
+
+    if (cat === 'invulnerable') {
+      invulnerable[`${execTeam}-${actorIdx}`] = true;
+      setTimeout(() => { delete invulnerable[`${execTeam}-${actorIdx}`]; }, 50);
+      logMsg(`🌟 ${shortName(aName)}: ${skill.Name} — INVULNERABLE this turn! +2 SPD & +300 DMG next turn.`, isP ? 'atk' : 'def', attacker, teamLabel);
+      attacker._tempBuff = { spd: 2, dmg: 300, turnsLeft: 1 };
+      return;
+    }
+
+    if (cat === 'aura-jump-miss') {
+      activeAuras.push({ type: 'jump_miss', turnsLeft: 3, sourceTeam: execTeam, sourceName: skill.Name });
+      logMsg(`🎯 ${shortName(aName)}: ${skill.Name} — enemy jumpshots have 50% miss chance for 3 turns!`, isP ? 'atk' : 'def', attacker, teamLabel);
+      return;
+    }
+
+    if (cat === 'aura-close-miss') {
+      activeAuras.push({ type: 'close_miss', turnsLeft: 3, sourceTeam: execTeam, sourceName: skill.Name });
+      logMsg(`🎯 ${shortName(aName)}: ${skill.Name} — enemy close shots have 50% miss chance for 3 turns!`, isP ? 'atk' : 'def', attacker, teamLabel);
+      return;
+    }
+
+    if (cat === 'aura-any-miss') {
+      let turns = 3;
+      const mods = Array.isArray(skill.Logic_Engine?.Modifiers) ? skill.Logic_Engine.Modifiers.join(' ') : String(skill.Logic_Engine?.Modifiers || '');
+      activeAuras.push({ type: 'any_miss', turnsLeft: turns, sourceTeam: execTeam, sourceName: skill.Name });
+      logMsg(`🎯 ${shortName(aName)}: ${skill.Name} — ALL enemy damaging skills have 50% miss chance for ${turns} turns!`, isP ? 'atk' : 'def', attacker, teamLabel);
+      if (mods.includes('Hard_Disable_One_Skill')) {
+        if (!isP) {
+          const adj = getAdjacentEnemies(attacker, playerActive);
+          if (adj.length > 0) {
+            const target = adj[0];
+            if (target.Skills && target.Skills[0]) {
+              const dKey = `player-${playerActive.indexOf(target)}-0`;
+              disabledSkills[dKey] = (disabledSkills[dKey] || 0) + 3;
+              logMsg(`🚫 ${shortName(aName)}: ${skill.Name} also disabled ${target.Skills[0].Name}!`, 'def', attacker, teamLabel);
+            }
+          }
+        }
+      }
+      return;
+    }
+
+    if (cat === 'aura-intercept-all-assists') {
+      activeAuras.push({ type: 'intercept_all_assists', turnsLeft: 2, sourceTeam: execTeam, sourceName: skill.Name });
+      logMsg(`✋ ${shortName(aName)}: ${skill.Name} — ALL enemy assist skills intercepted for 2 turns!`, isP ? 'atk' : 'def', attacker, teamLabel);
+      return;
+    }
+
+    if (cat === 'aura-jumpshot-contest') {
+      const turns = skill.Name === 'Battleship Anchor' ? 3 : 2;
+      activeAuras.push({ type: 'jumpshot_contest', turnsLeft: turns, sourceTeam: execTeam, sourceName: skill.Name });
+      logMsg(`✋ ${shortName(aName)}: ${skill.Name} — enemy jumpshots FAIL for ${turns} turns!`, isP ? 'atk' : 'def', attacker, teamLabel);
+      return;
+    }
+
+    if (cat === 'nullify-defense') {
+      if (pendingBlocks.length > 0) {
+        const removed = pendingBlocks.pop();
+        const rmName  = getCardName(isP ? playerActive[removed.playerCardIdx] : enemyActive[removed.playerCardIdx] || { UI_Frontend_Data: { Name: '?' } });
+        logMsg(`🗣️ ${shortName(aName)}: ${skill.Name} — nullified ${rmName}'s defensive skill!`, isP ? 'atk' : 'def', attacker, teamLabel);
+      } else {
+        logMsg(`🗣️ ${shortName(aName)}: ${skill.Name} — no active defensive skill to nullify.`, 'sys');
+      }
+      return;
+    }
+
+    if (cat === 'heal') {
+      const healAmt = extractHealAmount(skill);
+      const healTarget = defenders[targetIdx] || attacker; 
+      healTarget.currentHp = Math.min(getCardHP(healTarget), healTarget.currentHp + healAmt);
+      const fill = document.getElementById(`hpf-${execTeam}-${actorIdx}`);
+      if (fill) {
+        const pct = (healTarget.currentHp / getCardHP(healTarget)) * 100;
+        fill.style.width = pct + '%'; fill.style.background = pct > 50 ? '#69F0AE' : '#FFD600';
+      }
+      logMsg(`💚 ${shortName(aName)}: ${skill.Name} healed ${shortName(getCardName(healTarget))} for ${healAmt} HP!`, isP ? 'atk' : 'def', attacker, teamLabel);
+      return;
+    }
+
+    if (cat === 'stat-buff-self') {
+      const desc = (skill.Description_UI || '').toLowerCase();
+      const dmgMatch = desc.match(/boost.{0,30}basic attack by (\d+)/i);
+      if (dmgMatch) {
+        attacker._baseDmgBuff = (attacker._baseDmgBuff || 0) + parseInt(dmgMatch[1]);
+        const turnMatch = desc.match(/for (\d+) turns/i);
+        const turns = turnMatch ? parseInt(turnMatch[1]) : 3;
+        attacker._dmgBuffTurns = turns;
+        logMsg(`💪 ${shortName(aName)}: ${skill.Name} — +${dmgMatch[1]} basic attack for ${turns} turns!`, isP ? 'atk' : 'def', attacker, teamLabel);
+      }
+      return;
+    }
+
+    if (cat === 'shutdown') {
+      let defender = defenders[targetIdx];
+      if (!defender && defenders.length > 0) defender = defenders.find(c => !c.isDead);
+      if (defender) {
+        const dIdx = defenders.indexOf(defender);
+        const dKey = `${isP ? 'enemy' : 'player'}-${dIdx}`;
+        shutdownCards[dKey] = { turnsLeft: 2, noSkills: true, noTarget: false };
+        await playCombatAnimation(`${execTeam}-${actorIdx}`, `${isP?'enemy':'player'}-${dIdx}`, 100, defender, execTeam, dIdx);
+        logMsg(`🔒 ${shortName(aName)}: ${skill.Name} — ${shortName(getCardName(defender))} is SHUT DOWN for 2 turns!`, isP ? 'atk' : 'def', attacker, teamLabel);
+        if (defender.currentHp <= 0) handleKO(defender, isP, dIdx);
+      }
+      return;
+    }
+
+    if (cat === 'grant-extra-move') {
+      grantExtraMove(attacker, execTeam, skill);
+      logMsg(`🏀 ${shortName(aName)}: ${skill.Name} — extra move granted to a teammate!`, isP ? 'atk' : 'def', attacker, teamLabel);
+      return;
+    }
+
+    if (skill.Name === 'Screen Navigator') {
+      attacker._screenNavigator = true;
+      logMsg(`📺 ${shortName(aName)}: ${skill.Name} — next skill cannot be blocked or contested!`, isP ? 'atk' : 'def', attacker, teamLabel);
+      return;
+    }
+
+    if (cat === 'free-status') {
+      const exec = (skill.Logic_Engine?.Execution || '').toUpperCase();
+      if (exec.includes('STATUS_EFFECT') || exec.includes('FREEZE')) {
+        const target = findFreezeTarget(skill, defenders);
+        if (target !== null) {
+          frozenCards[`${isP ? 'enemy' : 'player'}-${target}`] = true;
+          logMsg(`❄️ ${shortName(aName)}: ${skill.Name} — ${shortName(getCardName(defenders[target]))} is FROZEN!`, isP ? 'atk' : 'def', attacker, teamLabel);
+        }
+      }
+      return;
+    }
   }
 
   let defender = defenders[targetIdx];
   if (!defender || defender.isDead) {
-    let vt = getValidTargets(attacker, defenders);
-    if (vt.length === 0) { logMsg(`${shortName(aName)} has no targets!`, "sys"); return; }
-    targetIdx = vt[0].i; defender = defenders[targetIdx];
+    const fallback = getValidTargets(attacker, defenders);
+    if (fallback.length === 0) { logMsg(`<b>${shortName(aName)}</b> has no targets left!`, 'sys'); return; }
+    defender = fallback[0].c;
+  }
+  const dIdx = defenders.indexOf(defender);
+
+  const moveName = skill ? skill.Name : 'Basic Attack';
+  let finalDmg   = 0;
+  let missed     = false;
+
+  if (skill) {
+    const hasGuarantee = screenGuarantee || attacker._screenNavigator;
+    if (hasGuarantee) {
+      screenGuarantee = false;
+      attacker._screenNavigator = false;
+      pendingBlocks = []; 
+      logMsg(`📺 Screen guarantee active — ${skill.Name} cannot be stopped!`, 'sys');
+    }
+
+    const { dmg, missed: m } = resolveSkillDmg(skill, attacker, execTeam);
+    finalDmg = dmg;
+    missed   = m;
+
+    const mods = Array.isArray(skill.Logic_Engine?.Modifiers) ? skill.Logic_Engine.Modifiers.join(' ') : String(skill.Logic_Engine?.Modifiers || '');
+    if (mods.includes('Unblockable') || mods.includes('Unmissable')) {
+      pendingBlocks = pendingBlocks.filter(b => {
+        return ['redirect', 'partial'].includes(b.blockType);
+      });
+    }
+
+    if (cat === 'assist-dmg' || finalDmg > 0) {
+      logMsg(`<b>${shortName(aName)}</b> uses <b>${moveName}</b> (${finalDmg} DMG) on ${shortName(getCardName(defender))}!`, isP ? 'atk' : 'def', attacker, teamLabel);
+    }
+  } else {
+    const buffedDmg = getCardDMG(attacker) + (attacker._baseDmgBuff || 0);
+    finalDmg = buffedDmg;
+    logMsg(`<b>${shortName(aName)}</b> basic attacks ${shortName(getCardName(defender))} for ${finalDmg}!`, isP ? 'atk' : 'def', attacker, teamLabel);
   }
 
-  let dName    = getCardName(defender);
-  let skill    = actionType === 'skill' ? attacker.Skills[skillIdx] : null;
-  let moveName = skill ? skill.Name : 'Basic Attack';
-  let dmgStr   = skill ? (skill.Display_DMG || '0') : getCardDMG(attacker).toString();
-
-  logMsg(`${whoLabel} <span class="lc-${roleStr}">${shortName(aName)} • ${roleStr}</span>: <b>${moveName}</b> → ${shortName(dName)}`, isP?'atk':'def');
-
-  // Check Stock Taking — blocks a specific card's move (defensive hard disable)
-  // It was already handled via reactive phase, if selected, the enemy action for that card would be cancelled
-  // For Garnett's Minnesota Switcher — redirect was already set up in pendingBlocks
-
-  let finalDmg = 0;
-  let isAssist = skill && (skill.Nature || '').toLowerCase().includes('assist');
-
-  if (isAssist) {
-    // Calculate assist dmg from teammate
-    let teamArr = isP ? playerActive : enemyActive;
-    let calcDmg = calcAssistDmg(skill, teamArr.filter(c => !c.isDead && getCardName(c) !== aName));
-    if (calcDmg) { finalDmg = calcDmg; }
-    else { logMsg(`✨ Assist — no matching teammate found for DMG calc.`, 'sys'); return; }
-  } else if (!isNaN(parseInt(dmgStr)) && !dmgStr.includes("N/A")) {
-    finalDmg = parseInt(dmgStr);
-  } else {
-    logMsg(`✨ Status effect applied!`, 'sys');
-    let atkEl = $(`wrap-${isP?'player':'enemy'}-${actorIdx}`);
-    if (atkEl) { atkEl.classList.add('anim-waft-up'); await delay(600); atkEl.classList.remove('anim-waft-up'); }
+  if (missed) {
+    logMsg(`💨 ${shortName(aName)}: ${moveName} MISSED!`, 'sys');
+    triggerAfterBlock(isP ? 'player' : 'enemy', actorIdx, `${isP?'enemy':'player'}-${dIdx}`);
     return;
   }
 
-  await playCombatAnimation(`${isP?'player':'enemy'}-${actorIdx}`, `${isP?'enemy':'player'}-${targetIdx}`, finalDmg, defender, execTeam);
+  if (finalDmg === 0 && cat !== 'standard') {
+    logMsg(`✨ ${shortName(aName)}: ${moveName} — status effect activated!`, 'sys');
+    const atkEl = document.getElementById(`wrap-${execTeam}-${actorIdx}`);
+    if (atkEl) { atkEl.classList.add('anim-waft-up'); await new Promise(r => setTimeout(r, 600)); atkEl.classList.remove('anim-waft-up'); }
+    return;
+  }
 
-  if (defender.currentHp <= 0) {
-    defender.isDead = true;
-    if (isP) playerScore++; else enemyScore++;
-    $('score-player').textContent = playerScore; $('score-enemy').textContent = enemyScore;
-    let cardEl = $(`card-${isP?'enemy':'player'}-${targetIdx}`);
-    if (cardEl) cardEl.classList.add('dead-card');
-    logMsg(`💀 <span class="lc-${defender.battleRole}">${shortName(dName)}</span> KO'd!`, isP?'atk':'def');
-    if (playerScore >= 8) logMsg("🏆 YOU WIN!", "atk");
-    if (enemyScore  >= 8) logMsg("❌ YOU LOSE.", "def");
+  await playCombatAnimation(
+    `${execTeam}-${actorIdx}`,
+    `${isP?'enemy':'player'}-${dIdx}`,
+    finalDmg, defender, execTeam, dIdx
+  );
+
+  if (defender.currentHp <= 0) handleKO(defender, isP, dIdx);
+
+  if (pendingWiltCounter) {
+    const w = pendingWiltCounter;
+    pendingWiltCounter = null;
+    const wCard = playerActive[w.actorIdx];
+    if (wCard && !wCard.isDead) {
+      const wTarget = enemyActive.find(c => !c.isDead);
+      if (wTarget) {
+        const wtIdx = enemyActive.indexOf(wTarget);
+        logMsg(`💥 ${shortName(getCardName(wCard))}: Swat Swat Revolution COUNTER — 1500 DMG!`, 'atk');
+        await playCombatAnimation(`player-${w.actorIdx}`, `enemy-${wtIdx}`, 1500, wTarget, 'player', wtIdx);
+        if (wTarget.currentHp <= 0) handleKO(wTarget, true, wtIdx);
+      }
+    }
+  }
+
+  if (pendingExtraMoves && pendingExtraMoves.length > 0) {
+    const extras = [...pendingExtraMoves];
+    pendingExtraMoves = [];
+    for (const { card, teamStr } of extras) {
+      const team2 = teamStr === 'player' ? playerActive : enemyActive;
+      const opps  = teamStr === 'player' ? enemyActive  : playerActive;
+      const idx2  = team2.indexOf(card);
+      if (idx2 < 0 || card.isDead) continue;
+      const validT = getValidTargets(card, opps);
+      if (validT.length === 0) continue;
+      const tgt2 = validT[0];
+      const baseDmg = getCardDMG(card);
+      logMsg(`⚡ Extra move: ${shortName(getCardName(card))} basic attack for ${baseDmg}!`, 'sys');
+      await playCombatAnimation(`${teamStr}-${idx2}`, `${teamStr === 'player' ? 'enemy' : 'player'}-${tgt2.i}`, baseDmg, tgt2.c, teamStr, tgt2.i);
+      if (tgt2.c.currentHp <= 0) handleKO(tgt2.c, teamStr === 'player', tgt2.i);
+    }
+  }
+
+  if (pendingPutbacks && pendingPutbacks.length > 0) {
+    const pbs = [...pendingPutbacks];
+    pendingPutbacks = [];
+    for (const pb of pbs) {
+      const pCard2 = playerActive[pb.actorIdx];
+      if (!pCard2 || pCard2.isDead) continue;
+      const tgt3 = enemyActive.find(c => !c.isDead);
+      if (!tgt3) continue;
+      const t3idx = enemyActive.indexOf(tgt3);
+      const pbDmg = parseInt(pb.sk.Display_DMG || 800);
+      logMsg(`💥 ${shortName(getCardName(pCard2))}: ${pb.sk.Name} — PUTBACK for ${pbDmg} DMG!`, 'atk');
+      await playCombatAnimation(`player-${pb.actorIdx}`, `enemy-${t3idx}`, pbDmg, tgt3, 'player', t3idx);
+      if (tgt3.currentHp <= 0) handleKO(tgt3, true, t3idx);
+    }
   }
 }
 
-function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+// ─── PLAYCOMBATANIMATION — UPDATED SIGNATURE ─────────────────
+async function playCombatAnimation(atkId, defId, dmg, targetObj, execTeam, defIdx) {
+  const atkEl = document.getElementById(`wrap-${atkId}`);
+  const defEl = document.getElementById(`wrap-${defId}`);
 
-// ==================== COMBAT ANIMATION ====================
-async function playCombatAnimation(atkId, defId, dmg, targetObj, execTeam) {
-  let atkEl = $(`wrap-${atkId}`);
-  let defEl = $(`wrap-${defId}`);
   if (atkEl) atkEl.classList.add('anim-waft-up');
-  await delay(450);
-  let effectiveDmg = (execTeam === 'enemy') ? applyPendingBlocks(dmg, 'player') : dmg;
-  if (defEl) {
+  await new Promise(r => setTimeout(r, 500));
+
+  let effectiveDmg = (execTeam === 'enemy') ? applyPendingBlocks(dmg, 'player', defIdx) : dmg;
+
+  const defTeam = execTeam === 'enemy' ? 'player' : 'enemy';
+  if (invulnerable[`${defTeam}-${defIdx}`]) {
+    effectiveDmg = 0;
+    delete invulnerable[`${defTeam}-${defIdx}`];
+    logMsg(`🌟 ${shortName(getCardName(targetObj))} is INVULNERABLE — attack blocked!`, 'atk');
+  }
+
+  if (defEl && effectiveDmg > 0) {
     defEl.classList.add('anim-shake');
-    let pop = document.createElement('div');
-    pop.className = 'dmg-popup'; pop.innerHTML = `💥 -${effectiveDmg}`;
+    const pop = document.createElement('div');
+    pop.className = 'dmg-popup';
+    pop.innerHTML = `💥 -${effectiveDmg}`;
     defEl.appendChild(pop);
   }
-  let hpMax = getCardHP(targetObj);
-  targetObj.currentHp = Math.max(0, targetObj.currentHp - effectiveDmg);
-  let pct  = Math.max(0, (targetObj.currentHp / hpMax) * 100);
-  let fill = $(`hpf-${defId}`);
-  if (fill) { fill.style.width = pct + '%'; fill.style.background = pct > 50 ? '#69F0AE' : pct > 20 ? '#FFD600' : '#FF5252'; }
-  let hpt = $(`hpt-${defId}`);
-  if (hpt) hpt.textContent = `${targetObj.currentHp}/${hpMax}`;
-  await delay(750);
+
+  if (effectiveDmg > 0) {
+    const hpMax = getCardHP(targetObj);
+    targetObj.currentHp = Math.max(0, targetObj.currentHp - effectiveDmg);
+    const pct  = Math.max(0, (targetObj.currentHp / hpMax) * 100);
+    const fill = document.getElementById(`hpf-${defId}`);
+    if (fill) { fill.style.width = pct + '%'; fill.style.background = pct > 50 ? '#69F0AE' : pct > 20 ? '#FFD600' : '#FF5252'; }
+    const hpt = document.getElementById(`hpt-${defId}`);
+    if (hpt) hpt.textContent = `${targetObj.currentHp}/${getCardHP(targetObj)}`;
+  }
+
+  await new Promise(r => setTimeout(r, 800));
   if (atkEl) atkEl.classList.remove('anim-waft-up');
-  if (defEl) { defEl.classList.remove('anim-shake'); let pop = defEl.querySelector('.dmg-popup'); if (pop) pop.remove(); }
+  if (defEl) {
+    defEl.classList.remove('anim-shake');
+    const pop = defEl.querySelector('.dmg-popup');
+    if (pop) pop.remove();
+  }
 }
 
 // ==================== DEAD REPLACEMENTS ====================
@@ -1711,18 +2054,133 @@ async function handleDeadReplacements(teamStr, activeArr, benchArr) {
   for (let i = 0; i < activeArr.length; i++) {
     if (activeArr[i] && activeArr[i].isDead) {
       let deadRole = activeArr[i].battleRole || getCardPos(activeArr[i]).split('/')[0].trim();
-      let validBench = benchArr.map((c,idx) => ({c,idx})).filter(b => {
+      let validBench = benchArr.map((c, idx) => ({c, idx})).filter(b => {
         let bRole = b.c.battleRole || getCardPos(b.c).split('/')[0].trim();
         return bRole === deadRole;
       });
       if (validBench.length > 0) {
         let rep = validBench[0];
-        logMsg(`🔄 <span class="lc-${rep.c.battleRole||deadRole}">${shortName(getCardName(rep.c))}</span> stepped in!`, 'sys');
-        let temp = activeArr[i]; activeArr[i] = benchArr[rep.idx]; benchArr[rep.idx] = temp;
-        renderArena(); await delay(500);
+        logMsg(`🔄 <b>${shortName(getCardName(rep.c))}</b> stepped in for ${shortName(getCardName(activeArr[i]))}!`, 'sys');
+        let temp = activeArr[i];
+        activeArr[i]      = benchArr[rep.idx];
+        benchArr[rep.idx] = temp;
+        renderArena();
+        await new Promise(r => setTimeout(r, 600));
       }
     }
   }
+}
+
+// ─── ENGINE HELPERS ────────────────────────────────────────────────
+
+function findFreezeTarget(skill, defenders) {
+  const scope = (skill.S_Scope || skill.Logic_Engine?.Target_Scope || '').toUpperCase();
+  const desc  = (skill.Description_UI || '').toLowerCase();
+  if (scope.includes('ADJACENT') || desc.includes('adjacent')) {
+    const adj = defenders.filter(c => c && !c.isDead);
+    return adj.length > 0 ? defenders.indexOf(adj[0]) : null;
+  }
+  const first = defenders.find(c => c && !c.isDead);
+  return first ? defenders.indexOf(first) : null;
+}
+
+function getAdjacentEnemies(card, opponents) {
+  const role = card.battleRole || 'PG';
+  const adj  = { PG:['PG','SG'], SG:['PG','SF'], SF:['SG','PF'], PF:['SF','C'], C:['PF'] };
+  return opponents.filter(c => c && !c.isDead && (adj[role] || []).includes(c.battleRole));
+}
+
+function extractHealAmount(skill) {
+  const desc = skill.Description_UI || '';
+  const m = desc.match(/heal (\d+) HP/i) || desc.match(/restore (\d+) HP/i) || desc.match(/(\d+) HP/i);
+  return m ? parseInt(m[1]) : 300;
+}
+
+async function handleStealCancel(skill, attacker, actorIdx, execTeam, isP, teamLabel) {
+  const aName     = getCardName(attacker);
+  const defenders = isP ? enemyActive : playerActive;
+  let target = null;
+  if (!isP) {
+    target = playerActive.find(c => !c.isDead);
+    if (!target) return;
+    const tidx = playerActive.indexOf(target);
+    frozenCards[`player-${tidx}`] = true;
+    logMsg(`🖐 ${shortName(aName)}: ${skill.Name} — steals from ${shortName(getCardName(target))}, denying their move!`, 'def', attacker, teamLabel);
+  } else {
+    target = enemyActive.find(c => !c.isDead);
+    if (!target) return;
+    const tidx = enemyActive.indexOf(target);
+    frozenCards[`enemy-${tidx}`] = true;
+    logMsg(`🖐 ${shortName(aName)}: ${skill.Name} — steals from ${shortName(getCardName(target))}, denying their move!`, 'atk', attacker, teamLabel);
+  }
+  const mods = Array.isArray(skill.Logic_Engine?.Modifiers) ? skill.Logic_Engine.Modifiers.join(' ') : String(skill.Logic_Engine?.Modifiers || '');
+  if (mods.includes('Nullify_Defensive_Skill')) {
+    if (pendingBlocks.length > 0) { pendingBlocks.pop(); logMsg(`Also nullified an active defensive skill!`, 'atk'); }
+    if (target) {
+      const tidx = (isP ? enemyActive : playerActive).indexOf(target);
+      await playCombatAnimation(`${execTeam}-${actorIdx}`, `${isP?'enemy':'player'}-${tidx}`, 250, target, execTeam, tidx);
+      if (target.currentHp <= 0) handleKO(target, isP, tidx);
+    }
+  }
+}
+
+function handleStealSkillUI(skill, attacker, actorIdx, execTeam, isP, teamLabel) {
+  const opponents = isP ? enemyActive : playerActive;
+  const targetCard = opponents.find(c => c && !c.isDead && c.Skills && c.Skills.length > 0);
+  if (!targetCard) { logMsg(`No valid skill to steal!`, 'sys'); return; }
+  const stolenSk = targetCard.Skills[0];
+  if (!attacker.Skills) attacker.Skills = [];
+  const copy = { ...stolenSk, _stolenFrom: getCardName(targetCard), _stolenForCard: actorIdx };
+  attacker.Skills.push(copy);
+  stolenSkills[`${execTeam}-${actorIdx}`] = { sk: copy, originalOwner: targetCard };
+  logMsg(`🎭 ${shortName(getCardName(attacker))}: ${skill.Name} — STOLE "${stolenSk.Name}" from ${shortName(getCardName(targetCard))}!`, isP ? 'atk' : 'def', attacker, teamLabel);
+}
+
+function cleanStolenSkills() {
+  for (const key in stolenSkills) {
+    const { originalOwner } = stolenSkills[key];
+    if (originalOwner && originalOwner.isDead) {
+      const [team, idxStr] = key.split('-');
+      const idx = parseInt(idxStr);
+      const card = team === 'player' ? playerActive[idx] : enemyActive[idx];
+      if (card) {
+        card.Skills = (card.Skills || []).filter(s => !s._stolenFrom || s._stolenFrom !== getCardName(originalOwner));
+        logMsg(`💨 Stolen skill from ${shortName(getCardName(originalOwner))} has expired.`, 'sys');
+      }
+      delete stolenSkills[key];
+    }
+  }
+}
+
+function handleKO(card, isPlayerScoring, defIdx) {
+  card.isDead = true;
+  if (isPlayerScoring) playerScore++; else enemyScore++;
+  document.getElementById('score-player').textContent = playerScore;
+  document.getElementById('score-enemy').textContent  = enemyScore;
+  const prefix = isPlayerScoring ? 'enemy' : 'player';
+  const cardEl = document.getElementById(`card-${prefix}-${defIdx}`);
+  if (cardEl) cardEl.classList.add('dead-card');
+  logMsg(`💀 <b>${shortName(getCardName(card))}</b> WAS KNOCKED OUT!`, isPlayerScoring ? 'atk' : 'def');
+  if (playerScore >= 8) logMsg('🏆 YOU WON THE MATCH!', 'atk');
+  if (enemyScore  >= 8) logMsg('❌ YOU LOST THE MATCH.', 'def');
+}
+
+function initSkillUses(team) {
+  for (const card of team) {
+    if (!card) continue;
+    for (const sk of (card.Skills || [])) {
+      sk._usesLeft = sk.Logic_Engine?.Max_Uses || sk.S_MaxUses || 1;
+    }
+  }
+}
+
+function getSkillDisplayDmg(sk, actorCard, execTeam) {
+  const cat = getSkillCategory(sk);
+  if (cat === 'assist-dmg') {
+    const previewDmg = executeAssistDmg(sk.Logic_Engine?.DMG_Formula || sk.S_Formula || '', execTeam);
+    return previewDmg > 0 ? `~${previewDmg}` : sk.Display_DMG;
+  }
+  return sk.Display_DMG;
 }
 
 // ==================== NEW LOGIC-READY CARDS DB ====================
@@ -8231,5 +8689,3 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
-
-
