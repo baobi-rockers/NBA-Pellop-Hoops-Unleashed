@@ -5,359 +5,104 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <title>NBA Card Battle · TCG Pocket Edition</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
   <script>
-
-    /* 1. FIXED ACTION BUTTONS (Left & Right Panels) */
-.action-panel-left, .action-panel-right {
-    position: fixed;
-    top: 50%;
-    transform: translateY(-50%);
-    background: transparent;
-    display: none; /* Controlled by JS: set to 'flex' on click */
-    flex-direction: column;
-    gap: 20px;
-    z-index: 1000;
-}
-.action-panel-left { left: 30px; }
-.action-panel-right { right: 30px; }
-
-.action-btn {
-    padding: 12px 24px;
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    color: white;
-    backdrop-filter: blur(5px);
-    border-radius: 5px;
-    cursor: pointer;
-    transition: 0.3s;
-}
-.action-btn:hover { background: rgba(255, 255, 255, 0.3); }
-
-/* 2. COMPACT HORIZONTAL HOVER BUBBLE */
-.card-hover-bubble {
-    position: fixed;
-    display: none;
-    flex-direction: row; /* Horizontal layout */
-    align-items: center;
-    background: rgba(0, 0, 0, 0.85);
-    border: 1px solid rgba(255, 255, 255, 0.5); /* Thin white border */
-    border-radius: 8px;
-    padding: 10px 15px;
-    width: 480px; 
-    max-height: 180px;
-    pointer-events: none;
-    z-index: 9999;
-    font-size: 0.8rem;
-    color: white;
-}
-
-/* 3. CARD FANNING & 3D BENCH STACK */
-.active-cards-container {
-    display: flex;
-    justify-content: center;
-    gap: -20px; /* Slight overlap for fanning */
-}
-.active-cards-container .card {
-    transition: transform 0.4s ease;
-    width: 180px; /* Bigger cards */
-}
-/* Rotate side cards slightly for fan effect */
-.active-cards-container .card:nth-child(1) { transform: rotate(-5deg) translateY(10px); }
-.active-cards-container .card:nth-child(3) { transform: rotate(5deg) translateY(10px); }
-
-/* 3D Stacked Bench */
-.bench-stack {
-    position: fixed;
-    bottom: 40px;
-    left: 40px;
-    cursor: pointer;
-}
-.bench-stack .card {
-    position: absolute;
-    width: 140px; /* Smaller than active cards */
-    transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-/* Layered offset to look like a 3D deck */
-.bench-stack .card:nth-child(1) { transform: translate(0, 0); z-index: 3; }
-.bench-stack .card:nth-child(2) { transform: translate(6px, -6px); z-index: 2; }
-.bench-stack .card:nth-child(3) { transform: translate(12px, -12px); z-index: 1; }
-
-/* Expanded Bench View */
-.bench-expanded {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0.9);
-    display: flex;
-    gap: 15px;
-    padding: 30px;
-    background: rgba(255, 248, 220, 0.1); /* Pale gold subtle glow */
-    box-shadow: 0 0 40px rgba(218, 165, 32, 0.3);
-    z-index: 2000;
-}
-
-/* 4. MESSENGER-STYLE BATTLE LOG */
-.battle-log {
-    position: fixed;
-    bottom: 10px;
-    right: 20px;
-    width: 300px;
-    max-height: 250px;
-    overflow-y: auto;
-    font-size: 0.75rem;
-    color: #eee;
-    background: transparent;
-    z-index: 1000;
-}
-.log-entry {
-    margin-bottom: 4px;
-    padding: 4px 8px;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.05); /* No heavy shading */
-}
-.log-tag-you { color: #0084ff; font-weight: bold; } /* Messenger Blue */
-.log-tag-bot { color: #fa3e3e; font-weight: bold; }
-
-/* 5. BASKETBALL SCOREBOARD */
-.scoreboard {
-    position: fixed;
-    top: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #111;
-    border: 3px solid #333;
-    display: flex;
-    align-items: center;
-    padding: 10px 30px;
-    gap: 40px;
-    border-radius: 4px;
-}
-.score-value {
-    font-family: 'Courier New', monospace; /* Digital look */
-    font-size: 2.2rem;
-    color: #ff3300;
-}
-.hoop-divider { font-size: 2rem; }
-
-/* 6. 3D LIQUID HP BAR */
-.hp-container {
-    width: 90%;
-    margin: 5px auto;
-    text-align: center;
-}
-.hp-text {
-    font-size: 0.7rem;
-    margin-bottom: 2px;
-}
-.hp-bar-bg {
-    width: 100%;
-    height: 10px;
-    background: #222;
-    border-radius: 10px;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); /* Tube look */
-}
-.hp-bar-fill {
-    height: 100%;
-    /* Liquid-look gradient */
-    background: linear-gradient(90deg, #ff0844 0%, #ffb199 100%);
-    box-shadow: inset 0 -2px 4px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.4);
-    transition: width 0.5s ease-in-out;
-}
-
-    /* This ensures the panels only catch clicks on the ACTUAL buttons, not the empty space between them */
-.action-panel-left, .action-panel-right {
-    pointer-events: none; 
-}
-
-.action-btn {
-    pointer-events: auto; /* Re-enable clicks for the buttons themselves */
-}
-
-/* Ensure the Battle Log and Scoreboard don't block the screen */
-.battle-log, .scoreboard {
-    pointer-events: none;
-}
-
-    .floating-scoreboard {
-    position: fixed;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #000;
-    border: 3px solid #444;
-    padding: 10px 40px;
-    border-radius: 4px;
-    text-align: center;
-    box-shadow: 0 0 15px rgba(0,0,0,0.5);
-    z-index: 500; /* High enough to see, low enough not to block tooltips */
-}
-
-.score-board {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 30px;
-    font-family: 'Courier New', monospace;
-    font-size: 2.5rem;
-    font-weight: bold;
-}
-
-    .hp-container {
-    width: 90%;
-    margin: 5px auto;
-}
-
-.hp-text {
-    font-size: 0.7rem;
-    font-weight: bold;
-    color: #fff;
-    text-shadow: 1px 1px 2px #000;
-    margin-bottom: 2px;
-}
-
-.hp-bar-bg {
-    width: 100%;
-    height: 10px;
-    background: #222;
-    border-radius: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    overflow: hidden;
-    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
-}
-
-.hp-bar-fill {
-    height: 100%;
-    /* 3D Liquid Gradient */
-    background: linear-gradient(180deg, #ff4b2b 0%, #ff416c 50%, #ff4b2b 100%);
-    /* Inner highlights to look like glass reflection */
-    box-shadow: inset 0 2px 3px rgba(255,255,255,0.4), inset 0 -2px 3px rgba(0,0,0,0.3);
-    transition: width 0.4s cubic-bezier(0.47, 0, 0.745, 0.715);
-}
-
-    /* PREVENT INVISIBLE WALLS */
-.arena-container, .floating-scoreboard, .sb-log-floating {
-    pointer-events: none; /* Mouse clicks go THROUGH these empty areas */
-}
-
-/* BUT ALLOW BUTTONS TO BE CLICKED */
-.floating-scoreboard *, .sb-log-floating *, .action-btn {
-    pointer-events: auto; 
-}
-
-/* DND COMPATIBILITY: NO ROTATION/OFFSET DURING SETUP */
-.card {
-    position: relative;
-    pointer-events: auto;
-    transition: transform 0.2s ease;
-    z-index: 10;
-}
-
-/* ONLY FAN OUT DURING BATTLE */
-body.battle-active .active-cards-container .card:nth-child(1) { transform: rotate(-5deg) translateY(10px); }
-body.battle-active .active-cards-container .card:nth-child(3) { transform: rotate(5deg) translateY(10px); }
-
-/* Ensure the dragging card is always on top and has no rotation */
-.sortable-ghost, .ui-draggable-dragging, .dragging {
-    transform: rotate(0deg) scale(1.1) !important;
-    opacity: 0.8;
-    z-index: 9999 !important;
-}
     // --- 1. BODY CLICK FIX ---
-function handleBodyClick(e) {
-  let row = document.querySelector('.expanded-row');
-  if (row && !e.target.closest('.expanded-row') && !e.target.closest('.compact-card') && !e.target.closest('.sticky-container') && !e.target.closest('.app-header')) {
-    if (typeof closeExpandedWithAnim === 'function') {
-      closeExpandedWithAnim(typeof expandedCardCat !== 'undefined' && expandedCardCat ? 'cat' : 'draft');
+    function handleBodyClick(e) {
+      let row = document.querySelector('.expanded-row');
+      if (row && !e.target.closest('.expanded-row') && !e.target.closest('.compact-card') && !e.target.closest('.sticky-container') && !e.target.closest('.app-header')) {
+        if (typeof closeExpandedWithAnim === 'function') {
+          closeExpandedWithAnim(typeof expandedCardCat !== 'undefined' && expandedCardCat ? 'cat' : 'draft');
+        }
+      }
     }
-  }
-}
+
     // --- 2. TOOLTIP FIXES ---
-let tooltipTimer;
-function showTooltip(e, name) {
-  clearTimeout(tooltipTimer);
-  const tooltip = document.getElementById('tooltip');
-  if (!tooltip) return;
-  
-  // Safely look for the card
-  const card = (typeof CARDS !== 'undefined') ? CARDS.find(c => getCardName(c) === name) : null;
-  if (!card) return;
+    let tooltipTimer;
+    function showTooltip(e, name) {
+      clearTimeout(tooltipTimer);
+      const tooltip = document.getElementById('tooltip');
+      if (!tooltip) return;
+      
+      const card = (typeof CARDS !== 'undefined') ? CARDS.find(c => getCardName(c) === name) : null;
+      if (!card) return;
 
-  let skillsHtml = (card.Skills || []).map(s => {
-    return `<b>${s.Name} (⚔️ ${s.Display_DMG})</b><br>${s.Description_UI}`;
-  }).join('<br><br>');
+      let skillsHtml = (card.Skills || []).map(s => {
+        return `<b>${s.Name} (⚔️ ${s.Display_DMG})</b><br>${s.Description_UI}`;
+      }).join('<br><br>');
 
-  const abName = card.Ability?.Name || "No Ability";
-  const abDesc = card.Ability?.Description_UI || "";
+      const abName = card.Ability?.Name || "No Ability";
+      const abDesc = card.Ability?.Description_UI || "";
 
-  tooltip.innerHTML = `
-    <div style="color:#FFD600; font-weight:bold; margin-bottom:4px; font-size:0.95rem;">${typeof shortName === 'function' ? shortName(name) : name}</div>
-    <b>✨ ${abName}</b>${abDesc}<br><br>
-    ${skillsHtml}
-  `;
-  
-  tooltip.classList.add('visible');
-  positionTooltip(e);
-}
+      tooltip.innerHTML = `
+        <div style="color:#FFD600; font-weight:bold; margin-bottom:4px; font-size:0.95rem;">${typeof shortName === 'function' ? shortName(name) : name}</div>
+        <b>✨ ${abName}</b>${abDesc}<br><br>
+        ${skillsHtml}
+      `;
+      
+      tooltip.classList.add('visible');
+      positionTooltip(e);
+    }
 
-function hideTooltip() { 
-  clearTimeout(tooltipTimer); 
-  const tooltip = document.getElementById('tooltip');
-  if(tooltip) tooltip.classList.remove('visible'); 
-}
+    function hideTooltip() { 
+      clearTimeout(tooltipTimer); 
+      const tooltip = document.getElementById('tooltip');
+      if(tooltip) tooltip.classList.remove('visible'); 
+    }
 
-function positionTooltip(e) {
-  const tooltip = document.getElementById('tooltip');
-  if(!tooltip || !tooltip.classList.contains('visible')) return;
-  let x = e.touches ? e.touches[0].clientX : e.clientX;
-  let y = e.touches ? e.touches[0].clientY : e.clientY;
-  let tw = tooltip.offsetWidth, th = tooltip.offsetHeight, pad = 10, px = x+15, py = y+15;
-  if(px + tw > window.innerWidth - pad) px = x - tw - 15;
-  if(py + th > window.innerHeight - pad) py = y - th - 15;
-  tooltip.style.left = `${Math.max(pad, px)}px`; tooltip.style.top = `${Math.max(pad, py)}px`;
-  
-}
+    function positionTooltip(e) {
+      const tooltip = document.getElementById('tooltip');
+      if(!tooltip || !tooltip.classList.contains('visible')) return;
+      let x = e.touches ? e.touches[0].clientX : e.clientX;
+      let y = e.touches ? e.touches[0].clientY : e.clientY;
+      let tw = tooltip.offsetWidth, th = tooltip.offsetHeight, pad = 10, px = x+15, py = y+15;
+      if(px + tw > window.innerWidth - pad) px = x - tw - 15;
+      if(py + th > window.innerHeight - pad) py = y - th - 15;
+      tooltip.style.left = `${Math.max(pad, px)}px`; tooltip.style.top = `${Math.max(pad, py)}px`;
+    }
 
     // --- 3. DRAG AND DROP FIXES ---
-function handleDragStart(e, name) {
-  if (typeof hideTooltip === 'function') hideTooltip();
-  e.dataTransfer.setData('text/plain', name);
-  e.dataTransfer.effectAllowed = 'move';
-  let ghost = document.getElementById('drag-ghost');
-  if (ghost) {
-    ghost.textContent = typeof getDBShortName === 'function' ? getDBShortName(name) : name; 
-    e.dataTransfer.setDragImage(ghost, 0, 0);
-  }
-  setTimeout(() => { if (e.target && e.target.classList) e.target.classList.add('dragging'); }, 0);
-}
+    function handleDragStart(e, name) {
+      if (typeof hideTooltip === 'function') hideTooltip();
+      e.dataTransfer.setData('text/plain', name);
+      e.dataTransfer.effectAllowed = 'move';
+      let ghost = document.getElementById('drag-ghost');
+      if (ghost) {
+        ghost.textContent = typeof getDBShortName === 'function' ? getDBShortName(name) : name; 
+        e.dataTransfer.setDragImage(ghost, 0, 0);
+      }
+      setTimeout(() => { if (e.target && e.target.classList) e.target.classList.add('dragging'); }, 0);
+    }
 
-function handleDragEnd(e) { 
-  if (e.target && e.target.classList) e.target.classList.remove('dragging'); 
-}
+    function handleDragEnd(e) { 
+      if (e.target && e.target.classList) e.target.classList.remove('dragging'); 
+    }
 
-function handleDragOver(e) { 
-  e.preventDefault(); 
-  if (e.currentTarget && e.currentTarget.classList) e.currentTarget.classList.add('drag-over'); 
-}
+    function handleDragOver(e) { 
+      e.preventDefault(); 
+      if (e.currentTarget && e.currentTarget.classList) e.currentTarget.classList.add('drag-over'); 
+    }
 
-function handleDragLeave(e) { 
-  if (e.currentTarget && e.currentTarget.classList) e.currentTarget.classList.remove('drag-over'); 
-}
+    function handleDragLeave(e) { 
+      if (e.currentTarget && e.currentTarget.classList) e.currentTarget.classList.remove('drag-over'); 
+    }
+
     function triggerInvalidDrop(slotEl) {
-  if (!slotEl) return;
-  slotEl.classList.add('shake-invalid');
-  let overlay = document.createElement('div'); 
-  overlay.className = 'invalid-overlay'; 
-  overlay.innerHTML = '🚫 INVALID ROLE';
-  slotEl.appendChild(overlay);
-  setTimeout(() => { slotEl.classList.remove('shake-invalid'); overlay.remove(); }, 1000);
-}
+      if (!slotEl) return;
+      slotEl.classList.add('shake-invalid');
+      let overlay = document.createElement('div'); 
+      overlay.className = 'invalid-overlay'; 
+      overlay.innerHTML = '🚫 INVALID ROLE';
+      slotEl.appendChild(overlay);
+      setTimeout(() => { slotEl.classList.remove('shake-invalid'); overlay.remove(); }, 1000);
+    }
+
     window.onerror = function(msg, url, lineNo) {
       document.body.innerHTML += `<div style="position:fixed;top:0;left:0;right:0;background:#FF5252;color:white;padding:20px;z-index:99999;font-weight:bold;">CRITICAL ERROR: ${msg}<br>Line: ${lineNo}</div>`;
       return false;
     };
   </script>
+
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -483,7 +228,6 @@ function handleDragLeave(e) {
 
     .hp-bar-container { width: 100%; height: 12px; background: #000; border-radius: 6px; border: 1px solid var(--border-heavy); overflow: hidden; }
     .hp-fill { height: 100%; background: #69F0AE; width: 100%; transition: width 0.3s, background 0.3s; }
-    .hp-text { font-size: 0.85rem; font-weight: 900; text-align: center; width: 100%; margin-top: 2px; text-shadow: 0 1px 3px black; }
     
     .bench-area { display: flex; gap: 16px; justify-content: center; padding: 16px; background: rgba(0,0,0,0.5); border-radius: 16px; min-height: 120px; flex-wrap: wrap; }
     .bench-card { width: 75px; height: 105px; border-radius: 8px; border: 2px solid var(--border-heavy); overflow: hidden; background: #0f1320; position: relative; cursor: pointer; transition: 0.2s; }
@@ -497,21 +241,203 @@ function handleDragLeave(e) {
     .dmg-popup { position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); font-family: 'Plus Jakarta Sans', sans-serif; font-weight: 900; font-size: 3.5rem; color: #FFD600; text-shadow: 0 5px 0 #FF5252, 0 0 30px rgba(255,82,82,1); z-index: 70; pointer-events: none; animation: popUp 1.2s forwards; opacity: 0; white-space: nowrap; }
     @keyframes popUp { 0%{opacity:0; transform:translate(-50%, 20px) scale(0.5);} 15%{opacity:1; transform:translate(-50%, -20px) scale(1.3);} 80%{opacity:1; transform:translate(-50%, -40px) scale(1);} 100%{opacity:0; transform:translate(-50%, -70px) scale(0.8);} }
 
-    /* Floating UI Elements */
-    .floating-scoreboard { position: fixed; top: 80px; right: 30px; background: rgba(22, 28, 45, 0.95); border: 2px solid var(--border-heavy); padding: 16px 30px; border-radius: 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; font-family: 'Plus Jakarta Sans', sans-serif; z-index: 50; box-shadow: 0 10px 40px rgba(0,0,0,0.9); backdrop-filter: blur(8px); }
-    .score-board { display: flex; gap: 24px; font-size: 3.2rem; font-weight: 900; }
-    
-    .sb-log-floating { position: fixed; top: 220px; right: 30px; width: 350px; max-height: 350px; background: rgba(8, 11, 18, 0.9); border: 2px solid var(--border-heavy); border-radius: 12px; padding: 16px; overflow-y: auto; font-size: 0.85rem; z-index: 40; display: flex; flex-direction: column; gap: 10px; backdrop-filter: blur(8px); }
-    .log-entry { background: rgba(255,255,255,0.05); padding: 12px 16px; border-radius: 8px; border-left: 4px solid var(--border-heavy); line-height: 1.5; }
-    .log-entry.atk { border-left-color: #69F0AE; }
-    .log-entry.def { border-left-color: #FF5252; }
-    .log-entry.sys { border-left-color: #40C4FF; font-style: italic; }
-
     .action-menu { position: fixed; display: none; background: rgba(22, 28, 45, 0.98); border: 2px solid var(--border-heavy); padding: 12px; border-radius: 12px; z-index: 200; flex-direction: column; gap: 10px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); backdrop-filter: blur(12px); min-width: 220px; }
     .action-menu button { text-align: left; padding: 12px 16px; font-size: 0.9rem; }
     
     .checkout-panel { position: fixed; bottom: 40px; right: 40px; background: rgba(8,11,18,0.98); border: 2px solid #69F0AE; border-radius: 16px; padding: 24px; width: 350px; z-index: 100; box-shadow: 0 15px 50px rgba(105, 240, 174, 0.25); backdrop-filter: blur(12px); transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform: translateY(150%); }
     .checkout-panel.visible { transform: translateY(0); }
+
+    /* --- THE NEW UI FEATURES --- */
+    
+    /* 1. FIXED ACTION BUTTONS */
+    .action-panel-left, .action-panel-right {
+        position: fixed;
+        top: 50%;
+        transform: translateY(-50%);
+        background: transparent;
+        display: none; 
+        flex-direction: column;
+        gap: 20px;
+        z-index: 1000;
+    }
+    .action-panel-left { left: 30px; }
+    .action-panel-right { right: 30px; }
+
+    .action-btn {
+        padding: 12px 24px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        color: white;
+        backdrop-filter: blur(5px);
+        border-radius: 5px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    .action-btn:hover { background: rgba(255, 255, 255, 0.3); }
+
+    /* 2. COMPACT HORIZONTAL HOVER BUBBLE */
+    .card-hover-bubble {
+        position: fixed;
+        display: none;
+        flex-direction: row;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.85);
+        border: 1px solid rgba(255, 255, 255, 0.5); 
+        border-radius: 8px;
+        padding: 10px 15px;
+        width: 480px; 
+        max-height: 180px;
+        pointer-events: none;
+        z-index: 9999;
+        font-size: 0.8rem;
+        color: white;
+    }
+
+    /* 3. CARD FANNING & 3D BENCH STACK */
+    body.battle-active .active-cards-container {
+        display: flex;
+        justify-content: center;
+        gap: -20px;
+    }
+    body.battle-active .active-cards-container .card {
+        transition: transform 0.4s ease;
+        width: 180px; 
+    }
+    body.battle-active .active-cards-container .card:nth-child(1) { transform: rotate(-5deg) translateY(10px); }
+    body.battle-active .active-cards-container .card:nth-child(3) { transform: rotate(5deg) translateY(10px); }
+
+    .bench-stack {
+        position: fixed;
+        bottom: 40px;
+        left: 40px;
+        cursor: pointer;
+    }
+    body.battle-active .bench-stack .card {
+        position: absolute;
+        width: 140px; 
+        transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    body.battle-active .bench-stack .card:nth-child(1) { transform: translate(0, 0); z-index: 3; }
+    body.battle-active .bench-stack .card:nth-child(2) { transform: translate(6px, -6px); z-index: 2; }
+    body.battle-active .bench-stack .card:nth-child(3) { transform: translate(12px, -12px); z-index: 1; }
+
+    .bench-expanded {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0.9);
+        display: flex;
+        gap: 15px;
+        padding: 30px;
+        background: rgba(255, 248, 220, 0.1); 
+        box-shadow: 0 0 40px rgba(218, 165, 32, 0.3);
+        z-index: 2000;
+    }
+
+    /* 4. MESSENGER-STYLE BATTLE LOG */
+    .battle-log {
+        position: fixed;
+        bottom: 10px;
+        right: 20px;
+        width: 300px;
+        max-height: 250px;
+        overflow-y: auto;
+        font-size: 0.75rem;
+        color: #eee;
+        background: transparent;
+        z-index: 1000;
+    }
+    
+    /* 5. BASKETBALL SCOREBOARD */
+    .floating-scoreboard {
+        position: fixed;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #000;
+        border: 3px solid #444;
+        padding: 10px 40px;
+        border-radius: 4px;
+        text-align: center;
+        box-shadow: 0 0 15px rgba(0,0,0,0.5);
+        z-index: 500; 
+    }
+    .score-board {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 30px;
+        font-family: 'Courier New', monospace;
+        font-size: 2.5rem;
+        font-weight: bold;
+    }
+
+    /* 6. 3D LIQUID HP BAR */
+    .hp-container {
+        width: 90%;
+        margin: 5px auto;
+    }
+    .hp-text {
+        font-size: 0.7rem;
+        font-weight: bold;
+        color: #fff;
+        text-shadow: 1px 1px 2px #000;
+        margin-bottom: 2px;
+        text-align: center;
+    }
+    .hp-bar-bg {
+        width: 100%;
+        height: 10px;
+        background: #222;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        overflow: hidden;
+        box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+    }
+    .hp-bar-fill {
+        height: 100%;
+        background: linear-gradient(180deg, #ff4b2b 0%, #ff416c 50%, #ff4b2b 100%);
+        box-shadow: inset 0 2px 3px rgba(255,255,255,0.4), inset 0 -2px 3px rgba(0,0,0,0.3);
+        transition: width 0.4s cubic-bezier(0.47, 0, 0.745, 0.715);
+    }
+
+    /* --- THE DRAG AND DROP SAVIOR FIX --- */
+    
+    /* Kill invisible walls blocking drop zones */
+    .arena-container, 
+    .floating-scoreboard, 
+    .sb-log-floating, 
+    .battle-log,
+    .action-panel-left, 
+    .action-panel-right {
+        pointer-events: none !important;
+    }
+
+    /* Make sure buttons inside those walls are still clickable */
+    .action-btn, 
+    .floating-scoreboard *,
+    .sb-log-floating * {
+        pointer-events: auto !important;
+    }
+
+    /* Force cards to behave normally so they can be dragged */
+    .card {
+        transform: none !important; 
+        position: relative !important; 
+        margin: 5px !important; 
+        z-index: 10 !important;
+        pointer-events: auto !important;
+    }
+
+    /* Fix the ghost image while dragging */
+    .sortable-ghost, 
+    .ui-draggable-dragging, 
+    .dragging {
+        transition: none !important;
+        transform: scale(1.05) !important;
+        z-index: 9999 !important;
+        opacity: 0.8 !important;
+    }
   </style>
 </head>
 <body onclick="handleBodyClick(event)">
