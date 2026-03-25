@@ -6,6 +6,165 @@
   <title>NBA Card Battle · TCG Pocket Edition</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,600;14..32,700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script>
+
+    /* 1. FIXED ACTION BUTTONS (Left & Right Panels) */
+.action-panel-left, .action-panel-right {
+    position: fixed;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    display: none; /* Controlled by JS: set to 'flex' on click */
+    flex-direction: column;
+    gap: 20px;
+    z-index: 1000;
+}
+.action-panel-left { left: 30px; }
+.action-panel-right { right: 30px; }
+
+.action-btn {
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: white;
+    backdrop-filter: blur(5px);
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.action-btn:hover { background: rgba(255, 255, 255, 0.3); }
+
+/* 2. COMPACT HORIZONTAL HOVER BUBBLE */
+.card-hover-bubble {
+    position: fixed;
+    display: none;
+    flex-direction: row; /* Horizontal layout */
+    align-items: center;
+    background: rgba(0, 0, 0, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.5); /* Thin white border */
+    border-radius: 8px;
+    padding: 10px 15px;
+    width: 480px; 
+    max-height: 180px;
+    pointer-events: none;
+    z-index: 9999;
+    font-size: 0.8rem;
+    color: white;
+}
+
+/* 3. CARD FANNING & 3D BENCH STACK */
+.active-cards-container {
+    display: flex;
+    justify-content: center;
+    gap: -20px; /* Slight overlap for fanning */
+}
+.active-cards-container .card {
+    transition: transform 0.4s ease;
+    width: 180px; /* Bigger cards */
+}
+/* Rotate side cards slightly for fan effect */
+.active-cards-container .card:nth-child(1) { transform: rotate(-5deg) translateY(10px); }
+.active-cards-container .card:nth-child(3) { transform: rotate(5deg) translateY(10px); }
+
+/* 3D Stacked Bench */
+.bench-stack {
+    position: fixed;
+    bottom: 40px;
+    left: 40px;
+    cursor: pointer;
+}
+.bench-stack .card {
+    position: absolute;
+    width: 140px; /* Smaller than active cards */
+    transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+/* Layered offset to look like a 3D deck */
+.bench-stack .card:nth-child(1) { transform: translate(0, 0); z-index: 3; }
+.bench-stack .card:nth-child(2) { transform: translate(6px, -6px); z-index: 2; }
+.bench-stack .card:nth-child(3) { transform: translate(12px, -12px); z-index: 1; }
+
+/* Expanded Bench View */
+.bench-expanded {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    display: flex;
+    gap: 15px;
+    padding: 30px;
+    background: rgba(255, 248, 220, 0.1); /* Pale gold subtle glow */
+    box-shadow: 0 0 40px rgba(218, 165, 32, 0.3);
+    z-index: 2000;
+}
+
+/* 4. MESSENGER-STYLE BATTLE LOG */
+.battle-log {
+    position: fixed;
+    bottom: 10px;
+    right: 20px;
+    width: 300px;
+    max-height: 250px;
+    overflow-y: auto;
+    font-size: 0.75rem;
+    color: #eee;
+    background: transparent;
+    z-index: 1000;
+}
+.log-entry {
+    margin-bottom: 4px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05); /* No heavy shading */
+}
+.log-tag-you { color: #0084ff; font-weight: bold; } /* Messenger Blue */
+.log-tag-bot { color: #fa3e3e; font-weight: bold; }
+
+/* 5. BASKETBALL SCOREBOARD */
+.scoreboard {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #111;
+    border: 3px solid #333;
+    display: flex;
+    align-items: center;
+    padding: 10px 30px;
+    gap: 40px;
+    border-radius: 4px;
+}
+.score-value {
+    font-family: 'Courier New', monospace; /* Digital look */
+    font-size: 2.2rem;
+    color: #ff3300;
+}
+.hoop-divider { font-size: 2rem; }
+
+/* 6. 3D LIQUID HP BAR */
+.hp-container {
+    width: 90%;
+    margin: 5px auto;
+    text-align: center;
+}
+.hp-text {
+    font-size: 0.7rem;
+    margin-bottom: 2px;
+}
+.hp-bar-bg {
+    width: 100%;
+    height: 10px;
+    background: #222;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); /* Tube look */
+}
+.hp-bar-fill {
+    height: 100%;
+    /* Liquid-look gradient */
+    background: linear-gradient(90deg, #ff0844 0%, #ffb199 100%);
+    box-shadow: inset 0 -2px 4px rgba(0,0,0,0.3), inset 0 2px 4px rgba(255,255,255,0.4);
+    transition: width 0.5s ease-in-out;
+}
     // --- 1. BODY CLICK FIX ---
 function handleBodyClick(e) {
   let row = document.querySelector('.expanded-row');
