@@ -179,6 +179,91 @@
 .battle-log, .scoreboard {
     pointer-events: none;
 }
+
+    .floating-scoreboard {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    border: 3px solid #444;
+    padding: 10px 40px;
+    border-radius: 4px;
+    text-align: center;
+    box-shadow: 0 0 15px rgba(0,0,0,0.5);
+    z-index: 500; /* High enough to see, low enough not to block tooltips */
+}
+
+.score-board {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 30px;
+    font-family: 'Courier New', monospace;
+    font-size: 2.5rem;
+    font-weight: bold;
+}
+
+    .hp-container {
+    width: 90%;
+    margin: 5px auto;
+}
+
+.hp-text {
+    font-size: 0.7rem;
+    font-weight: bold;
+    color: #fff;
+    text-shadow: 1px 1px 2px #000;
+    margin-bottom: 2px;
+}
+
+.hp-bar-bg {
+    width: 100%;
+    height: 10px;
+    background: #222;
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.hp-bar-fill {
+    height: 100%;
+    /* 3D Liquid Gradient */
+    background: linear-gradient(180deg, #ff4b2b 0%, #ff416c 50%, #ff4b2b 100%);
+    /* Inner highlights to look like glass reflection */
+    box-shadow: inset 0 2px 3px rgba(255,255,255,0.4), inset 0 -2px 3px rgba(0,0,0,0.3);
+    transition: width 0.4s cubic-bezier(0.47, 0, 0.745, 0.715);
+}
+
+    /* PREVENT INVISIBLE WALLS */
+.arena-container, .floating-scoreboard, .sb-log-floating {
+    pointer-events: none; /* Mouse clicks go THROUGH these empty areas */
+}
+
+/* BUT ALLOW BUTTONS TO BE CLICKED */
+.floating-scoreboard *, .sb-log-floating *, .action-btn {
+    pointer-events: auto; 
+}
+
+/* DND COMPATIBILITY: NO ROTATION/OFFSET DURING SETUP */
+.card {
+    position: relative;
+    pointer-events: auto;
+    transition: transform 0.2s ease;
+    z-index: 10;
+}
+
+/* ONLY FAN OUT DURING BATTLE */
+body.battle-active .active-cards-container .card:nth-child(1) { transform: rotate(-5deg) translateY(10px); }
+body.battle-active .active-cards-container .card:nth-child(3) { transform: rotate(5deg) translateY(10px); }
+
+/* Ensure the dragging card is always on top and has no rotation */
+.sortable-ghost, .ui-draggable-dragging, .dragging {
+    transform: rotate(0deg) scale(1.1) !important;
+    opacity: 0.8;
+    z-index: 9999 !important;
+}
     // --- 1. BODY CLICK FIX ---
 function handleBodyClick(e) {
   let row = document.querySelector('.expanded-row');
