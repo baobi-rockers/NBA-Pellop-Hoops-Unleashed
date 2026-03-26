@@ -12,232 +12,176 @@
       --border-heavy: #3a476b; --accent: #FF5722; --accent-dark: #e64a19;
       --text: #EEF0FF; --text-light: #b0bbd5; --text-muted: #7986a8;
       --pos-pg: #FFD600; --pos-sg: #FF5252; --pos-sf: #69F0AE; --pos-pf: #40C4FF; --pos-c: #B388FF; --pos-6th: #E040FB;
-      --sage: #8FBC8F;
     }
-    body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); overflow-y: scroll; height: 100vh; }
+    body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); overflow-y: scroll; height: 100vh; overflow-x: hidden; }
     .screen { display: none; min-height: 100vh; background: var(--bg); padding-bottom: 60px; }
     .screen.active { display: block; }
 
-    .app-header { background: rgba(8,11,18,0.98); border-bottom: 1px solid var(--border); padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; z-index: 100; position: sticky; top:0; }
-    .logo { font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; font-size: 1.4rem; background: linear-gradient(135deg, #FF5722, #FFD600); -webkit-background-clip: text; color: transparent; }
+    .app-header { background: rgba(8, 11, 18, 0.98); border-bottom: 1px solid var(--border); padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; z-index: 100; position: sticky; top:0; }
+    .logo { font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; font-size: 1.6rem; background: linear-gradient(135deg, #FF5722, #FFD600); -webkit-background-clip: text; color: transparent; display: flex; align-items: center; gap: 12px; }
     .nav { display: flex; gap: 6px; background: var(--surface); padding: 4px; border-radius: 40px; border: 1px solid var(--border); }
     .nav-btn { padding: 4px 14px; border-radius: 30px; font-weight: 600; font-size: 0.8rem; background: transparent; border: none; cursor: pointer; color: var(--text-light); }
     .nav-btn.active, .nav-btn:hover { background: var(--border); color: white; }
 
-    /* ── BIG GLOW BUTTONS ── */
-    .btn-primary { background: var(--accent); border: 2px solid transparent; padding: 6px 16px; border-radius: 40px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+    .btn-primary { background: var(--accent); border: none; padding: 6px 16px; border-radius: 40px; font-weight: 700; color: white; cursor: pointer; transition: all 0.2s; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
     .btn-primary:hover { background: var(--accent-dark); transform: translateY(-1px); }
-    .btn-primary:disabled { background: var(--border-heavy); cursor: not-allowed; color: var(--text-muted); border-color: transparent; }
-    .btn-glow { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 1.5px; padding: 12px 20px; border-radius: 12px; border: 2px solid transparent; cursor: pointer; font-weight: 400; text-transform: uppercase; transition: all 0.25s; width: 100%; }
-    .btn-glow:disabled { background: var(--surface-2); color: var(--text-muted); border-color: var(--border); cursor: not-allowed; }
-    .btn-glow-random { background: rgba(58,71,107,0.8); color: var(--text-light); }
-    .btn-glow-random:not(:disabled):hover { background: rgba(58,71,107,1); border-color: white; box-shadow: 0 0 18px rgba(255,255,255,0.35), 0 0 6px rgba(255,255,255,0.2); transform: scale(1.03); }
-    .btn-glow-setup { background: linear-gradient(135deg, rgba(255,87,34,0.2), rgba(255,214,0,0.15)); color: #FFD600; border-color: rgba(255,214,0,0.3); }
-    .btn-glow-setup:not(:disabled):hover { border-color: white; box-shadow: 0 0 22px rgba(255,255,255,0.5), 0 0 8px rgba(255,214,0,0.4); transform: scale(1.03); }
-    .btn-glow-setup:not(:disabled) { border-color: rgba(255,214,0,0.6); }
-    .btn-glow-enter { background: linear-gradient(135deg, rgba(105,240,174,0.15), rgba(64,196,255,0.1)); color: var(--sage); border-color: rgba(143,188,143,0.4); }
-    .btn-glow-enter:not(:disabled):hover { border-color: white; box-shadow: 0 0 22px rgba(255,255,255,0.5), 0 0 10px rgba(143,188,143,0.5); transform: scale(1.03); }
-    .btn-glow-enter:not(:disabled) { border-color: var(--sage); }
-    .btn-glow-forfeit { background: rgba(255,82,82,0.1); color: #FF5252; border-color: rgba(255,82,82,0.4); font-size: 0.85rem; padding: 6px 14px; width: auto; font-family: 'Inter', sans-serif; font-weight: 700; border-radius: 8px; }
-    .btn-glow-forfeit:hover { border-color: white; box-shadow: 0 0 16px rgba(255,255,255,0.4); transform: scale(1.03); }
+    .btn-primary:disabled { background: var(--border-heavy); cursor: not-allowed; color: var(--text-muted); opacity: 0.6; }
+    
+    .btn-glowing { padding: 12px 20px; font-size: 0.95rem; background: var(--surface-2); border: 2px solid var(--border-heavy); color: var(--text); border-radius: 12px; font-weight: 800; transition: all 0.2s; }
+    .btn-glowing:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 0 15px white; border-color: white; color: white; }
 
-    /* ── TOOLTIP ── */
-    .tooltip-bubble { position: fixed; z-index: 9999; background: rgba(8,11,18,0.82); border: 0.5px solid rgba(235,235,210,0.25); padding: 8px 10px; border-radius: 10px; color: var(--text-light); max-width: 220px; font-size: 0.68rem; line-height: 1.25; box-shadow: 0 10px 28px rgba(0,0,0,0.85); backdrop-filter: blur(10px); opacity: 0; pointer-events: none; transition: opacity 0.15s; font-weight: 300; }
+    /* ========== TOOLTIP ========== */
+    .tooltip-bubble { position: fixed; z-index: 9999; background: rgba(8,11,18,0.85); border: 1px solid rgba(235,235,210,0.25); padding: 8px 10px; border-radius: 10px; color: var(--text-light); max-width: 220px; font-size: 0.68rem; line-height: 1.25; box-shadow: 0 10px 28px rgba(0,0,0,0.85); backdrop-filter: blur(10px); opacity: 0; pointer-events: none; transition: opacity 0.15s; font-family: 'Inter', sans-serif; font-weight: 300; }
     .tooltip-bubble .tt-name { color: #FFD600; font-weight: 600; font-size: 0.8rem; margin-bottom: 3px; }
-    .tooltip-bubble .tt-ability-name { color: white; font-weight: 600; }
     .tooltip-bubble .tt-skill-name { color: white; font-weight: 600; margin-top: 4px; }
     .tooltip-bubble.visible { opacity: 1; }
 
-    /* ── STICKY CONTAINER ── */
     .sticky-container { position: sticky; top: 0; z-index: 90; background: var(--bg); box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
     .filter-bar { display: flex; gap: 8px; flex-wrap: wrap; padding: 5px 16px; background: var(--surface); border-bottom: 1px solid var(--border); align-items: center; }
-    .filter-bar input, .filter-bar select { padding: 4px 10px; border-radius: 40px; border: 1px solid var(--border); background: var(--surface-2); color: white; font-size: 0.75rem; }
-    .filter-bar input { flex: 1; min-width: 100px; height: 28px; }
+    .filter-bar input, .filter-bar select { padding: 4px 10px; border-radius: 40px; border: 1px solid var(--border); background: var(--bg); color: white; font-size: 0.75rem; height: 28px; }
 
-    /* ── DRAFT LAYOUT ── */
+    /* ========== DRAFT SCREEN LAYOUT ========== */
     .draft-layout { display: flex; min-height: calc(100vh - 45px); }
     .draft-main { flex: 1; overflow-y: auto; }
-    .draft-sidebar { width: 175px; flex-shrink: 0; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; padding: 12px 10px; gap: 5px; position: sticky; top: 45px; height: calc(100vh - 45px); overflow-y: auto; }
-    .draft-count-display { font-family: 'Bebas Neue', sans-serif; font-size: 2.6rem; letter-spacing: 3px; text-align: center; color: #40C4FF; text-shadow: 0 0 20px rgba(64,196,255,0.7), 3px 3px 0 rgba(0,0,0,0.9), -1px -1px 0 rgba(64,196,255,0.3), 1px 3px 6px rgba(0,0,0,1); margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
-    .draft-sidebar-btns { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; padding-top: 8px; border-top: 1px solid var(--border); }
 
-    /* ── SLOT CARDS ── */
-    .slot-card { background: var(--surface-2); border-radius: 6px; border: 1px dashed var(--border-heavy); padding: 5px 6px; min-height: 40px; text-align: center; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; aspect-ratio: unset; }
-    .slot-card.filled { border-style: solid; background: rgba(255,255,255,0.02); border-width: 1.5px; }
+    .draft-sidebar { width: 220px; flex-shrink: 0; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; padding: 16px 12px; gap: 10px; position: sticky; top: 45px; height: calc(100vh - 45px); overflow-y: auto; }
+    
+    .counter-3d { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; text-align: center; color: #40C4FF; margin-bottom: 12px; font-weight: 900; letter-spacing: 2px; text-shadow: 0 1px 0 #1b6082, 0 2px 0 #185573, 0 3px 0 #154a63, 0 4px 0 #124056, 0 5px 0 #0f3548, 0 6px 1px rgba(0,0,0,.3), 0 0 5px rgba(0,0,0,.3), 0 1px 3px rgba(0,0,0,.5), 0 3px 5px rgba(0,0,0,.4), 0 5px 10px rgba(0,0,0,.4), 0 10px 10px rgba(0,0,0,.3), 0 20px 20px rgba(0,0,0,.2); }
+    .counter-sage { color: #8A9A5B; text-shadow: 0 1px 0 #4f5a33, 0 2px 0 #47502c, 0 3px 0 #3e4625, 0 4px 0 #353b1e, 0 5px 0 #2b3117, 0 6px 1px rgba(0,0,0,.3), 0 0 5px rgba(0,0,0,.3), 0 1px 3px rgba(0,0,0,.5), 0 3px 5px rgba(0,0,0,.4), 0 5px 10px rgba(0,0,0,.4), 0 10px 10px rgba(0,0,0,.3), 0 20px 20px rgba(0,0,0,.2); font-size: 3rem; margin-left: 20px; line-height: 1; }
+
+    .slot-card { background: var(--surface-2); border-radius: 8px; border: 1.5px dashed var(--border-heavy); padding: 5px 6px; min-height: 50px; text-align: center; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; cursor: default; }
+    .slot-card.filled { border-style: solid; background: rgba(255,255,255,0.02); border-width: 2px; }
     .slot-pos { font-weight: 900; font-size: 1rem; letter-spacing: 1px; pointer-events: none; }
-    .slot-name { font-weight: 600; font-size: 0.6rem; color: white; white-space: normal; line-height: 1.2; pointer-events: none; word-wrap: break-word; width: 100%; margin-top: 1px; }
-    .slot-card.drag-over { background: rgba(255,255,255,0.08); transform: scale(1.03); border-style: solid; }
-    .remove-slot { color: #8B0000; font-size: 0.65rem; cursor: pointer; background: rgba(0,0,0,0.7); border: 1.5px solid #8B0000; position: absolute; top: -6px; right: -6px; font-weight: bold; width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: 0.2s; z-index: 5; }
-    .remove-slot:hover { background: #8B0000; color: white; box-shadow: 0 0 6px rgba(139,0,0,0.8); }
-    .slot-PG.filled, .slot-PG.drag-over { border-color: var(--pos-pg); } .slot-PG .slot-pos { color: var(--pos-pg); }
-    .slot-SG.filled, .slot-SG.drag-over { border-color: var(--pos-sg); } .slot-SG .slot-pos { color: var(--pos-sg); }
-    .slot-SF.filled, .slot-SF.drag-over { border-color: var(--pos-sf); } .slot-SF .slot-pos { color: var(--pos-sf); }
-    .slot-PF.filled, .slot-PF.drag-over { border-color: var(--pos-pf); } .slot-PF .slot-pos { color: var(--pos-pf); }
-    .slot-C.filled, .slot-C.drag-over { border-color: var(--pos-c); } .slot-C .slot-pos { color: var(--pos-c); }
-    .slot-6TH.filled, .slot-6TH.drag-over { border-color: var(--pos-6th); } .slot-6TH .slot-pos { color: var(--pos-6th); }
+    .slot-name { font-weight: 600; font-size: 0.65rem; color: white; white-space: normal; line-height: 1.2; pointer-events: none; word-wrap: break-word; width: 100%; margin-top: 2px; }
+    
+    .remove-slot, .setup-remove, .undo-btn { position: absolute; top: -8px; right: -8px; background: #8B0000; border: 2px solid white; color: white; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: bold; z-index: 100; transition: transform 0.2s; box-shadow: 0 4px 10px rgba(0,0,0,0.6); }
+    .remove-slot:hover, .setup-remove:hover, .undo-btn:hover { transform: scale(1.2); background: #a00000; }
 
-    @keyframes shakeInvalid { 0%,100%{transform:translateX(0);} 20%,60%{transform:translateX(-5px);border-color:#FF5252;background:rgba(255,82,82,0.1);} 40%,80%{transform:translateX(5px);border-color:#FF5252;background:rgba(255,82,82,0.1);} }
-    .shake-invalid { animation: shakeInvalid 0.5s ease-in-out; }
-    .invalid-overlay { position:absolute;inset:0;background:rgba(255,82,82,0.95);color:white;font-weight:900;display:flex;align-items:center;justify-content:center;border-radius:6px;z-index:10;font-size:0.65rem;text-transform:uppercase; }
+    .slot-PG.filled { border-color: var(--pos-pg); } .slot-PG .slot-pos { color: var(--pos-pg); }
+    .slot-SG.filled { border-color: var(--pos-sg); } .slot-SG .slot-pos { color: var(--pos-sg); }
+    .slot-SF.filled { border-color: var(--pos-sf); } .slot-SF .slot-pos { color: var(--pos-sf); }
+    .slot-PF.filled { border-color: var(--pos-pf); } .slot-PF .slot-pos { color: var(--pos-pf); }
+    .slot-C.filled  { border-color: var(--pos-c);  }  .slot-C .slot-pos  { color: var(--pos-c); }
+    .slot-6TH.filled{ border-color: var(--pos-6th);} .slot-6TH .slot-pos { color: var(--pos-6th); }
 
-    /* ── CARD GRID — 7 per row ── */
-    .card-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; padding: 12px 14px; align-items: start; }
-    @media (max-width: 1400px) { .card-grid { grid-template-columns: repeat(6, 1fr); } }
-    @media (max-width: 1100px) { .card-grid { grid-template-columns: repeat(5, 1fr); } }
-    .compact-card { position: relative; width: 100%; padding-bottom: 140%; background: transparent; border-radius: 10px; overflow: hidden; box-shadow: 0 6px 15px rgba(0,0,0,0.5); transition: transform 0.25s, box-shadow 0.25s; cursor: pointer; border: 1px solid var(--border-heavy); }
-    .compact-card:hover { transform: translateY(-6px) scale(1.02); box-shadow: 0 14px 30px rgba(255,214,0,0.2); border-color: var(--pos-pg); }
+    /* ========== CARD GRID — 7 COLUMNS ========== */
+    .card-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; padding: 14px 18px; align-items: start; }
+    .compact-card { position: relative; width: 100%; padding-bottom: 140%; background: transparent; border-radius: 8px; overflow: hidden; box-shadow: 0 6px 15px rgba(0,0,0,0.5); transition: transform 0.25s, box-shadow 0.25s; cursor: pointer; border: 1px solid var(--border-heavy); }
+    .compact-card:hover { transform: translateY(-6px) scale(1.05); box-shadow: 0 14px 30px rgba(255,214,0,0.3); border-color: var(--pos-pg); z-index: 5; }
     .compact-card.dragging { opacity: 0.15; }
-    .compact-card.in-draft { opacity: 0.3; pointer-events: none; }
-    .card-img-sm { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: #0f1320; pointer-events: none; }
+    .compact-card.in-draft { opacity: 0.2; pointer-events: none; filter: grayscale(80%); }
+    .card-img-sm { position: absolute; inset: 0; background: #0f1320; pointer-events: none; }
     .card-img-sm img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* ── EXPANDED ROW — narrow squarish bubble ── */
-    .expanded-row { grid-column: 1 / -1; display: flex; gap: 0; padding: 18px; background: rgba(16,20,38,0.98); border-radius: 14px; border: 1px solid var(--border-heavy); margin: 4px 0; overflow: hidden; align-items: flex-start; cursor: default; position: relative; max-width: 560px; }
+    /* ========== EXPANDED ROW ========== */
+    .expanded-row { grid-column: 1 / -1; display: flex; gap: 0; padding: 16px; background: rgba(16, 20, 38, 0.98); border-radius: 14px; border: 1px solid var(--border-heavy); margin: 6px 0; overflow: hidden; align-items: stretch; cursor: default; position: relative; }
     .expanded-row.collapsing { opacity: 0; max-height: 0 !important; padding: 0; margin: 0; border-width: 0; overflow: hidden; transform: scaleY(0.9); transition: all 0.3s ease; }
-    .expanded-card-container { perspective: 1500px; width: 190px; flex-shrink: 0; z-index: 10; margin-right: 16px; align-self: stretch; }
-    .expanded-card-flipper { position: relative; width: 100%; height: 100%; min-height: 260px; transform-style: preserve-3d; animation: fairySpin 3s cubic-bezier(0.08,0.95,0.2,1) forwards; }
-    @keyframes fairySpin { 0%{transform:rotateY(1080deg) scale(0.5);opacity:0;filter:brightness(2) saturate(2);} 10%{opacity:1;filter:brightness(1.5) saturate(1.5);} 40%{filter:brightness(1.2) saturate(1.2);} 70%{transform:rotateY(0deg) scale(1.04);filter:brightness(1);} 85%{transform:rotateY(-8deg) scale(1.01);} 100%{transform:rotateY(0deg) scale(1);opacity:1;filter:brightness(1);} }
-    @keyframes fairySpinClose { 0%{transform:rotateY(0deg) scale(1);opacity:1;} 40%{transform:rotateY(90deg) scale(0.9);opacity:0.6;} 100%{transform:rotateY(180deg) scale(0.7);opacity:0;} }
-    @keyframes sparkle { 0%,100%{opacity:0;transform:translate(-50%,-50%) scale(0);} 50%{opacity:1;transform:translate(-50%,-50%) scale(1);} }
-    .expanded-front, .expanded-back { position: absolute; inset: 0; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 10px; overflow: hidden; box-shadow: 0 16px 32px rgba(0,0,0,0.8); border: 1.5px solid var(--border-heavy); background: #0f1320; }
-    .expanded-front { transform: rotateY(0deg); }
-    .expanded-front img, .expanded-back img { width: 100%; height: 100%; object-fit: cover; }
-    .expanded-back { transform: rotateY(180deg); }
-    .fairy-particle { position: absolute; width: 6px; height: 6px; border-radius: 50%; pointer-events: none; animation: sparkle 0.8s ease-in-out forwards; z-index: 20; }
-    /* Two-column content */
-    .expanded-scroll-wrapper { flex: 1; min-width: 0; overflow: hidden; max-width: 0; opacity: 0; animation: scrollReveal 0.8s cubic-bezier(0.16,1,0.3,1) 0.9s forwards; }
-    @keyframes scrollReveal { 0%{max-width:0;opacity:0;} 10%{opacity:1;} 100%{max-width:360px;opacity:1;} }
-    .expanded-content { width: 100%; padding: 0 0 0 12px; color: var(--text); }
-    .ec-header { border-bottom: 1px solid var(--border-heavy); padding-bottom: 6px; margin-bottom: 8px; }
-    .ec-title { font-size: 1.1rem; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.1; color: white; }
-    .ec-team { color: var(--accent); font-weight: 700; font-size: 0.68rem; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
-    .ec-stats-row { display: flex; gap: 5px; margin-bottom: 8px; flex-wrap: wrap; }
-    .ec-stat { background: rgba(0,0,0,0.4); padding: 3px 8px; border-radius: 5px; font-weight: 800; border: 1px solid var(--border); font-size: 0.78rem; display: flex; align-items: center; gap: 3px; }
-    .ec-stat span { font-size: 0.56rem; color: var(--text-muted); text-transform: uppercase; }
-    .ec-ability { background: rgba(64,196,255,0.05); border-left: 2px solid #40C4FF; padding: 6px 10px; border-radius: 0 5px 5px 0; margin-bottom: 8px; }
-    .ec-ability-name { font-weight: 800; color: #40C4FF; font-size: 0.82rem; margin-bottom: 2px; }
-    .ec-ability-desc { font-size: 0.7rem; line-height: 1.35; color: var(--text-light); }
-    .ec-skills-grid { display: flex; flex-direction: column; gap: 6px; }
-    .ec-skill { background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 6px 10px; border-radius: 7px; }
-    .ec-skill-header { display: flex; justify-content: space-between; font-weight: 800; font-size: 0.78rem; margin-bottom: 3px; color: white; }
-    .ec-skill-dmg { color: #FF5252; background: rgba(255,82,82,0.1); padding: 1px 4px; border-radius: 3px; font-size: 0.7rem; }
-    .ec-skill-desc { font-size: 0.68rem; color: var(--text-light); line-height: 1.35; }
-    .expanded-close { position: absolute; top: 8px; right: 8px; background: rgba(139,0,0,0.2); border: 1.5px solid #8B0000; color: #FF5252; border-radius: 50%; width: 22px; height: 22px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; z-index: 30; transition: 0.2s; }
-    .expanded-close:hover { background: #8B0000; color: white; }
 
-    /* ── SETUP SCREEN ── */
-    .setup-slots-row { display: flex; justify-content: center; gap: 10px; padding: 10px 16px; flex-wrap: wrap; }
-    .setup-slot-card { width: 160px; height: 224px; background: var(--surface); border-radius: 10px; border: 2px dashed var(--border-heavy); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; position: relative; overflow: hidden; }
+    .expanded-card-container { perspective: 1500px; width: 220px; flex-shrink: 0; z-index: 10; margin-right: 20px; display: flex; align-items: center; justify-content: center; }
+    .expanded-card-flipper { position: relative; width: 100%; padding-bottom: 140%; transform-style: preserve-3d; animation: fairySpin 1.5s cubic-bezier(0.08, 0.95, 0.2, 1) forwards; }
+    @keyframes fairySpin { 0% { transform: rotateY(1080deg) scale(0.5); opacity: 0; } 100% { transform: rotateY(0deg) scale(1); opacity: 1; } }
+
+    .expanded-front { position: absolute; inset: 0; width: 100%; height: 100%; backface-visibility: hidden; border-radius: 10px; overflow: hidden; box-shadow: 0 20px 40px rgba(0,0,0,0.8); border: 1.5px solid var(--border-heavy); background: #0f1320; }
+    .expanded-front img { width: 100%; height: 100%; object-fit: cover; }
+
+    .expanded-scroll-wrapper { flex: 1; overflow-y: auto; max-height: 320px; opacity: 0; animation: scrollReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.5s forwards; padding-right: 10px; }
+    @keyframes scrollReveal { to { opacity: 1; } }
+
+    .expanded-content { width: 100%; color: var(--text); }
+    .ec-header { border-bottom: 1px solid var(--border-heavy); padding-bottom: 6px; margin-bottom: 10px; }
+    .ec-title { font-size: 1.4rem; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; line-height: 1.1; color: white; }
+    .ec-team { color: var(--accent); font-weight: 700; font-size: 0.75rem; letter-spacing: 1px; text-transform: uppercase; margin-top: 3px; }
+    .ec-stats-row { display: flex; gap: 6px; margin-bottom: 12px; }
+    .ec-stat { background: rgba(0,0,0,0.4); padding: 4px 10px; border-radius: 6px; font-weight: 800; border: 1px solid var(--border); font-size: 0.85rem; display: flex; align-items: center; gap: 4px; }
+    .ec-stat span { font-size: 0.6rem; color: var(--text-muted); }
+    
+    .ec-skills-grid { column-count: 2; column-gap: 16px; }
+    .ec-skill-wrap { break-inside: avoid; margin-bottom: 10px; background: rgba(0,0,0,0.3); border: 1px solid var(--border); padding: 10px; border-radius: 8px; }
+    .ec-skill-header { display: flex; justify-content: space-between; font-weight: 800; font-size: 0.85rem; margin-bottom: 4px; color: white; }
+    .ec-skill-dmg { color: #FF5252; background: rgba(255,82,82,0.1); padding: 1px 5px; border-radius: 3px; font-size: 0.75rem; }
+    .ec-skill-desc { font-size: 0.74rem; color: var(--text-light); line-height: 1.4; }
+
+    /* ========== SETUP SCREEN ========== */
+    .setup-slots-row { display: flex; justify-content: center; gap: 14px; padding: 20px; flex-wrap: wrap; }
+    .setup-slot-card { width: 130px; height: 182px; background: var(--surface); border-radius: 8px; border: 2px dashed var(--border-heavy); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: visible; transition: 0.2s; }
     .setup-slot-card.filled { border-style: solid; border-width: 2px; }
-    .setup-slot-card img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+    .setup-slot-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
     .setup-slot-pos { font-weight: 900; font-size: 1.3rem; letter-spacing: 1px; z-index: 2; }
-    .setup-slot-drop-text { font-size: 0.6rem; opacity: 0.4; margin-top: 4px; z-index: 2; }
-    .setup-slot-card.drag-over { transform: scale(1.05); }
+    .setup-slot-drop-text { font-size: 0.7rem; opacity: 0.4; margin-top: 4px; z-index: 2; }
     .setup-slot-PG.filled { border-color: var(--pos-pg); } .setup-slot-PG .setup-slot-pos { color: var(--pos-pg); }
     .setup-slot-SG.filled { border-color: var(--pos-sg); } .setup-slot-SG .setup-slot-pos { color: var(--pos-sg); }
     .setup-slot-SF.filled { border-color: var(--pos-sf); } .setup-slot-SF .setup-slot-pos { color: var(--pos-sf); }
     .setup-slot-PF.filled { border-color: var(--pos-pf); } .setup-slot-PF .setup-slot-pos { color: var(--pos-pf); }
-    .setup-slot-C.filled { border-color: var(--pos-c); } .setup-slot-C .setup-slot-pos { color: var(--pos-c); }
-    .setup-remove { position: absolute; top: -6px; right: -6px; background: rgba(0,0,0,0.8); border: 1.5px solid #8B0000; color: #8B0000; border-radius: 50%; width: 20px; height: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; z-index: 10; }
-    .setup-remove:hover { background: #8B0000; color: white; box-shadow: 0 0 8px rgba(139,0,0,0.8); }
-    .setup-enter-row { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 14px 24px; }
-    .setup-counter-3d { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 2px; color: var(--sage); text-shadow: 2px 2px 0 rgba(0,0,0,0.9), -1px -1px 0 rgba(143,188,143,0.2), 3px 4px 8px rgba(0,0,0,1); }
+    .setup-slot-C.filled  { border-color: var(--pos-c);  } .setup-slot-C .setup-slot-pos  { color: var(--pos-c); }
 
-    /* ── BATTLE ── */
+    /* ========== BATTLEFIELD ========== */
     .arena-container { display: flex; height: calc(100vh - 45px); width: 100%; overflow: hidden; position: relative; }
-    .court-area { flex: 1; display: flex; flex-direction: column; background: radial-gradient(circle at center, #1d2438 0%, #080b12 100%); padding: 70px 30px 20px; justify-content: space-between; overflow-y: auto; }
-    .battle-row { display: flex; justify-content: center; gap: 16px; align-items: flex-end; min-height: 200px; flex-wrap: wrap; }
-    .battle-card-wrapper { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 140px; transition: all 0.3s; position: relative; cursor: pointer; }
-    .battle-card { width: 100%; padding-bottom: 140%; border-radius: 10px; border: 2px solid var(--border-heavy); overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.8); position: relative; background: #0f1320; transition: 0.2s; }
-    .battle-card img { position: absolute; width: 100%; height: 100%; object-fit: cover; }
+    .court-area { flex: 1; display: flex; flex-direction: column; background: radial-gradient(circle at center, #1d2438 0%, #080b12 100%); padding: 30px; justify-content: space-between; overflow-y: auto; width: 100%; position: relative; }
+
+    /* Top Centered Scoreboard */
+    .floating-scoreboard { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: rgba(22,28,45,0.9); border: 2px solid var(--border-heavy); padding: 8px 30px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; z-index: 50; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+    .score-board { display: flex; gap: 20px; font-family: 'Bebas Neue', sans-serif; font-size: 3.5rem; line-height: 1; }
+
+    /* Fan Layouts for Active Cards */
+    .active-fan-wrapper { display: flex; justify-content: center; align-items: center; position: relative; height: 200px; width: 100%; margin: 20px 0; }
+    .active-card-wrap { position: absolute; transition: all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); cursor: pointer; }
+    .active-card-wrap:hover { transform: translateY(-20px) scale(1.1) !important; z-index: 100 !important; }
+    
+    .battle-card { width: 130px; height: 182px; border-radius: 8px; border: 2px solid var(--border-heavy); overflow: visible; box-shadow: 0 8px 20px rgba(0,0,0,0.8); position: relative; background: #0f1320; }
+    .battle-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
     .battle-card.face-down { background: url('https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/goat-tier-back.png') center/cover; }
     .battle-card.face-down img { display: none; }
     .dead-card { filter: grayscale(100%) brightness(0.3); pointer-events: none; opacity: 0.7; }
-    .battle-card.staged { border-color: #69F0AE !important; box-shadow: 0 0 22px 4px rgba(105,240,174,0.5); transform: translateY(-6px); }
-    .battle-card.valid-target { border-color: #FF5252 !important; box-shadow: 0 0 18px 4px rgba(255,82,82,0.5); animation: pulseTarget 1.5s infinite; }
-    @keyframes pulseTarget { 0%{transform:scale(1);} 50%{transform:scale(1.05);} 100%{transform:scale(1);} }
-    .undo-btn { position: absolute; bottom: 6px; right: -8px; background: #8B0000; color: white; border: 2px solid #fff; border-radius: 50%; width: 24px; height: 24px; font-weight: 900; cursor: pointer; z-index: 50; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; box-shadow: 0 3px 8px rgba(0,0,0,0.5); transition: 0.2s; }
-    .undo-btn:hover { transform: scale(1.15); }
-    .hp-bar-container { width: 100%; height: 7px; background: #000; border-radius: 4px; border: 1px solid var(--border-heavy); overflow: hidden; }
+    .battle-card.staged { border-color: #69F0AE !important; box-shadow: 0 0 25px 4px rgba(105,240,174,0.6); }
+
+    .hp-bar-container { position: absolute; bottom: -12px; left: 0; width: 100%; height: 8px; background: #000; border-radius: 4px; border: 1px solid var(--border-heavy); overflow: hidden; z-index: 5; }
     .hp-fill { height: 100%; background: #69F0AE; width: 100%; transition: width 0.3s, background 0.3s; }
-    .hp-text { font-size: 0.7rem; font-weight: 900; text-align: center; width: 100%; margin-top: 1px; text-shadow: 0 1px 3px black; }
+    .hp-text { position: absolute; bottom: -26px; width: 100%; text-align: center; font-size: 0.75rem; font-weight: 900; text-shadow: 0 1px 3px black; z-index: 5; }
 
-    /* bench fanned */
-    .bench-area { display: flex; justify-content: center; padding: 10px; min-height: 90px; position: relative; align-items: flex-end; }
-    .bench-fan-wrapper { position: relative; display: flex; align-items: flex-end; justify-content: center; }
-    .bench-card-wrap { position: relative; transition: all 0.3s ease; }
-    .bench-card { width: 60px; height: 84px; border-radius: 7px; border: 2px solid var(--border-heavy); overflow: hidden; background: #0f1320; position: relative; cursor: pointer; transition: all 0.3s; display: block; }
-    .bench-card:hover { border-color: white; box-shadow: 0 0 18px rgba(255,255,255,0.35); transform: translateY(-10px) scale(1.08) !important; z-index: 30 !important; }
-    .bench-card img { position: absolute; width: 100%; height: 100%; object-fit: cover; }
-    .bench-card.face-down { background: url('https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/goat-tier-back.png') center/cover; }
-    .bench-card.face-down img { display: none; }
-    .enemy-bench-popup { position: fixed; background: rgba(8,11,18,0.95); border: 1px solid var(--border-heavy); border-radius: 10px; padding: 10px 14px; z-index: 9999; font-size: 0.78rem; color: var(--text-light); pointer-events: none; white-space: nowrap; box-shadow: 0 8px 24px rgba(0,0,0,0.8); }
+    /* Left Stacked Bench */
+    .bench-stack-container { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); width: 100px; height: 300px; display: flex; flex-direction: column; justify-content: center; z-index: 40; perspective: 1000px; }
+    .bench-stack-card { position: absolute; width: 90px; height: 126px; border-radius: 6px; border: 2px solid var(--border-heavy); background: #0f1320; transition: all 0.3s ease; cursor: pointer; box-shadow: -5px 5px 15px rgba(0,0,0,0.8); }
+    .bench-stack-card img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; }
+    .bench-stack-card.face-down { background: url('https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/goat-tier-back.png') center/cover; }
+    .bench-stack-card.face-down img { display: none; }
+    .bench-stack-container:hover .bench-stack-card { transform: translateX(20px) rotateY(10deg); box-shadow: 0 0 15px white; border-color: white; }
 
-    /* ── SCOREBOARD ── */
-    .floating-scoreboard { position: fixed; top: 52px; left: 50%; transform: translateX(-50%); background: rgba(22,28,45,0.97); border: 2px solid var(--border-heavy); padding: 6px 22px 8px; border-radius: 0 0 14px 14px; display: flex; flex-direction: column; align-items: center; gap: 2px; font-family: 'Bebas Neue', sans-serif; z-index: 50; box-shadow: 0 8px 30px rgba(0,0,0,0.9); backdrop-filter: blur(8px); }
-    .score-board { display: flex; gap: 14px; font-size: 2.6rem; line-height: 1; }
+    /* Expanded Bench View */
+    .bench-expanded-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); z-index: 150; display: none; align-items: center; justify-content: center; flex-direction: column; gap: 40px; }
+    .bench-expanded-row { display: flex; gap: 20px; justify-content: center; }
+    .bench-expanded-card { width: 130px; height: 182px; border-radius: 8px; border: 2px solid var(--border-heavy); position: relative; cursor: pointer; transition: 0.2s; background: #0f1320; }
+    .bench-expanded-card:hover { transform: scale(1.1); box-shadow: 0 0 20px white; border-color: white; }
+    .bench-expanded-card img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; }
 
-    /* ── BATTLE LOG — retro event log style ── */
-    .sb-log-floating { position: fixed; bottom: 0; right: 0; width: 290px; background: rgba(12,14,20,0.96); border: 1px solid var(--border); border-bottom: none; border-right: none; border-radius: 10px 0 0 0; font-size: 0.72rem; z-index: 40; display: flex; flex-direction: column; transition: height 0.3s ease; overflow: hidden; }
-    .sb-log-floating.expanded { height: 260px; }
-    .sb-log-floating.minimized { height: 32px; }
-    .log-header { display: flex; align-items: center; justify-content: space-between; padding: 5px 10px; background: rgba(22,28,45,0.95); font-weight: 700; font-size: 0.7rem; cursor: pointer; border-bottom: 1px solid var(--border); flex-shrink: 0; }
-    .log-minimize-btn { font-size: 0.65rem; color: var(--text-muted); }
-    .log-body { flex: 1; overflow-y: auto; padding: 6px 8px; display: flex; flex-direction: column; gap: 2px; }
-    /* Retro event log entries — plain text lines, color coded */
-    .log-entry { padding: 1px 0; border: none; background: transparent; border-radius: 0; line-height: 1.45; font-size: 0.7rem; border-left: none; }
-    .log-entry.atk { color: #69F0AE; }
-    .log-entry.def { color: #FF7070; }
-    .log-entry.sys { color: var(--text-muted); font-style: italic; }
-    .log-entry.ko { color: #FFD600; font-weight: 700; }
-    .lc-PG { color: var(--pos-pg); font-weight: 700; }
-    .lc-SG { color: var(--pos-sg); font-weight: 700; }
-    .lc-SF { color: var(--pos-sf); font-weight: 700; }
-    .lc-PF { color: var(--pos-pf); font-weight: 700; }
-    .lc-C { color: var(--pos-c); font-weight: 700; }
+    /* Action Menus */
+    .action-menu-fixed { position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%); display: none; gap: 16px; z-index: 200; background: rgba(16,20,38,0.95); padding: 16px 24px; border: 2px solid var(--border-heavy); border-radius: 16px; box-shadow: 0 20px 50px rgba(0,0,0,0.9); }
+    .action-col { display: flex; flex-direction: column; gap: 8px; min-width: 200px; }
 
-    /* ── ACTION MENUS ── */
-    .action-menu-fixed { position: fixed; bottom: 120px; left: 20px; width: 210px; display: none; flex-direction: column; gap: 5px; z-index: 200; }
-    .action-menu-title { font-weight: 900; color: var(--text); font-size: 0.85rem; margin-bottom: 3px; font-family: 'Plus Jakarta Sans', sans-serif; }
-    .action-col { display: flex; flex-direction: column; gap: 4px; }
-    .action-col-right { position: fixed; bottom: 120px; left: 240px; width: 210px; display: none; flex-direction: column; gap: 5px; z-index: 200; }
+    /* Retro Event Log */
+    .retro-log-container { position: fixed; bottom: 20px; right: 20px; width: 380px; height: 250px; background: rgba(10,12,18,0.95); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 12px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 0.85rem; z-index: 40; display: flex; flex-direction: column; gap: 4px; box-shadow: 0 10px 30px rgba(0,0,0,0.9); }
+    .retro-log-line { color: #ccc; line-height: 1.3; }
+    .log-atk { color: #69F0AE; }
+    .log-def { color: #FF5252; }
+    .log-react { color: #40C4FF; }
 
-    /* ── CHECKOUT PANEL ── */
-    .checkout-panel { position: fixed; bottom: 36px; right: 300px; background: rgba(8,11,18,0.98); border: 2px solid #69F0AE; border-radius: 13px; padding: 14px; width: 270px; z-index: 100; box-shadow: 0 12px 36px rgba(105,240,174,0.15); backdrop-filter: blur(12px); transition: 0.4s cubic-bezier(0.175,0.885,0.32,1.275); transform: translateY(150%); }
-    .checkout-panel.visible { transform: translateY(0); }
-    .checkout-title { font-weight: 900; margin-bottom: 8px; color: var(--text); font-family: 'Plus Jakarta Sans', sans-serif; font-size: 0.9rem; border-bottom: 1px solid var(--border-heavy); padding-bottom: 6px; }
-
-    /* ── ANIMS ── */
-    .anim-waft-up { transform: translateY(-65px) scale(1.12) rotate(2deg); z-index: 60; box-shadow: 0 30px 50px rgba(0,0,0,0.9); }
+    /* Reactive Modals & Prompts */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 9000; display: flex; align-items: center; justify-content: center; }
+    .modal-box { background: rgba(16,20,38,0.98); border: 2px solid var(--border-heavy); border-radius: 16px; padding: 24px; width: 400px; max-width: 90%; box-shadow: 0 30px 80px rgba(0,0,0,0.9); text-align: center; }
+    .modal-title { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 2px; color: #FFD600; margin-bottom: 16px; }
+    
+    /* Animations */
+    .anim-waft-up { transform: translateY(-70px) scale(1.15) !important; z-index: 120 !important; box-shadow: 0 35px 60px rgba(0,0,0,0.9); }
     @keyframes shake { 0%,100%{transform:translateX(0);} 20%,60%{transform:translateX(-10px) rotate(-4deg);} 40%,80%{transform:translateX(10px) rotate(4deg);} }
-    .anim-shake { animation: shake 0.4s; border-color: #FF5252 !important; box-shadow: inset 0 0 28px rgba(255,82,82,0.8); }
-    .dmg-popup { position: absolute; top: 20%; left: 50%; transform: translate(-50%,-50%); font-family: 'Bebas Neue', sans-serif; font-size: 2.8rem; letter-spacing: 2px; color: #FFD600; text-shadow: 0 4px 0 #FF5252, 0 0 18px rgba(255,82,82,1); z-index: 70; pointer-events: none; animation: popUp 1.2s forwards; opacity: 0; white-space: nowrap; }
+    .anim-shake { animation: shake 0.4s; border-color: #FF5252 !important; box-shadow: inset 0 0 30px rgba(255,82,82,0.8); }
+    .dmg-popup { position: absolute; top: 30%; left: 50%; transform: translate(-50%,-50%); font-family: 'Bebas Neue', sans-serif; font-size: 3.5rem; color: #FFD600; text-shadow: 0 4px 0 #FF5252, 0 0 20px rgba(255,82,82,1); z-index: 200; pointer-events: none; animation: popUp 1s forwards; opacity: 0; white-space: nowrap; }
     @keyframes popUp { 0%{opacity:0;transform:translate(-50%,20px) scale(0.5);} 15%{opacity:1;transform:translate(-50%,-20px) scale(1.3);} 80%{opacity:1;transform:translate(-50%,-40px) scale(1);} 100%{opacity:0;transform:translate(-50%,-60px) scale(0.8);} }
-    #drag-ghost { position: absolute; top: -1000px; left: -1000px; background: var(--accent); color: white; padding: 5px 12px; border-radius: 40px; font-weight: 800; font-family: 'Plus Jakarta Sans', sans-serif; pointer-events: none; z-index: -1; box-shadow: 0 5px 14px rgba(0,0,0,0.8); border: 1px solid white; font-size: 0.8rem; white-space: nowrap; }
-
-    /* ── ARENA INTRO ── */
-    .arena-intro-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); backdrop-filter: blur(4px); z-index: 9000; display: flex; align-items: center; justify-content: center; }
-    .arena-intro-box { background: rgba(16,20,38,0.98); border: 2px solid var(--border-heavy); border-radius: 18px; padding: 34px 38px; max-width: 480px; width: 90%; box-shadow: 0 28px 70px rgba(0,0,0,0.9); animation: fadeInUp 0.4s ease; }
-    @keyframes fadeInUp { from{opacity:0;transform:translateY(20px);} to{opacity:1;transform:translateY(0);} }
-    .arena-intro-title { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; letter-spacing: 3px; color: #FFD600; margin-bottom: 12px; text-align: center; }
-    .arena-intro-text { color: var(--text-light); font-size: 0.86rem; line-height: 1.6; margin-bottom: 22px; }
-    .arena-intro-btns { display: flex; gap: 12px; }
-    .arena-intro-btns button { flex: 1; padding: 12px; border-radius: 10px; font-weight: 800; font-size: 0.9rem; cursor: pointer; border: none; }
-    .btn-back-intro { background: var(--surface-2); color: var(--text-light); border: 1px solid var(--border-heavy) !important; }
-    .btn-enter-intro { background: linear-gradient(135deg, #FF5722, #FFD600); color: black; }
-
-    /* ── REACT PANEL ── */
-    .react-skill-btn { background: rgba(64,196,255,0.12); border: 1px solid #40C4FF; color: white; padding: 7px 10px; border-radius: 7px; font-size: 0.74rem; cursor: pointer; text-align: left; transition: 0.2s; position: relative; }
-    .react-skill-btn:hover { background: rgba(64,196,255,0.28); }
-    .react-skill-tooltip { position: absolute; bottom: 110%; left: 0; background: rgba(16,18,30,0.94); border: 1px solid rgba(255,255,255,0.12); border-radius: 6px; padding: 6px 8px; font-size: 0.64rem; color: #999; white-space: normal; width: 200px; z-index: 999; pointer-events: none; display: none; line-height: 1.3; }
-    .react-skill-btn:hover .react-skill-tooltip { display: block; }
   </style>
 </head>
 <body>
+
 <div id="drag-ghost">Ghost</div>
 <div id="tooltip" class="tooltip-bubble"></div>
 
-<!-- HOME -->
 <div id="home-screen" class="screen active">
   <div class="app-header">
     <div class="logo">NBA⚡BATTLE</div>
@@ -247,15 +191,14 @@
     </div>
   </div>
   <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;text-align:center;gap:32px;padding:20px;">
-    <div><h1 style="font-family:'Bebas Neue',sans-serif;font-size:4rem;letter-spacing:4px;text-shadow:0 4px 20px rgba(0,0,0,0.5);">NBA CARD BATTLE</h1><p style="color:var(--text-muted);font-size:1.1rem;margin-top:8px;">115 GOATs · Lane Combat</p></div>
+    <div><h1 style="font-family:'Bebas Neue',sans-serif;font-size:5rem;letter-spacing:4px;text-shadow:0 4px 20px rgba(0,0,0,0.5);">NBA CARD BATTLE</h1><p style="color:var(--text-muted);font-size:1.1rem;margin-top:8px;">117 GOATs · Lane Combat</p></div>
     <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;">
-      <button class="btn-primary" style="padding:12px 24px;font-size:1rem;" onclick="goDraft()">🤖 DRAFT TEAM</button>
-      <button class="btn-primary" style="background:var(--border-heavy);padding:12px 24px;font-size:1rem;" onclick="goCat()">📋 COLLECTION</button>
+      <button class="btn-glowing" style="background:var(--accent);border-color:var(--accent);" onclick="goDraft()">🤖 DRAFT TEAM</button>
+      <button class="btn-glowing" onclick="goCat()">📋 COLLECTION</button>
     </div>
   </div>
 </div>
 
-<!-- CATALOGUE -->
 <div id="catalogue-screen" class="screen">
   <div class="sticky-container">
     <div class="app-header">
@@ -271,17 +214,15 @@
   <div id="cgrid" class="card-grid"></div>
 </div>
 
-<!-- DRAFT -->
 <div id="draft-screen" class="screen">
   <div class="sticky-container">
-    <div class="app-header" style="justify-content:space-between;">
-      <div class="logo">⚡ DRAFT SQUAD</div>
-      <div style="display:flex;gap:8px;align-items:center;">
-        <input type="text" id="draft-search" placeholder="Search..." oninput="handleSearchFilter('draft')" style="padding:3px 10px;border-radius:40px;border:1px solid var(--border);background:var(--bg);color:white;font-size:0.75rem;width:110px;height:26px;">
-        <select id="draft-sort" onchange="handleSearchFilter('draft')" style="padding:3px 8px;border-radius:40px;border:1px solid var(--border);background:var(--bg);color:white;font-size:0.75rem;height:26px;">
-          <option value="name">A-Z</option><option value="hp">HP ↓</option><option value="dmg">DMG ↓</option><option value="spd">SPD ↓</option>
-        </select>
+    <div class="app-header">
+      <div class="logo">
+        ⚡ DRAFT SQUAD
+        <input type="text" id="draft-search" placeholder="Search..." oninput="handleSearchFilter('draft')">
+        <select id="draft-sort" onchange="handleSearchFilter('draft')"><option value="name">A-Z</option><option value="hp">HP ↓</option><option value="dmg">DMG ↓</option><option value="spd">SPD ↓</option></select>
       </div>
+      <div class="nav"><button class="nav-btn" onclick="showScreen('home-screen')">Home</button></div>
     </div>
   </div>
   <div class="draft-layout">
@@ -289,1445 +230,746 @@
       <div id="draft-grid" class="card-grid"></div>
     </div>
     <div class="draft-sidebar">
-      <div class="draft-count-display" id="draft-count-lbl">0/10</div>
-      <div id="draft-slots-vertical"></div>
-      <div class="draft-sidebar-btns">
-        <button class="btn-glow btn-glow-random" onclick="autoFillDraft()">🎲 RANDOM</button>
-        <button class="btn-glow btn-glow-setup" id="draft-confirm-btn" onclick="goSetup()" disabled>SET UP TEAM</button>
-      </div>
+      <div class="counter-3d" id="draft-count-lbl">0/10</div>
+      <div id="draft-slots-vertical" style="display:flex; flex-direction:column; gap:8px; margin-bottom: 20px;"></div>
+      <button class="btn-glowing" onclick="autoFillDraft()">🎲 RANDOM</button>
+      <button class="btn-glowing" id="draft-confirm-btn" onclick="goSetup()" disabled style="background:var(--accent); border-color:var(--accent);">SET UP TEAM</button>
     </div>
   </div>
 </div>
 
-<!-- SETUP -->
 <div id="setup-screen" class="screen">
   <div class="sticky-container">
     <div class="app-header">
       <div class="logo">📋 STARTING LINEUP</div>
+      <div class="nav"><button class="nav-btn" onclick="goDraft()">Back to Draft</button></div>
     </div>
-    <div style="text-align:center;font-size:0.7rem;padding:5px;color:var(--text-muted);background:var(--surface-2);">Drag your starting 5 from the bench below.</div>
+    <div style="text-align:center;font-size:0.8rem;padding:10px;color:var(--text-muted);background:var(--surface-2);">Drag your starting 5 from the bench below.</div>
     <div id="setup-slots" class="setup-slots-row"></div>
-    <div class="setup-enter-row">
-      <div class="setup-counter-3d" id="setup-count-lbl">0/5</div>
-      <button class="btn-glow btn-glow-enter" id="start-battle-btn" onclick="confirmStartBattle()" disabled style="max-width:200px;">ENTER ARENA</button>
+    <div style="display:flex;justify-content:center;align-items:center;padding:16px;background:var(--surface-2);border-bottom:1px solid var(--border);">
+      <button class="btn-glowing" id="start-battle-btn" onclick="startBattle()" disabled style="background:var(--accent); border-color:var(--accent); font-size:1.2rem; padding:12px 40px;">ENTER ARENA</button>
+      <div class="counter-sage" id="setup-count-lbl">0/5</div>
     </div>
   </div>
-  <div style="padding:10px 18px;font-weight:800;color:var(--accent);">YOUR BENCH</div>
-  <div id="setup-bench-grid" class="card-grid"></div>
+  <div style="padding:16px 24px;font-weight:800;color:var(--accent);">YOUR BENCH</div>
+  <div id="setup-bench-grid" class="card-grid" style="padding-top:0;"></div>
 </div>
 
-<!-- BATTLE -->
 <div id="battle-screen" class="screen">
-  <div class="app-header" style="padding:8px 20px;">
-    <div class="logo" style="font-size:1.3rem;">⚡ BATTLEFIELD</div>
-    <div id="turn-indicator" style="font-weight:900;font-family:'Bebas Neue',sans-serif;color:var(--text-muted);font-size:1rem;letter-spacing:2px;"></div>
-    <button class="btn-glow-forfeit" onclick="location.reload()">FORFEIT</button>
+  <div class="app-header" style="padding:10px 24px; position:relative;">
+    <div class="logo" style="font-size:1.4rem;">⚡ BATTLEFIELD</div>
+    <button class="btn-glowing" style="padding:6px 16px; font-size:0.8rem;" onclick="location.reload()">FORFEIT</button>
   </div>
+
   <div class="arena-container">
-    <div class="floating-scoreboard">
-      <div class="score-board">
-        <div style="color:#69F0AE;" id="score-player">0</div>
-        <div style="color:var(--border-heavy);">-</div>
-        <div style="color:#FF5252;" id="score-enemy">0</div>
-      </div>
-    </div>
-    <div class="sb-log-floating expanded" id="battle-log-container">
-      <div class="log-header" onclick="toggleLog()">
-        <span>📋 BATTLE LOG</span>
-        <span class="log-minimize-btn" id="log-min-icon">▼ minimize</span>
-      </div>
-      <div class="log-body" id="battle-log"></div>
-    </div>
-    <div class="action-menu-fixed" id="action-menu-left"><div class="action-col" id="action-col-left"></div></div>
-    <div class="action-col-right" id="action-menu-right"><div class="action-col" id="action-col-right"></div></div>
+    
     <div class="court-area" id="court-area-bg" onclick="handleCourtClick(event)">
-      <div>
-        <div style="text-align:center;font-weight:900;font-size:0.9rem;color:#FF5252;margin-bottom:10px;font-family:'Bebas Neue',sans-serif;letter-spacing:3px;">ENEMY TEAM</div>
-        <div class="battle-row" id="enemy-active-row"></div>
-        <div class="bench-area" id="enemy-bench-row" style="margin-top:16px;"></div>
+      <div class="floating-scoreboard">
+        <div style="font-weight:900; color:var(--text-muted); font-size:0.8rem; letter-spacing:1px; margin-bottom:4px; text-transform:uppercase;" id="turn-indicator">STAGING PHASE</div>
+        <div class="score-board">
+          <div style="color:#69F0AE;" id="score-player">0</div>
+          <div style="color:var(--border-heavy);">-</div>
+          <div style="color:#FF5252;" id="score-enemy">0</div>
+        </div>
       </div>
-      <div>
-        <div class="bench-area" id="player-bench-row" style="margin-bottom:16px;"></div>
-        <div class="battle-row" id="player-active-row"></div>
-        <div style="text-align:center;font-weight:900;font-size:0.9rem;color:#69F0AE;margin-top:10px;font-family:'Bebas Neue',sans-serif;letter-spacing:3px;">YOUR TEAM</div>
-      </div>
+
+      <div class="active-fan-wrapper" id="enemy-active-row"></div>
+
+      <div class="active-fan-wrapper" id="player-active-row" style="margin-top:auto;"></div>
     </div>
-    <div id="checkout-panel" class="checkout-panel">
-      <div class="checkout-title">MOVES STAGED (<span id="staged-count">0</span>)</div>
-      <div id="staged-list" style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px;font-size:0.78rem;color:var(--text-light);"></div>
-      <button class="btn-primary" id="confirm-moves-btn" style="width:100%;padding:11px;font-size:0.9rem;" onclick="confirmMovesWithDefense()">LOCK IN MOVES</button>
+
+    <div class="bench-stack-container" id="enemy-bench-stack" style="top:25%;"></div>
+    <div class="bench-stack-container" id="player-bench-stack" style="top:75%;" onclick="openBenchView()"></div>
+
+    <div class="action-menu-fixed" id="action-menu">
+      <div class="action-col" id="action-col-left"></div>
+      <div class="action-col" id="action-col-right"></div>
+    </div>
+
+    <div class="retro-log-container" id="battle-log">
+      <div class="retro-log-line" style="color:#FFD600;">> MATCH INITIATED. First to 8 KOs wins.</div>
+    </div>
+
+    <div id="checkout-panel" style="position:fixed; bottom:20px; left:20px; background:rgba(8,11,18,0.98); border:2px solid #69F0AE; border-radius:12px; padding:16px; width:260px; z-index:100; box-shadow:0 15px 40px rgba(105,240,174,0.2); display:none; flex-direction:column; gap:10px;">
+      <div style="font-family:'Bebas Neue',sans-serif; font-size:1.4rem; color:white; border-bottom:1px solid var(--border-heavy); padding-bottom:6px;">MOVES STAGED (<span id="staged-count">0</span>)</div>
+      <div id="staged-list" style="display:flex; flex-direction:column; gap:6px; font-size:0.8rem; color:#ccc;"></div>
+      <button class="btn-glowing" id="confirm-moves-btn" style="background:#69F0AE; color:black; border:none; margin-top:8px;" onclick="confirmMovesPhase()">LOCK IN MOVES</button>
     </div>
   </div>
 </div>
 
-<!-- ARENA INTRO -->
-<div id="arena-intro-overlay" class="arena-intro-overlay" style="display:none;">
-  <div class="arena-intro-box">
-    <div class="arena-intro-title">⚡ ENTER THE ARENA ⚡</div>
-    <div class="arena-intro-text">
-      <b style="color:#FFD600;">First to 8 KO's wins.</b><br><br>
-      ENTER THE REST OF BATTLE INSTRUCTIONS HERE.<br><br>
-      Stage up to 2 moves per turn. Position rules determine valid targets. After locking in, the enemy acts. Reactive skills trigger automatically — use the panel to respond.
-    </div>
-    <div class="arena-intro-btns">
-      <button class="btn-back-intro" onclick="closeArenaIntro(true)">← BACK</button>
-      <button class="btn-enter-intro" onclick="closeArenaIntro(false)">ENTER →</button>
-    </div>
+<div id="bench-expanded-overlay" class="bench-expanded-overlay" onclick="closeBenchView(event)">
+  <h2 style="color:white; font-family:'Bebas Neue',sans-serif; font-size:3rem; letter-spacing:2px;">YOUR BENCH</h2>
+  <div class="bench-expanded-row" id="bench-expanded-content"></div>
+</div>
+
+<div id="reactive-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-title">INCOMING ATTACK!</div>
+    <div id="reactive-desc" style="color:#ccc; font-size:0.9rem; margin-bottom:20px; line-height:1.5;"></div>
+    <div id="reactive-options" style="display:flex; flex-direction:column; gap:10px;"></div>
+    <button class="btn-glowing" style="width:100%; margin-top:16px; background:var(--surface-2);" onclick="skipReactive()">SKIP (NO DEFENSE)</button>
+  </div>
+</div>
+
+<div id="assist-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-title">SELECT ASSIST TEAMMATE</div>
+    <div style="color:#ccc; font-size:0.9rem; margin-bottom:20px;">Choose whose basic attack to use:</div>
+    <div id="assist-options" style="display:flex; flex-direction:column; gap:10px;"></div>
+    <button class="btn-glowing" style="width:100%; margin-top:16px; background:var(--surface-2);" onclick="cancelAssist()">CANCEL ACTION</button>
   </div>
 </div>
 
 <script>
 // ==================== UTILS ====================
-function $(id){return document.getElementById(id);}
-const GITHUB_RAW_BASE=`https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/`;
-const BACK_IMG=`${GITHUB_RAW_BASE}goat-tier-back.png`;
+function $(id) { return document.getElementById(id); }
+const GITHUB_RAW_BASE = `https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/`;
+const BACK_IMG = `${GITHUB_RAW_BASE}goat-tier-back.png`;
 
-function getCardName(c){return c?.UI_Frontend_Data?.Name||"Unknown";}
-function getCardImg(c){return c?.UI_Frontend_Data?.Image_File||"";}
-function getCardHP(c){return c?.UI_Frontend_Data?.Stats?.HP||0;}
-function getCardDMG(c){return c?.UI_Frontend_Data?.Stats?.Base_DMG||0;}
-function getCardSPD(c){return c?.UI_Frontend_Data?.Stats?.Speed||0;}
-function getCardHeight(c){return c?.UI_Frontend_Data?.Height||"";}
-function getCardWeight(c){return c?.UI_Frontend_Data?.Weight||0;}
-function getCardTeam(c){return c?.UI_Frontend_Data?.Team||"";}
-function getCardPos(c){const p=c?.UI_Frontend_Data?.Positions;if(!p)return"N/A";return p.Primary+(p.Secondary?'/'+p.Secondary:'');}
-function escapeJS(s){if(!s)return"";return s.toString().replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/`/g,"\\`");}
-function shortName(n){if(!n||typeof n!=='string')return"Unknown";return n.replace(/ \(.+?\)$/,'');}
-function escapeHtml(s){if(!s||typeof s!=='string')return"";return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");}
-function getDBShortName(f){if(!f||typeof f!=='string')return"Unknown";let m=f.match(/^(.*?)(\s\(.*)?$/);if(!m)return f;let b=m[1],v=m[2]||'';let p=b.split(' ');if(p.length>1){let first=p.shift();return first.charAt(0)+'. '+p.join(' ')+v;}return b+v;}
-function getImgUrl(fn,name){const n=(typeof name==='string')?name:"Player";const f=(typeof fn==='string')?fn:"";if(!f||f.length<3)return`https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(shortName(n))}`;return`${GITHUB_RAW_BASE}${f}`;}
-function handleImgError(el,name){el.onerror=null;el.src=`https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(shortName(name))}`;}
-function delay(ms){return new Promise(r=>setTimeout(r,ms));}
-function showScreen(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));let el=document.getElementById(id);if(el)el.classList.add('active');window.scrollTo(0,0);}
-function getRoleColor(role){const m={'PG':'var(--pos-pg)','SG':'var(--pos-sg)','SF':'var(--pos-sf)','PF':'var(--pos-pf)','C':'var(--pos-c)','6TH':'var(--pos-6th)'};return m[role]||'white';}
+function getCardName(c) { return c?.UI_Frontend_Data?.Name || "Unknown Player"; }
+function getCardImg(c)  { return c?.UI_Frontend_Data?.Image_File || ""; }
+function getCardHP(c)   { return c?.UI_Frontend_Data?.Stats?.HP || 0; }
+function getCardDMG(c)  { return c?.UI_Frontend_Data?.Stats?.Base_DMG || 0; }
+function getCardSPD(c)  { return c?.UI_Frontend_Data?.Stats?.Speed || 0; }
+function getCardPos(c)  { const p = c?.UI_Frontend_Data?.Positions; return p ? p.Primary + (p.Secondary ? '/' + p.Secondary : '') : "N/A"; }
+
+function escapeJS(str) { return str ? str.toString().replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/`/g,"\\`") : ""; }
+function shortName(n) { return n ? n.replace(/ \(.+?\)$/, '') : "Unknown"; }
+function getDBShortName(f) { if(!f)return"Unknown"; let m=f.match(/^(.*?)(\s\(.*)?$/); if(!m)return f; let b=m[1],v=m[2]||''; let p=b.split(' '); if(p.length>1){let first=p.shift(); return first.charAt(0)+'. '+p.join(' ')+v;} return b+v; }
+function getImgUrl(f, n) { return (!f || f.length<3) ? `https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(shortName(n))}` : `${GITHUB_RAW_BASE}${f}`; }
+function handleImgError(el, n) { el.onerror=null; el.src=`https://placehold.co/400x560/1e293b/ffd966?text=${encodeURIComponent(shortName(n))}`; }
+
+function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); let el=$(id); if(el) el.classList.add('active'); window.scrollTo(0,0); }
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 // ==================== TOOLTIP ====================
-let _tooltipEnabled=true;
-function setTooltipEnabled(v){_tooltipEnabled=v;if(!v)hideTooltip();}
-function showTooltip(e,name){
-  if(!_tooltipEnabled)return;
-  const tt=$('tooltip');if(!tt)return;
-  const card=(typeof CARDS!=='undefined')?CARDS.find(c=>getCardName(c)===name):null;if(!card)return;
-  let abName=card.Ability?.Name||"No Ability";let abDesc=card.Ability?.Description_UI||"";
-  let skillsHtml=(card.Skills||[]).map(s=>`<div class="tt-skill-name">${s.Name} <span style="color:#FF5252;font-weight:300;">(${s.Display_DMG})</span></div><div style="color:var(--text-muted);margin-top:1px;">${s.Description_UI}</div>`).join('');
-  tt.innerHTML=`<div class="tt-name">${shortName(name)}</div><div class="tt-ability-name">✨ ${abName}</div><div style="color:var(--text-muted);margin-bottom:4px;">${abDesc}</div>${skillsHtml}`;
-  tt.classList.add('visible');positionTooltip(e);
+let _tooltipEnabled = true;
+function setTooltipEnabled(v) { _tooltipEnabled = v; if(!v) hideTooltip(); }
+function showTooltip(e, name) {
+  if(!_tooltipEnabled) return;
+  const tt = $('tooltip'); if(!tt) return;
+  const c = typeof CARDS !== 'undefined' ? CARDS.find(x => getCardName(x)===name) : null; if(!c) return;
+  let sHtml = (c.Skills||[]).map(s=>`<div class="tt-skill-name">${s.Name} <span style="color:#FF5252;font-weight:300;">(${s.Display_DMG})</span></div><div style="color:var(--text-muted);">${s.Description_UI}</div>`).join('');
+  tt.innerHTML = `<div class="tt-name">${shortName(name)}</div><div style="color:white;font-weight:600;">✨ ${c.Ability?.Name||'No Ability'}</div><div style="color:var(--text-muted);margin-bottom:4px;">${c.Ability?.Description_UI||''}</div>${sHtml}`;
+  tt.classList.add('visible'); positionTooltip(e);
 }
-function hideTooltip(){const tt=$('tooltip');if(tt)tt.classList.remove('visible');}
-function positionTooltip(e){
-  const tt=$('tooltip');if(!tt||!tt.classList.contains('visible'))return;
-  let x=e.touches?e.touches[0].clientX:e.clientX;let y=e.touches?e.touches[0].clientY:e.clientY;
-  let tw=tt.offsetWidth,th=tt.offsetHeight,pad=10,px=x+15,py=y+15;
-  if(px+tw>window.innerWidth-pad)px=x-tw-15;if(py+th>window.innerHeight-pad)py=y-th-15;
-  tt.style.left=`${Math.max(pad,px)}px`;tt.style.top=`${Math.max(pad,py)}px`;
-}
-
-// ==================== BODY CLICK ====================
-document.addEventListener('click',function(e){
-  let row=document.querySelector('.expanded-row');
-  if(row){
-    let inside=e.target.closest('.expanded-row');
-    let onCard=e.target.closest('.expanded-card-container');
-    if(!inside&&!e.target.closest('.compact-card')&&!e.target.closest('.sticky-container')&&!e.target.closest('.app-header')){
-      if(typeof closeExpandedWithAnim==='function')closeExpandedWithAnim(expandedCardCat?'cat':'draft');
-    } else if(inside&&!onCard&&!e.target.closest('.expanded-close')){
-      if(typeof closeExpandedWithAnim==='function')closeExpandedWithAnim(expandedCardCat?'cat':'draft');
-    }
-  }
-});
-
-// ==================== DRAG ====================
-let _isDragging=false;
-function handleDragStart(e,name){hideTooltip();_isDragging=true;e.dataTransfer.setData('text/plain',name);e.dataTransfer.effectAllowed='move';let g=$('drag-ghost');if(g){g.textContent=getDBShortName(name);e.dataTransfer.setDragImage(g,0,0);}setTimeout(()=>{if(e.target&&e.target.classList)e.target.classList.add('dragging');},0);}
-function handleDragEnd(e){_isDragging=false;if(e.target&&e.target.classList)e.target.classList.remove('dragging');}
-function handleDragOver(e){e.preventDefault();if(e.currentTarget&&e.currentTarget.classList)e.currentTarget.classList.add('drag-over');}
-function handleDragLeave(e){if(e.currentTarget&&e.currentTarget.classList)e.currentTarget.classList.remove('drag-over');}
-function triggerInvalidDrop(slotEl){if(!slotEl)return;slotEl.classList.add('shake-invalid');let o=document.createElement('div');o.className='invalid-overlay';o.innerHTML='🚫 INVALID';slotEl.appendChild(o);setTimeout(()=>{slotEl.classList.remove('shake-invalid');o.remove();},900);}
-
-// ==================== BATTLE STATE ====================
-let draftSquad={PG:[null,null],SG:[null,null],SF:[null,null],PF:[null,null],C:[null,null]};
-let activeLineup={PG:null,SG:null,SF:null,PF:null,C:null,'6TH':null};
-let benchRoster=[];let hasSixthMan=false;
-const POSITIONS=['PG','SG','SF','PF','C'];
-let playerActive=[],playerBench=[],enemyActive=[],enemyBench=[];
-let playerScore=0,enemyScore=0;
-let expandedCardCat=null,expandedCardDraft=null,isCollapsing=false;
-let turnCount=1,isAnimating=false,uiState='IDLE',pendingAction=null,stagedActions=[];
-
-// ── Battle flags ──
-let activeAuras=[];          // [{type,turnsLeft,sourceTeam,sourceName}]
-let pendingBlocks=[];         // [{playerCardIdx,skillIdx,sk}]
-let reactiveResponses=[];
-let reactiveResolve=null;
-let pendingReactiveAction=null;
-let frozenCards={};           // {teamStr_idx: true}
-let disabledSkills={};        // {teamStr_idx_skillIdx: turnsLeft}
-let shutdownCards={};         // {teamStr_idx: turnsLeft}
-let drainedNextTurn={};       // {teamStr_idx: true}
-let screenGuaranteeNext=false; // next ally skill cannot miss/block/contest/intercept
-let invulnerableCards={};     // {teamStr_idx: turnsLeft}
-let stolenSkills={};          // {ownerName: {thief:card, skillIdx:n}}
-let pendingExtraMoves=[];     // [{teamStr,cardIdx,type:'basic'}]
-let willHpRecovered={};       // {cardName: true}  — one-time HP recovery used
-let statBuffs={};             // {teamStr_idx: [{stat,amount,turnsLeft}]}
-let jumpShotGuarantee=false;  // Klay Screen Navigator: next skill unblockable
-
-// ==================== HEIGHT UTILS ====================
-function parseHeightInches(h){
-  if(!h)return 0;
-  let m=String(h).match(/(\d+)'(\d+)?/);
-  if(m)return parseInt(m[1])*12+(parseInt(m[2]||0));
-  return 0;
-}
-function playerIsShortEnough(card,threshold){
-  return parseHeightInches(getCardHeight(card))<parseHeightInches(threshold);
+function hideTooltip() { const tt=$('tooltip'); if(tt) tt.classList.remove('visible'); }
+function positionTooltip(e) {
+  const tt=$('tooltip'); if(!tt||!tt.classList.contains('visible')) return;
+  let x = e.touches ? e.touches[0].clientX : e.clientX, y = e.touches ? e.touches[0].clientY : e.clientY;
+  let tw=tt.offsetWidth, th=tt.offsetHeight, pad=10, px=x+15, py=y+15;
+  if(px+tw>window.innerWidth-pad) px=x-tw-15; if(py+th>window.innerHeight-pad) py=y-th-15;
+  tt.style.left=`${Math.max(pad,px)}px`; tt.style.top=`${Math.max(pad,py)}px`;
 }
 
-// ==================== SKILL SYSTEM ====================
-function getSkillCategory(skill){
-  if(!skill)return'standard';
-  const nature=(skill.Nature||'').toLowerCase();
-  const desc=(skill.Description_UI||'').toLowerCase();
-  const mods=(skill.Logic_Engine?.Modifiers)||[];
-  if(nature.includes('dribble'))return'freeze';
-  if(mods.includes('Reactionary_Anti_Defense'))return'nullify-reactive';
-  if(mods.includes('Global_Status_Aura')||mods.includes('Global_Status_Disable'))return'pre-turn-aura';
-  if(mods.includes('Hard_Disable')&&!desc.includes('right after'))return'pre-turn-aura';
-  if(mods.includes('Buffer_State'))return'standard';
-  if(mods.includes('Reactionary_Block'))return'reactive-block';
-  if(mods.includes('Reactionary_Mitigation'))return'reactive-block';
-  if(mods.includes('Reactionary_Redirect'))return'reactive-block';
-  if(mods.includes('Reactionary_Intercept'))return'reactive-intercept';
-  if(mods.includes('Reactionary_Contest')||mods.includes('Reactionary_Status_Aura'))return'reactive-contest';
-  if(mods.includes('Preemptive_Cancel'))return'reactive-steal';
-  if(mods.includes('Reactionary_Assist')||mods.includes('Reactionary_Self_Buff'))return'reactive-rebound';
-  if(mods.includes('Reactionary_Grant_Extra_Move'))return'reactive-rebound';
-  if(mods.includes('Reactionary_Putback_Dmg'))return'reactive-block';
-  if(nature.includes('rebound')&&(desc.includes('right after')||desc.includes('this is used right')))return'reactive-rebound';
-  if(mods.includes('Nullify_Defensive_Skill'))return'nullify-reactive';
-  return'standard';
-}
-function canSelectOnYourTurn(skill){
-  const cat=getSkillCategory(skill);
-  return['standard','pre-turn-aura','freeze','nullify-reactive'].includes(cat);
-}
-
-// ==================== ASSIST DMG ====================
-function calcAssistDmg(skill,actorTeam){
-  let dmgStr=skill.Display_DMG||'';
-  let multMatch=dmgStr.match(/x([\d.]+)\s*\(([^)]+)\)/);
-  if(!multMatch){
-    let addMatch=dmgStr.match(/\(([A-Z/]+)\)\s*\+\s*(\d+)/);
-    if(!addMatch)return null;
-    let pos=addMatch[1];let bonus=parseInt(addMatch[2]);
-    let mate=actorTeam.find(c=>!c.isDead&&getCardPos(c).split('/').some(p=>pos.split('/').includes(p.trim())));
-    if(!mate)return null;
-    return getCardDMG(mate)+bonus;
-  }
-  let mult=parseFloat(multMatch[1]);
-  let positions=multMatch[2].split('/').map(p=>p.trim());
-  let mate=actorTeam.find(c=>!c.isDead&&getCardPos(c).split('/').some(p=>positions.includes(p.trim())));
-  if(!mate)return null;
-  return Math.floor(getCardDMG(mate)*mult);
-}
-
-// ==================== STAT BUFF UTILS ====================
-function applyStatBuff(teamStr,idx,stat,amount,turns){
-  let key=`${teamStr}_${idx}`;
-  if(!statBuffs[key])statBuffs[key]=[];
-  statBuffs[key].push({stat,amount,turnsLeft:turns});
-}
-function getStatBuffTotal(teamStr,idx,stat){
-  let key=`${teamStr}_${idx}`;
-  if(!statBuffs[key])return 0;
-  return statBuffs[key].filter(b=>b.stat===stat).reduce((s,b)=>s+b.amount,0);
-}
-function tickStatBuffs(){
-  for(let key of Object.keys(statBuffs)){
-    statBuffs[key]=statBuffs[key].map(b=>({...b,turnsLeft:b.turnsLeft-1})).filter(b=>b.turnsLeft>0);
-    if(statBuffs[key].length===0)delete statBuffs[key];
-  }
-}
-
-// ==================== AURAS ====================
-function applyAuraEffectsToAction(action,execTeam){
-  let attackers=execTeam==='player'?playerActive:enemyActive;
-  let attacker=attackers[action.actorIdx];
-  let skill=action.actionType==='skill'?attacker.Skills[action.skillIdx]:null;
-  if(!skill)return{blocked:false};
-  const nature=(skill.Nature||'').toLowerCase();
-  // Check if target card is invulnerable
-  let defTeam=execTeam==='player'?'enemy':'player';
-  let defKey=`${defTeam}_${action.targetIdx}`;
-  if(invulnerableCards[defKey]>0)return{blocked:true,reason:`${shortName(getCardName(attacker))}'s attack blocked — target is invulnerable!`};
-  for(let aura of activeAuras){
-    if(aura.sourceTeam===execTeam)continue;
-    if(aura.type==='all-skills-disabled')return{blocked:true,reason:`${skill.Name} disabled by ${aura.sourceName}!`};
-    // Coin flip immune check
-    let mods=attacker.Ability?.Logic_Engine?.Effect||'';
-    let isImmuneFlip=mods.includes('Immune_To_Forced_Coin_Flips')||
-      (attacker.Ability?.Description_UI||'').toLowerCase().includes('not affected by skills that force a coin flip')||
-      (attacker.Ability?.Description_UI||'').toLowerCase().includes('coin flip will not affect');
-    if(aura.type==='jumpshot-miss-chance'&&nature.includes('jump shot')&&!isImmuneFlip&&Math.random()<0.5)
-      return{blocked:true,reason:`${skill.Name} MISSED! (50%)`};
-    if(aura.type==='closeshot-miss-chance'&&nature.includes('close shot')&&!isImmuneFlip&&Math.random()<0.5)
-      return{blocked:true,reason:`${skill.Name} MISSED! (50%)`};
-    if(aura.type==='anyskill-miss-chance'&&!isImmuneFlip&&Math.random()<0.5)
-      return{blocked:true,reason:`${skill.Name} MISSED! (50%)`};
-    if(aura.type==='intercept-all-assists'&&nature.includes('assist'))
-      return{blocked:true,reason:`${skill.Name} intercepted by ${aura.sourceName}!`};
-  }
-  // Contest auras (Kidd No J, Robinson Battleship Anchor)
-  for(let aura of activeAuras){
-    if(aura.sourceTeam===execTeam)continue;
-    if(aura.type==='contest-jump'&&nature.includes('jump shot'))
-      return{blocked:true,reason:`${skill.Name} contested by ${aura.sourceName}!`};
-    if(aura.type==='contest-close'&&nature.includes('close shot'))
-      return{blocked:true,reason:`${skill.Name} contested by ${aura.sourceName}!`};
-  }
-  // Shutdown check
-  let atkKey=`${execTeam}_${action.actorIdx}`;
-  if(shutdownCards[atkKey]>0)return{blocked:true,reason:`${shortName(getCardName(attacker))} is shut down!`};
-  return{blocked:false};
-}
-function tickDownAuras(){
-  activeAuras=activeAuras.map(a=>({...a,turnsLeft:a.turnsLeft-1})).filter(a=>a.turnsLeft>0);
-  // Tick shutdown
-  for(let k of Object.keys(shutdownCards)){shutdownCards[k]--;if(shutdownCards[k]<=0)delete shutdownCards[k];}
-  // Tick invulnerable
-  for(let k of Object.keys(invulnerableCards)){invulnerableCards[k]--;if(invulnerableCards[k]<=0)delete invulnerableCards[k];}
-  // Tick disabled skills
-  for(let k of Object.keys(disabledSkills)){disabledSkills[k]--;if(disabledSkills[k]<=0)delete disabledSkills[k];}
-  // Clear frozen, drained
-  frozenCards={};drainedNextTurn={};
-  tickStatBuffs();
-}
-
-// ==================== ABILITY PASSIVE CHECKS ====================
-function checkAbilityPassive(card,teamStr,idx){
-  // Forced target on self (Russell/Parish)
-  // handled in targeting
-}
-function isCardImmuneToDefensiveSkills(card){
-  // Shai Gilgeous-Alexander
-  let ab=(card.Ability?.Description_UI||'').toLowerCase();
-  return ab.includes('unaffected by any defensive skills');
-}
-function isCardImmuneToSteal(card){
-  let ab=(card.Ability?.Description_UI||'').toLowerCase();
-  return ab.includes('cannot steal the ball from')||ab.includes('prevent opponents from stealing')||ab.includes('opponents cannot steal the ball from');
-}
-function isCardImmuneToFreeze(card){
-  let ab=(card.Ability?.Description_UI||'').toLowerCase();
-  return ab.includes('cannot be frozen');
-}
-function isCardSkillsUnblockable(card){
-  let ab=(card.Ability?.Description_UI||'').toLowerCase();
-  return ab.includes('cannot be blocked')&&ab.includes('skill');
-}
-function isCardAssistUninterceptable(card){
-  let ab=(card.Ability?.Description_UI||'').toLowerCase();
-  return ab.includes('assist skill cannot be intercepted')||ab.includes('cannot be intercepted by defensive skills');
-}
-function isCardSkillsUncontestable(card){
-  let ab=(card.Ability?.Description_UI||'').toLowerCase();
-  return (ab.includes('cannot be contested')&&!ab.includes('basic attacks'));
-}
-
-// ==================== PENDING BLOCKS ====================
-function applyPendingBlocks(incomingDmg,targetTeam,targetIdx){
-  if(pendingBlocks.length===0)return incomingDmg;
-  let block=pendingBlocks.shift();
-  let sk=block.sk;let mods=sk.Logic_Engine?.Modifiers||[];
-  let name=getCardName(playerActive[block.playerCardIdx]);
-  let role=playerActive[block.playerCardIdx].battleRole||'';
-  // Reactionary_Redirect = Minnesota Switcher / Boston Switcher (take 50%)
-  if(mods.includes('Reactionary_Redirect')){
-    let reduced=Math.floor(incomingDmg*0.5);
-    logMsg(`🛡️ <span class="lc-${role}">${shortName(name)} • ${role}</span>: ${sk.Name} — absorbed 50%! (${incomingDmg}→${reduced})`,`atk`);
-    playerActive[block.playerCardIdx].currentHp=Math.max(0,playerActive[block.playerCardIdx].currentHp-reduced);
-    return 0; // original target takes 0
-  }
-  // Reactionary_Putback_Dmg = Moses Malone Putback (block handled elsewhere, just deal dmg)
-  if(mods.includes('Reactionary_Putback_Dmg')){
-    // This is not a block — it's handled post-action
-    return incomingDmg;
-  }
-  // Reactionary_Mitigation = partial block
-  if(mods.includes('Reactionary_Mitigation')){
-    let cap=800;
-    let execStr=sk.Logic_Engine?.Execution||'';
-    let m=execStr.match(/up to (\d+)/i)||String(sk.Display_DMG||'').match(/(\d+)/);
-    if(m)cap=parseInt(m[1]);
-    // Special: Wilt also counter-attacks after block
-    let reduced=Math.max(0,incomingDmg-cap);
-    logMsg(`🛡️ <span class="lc-${role}">${shortName(name)}</span>: ${sk.Name} blocked ${Math.min(incomingDmg,cap)} DMG!`,`atk`);
-    return reduced;
-  }
-  // Reactionary_Block = full block
-  if(mods.includes('Reactionary_Block')){
-    logMsg(`🛡️ <span class="lc-${role}">${shortName(name)}</span>: ${sk.Name} — BLOCKED completely!`,`atk`);
-    // Dual-use (LeBron Fastbreak Mandate) also blocks
-    return 0;
-  }
-  let execStr=sk.Logic_Engine?.Execution||'';
-  if(execStr.includes('Attack_Blocked = True')){
-    logMsg(`🛡️ <span class="lc-${role}">${shortName(name)}</span>: ${sk.Name} BLOCKED!`,`atk`);
-    return 0;
-  }
-  let m2=execStr.match(/up to (\d+)/i)||execStr.match(/(\d+) DMG/i);
-  if(m2){let cap=parseInt(m2[1]),blocked=Math.min(incomingDmg,cap),red=incomingDmg-blocked;logMsg(`🛡️ ${shortName(name)}: ${sk.Name} blocked ${blocked} DMG!`,`atk`);return red;}
-  return incomingDmg;
-}
-
-// ==================== REACTIVE PHASE ====================
-async function promptReactiveDefense(enemyQueue){
-  for(let action of enemyQueue){
-    let atk=enemyActive[action.actorIdx];if(!atk||atk.isDead)continue;
-    let skill=action.actionType==='skill'?atk.Skills[action.skillIdx]:null;
-    let nature=skill?(skill.Nature||'').toLowerCase():'basic';
-    let isJump=nature.includes('jump shot');
-    let isClose=nature.includes('close shot');
-    let isAssist=nature.includes('assist');
-    for(let[pi,pCard]of playerActive.entries()){
-      if(pCard.isDead)continue;
-      for(let sk of(pCard.Skills||[])){
-        let cat=getSkillCategory(sk);
-        if(!['reactive-block','reactive-steal','reactive-intercept','reactive-contest','reactive-rebound'].includes(cat))continue;
-        let mods=sk.Logic_Engine?.Modifiers||[];
-        let valid=false;
-        if(mods.includes('Preemptive_Cancel'))valid=true;
-        if(mods.includes('Reactionary_Block')||mods.includes('Reactionary_Mitigation')||mods.includes('Reactionary_Redirect'))valid=true;
-        if(mods.includes('Reactionary_Putback_Dmg'))valid=true;
-        if(mods.includes('Reactionary_Intercept')&&isAssist){
-          if(isCardImmuneToDefensiveSkills(atk))valid=false;
-          if(isCardAssistUninterceptable(action.actorCard||atk))valid=false;
-          if(valid)valid=true;
-        }
-        if(mods.includes('Reactionary_Contest')||mods.includes('Reactionary_Contest_Jump')){let desc=(sk.Description_UI||'').toLowerCase();if((isJump&&desc.includes('jump'))||(isClose&&desc.includes('close')))valid=true;}
-        if(mods.includes('Reactionary_Contest_Close')){let desc=(sk.Description_UI||'').toLowerCase();if(isClose&&desc.includes('close'))valid=true;}
-        if(mods.includes('Reactionary_Grant_Extra_Move'))valid=false; // triggered post-action
-        if(valid)return true;
-      }
-    }
-  }
-  return false;
-}
-
-async function runReactivePhase(enemyQueue){
-  enemyQueue.forEach((a,i)=>a._id=`enemy_${turnCount}_${i}`);
-  let hasReactive=await promptReactiveDefense(enemyQueue);
-  if(!hasReactive)return;
-  return new Promise(resolve=>{reactiveResolve=resolve;showReactivePanel(enemyQueue);});
-}
-
-function showReactivePanel(enemyQueue){
-  let panel=$('checkout-panel');
-  let enemySummary=enemyQueue.filter(a=>{let atk=enemyActive[a.actorIdx];return atk&&!atk.isDead&&a.actionType!=='pass';}).map(a=>{
-    let atk=enemyActive[a.actorIdx];let sk=a.actionType==='skill'?atk.Skills[a.skillIdx]:null;
-    let moveName=sk?sk.Name:'Basic Attack';
-    let tgt=(a.targetTeam==='player'&&a.targetIdx!=null)?shortName(getCardName(playerActive[a.targetIdx])):'?';
-    return`<div style="font-size:0.74rem;">⚔️ <b style="color:${getRoleColor(atk.battleRole)}">BOT</b> ${shortName(getCardName(atk))}: ${moveName} ➔ ${tgt}</div>`;
-  }).join('');
-
-  let reactiveOptions='';
-  for(let[pi,pCard]of playerActive.entries()){
-    if(pCard.isDead)continue;
-    for(let[si,sk]of(pCard.Skills||[]).entries()){
-      let cat=getSkillCategory(sk);
-      if(!['reactive-block','reactive-steal','reactive-intercept','reactive-contest'].includes(cat))continue;
-      let mods=sk.Logic_Engine?.Modifiers||[];
-      // Don't show Putback in reactive panel — it auto-fires
-      if(mods.includes('Reactionary_Putback_Dmg'))continue;
-      reactiveOptions+=`<button class="react-skill-btn" onclick="selectReactiveSkill(${pi},${si})">
-        <span style="color:${getRoleColor(pCard.battleRole)};font-weight:700;">YOU</span> ${shortName(getCardName(pCard))}: 🛡️ ${sk.Name}
-        <div class="react-skill-tooltip">${escapeHtml(sk.Description_UI)}</div>
-      </button>`;
-    }
-  }
-
-  $('staged-count').textContent='REACT';
-  $('staged-list').innerHTML=`
-    <div style="font-size:0.7rem;color:var(--text-muted);margin-bottom:5px;font-weight:700;">ENEMY IS ATTACKING:</div>
-    ${enemySummary}
-    <div style="font-size:0.7rem;color:#40C4FF;margin:7px 0 4px;font-weight:700;">YOUR REACTIVE OPTIONS:</div>
-    ${reactiveOptions||'<div style="color:var(--text-muted);font-size:0.72rem;">None available</div>'}
-  `;
-  $('confirm-moves-btn').style.background='#FF5722';
-  $('confirm-moves-btn').textContent='SKIP (NO DEFENSE)';
-  $('confirm-moves-btn').disabled=false;
-  $('confirm-moves-btn').onclick=finishReactivePhase;
-  panel.classList.add('visible');
-}
-
-function selectReactiveSkill(playerCardIdx,skillIdx){
-  let pCard=playerActive[playerCardIdx];
-  let sk=pCard.Skills[skillIdx];
-  let mods=sk.Logic_Engine?.Modifiers||[];
-  let name=getCardName(pCard);
-  let role=pCard.battleRole||'';
-
-  // Redirect (Garnett Minnesota Switcher / McHale Boston Switcher)
-  if(mods.includes('Reactionary_Redirect')){
-    reactiveResponses.push({playerCardIdx,skillIdx,appliedTo:'next_incoming'});
-    pendingBlocks.push({playerCardIdx,skillIdx,sk});
-    logMsg(`🛡️ <span class="lc-${role}">${shortName(name)} • ${role}</span>: ${sk.Name} — will absorb 50% of next hit!`,'atk');
-    return;
-  }
-
-  // Steal / Intercept targeting
-  if(mods.includes('Preemptive_Cancel')||mods.includes('Reactionary_Intercept')){
-    pendingReactiveAction={playerCardIdx,skillIdx};
-    setTooltipEnabled(false);
-    logMsg(`🛡️ ${shortName(name)}: ${sk.Name} — click target enemy card`,'sys');
-    uiState='AWAITING_REACTIVE_TARGET';
-    renderArena();return;
-  }
-
-  // Block / Mitigation / Contest
-  reactiveResponses.push({playerCardIdx,skillIdx,appliedTo:'next_incoming'});
-  logMsg(`🛡️ <span class="lc-${role}">${shortName(name)} • ${role}</span>: ${sk.Name} staged!`,'atk');
-  if(mods.includes('Reactionary_Block')||mods.includes('Reactionary_Mitigation')){
-    pendingBlocks.push({playerCardIdx,skillIdx,sk});
-  }
-  if(mods.includes('Reactionary_Contest_Jump')){
-    logMsg(`🛡️ ${shortName(name)}: contests all jump shots this turn!`,'atk');
-    activeAuras.push({type:'contest-jump',turnsLeft:1,sourceTeam:'player',sourceName:sk.Name});
-  }
-  if(mods.includes('Reactionary_Contest_Close')){
-    logMsg(`🛡️ ${shortName(name)}: contests all close shots this turn!`,'atk');
-    activeAuras.push({type:'contest-close',turnsLeft:1,sourceTeam:'player',sourceName:sk.Name});
-  }
-}
-
-function finishReactivePhase(){
-  $('confirm-moves-btn').style.background='';
-  $('confirm-moves-btn').textContent='LOCK IN MOVES';
-  $('confirm-moves-btn').onclick=confirmMovesWithDefense;
-  $('checkout-panel').classList.remove('visible');
-  if(reactiveResolve){reactiveResolve();reactiveResolve=null;}
-}
-
-// ==================== TARGET MATRICES ====================
-const TARGET_MATRIX={"PG":["PG","SG"],"SG":["SG","SF"],"SF":["SG","SF","PF"],"PF":["PF","C"],"C":["C","PF"]};
-const ROLE_TARGET_MATRIX={"PG":["PG","SG"],"SG":["SG","SF"],"SF":["SG","SF","PF"],"PF":["PF","C"],"C":["C","PF"],"6TH":["PG","SG","SF","PF","C"]};
-
-function getValidTargetsByRole(attackerCard,targetTeam){
-  let role=attackerCard.battleRole||getCardPos(attackerCard).split('/')[0].trim();
-  let validRoles=ROLE_TARGET_MATRIX[role]||[];
-  return targetTeam.map((c,i)=>({c,i})).filter(def=>{
-    if(def.c.isDead)return false;
-    // Forced target check (Russell, Parish — opposing C must target them)
-    let defAb=(def.c.Ability?.Description_UI||'').toLowerCase();
-    if(defAb.includes('focus only on')&&defAb.includes('cannot target other players')){
-      // Opposing C forced to target this card only
-      if(role==='C'&&!def.c.isDead)return true;
-    }
-    let defRole=def.c.battleRole||getCardPos(def.c).split('/')[0].trim();
-    return validRoles.includes(defRole);
-  });
-}
-function getValidTargets(attackerCard,targetTeam){
-  if(attackerCard.battleRole)return getValidTargetsByRole(attackerCard,targetTeam);
-  let validTargetPositions=new Set();
-  let posStr=getCardPos(attackerCard);
-  if(posStr==='6TH')return targetTeam.map((c,i)=>({c,i})).filter(x=>!x.c.isDead);
-  posStr.split('/').forEach(p=>{let bp=p.trim();if(TARGET_MATRIX[bp])TARGET_MATRIX[bp].forEach(vp=>validTargetPositions.add(vp));});
-  return targetTeam.map((c,i)=>({c,i})).filter(def=>{
-    if(def.c.isDead)return false;
-    let defPositions=getCardPos(def.c).split('/').map(p=>p.trim());
-    return defPositions.some(dp=>validTargetPositions.has(dp));
-  });
-}
-
-// ==================== ENEMY ROSTER ====================
-function buildEnemyRoster(){
-  const POSITIONS_NEEDED=['PG','SG','SF','PF','C'];
-  let enemyDraft={PG:[],SG:[],SF:[],PF:[],C:[]};
-  let pool=[...CARDS].sort(()=>Math.random()-0.5);
-  for(let card of pool){
-    let positions=getCardPos(card).split('/').map(p=>p.trim());
-    for(let pos of positions){
-      if(POSITIONS_NEEDED.includes(pos)&&enemyDraft[pos].length<2){
-        let alreadyUsed=POSITIONS_NEEDED.some(p=>enemyDraft[p].some(c=>getCardName(c)===getCardName(card)));
-        if(!alreadyUsed){enemyDraft[pos].push(card);break;}
-      }
-    }
-    if(POSITIONS_NEEDED.every(p=>enemyDraft[p].length>=2))break;
-  }
-  let starters=[],bench=[];
-  POSITIONS_NEEDED.forEach(pos=>{
-    let cards=enemyDraft[pos];
-    if(cards[0]){let c=JSON.parse(JSON.stringify(cards[0]));c.currentHp=getCardHP(c);c.isDead=false;c.battleRole=pos;starters.push(c);}
-    if(cards[1]){let c=JSON.parse(JSON.stringify(cards[1]));c.currentHp=getCardHP(c);c.isDead=false;c.battleRole=pos;bench.push(c);}
-  });
-  return{starters,bench};
-}
-function buildPlayerActiveWithRoles(){
-  let result=[];
-  let positions=hasSixthMan?['PG','SG','SF','PF','C','6TH']:['PG','SG','SF','PF','C'];
-  positions.forEach(pos=>{if(activeLineup[pos]){let c=JSON.parse(JSON.stringify(activeLineup[pos]));c.currentHp=getCardHP(c);c.isDead=false;c.battleRole=pos;result.push(c);}});
-  return result;
-}
-
-// ==================== SEARCH FILTER ====================
-function handleSearchFilter(mode){if(mode==='cat')filterCat();if(mode==='draft')filterDraftGrid();}
+// ==================== DRAG & DROP ====================
+function handleDragStart(e, name) { hideTooltip(); e.dataTransfer.setData('text/plain', name); e.dataTransfer.effectAllowed='move'; let g=$('drag-ghost'); if(g){g.textContent=getDBShortName(name); e.dataTransfer.setDragImage(g,0,0);} setTimeout(()=>{if(e.target&&e.target.classList)e.target.classList.add('dragging');},0); }
+function handleDragEnd(e) { if(e.target&&e.target.classList) e.target.classList.remove('dragging'); }
+function handleDragOver(e) { e.preventDefault(); if(e.currentTarget&&e.currentTarget.classList) e.currentTarget.classList.add('drag-over'); }
+function handleDragLeave(e) { if(e.currentTarget&&e.currentTarget.classList) e.currentTarget.classList.remove('drag-over'); }
+function triggerInvalidDrop(el) { if(!el)return; el.classList.add('shake-invalid'); setTimeout(()=>el.classList.remove('shake-invalid'),500); }
 
 // ==================== CATALOGUE ====================
-function goCat(){showScreen('catalogue-screen');if(typeof CARDS!=='undefined')filterCat();}
-function filterCat(){
-  if(isCollapsing)return;
-  let q=($('cs')&&$('cs').value||'').toLowerCase();
-  let posF=$('cp')&&$('cp').value||'';
-  let sort=$('csort')&&$('csort').value||'name';
-  let cleanCards=(typeof CARDS!=='undefined')?CARDS.filter(c=>c&&c.UI_Frontend_Data):[];
-  let filtered=cleanCards.filter(c=>{
-    let name=(getCardName(c)||"").toLowerCase();let team=(c.UI_Frontend_Data.Team||"").toLowerCase();let pos=getCardPos(c);
-    return(!q||name.includes(q)||team.includes(q))&&(!posF||pos.split('/').some(p=>p.trim()===posF));
+let expandedCardCat = null, expandedCardDraft = null;
+function goCat() { showScreen('catalogue-screen'); if(typeof CARDS!=='undefined') filterCat(); }
+function filterCat() {
+  let q=($('cs')?.value||'').toLowerCase(), posF=$('cp')?.value||'', sort=$('csort')?.value||'name';
+  let list = (typeof CARDS!=='undefined') ? CARDS.filter(c=>c?.UI_Frontend_Data) : [];
+  list = list.filter(c => {
+    let n=(getCardName(c)||"").toLowerCase(), t=(c.UI_Frontend_Data.Team||"").toLowerCase(), p=getCardPos(c);
+    return (!q||n.includes(q)||t.includes(q)) && (!posF||p.split('/').some(x=>x.trim()===posF));
   });
-  if(sort==='hp')filtered.sort((a,b)=>getCardHP(b)-getCardHP(a));
-  else if(sort==='dmg')filtered.sort((a,b)=>getCardDMG(b)-getCardDMG(a));
-  else if(sort==='spd')filtered.sort((a,b)=>getCardSPD(b)-getCardSPD(a));
-  else filtered.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
-  $('cgrid').innerHTML=filtered.map(c=>{
-    let name=getCardName(c);
-    if(name===expandedCardCat)return renderExpandedRow(c,'cat');
-    let sn=escapeJS(name);
-    return`<div class="compact-card" onclick="toggleExpand('${sn}','cat')" onmouseenter="showTooltip(event,'${sn}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),name)}" onerror="handleImgError(this,'${sn}')"></div></div>`;
+  if(sort==='hp') list.sort((a,b)=>getCardHP(b)-getCardHP(a));
+  else if(sort==='dmg') list.sort((a,b)=>getCardDMG(b)-getCardDMG(a));
+  else if(sort==='spd') list.sort((a,b)=>getCardSPD(b)-getCardSPD(a));
+  else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
+  
+  $('cgrid').innerHTML = list.map(c=>{
+    let n = getCardName(c), safeN = escapeJS(n);
+    if(n===expandedCardCat) return renderExpandedRow(c, 'cat');
+    return `<div class="compact-card" onclick="toggleExpand('${safeN}','cat')" onmouseenter="showTooltip(event,'${safeN}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),n)}" onerror="handleImgError(this,'${safeN}')"></div></div>`;
   }).join('');
 }
 
 // ==================== EXPANDED ROW ====================
-function toggleExpand(name,mode){
-  if(isCollapsing)return;
-  let card=(typeof CARDS!=='undefined')?CARDS.find(c=>getCardName(c)===name):null;if(!card)return;
-  hideTooltip();
-  if(mode==='cat'){if(expandedCardCat===name){closeExpandedWithAnim('cat');return;}expandedCardCat=name;filterCat();}
-  else{if(expandedCardDraft===name){closeExpandedWithAnim('draft');return;}expandedCardDraft=name;filterDraftGrid();}
+function toggleExpand(name, mode) {
+  let card = CARDS.find(c=>getCardName(c)===name); if(!card)return; hideTooltip();
+  if(mode==='cat') { expandedCardCat = (expandedCardCat===name) ? null : name; filterCat(); }
+  else { expandedCardDraft = (expandedCardDraft===name) ? null : name; filterDraftGrid(); } // Fast re-render without complex animations
 }
-function closeExpandedWithAnim(mode){
-  if(isCollapsing)return;isCollapsing=true;
-  let row=document.querySelector('.expanded-row');
-  if(row){
-    let flipper=row.querySelector('.expanded-card-flipper');
-    if(flipper)flipper.style.animation='fairySpinClose 0.5s forwards';
-    row.classList.add('collapsing');
-    setTimeout(()=>{if(mode==='cat')expandedCardCat=null;if(mode==='draft')expandedCardDraft=null;isCollapsing=false;if(mode==='cat')filterCat();if(mode==='draft')filterDraftGrid();},350);
-  }else{if(mode==='cat')expandedCardCat=null;if(mode==='draft')expandedCardDraft=null;isCollapsing=false;}
+function closeExpanded(mode) {
+  if(mode==='cat') { expandedCardCat=null; filterCat(); }
+  else { expandedCardDraft=null; filterDraftGrid(); }
 }
-function spawnFairyParticles(container){
-  const colors=['#FFD600','#69F0AE','#B388FF','#FF5722','#40C4FF','#FFFFFF'];
-  for(let i=0;i<12;i++){let p=document.createElement('div');p.className='fairy-particle';p.style.background=colors[Math.floor(Math.random()*colors.length)];p.style.left=(20+Math.random()*160)+'px';p.style.top=(20+Math.random()*200)+'px';p.style.animationDelay=(Math.random()*1.5)+'s';p.style.width=p.style.height=(3+Math.random()*5)+'px';container.appendChild(p);setTimeout(()=>p.remove(),2500);}
-}
-function renderExpandedRow(card,mode){
-  let name=getCardName(card);let team=card.UI_Frontend_Data?.Team||'';
-  let hp=getCardHP(card),dmg=getCardDMG(card),spd=getCardSPD(card);let pos=getCardPos(card);
-  let abName=card.Ability?.Name||'No Ability';let abDesc=card.Ability?.Description_UI||'';
-  let skillsHtml=(card.Skills||[]).map(s=>`<div class="ec-skill"><div class="ec-skill-header"><span>${s.Name}</span><span class="ec-skill-dmg">⚔️ ${s.Display_DMG}</span></div><div class="ec-skill-desc">${s.Description_UI}</div></div>`).join('');
-  setTimeout(()=>{let row=document.querySelector('.expanded-row');if(row)spawnFairyParticles(row);},100);
-  return`<div class="expanded-row">
-    <button class="expanded-close" onclick="closeExpandedWithAnim('${mode}')">✕</button>
-    <div class="expanded-card-container" onclick="onExpandedCardClick(event,'${mode}')">
-      <div class="expanded-card-flipper">
-        <div class="expanded-front"><img src="${getImgUrl(getCardImg(card),name)}" onerror="handleImgError(this,'${escapeJS(name)}')"></div>
-        <div class="expanded-back"><img src="${BACK_IMG}" alt="back"></div>
+function renderExpandedRow(card, mode) {
+  let n=getCardName(card), t=card.UI_Frontend_Data?.Team||'', hp=getCardHP(card), dmg=getCardDMG(card), spd=getCardSPD(card), p=getCardPos(card);
+  let skills = (card.Skills||[]).map(s=>`<div class="ec-skill-wrap"><div class="ec-skill-header"><span>${s.Name}</span><span class="ec-skill-dmg">⚔️ ${s.Display_DMG}</span></div><div class="ec-skill-desc">${s.Description_UI}</div></div>`).join('');
+  return `
+    <div class="expanded-row">
+      <button class="remove-slot" style="position:absolute;top:10px;right:10px;" onclick="closeExpanded('${mode}')">✕</button>
+      <div class="expanded-card-container"><div class="expanded-card-flipper"><div class="expanded-front"><img src="${getImgUrl(getCardImg(card),n)}" onerror="handleImgError(this,'${escapeJS(n)}')"></div></div></div>
+      <div class="expanded-scroll-wrapper">
+        <div class="expanded-content">
+          <div class="ec-header"><div class="ec-title">${n}</div><div class="ec-team">${t} · ${p}</div></div>
+          <div class="ec-stats-row"><div class="ec-stat">${hp} <span>HP</span></div><div class="ec-stat">${dmg} <span>DMG</span></div><div class="ec-stat">${spd} <span>SPD</span></div></div>
+          <div style="background:rgba(64,196,255,0.05);border-left:2px solid #40C4FF;padding:8px 12px;margin-bottom:12px;"><div style="font-weight:800;color:#40C4FF;font-size:0.9rem;">✨ ${card.Ability?.Name||'No Ability'}</div><div style="font-size:0.75rem;color:var(--text-light);">${card.Ability?.Description_UI||''}</div></div>
+          <div class="ec-skills-grid">${skills}</div>
+        </div>
       </div>
-    </div>
-    <div class="expanded-scroll-wrapper">
-      <div class="expanded-content">
-        <div class="ec-header"><div class="ec-title">${name}</div><div class="ec-team">${team} · ${pos}</div></div>
-        <div class="ec-stats-row"><div class="ec-stat">${hp} <span>HP</span></div><div class="ec-stat">${dmg} <span>DMG</span></div><div class="ec-stat">${spd} <span>SPD</span></div></div>
-        <div class="ec-ability"><div class="ec-ability-name">✨ ${abName}</div><div class="ec-ability-desc">${abDesc}</div></div>
-        <div class="ec-skills-grid">${skillsHtml}</div>
-      </div>
-    </div>
-  </div>`;
-}
-function onExpandedCardClick(e,mode){
-  e.stopPropagation();
-  let flipper=document.querySelector('.expanded-card-flipper');
-  if(flipper){flipper.style.animation='none';void flipper.offsetWidth;flipper.style.animation='fairySpin 2s cubic-bezier(0.1,0.9,0.2,1) forwards';}
+    </div>`;
 }
 
 // ==================== DRAFT ====================
-function goDraft(){draftSquad={PG:[null,null],SG:[null,null],SF:[null,null],PF:[null,null],C:[null,null]};expandedCardDraft=null;showScreen('draft-screen');renderDraftSlots();filterDraftGrid();}
-function filterDraftGrid(){
-  if(isCollapsing)return;
-  const q=($('draft-search')&&$('draft-search').value||'').toLowerCase();
-  const sort=$('draft-sort')&&$('draft-sort').value||'name';
-  let cleanCards=(typeof CARDS!=='undefined')?CARDS.filter(c=>c&&c.UI_Frontend_Data):[];
-  let list=cleanCards.filter(c=>{let name=(getCardName(c)||"").toLowerCase();let team=(c.UI_Frontend_Data.Team||"").toLowerCase();return!q||name.includes(q)||team.includes(q);});
-  if(sort==='hp')list.sort((a,b)=>getCardHP(b)-getCardHP(a));
-  else if(sort==='dmg')list.sort((a,b)=>getCardDMG(b)-getCardDMG(a));
-  else if(sort==='spd')list.sort((a,b)=>getCardSPD(b)-getCardSPD(a));
-  else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
-  $('draft-grid').innerHTML=list.map(c=>{
-    let name=getCardName(c);if(name===expandedCardDraft)return renderExpandedRow(c,'draft');
-    let inD=isCardInDraft(c);let sn=escapeJS(name);
-    return`<div class="compact-card ${inD?'in-draft':''}" ${!inD?`draggable="true" ondragstart="handleDragStart(event,'${sn}')" ondragend="handleDragEnd(event)"`:''} onclick="${!inD?`toggleExpand('${sn}','draft')`:'void(0)'}" onmouseenter="${!inD?`showTooltip(event,'${sn}')`:'void(0)'}" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),name)}" onerror="handleImgError(this,'${sn}')"></div></div>`;
+let draftSquad = { PG:[null,null], SG:[null,null], SF:[null,null], PF:[null,null], C:[null,null] };
+const POSITIONS = ['PG','SG','SF','PF','C']; let hasSixthMan = false;
+
+function goDraft() { draftSquad={PG:[null,null],SG:[null,null],SF:[null,null],PF:[null,null],C:[null,null]}; expandedCardDraft=null; showScreen('draft-screen'); renderDraftSlots(); filterDraftGrid(); }
+function filterDraftGrid() {
+  let q=($('draft-search')?.value||'').toLowerCase(), sort=$('draft-sort')?.value||'name';
+  let list = (typeof CARDS!=='undefined') ? CARDS.filter(c=>c?.UI_Frontend_Data) : [];
+  list = list.filter(c => (!q||(getCardName(c)||"").toLowerCase().includes(q)||(c.UI_Frontend_Data.Team||"").toLowerCase().includes(q)));
+  if(sort==='hp') list.sort((a,b)=>getCardHP(b)-getCardHP(a)); else if(sort==='dmg') list.sort((a,b)=>getCardDMG(b)-getCardDMG(a)); else if(sort==='spd') list.sort((a,b)=>getCardSPD(b)-getCardSPD(a)); else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
+  
+  $('draft-grid').innerHTML = list.map(c=>{
+    let n=getCardName(c); if(n===expandedCardDraft) return renderExpandedRow(c,'draft');
+    let inD = isCardInDraft(c), safeN = escapeJS(n);
+    return `<div class="compact-card ${inD?'in-draft':''}" ${!inD?`draggable="true" ondragstart="handleDragStart(event,'${safeN}')" ondragend="handleDragEnd(event)"`:''} onclick="${!inD?`toggleExpand('${safeN}','draft')`:'void(0)'}" onmouseenter="${!inD?`showTooltip(event,'${safeN}')`:'void(0)'}" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),n)}" onerror="handleImgError(this,'${safeN}')"></div></div>`;
   }).join('');
 }
-function isCardInDraft(card){let name=getCardName(card);return POSITIONS.some(p=>getCardName(draftSquad[p][0])===name||getCardName(draftSquad[p][1])===name);}
-function renderDraftSlots(){
-  let html='';
-  [0,1].forEach(idx=>{POSITIONS.forEach(pos=>{let c=draftSquad[pos][idx];let cName=c?getCardName(c):null;html+=`<div id="dslot-${pos}-${idx}" class="slot-card slot-${pos} ${c?'filled':''}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropDraft(event,'${pos}',${idx})"><div class="slot-pos">${pos}</div>${c?`<div class="slot-name">${getDBShortName(cName)}</div><button class="remove-slot" onclick="removeDraft('${pos}',${idx})">✕</button>`:''}</div>`;});});
+function isCardInDraft(c) { let n=getCardName(c); return POSITIONS.some(p=>getCardName(draftSquad[p][0])===n||getCardName(draftSquad[p][1])===n); }
+function renderDraftSlots() {
+  let html=''; [0,1].forEach(idx=>{ POSITIONS.forEach(pos=>{
+    let c=draftSquad[pos][idx], cn=c?getCardName(c):null;
+    html+=`<div id="dslot-${pos}-${idx}" class="slot-card slot-${pos} ${c?'filled':''}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropDraft(event,'${pos}',${idx})"><div class="slot-pos">${pos}</div>${c?`<div class="slot-name">${getDBShortName(cn)}</div><button class="remove-slot" onclick="removeDraft('${pos}',${idx})">✕</button>`:''}</div>`;
+  }); });
   $('draft-slots-vertical').innerHTML=html;
-  let count=0;hasSixthMan=false;
-  POSITIONS.forEach(p=>[0,1].forEach(i=>{if(draftSquad[p][i]){count++;if(getCardName(draftSquad[p][i]).includes("Sixth Man"))hasSixthMan=true;}}));
-  let max=hasSixthMan?11:10;
-  $('draft-count-lbl').textContent=`${count}/${max}`;
-  $('draft-confirm-btn').disabled=count<10;
-  // Glow on ready
-  let btn=$('draft-confirm-btn');
-  if(count>=10){btn.style.borderColor='white';btn.style.boxShadow='0 0 24px rgba(255,255,255,0.55), 0 0 8px rgba(255,214,0,0.4)';}
-  else{btn.style.borderColor='';btn.style.boxShadow='';}
+  let cnt=0; hasSixthMan=false; POSITIONS.forEach(p=>[0,1].forEach(i=>{if(draftSquad[p][i]){cnt++; if(getCardName(draftSquad[p][i]).includes("Sixth Man")) hasSixthMan=true;}}));
+  $('draft-count-lbl').textContent=`${cnt}/${hasSixthMan?11:10}`;
+  $('draft-confirm-btn').disabled=(cnt<10);
 }
-function dropDraft(e,pos,idx){
-  e.preventDefault();if(e.currentTarget&&e.currentTarget.classList)e.currentTarget.classList.remove('drag-over');
-  let name=e.dataTransfer.getData('text/plain');
-  let card=(typeof CARDS!=='undefined')?CARDS.find(c=>getCardName(c)===name):null;
-  if(!card||isCardInDraft(card))return;
-  if(!getCardPos(card).split('/').map(p=>p.trim()).includes(pos))return triggerInvalidDrop($(`dslot-${pos}-${idx}`));
-  draftSquad[pos][idx]=card;expandedCardDraft=null;renderDraftSlots();filterDraftGrid();
+function dropDraft(e,pos,idx) {
+  e.preventDefault(); if(e.currentTarget&&e.currentTarget.classList) e.currentTarget.classList.remove('drag-over');
+  let c=CARDS.find(x=>getCardName(x)===e.dataTransfer.getData('text/plain'));
+  if(!c||isCardInDraft(c)) return;
+  if(!getCardPos(c).split('/').map(p=>p.trim()).includes(pos)) return triggerInvalidDrop($(`dslot-${pos}-${idx}`));
+  draftSquad[pos][idx]=c; renderDraftSlots(); filterDraftGrid(); // Soft re-render
 }
-function removeDraft(pos,idx){draftSquad[pos][idx]=null;renderDraftSlots();filterDraftGrid();}
-function autoFillDraft(){
+function removeDraft(pos,idx) { draftSquad[pos][idx]=null; renderDraftSlots(); filterDraftGrid(); }
+function autoFillDraft() {
   draftSquad={PG:[null,null],SG:[null,null],SF:[null,null],PF:[null,null],C:[null,null]};
-  if(typeof CARDS==='undefined')return;
   let shuf=[...CARDS].sort(()=>Math.random()-0.5);
-  POSITIONS.forEach(pos=>{let m=shuf.filter(c=>getCardPos(c).includes(pos)&&!isCardInDraft(c));if(m[0])draftSquad[pos][0]=m[0];if(m[1])draftSquad[pos][1]=m[1];});
-  expandedCardDraft=null;renderDraftSlots();filterDraftGrid();
+  POSITIONS.forEach(pos=>{ let m=shuf.filter(c=>getCardPos(c).includes(pos)&&!isCardInDraft(c)); if(m[0])draftSquad[pos][0]=m[0]; if(m[1])draftSquad[pos][1]=m[1]; });
+  renderDraftSlots(); filterDraftGrid(); expandedCardDraft=null;
 }
 
 // ==================== SETUP ====================
-function goSetup(){
-  benchRoster=[];POSITIONS.forEach(p=>[0,1].forEach(i=>{if(draftSquad[p][i])benchRoster.push(draftSquad[p][i]);}));
+let activeLineup={PG:null,SG:null,SF:null,PF:null,C:null,'6TH':null}, benchRoster=[];
+function goSetup() {
+  benchRoster=[]; POSITIONS.forEach(p=>[0,1].forEach(i=>{if(draftSquad[p][i])benchRoster.push(draftSquad[p][i]);}));
   activeLineup={PG:null,SG:null,SF:null,PF:null,C:null,'6TH':null};
-  showScreen('setup-screen');renderSetupSlots();renderSetupBench();
+  showScreen('setup-screen'); renderSetupSlots(); renderSetupBench();
 }
-function renderSetupSlots(){
-  let slots=[...POSITIONS];if(hasSixthMan)slots.push('6TH');
-  $('setup-slots').innerHTML=slots.map(pos=>{
-    let c=activeLineup[pos];let is6=pos==='6TH';
-    let imgHtml=c?`<img src="${getImgUrl(getCardImg(c),getCardName(c))}" onerror="handleImgError(this,'${escapeJS(getCardName(c))}')"><button class="setup-remove" onclick="activeLineup['${pos}']=null;renderSetupSlots();renderSetupBench()">✕</button>`:'';
-    return`<div id="sslots-${pos}" class="setup-slot-card setup-slot-${pos} ${c?'filled':''}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropSetup(event,'${pos}')">
-      ${imgHtml}${!c?`<div class="setup-slot-pos" style="color:${is6?'var(--pos-6th)':''}">${is6?'6TH':pos}</div><div class="setup-slot-drop-text">Drop Here</div>`:''}
+function renderSetupSlots() {
+  let slots=[...POSITIONS]; if(hasSixthMan) slots.push('6TH');
+  $('setup-slots').innerHTML = slots.map(pos=>{
+    let c=activeLineup[pos], is6=(pos==='6TH');
+    return `<div id="sslots-${pos}" class="setup-slot-card setup-slot-${pos} ${c?'filled':''}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropSetup(event,'${pos}')">
+      ${c?`<img src="${getImgUrl(getCardImg(c),getCardName(c))}" onerror="handleImgError(this,'${escapeJS(getCardName(c))}')"><button class="setup-remove" onclick="activeLineup['${pos}']=null;renderSetupSlots();renderSetupBench()">✕</button>` : `<div class="setup-slot-pos" style="color:${is6?'var(--pos-6th)':''}">${is6?'6TH':pos}</div><div class="setup-slot-drop-text">Drop Here</div>`}
     </div>`;
   }).join('');
   let cnt=Object.values(activeLineup).filter(x=>x).length;
   $('setup-count-lbl').textContent=`${cnt}/${hasSixthMan?6:5}`;
-  let btn=$('start-battle-btn');btn.disabled=cnt<5;
-  if(cnt>=5){btn.style.borderColor='white';btn.style.boxShadow='0 0 24px rgba(255,255,255,0.55), 0 0 10px rgba(143,188,143,0.5)';}
-  else{btn.style.borderColor='';btn.style.boxShadow='';}
+  $('start-battle-btn').disabled=(cnt<5);
 }
-function dropSetup(e,pos){
-  e.preventDefault();if(e.currentTarget&&e.currentTarget.classList)e.currentTarget.classList.remove('drag-over');
-  let card=benchRoster.find(c=>getCardName(c)===e.dataTransfer.getData('text/plain'));if(!card)return;
-  if(pos==='6TH'&&!getCardName(card).includes("Sixth Man"))return triggerInvalidDrop($(`sslots-${pos}`));
-  if(pos!=='6TH'&&!getCardPos(card).split('/').map(p=>p.trim()).includes(pos))return triggerInvalidDrop($(`sslots-${pos}`));
-  activeLineup[pos]=card;renderSetupSlots();renderSetupBench();
+function dropSetup(e,pos) {
+  e.preventDefault(); if(e.currentTarget&&e.currentTarget.classList) e.currentTarget.classList.remove('drag-over');
+  let c=benchRoster.find(x=>getCardName(x)===e.dataTransfer.getData('text/plain')); if(!c) return;
+  if(pos==='6TH'&&!getCardName(c).includes("Sixth Man")) return triggerInvalidDrop($(`sslots-${pos}`));
+  if(pos!=='6TH'&&!getCardPos(c).split('/').map(p=>p.trim()).includes(pos)) return triggerInvalidDrop($(`sslots-${pos}`));
+  activeLineup[pos]=c; renderSetupSlots(); renderSetupBench();
 }
-function renderSetupBench(){
-  $('setup-bench-grid').innerHTML=benchRoster.map(c=>{
-    let inA=Object.values(activeLineup).some(ac=>ac&&getCardName(ac)===getCardName(c));if(inA)return'';
-    let name=getCardName(c);let sn=escapeJS(name);
-    return`<div class="compact-card" data-name="${escapeHtml(name)}" draggable="true" ondragstart="handleDragStart(event,'${sn}')" ondragend="handleDragEnd(event)" onmouseenter="showTooltip(event,'${sn}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),name)}" onerror="handleImgError(this,'${sn}')"></div></div>`;
+function renderSetupBench() {
+  $('setup-bench-grid').innerHTML = benchRoster.map(c=>{
+    if(Object.values(activeLineup).some(ac=>ac&&getCardName(ac)===getCardName(c))) return '';
+    let n=getCardName(c), safeN=escapeJS(n);
+    return `<div class="compact-card" draggable="true" ondragstart="handleDragStart(event,'${safeN}')" ondragend="handleDragEnd(event)" onmouseenter="showTooltip(event,'${safeN}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),n)}" onerror="handleImgError(this,'${safeN}')"></div></div>`;
   }).join('');
 }
 
-// ==================== ARENA INTRO ====================
-function confirmStartBattle(){$('arena-intro-overlay').style.display='flex';}
-function closeArenaIntro(goBack){$('arena-intro-overlay').style.display='none';if(goBack)return;startBattle();}
+// ==================== ENGINE & LOGIC SETUP ====================
+// --- REACTIVE GAME STATE ---
+let activeAuras=[], pendingBlocks=[], frozenCards={}, shutdownCards={}, disabledSkills={}, drainedNextTurn={}, screenGuarantee=false, invulnerable={}, stolenSkills={}, pendingPutbacks=[], pendingExtraMoves=[], pendingWiltCounter=null;
 
-// ==================== BATTLE START ====================
-function startBattle(){
-  playerActive=buildPlayerActiveWithRoles();
-  playerBench=benchRoster.filter(c=>!playerActive.some(ac=>getCardName(ac)===getCardName(c)));
-  let{starters:eStarters,bench:eBench}=buildEnemyRoster();
-  enemyActive=eStarters;enemyBench=eBench;
-  playerScore=0;enemyScore=0;turnCount=1;
-  stagedActions=[];uiState='IDLE';pendingBlocks=[];reactiveResponses=[];activeAuras=[];
-  frozenCards={};disabledSkills={};shutdownCards={};drainedNextTurn={};
-  screenGuaranteeNext=false;invulnerableCards={};stolenSkills={};
-  pendingExtraMoves=[];willHpRecovered={};statBuffs={};jumpShotGuarantee=false;
-  $('battle-log').innerHTML=`<div class="log-entry sys">Match Starting... First to 8 KOs.</div>`;
-  $('score-player').textContent='0';$('score-enemy').textContent='0';
-  hideActionMenus();showScreen('battle-screen');renderArena();renderCheckout();
+function getSkillCategory(sk) {
+  if(!sk)return'standard';
+  const ex=(sk.Logic_Engine?.Execution||sk.S_Execution||'').toUpperCase(), mo=(sk.Logic_Engine?.Modifiers||sk.S_Modifiers||[]), moStr=Array.isArray(mo)?mo.join(' '):String(mo), nat=(sk.Nature||'').toLowerCase(), cls=(sk.S_Class||sk.Logic_Engine?.Class||'').toUpperCase(), ti=(sk.S_Timing||sk.Logic_Engine?.Timing||'').toUpperCase();
+  if(ti==='FREE_ACTION'||cls==='FREE_ACTION'){
+    if(ex.includes('FREEZE')||moStr.includes('Freeze_Target')||(ex.includes('STATUS_EFFECT')&&nat.includes('dribble')))return'freeze';
+    if(ex.includes('STEAL_CANCEL')||moStr.includes('Preemptive_Cancel')){return moStr.includes('Unnullifiable')?'steal-cancel-unnull':'steal-cancel';}
+    if(ex.includes('STEAL_SKILL')||moStr.includes('Steal_Opponent_Skill'))return'steal-skill';
+    if(ex.includes('DISABLE_ALL_SKILLS')||(moStr.includes('Unnullifiable')&&moStr.includes('Global_Hard_Disable_All')))return'global-disable-all';
+    if(ex.includes('AURA_ANY_MISS')||moStr.includes('Global_AnySkill_MissChance'))return'aura-any-miss';
+    if(ex.includes('AURA_JUMP_MISS'))return'aura-jump-miss';
+    if(ex.includes('GRANT_EXTRA_MOVE'))return'grant-extra-move';
+    if(ex.includes('INVULNERABLE'))return'invulnerable';
+    if(ex.includes('STAT_BUFF'))return'stat-buff-self';
+    if(ex.includes('STATUS_EFFECT'))return'free-status';
+    return'free-status';
+  }
+  if(ti==='REACTIVE'||cls==='REACTIVE'){
+    if(ex.includes('BLOCK_FULL')||moStr.includes('Reactionary_Block'))return'reactive-block-full';
+    if(ex.includes('BLOCK_PARTIAL')||moStr.includes('Reactionary_Mitigation'))return'reactive-block-partial';
+    if(ex.includes('REDIRECT_HALF')||moStr.includes('Reactionary_Redirect'))return'reactive-redirect';
+    if(ex.includes('CONTEST_JUMP')||moStr.includes('Reactionary_Contest_Jump'))return'reactive-contest-jump';
+    if(ex.includes('CONTEST_CLOSE')||moStr.includes('Reactionary_Contest_Close'))return'reactive-contest-close';
+    if(ex.includes('INTERCEPT_ASSIST')||moStr.includes('Reactionary_Intercept')){return ex.includes('SCREEN_GUARANTEE')?'reactive-screen-guarantee':'reactive-intercept';}
+    if(ex.includes('PUTBACK_DMG')||moStr.includes('Reactionary_Putback_Dmg'))return'reactive-putback';
+    if(ex.includes('GRANT_EXTRA_MOVE')||moStr.includes('Reactionary_Grant_Extra_Move'))return'reactive-extra-move';
+    if(ex.includes('DUAL_USE')||moStr.includes('Dual_Use_Offense_Defense'))return'reactive-dual-use';
+    if(ex.includes('STATUS_EFFECT')){
+      if(nat.includes('rebound'))return'reactive-rebound-pass';
+      if(nat.includes('block')||(sk.Name||'').toLowerCase().includes('block')||(sk.Name||'').toLowerCase().includes('clamps'))return'reactive-block-full';
+      return'reactive-block-full';
+    }
+    if(moStr.includes('Screen_Guarantee_Next_Skill'))return'reactive-screen-guarantee';
+  }
+  if(cls==='DEFENSIVE'||cls==='ASSIST'){
+    if(ex.includes('AURA_JUMP_MISS')||moStr.includes('Global_JumpShot_MissChance'))return'aura-jump-miss';
+    if(ex.includes('AURA_CLOSE_MISS')||moStr.includes('Global_CloseShot_MissChance'))return'aura-close-miss';
+    if(ex.includes('AURA_ANY_MISS')||moStr.includes('Global_AnySkill_MissChance'))return'aura-any-miss';
+    if(ex.includes('INTERCEPT_ALL_ASSISTS')||moStr.includes('Global_Intercept_All_Assists'))return'aura-intercept-all-assists';
+    if(ex.includes('NULLIFY_DEFENSE')||moStr.includes('Nullify_Defensive_Skill'))return'nullify-defense';
+    if(ex.includes('STAT_BUFF')||moStr.includes('Self_Stat_Buff'))return'stat-buff-self';
+    if(ex.includes('HEAL')||moStr.includes('Heal_Target'))return'heal';
+    if(ex.includes('GRANT_EXTRA_MOVE')||moStr.includes('Reactionary_Grant_Extra_Move'))return'grant-extra-move';
+    if(ex.includes('STATUS_EFFECT')){
+      if((sk.Name||'').toLowerCase().includes('no j')||(sk.Description_UI||'').toLowerCase().includes('contests all jumpshot')||(sk.Description_UI||'').toLowerCase().includes('contests any jumpshot'))return'aura-jumpshot-contest';
+      return'standard';
+    }
+  }
+  if(cls==='OFFENSIVE_DEFENSIVE')return'shutdown';
+  if(ex.includes('DEAL_ASSIST_DMG'))return'assist-dmg';
+  if(ex.includes('DUAL_USE'))return'reactive-dual-use';
+  if(ex.includes('CONDITIONAL_DMG'))return'conditional-dmg';
+  if(ex.includes('SELF_DRAIN'))return'standard';
+  if(ex.includes('SHUTDOWN_TARGET'))return'shutdown';
+  if(ex.includes('STEAL_SKILL'))return'steal-skill';
+  return'standard';
 }
 
-// ==================== LOG ====================
-let logMinimized=false;
-function toggleLog(){
-  logMinimized=!logMinimized;let el=$('battle-log-container');let icon=$('log-min-icon');
-  if(logMinimized){el.classList.remove('expanded');el.classList.add('minimized');if(icon)icon.textContent='▶ expand';}
-  else{el.classList.remove('minimized');el.classList.add('expanded');if(icon)icon.textContent='▼ minimize';}
-}
-function logMsg(txt,t){
-  let log=$('battle-log');if(!log)return;
-  log.innerHTML+=`<div class="log-entry ${t}">${txt}</div>`;log.scrollTop=log.scrollHeight;
+function canSelectOnYourTurn(sk) { return ['standard','assist-dmg','aura-jump-miss','aura-close-miss','aura-any-miss','aura-intercept-all-assists','aura-jumpshot-contest','nullify-defense','stat-buff-self','heal','grant-extra-move','shutdown','conditional-dmg','steal-skill','reactive-dual-use'].includes(getSkillCategory(sk)); }
+
+// --- ENGINE CALCS ---
+function executeAssistDmg(formula, executingTeam, selectedTargetIdx) {
+  if(!formula)return 0;
+  const team = executingTeam==='player'?playerActive:enemyActive;
+  // If target selected via JIT modal:
+  let teammate = (selectedTargetIdx != null) ? team[selectedTargetIdx] : null;
+  
+  if(!teammate) {
+    // Auto-fallback if no modal was used
+    const posMatch = formula.match(/\[([^\]]+)\]/);
+    const positions = posMatch?posMatch[1].split(',').map(p=>p.trim()):[];
+    teammate = team.find(c=>c&&!c.isDead&&positions.includes(c.battleRole));
+  }
+  if(!teammate) return 0;
+  const base=getCardDMG(teammate);
+  if(formula.startsWith('MULT:')) return Math.floor(parseFloat(formula.match(/MULT:([\d.]+)/)[1])*base);
+  if(formula.startsWith('ADD:')) return base+parseInt(formula.match(/ADD:(\d+)/)[1]);
+  return 0;
 }
 
-// ==================== ARENA RENDER ====================
-function renderArena(){
-  renderBenchFanned($('enemy-bench-row'),enemyBench,true);
-  $('enemy-active-row').innerHTML=enemyActive.map((c,i)=>buildCardHtml(c,i,true)).join('');
-  $('player-active-row').innerHTML=playerActive.map((c,i)=>buildCardHtml(c,i,false)).join('');
-  renderBenchFanned($('player-bench-row'),playerBench,false);
+function resolveSkillDmg(sk, actorCard, action) {
+  const cat=getSkillCategory(sk), formula=sk.Logic_Engine?.DMG_Formula||sk.S_Formula||'', raw=sk.Display_DMG||sk.Logic_Engine?.Damage_Value||'N/A';
+  if(sk.Logic_Engine?.Requires_Coin_Flip===true||(sk.S_CoinFlip||'').toUpperCase()==='YES'){if(Math.random()<0.5)return{dmg:0,missed:true};}
+  if(cat==='assist-dmg') return {dmg:executeAssistDmg(formula, action.execTeam, action.assistTeammateIdx), missed:false};
+  if(cat==='reactive-dual-use'){let dm=formula.match(/DUAL:(\d+)\//);if(dm)return{dmg:parseInt(dm[1]),missed:false};}
+  if(cat==='conditional-dmg'){
+    let pt=formula.match(/DUAL:([\d]+)\/([\d]+)/);
+    if(pt){
+      let pK=enemyActive.filter(c=>c.isDead).length, eK=playerActive.filter(c=>c.isDead).length, exK=action.execTeam==='player'?pK:eK;
+      return {dmg:exK>0?parseInt(pt[2]):parseInt(pt[1]), missed:false};
+    }
+  }
+  let n=parseInt(raw); return (isNaN(n)||String(raw).includes('N/A'))?{dmg:0,missed:false}:{dmg:n,missed:false};
 }
-function renderBenchFanned(container,bench,isEnemy){
-  if(!container)return;let n=bench.length;if(n===0){container.innerHTML='';return;}
-  let fanAngle=Math.min(12,60/n);let totalAngle=fanAngle*(n-1);let startAngle=-totalAngle/2;
-  let cards=bench.map((c,i)=>{
-    let angle=startAngle+fanAngle*i;let tx=i*18-(n*18/2)+9;let sn=escapeJS(getCardName(c));
-    if(isEnemy)return`<div class="bench-card-wrap" style="transform:rotate(${angle}deg) translateX(${tx}px);transform-origin:bottom center;margin:0 -5px;z-index:${i};" onmouseenter="showEnemyBenchTooltip(event,${i})" onmouseleave="hideEnemyBenchTooltip()"><div class="bench-card face-down"></div></div>`;
-    return`<div class="bench-card-wrap" style="transform:rotate(${angle}deg) translateX(${tx}px);transform-origin:bottom center;margin:0 -5px;z-index:${i};" onmouseenter="showTooltip(event,'${sn}')" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"><div class="bench-card" onclick="onBenchClick(${i},event)"><img src="${getImgUrl(getCardImg(c),getCardName(c))}" onerror="handleImgError(this,'${sn}')"></div></div>`;
+
+// ==================== BATTLEFIELD SETUP ====================
+let playerActive=[], playerBench=[], enemyActive=[], enemyBench=[];
+let playerScore=0, enemyScore=0, turnCount=1, isAnimating=false, uiState='IDLE', pendingAction=null, stagedActions=[];
+
+function buildEnemyRoster() {
+  const NEED=['PG','SG','SF','PF','C']; let dr={PG:[],SG:[],SF:[],PF:[],C:[]}; let p=[...CARDS].sort(()=>Math.random()-0.5);
+  for(let c of p){let ps=getCardPos(c).split('/').map(x=>x.trim());for(let po of ps){if(NEED.includes(po)&&dr[po].length<2){if(!NEED.some(x=>dr[x].some(y=>getCardName(y)===getCardName(c)))){dr[po].push(c);break;}}}if(NEED.every(x=>dr[x].length>=2))break;}
+  let st=[], be=[]; NEED.forEach(po=>{
+    if(dr[po][0]){let c=JSON.parse(JSON.stringify(dr[po][0]));c.currentHp=getCardHP(c);c.isDead=false;c.battleRole=po;st.push(c);}
+    if(dr[po][1]){let c=JSON.parse(JSON.stringify(dr[po][1]));c.currentHp=getCardHP(c);c.isDead=false;c.battleRole=po;be.push(c);}
+  }); return {st,be};
+}
+function buildPlayerActiveWithRoles() { let res=[]; (hasSixthMan?['PG','SG','SF','PF','C','6TH']:POSITIONS).forEach(po=>{if(activeLineup[po]){let c=JSON.parse(JSON.stringify(activeLineup[po]));c.currentHp=getCardHP(c);c.isDead=false;c.battleRole=po;res.push(c);}}); return res; }
+
+function startBattle() {
+  playerActive=buildPlayerActiveWithRoles(); playerBench=benchRoster.filter(c=>!playerActive.some(ac=>getCardName(ac)===getCardName(c)));
+  let eR=buildEnemyRoster(); enemyActive=eR.st; enemyBench=eR.be;
+  playerScore=0; enemyScore=0; turnCount=1; stagedActions=[]; uiState='IDLE';
+  [playerActive,enemyActive,playerBench,enemyBench].forEach(team=>{for(let c of team){if(!c)continue;for(let sk of(c.Skills||[]))sk._usesLeft=sk.Logic_Engine?.Max_Uses||sk.S_MaxUses||1;}});
+  frozenCards={}; shutdownCards={}; disabledSkills={}; drainedNextTurn={}; screenGuarantee=false; invulnerable={}; stolenSkills={}; pendingPutbacks=[]; pendingExtraMoves=[]; pendingWiltCounter=null; activeAuras=[]; pendingBlocks=[];
+  $('battle-log').innerHTML=`<div class="retro-log-line" style="color:#FFD600;">> MATCH INITIATED. First to 8 KOs wins.</div>`;
+  $('score-player').textContent='0'; $('score-enemy').textContent='0'; $('staged-count').textContent='0'; $('staged-list').innerHTML='';
+  showScreen('battle-screen'); renderArena();
+}
+
+// --- RENDERING ---
+function renderArena() {
+  $('enemy-bench-stack').innerHTML = enemyBench.map((c,i)=>`<div class="bench-stack-card face-down" style="top:${i*8}px; left:${i*8}px; z-index:${i};"></div>`).join('');
+  $('player-bench-stack').innerHTML = playerBench.map((c,i)=>`<div class="bench-stack-card" style="top:${i*8}px; left:${i*8}px; z-index:${i};" onmouseenter="showTooltip(event,'${escapeJS(getCardName(c))}')" onmouseleave="hideTooltip()"><img src="${getImgUrl(getCardImg(c),getCardName(c))}"></div>`).join('');
+  
+  $('enemy-active-row').innerHTML = renderActiveFanned(enemyActive, true);
+  $('player-active-row').innerHTML = renderActiveFanned(playerActive, false);
+}
+
+function renderActiveFanned(team, isE) {
+  let n=team.length; if(n===0)return'';
+  let fanAngle = Math.min(6, 40/n), totalAngle = fanAngle*(n-1), startAngle = -totalAngle/2;
+  return team.map((c,i)=>{
+    let ang = startAngle + fanAngle*i, tx = i*12 - (n*12/2) + 6, hpMax=getCardHP(c), pct=Math.max(0,(c.currentHp/hpMax)*100), clr=pct>50?'#69F0AE':pct>20?'#FFD600':'#FF5252';
+    let isStaged = !isE && stagedActions.some(a=>a.actorIdx===i);
+    let isTgt = isE && uiState==='AWAITING_TARGET' && pendingAction && getValidTargets(playerActive[pendingAction.actorIdx], enemyActive).some(v=>v.i===i);
+    let inner = isE ? `<div class="battle-card face-down ${c.isDead?'dead-card':''} ${isTgt?'valid-target':''}" id="card-enemy-${i}"></div>` : `<div class="battle-card ${c.isDead?'dead-card':''} ${isStaged?'staged':''}" id="card-player-${i}"><img src="${getImgUrl(getCardImg(c),getCardName(c))}">${isStaged?`<div class="undo-btn" onclick="event.stopPropagation();undoAction(${i})">✕</div>`:''}</div>`;
+    if(isE&&isTgt) inner = `<div class="battle-card face-down valid-target" id="card-enemy-${i}"></div>`;
+    
+    return `
+      <div class="active-card-wrap" id="wrap-${isE?'enemy':'player'}-${i}" style="transform:rotate(${ang}deg) translateX(${tx}px); z-index:${i};" onclick="onCardClick('${isE?'enemy':'player'}',${i},event)" onmouseenter="${!isE?`showTooltip(event,'${escapeJS(getCardName(c))}')`:'void(0)'}" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)">
+        ${isE?`<div class="hp-bar-container"><div class="hp-fill" id="hpf-enemy-${i}" style="width:${pct}%;background:${clr};"></div></div>`:''}
+        ${inner}
+        ${!isE?`<div class="hp-bar-container"><div class="hp-fill" id="hpf-player-${i}" style="width:${pct}%;background:${clr};"></div></div>`:''}
+        <div class="hp-text" id="hpt-${isE?'enemy':'player'}-${i}">${c.currentHp}/${hpMax}</div>
+      </div>`;
   }).join('');
-  container.innerHTML=`<div class="bench-fan-wrapper">${cards}</div>`;
-}
-let _enemyBenchPopup=null;
-function showEnemyBenchTooltip(e,idx){
-  hideEnemyBenchTooltip();let popup=document.createElement('div');popup.className='enemy-bench-popup';
-  popup.style.top=(e.clientY-55)+'px';popup.style.left=(e.clientX+10)+'px';
-  popup.innerHTML=`<b style="color:#FF5252;">Enemy Bench</b><br>${enemyBench.length} card(s) remaining<br><span style="color:var(--text-muted);font-size:0.65rem;">Details hidden</span>`;
-  document.body.appendChild(popup);_enemyBenchPopup=popup;
-}
-function hideEnemyBenchTooltip(){if(_enemyBenchPopup){_enemyBenchPopup.remove();_enemyBenchPopup=null;}}
-
-let _enemyHoverDisabled=false;
-function buildCardHtml(c,index,isE){
-  let name=getCardName(c);let hpMax=getCardHP(c);let pct=Math.max(0,(c.currentHp/hpMax)*100);
-  let clr=pct>50?'#69F0AE':pct>20?'#FFD600':'#FF5252';
-  let pos=c.battleRole||getCardPos(c);let pc=getRoleColor(pos);let sn=escapeJS(name);
-  let teamStr=isE?'enemy':'player';
-  let isStaged=!isE&&stagedActions.some(a=>a.actorIdx===index);
-  let isValidTarget=isE&&uiState==='AWAITING_TARGET'&&pendingAction&&getValidTargets(playerActive[pendingAction.actorIdx],enemyActive).some(v=>v.i===index);
-  // Enemy active — face UP (show card image)
-  let cardInner=isE?
-    `<div class="battle-card ${c.isDead?'dead-card':''} ${isValidTarget?'valid-target':''}" id="card-${teamStr}-${index}" style="border-color:${isValidTarget?'#FF5252':pc};">
-      <img src="${getImgUrl(getCardImg(c),name)}" onerror="handleImgError(this,'${sn}')">
-    </div>`:
-    `<div class="battle-card ${c.isDead?'dead-card':''} ${isStaged?'staged':''}" id="card-${teamStr}-${index}" style="border-color:${pc};">
-      <img src="${getImgUrl(getCardImg(c),name)}" onerror="handleImgError(this,'${sn}')">
-      ${isStaged?`<div class="undo-btn" onclick="event.stopPropagation();undoAction(${index})">✕</div>`:''}
-    </div>`;
-  return`<div class="battle-card-wrapper" id="wrap-${teamStr}-${index}"
-    onclick="onCardClick('${teamStr}',${index},event)"
-    onmouseenter="${!_enemyHoverDisabled?`showTooltip(event,'${sn}')`:'void(0)'}" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)">
-    ${isE?`<div class="hp-bar-container"><div class="hp-fill" id="hpf-${teamStr}-${index}" style="width:${pct}%;background:${clr};"></div></div>`:''}
-    ${cardInner}
-    ${!isE?`<div class="hp-bar-container"><div class="hp-fill" id="hpf-${teamStr}-${index}" style="width:${pct}%;background:${clr};"></div></div>`:''}
-    <div class="hp-text" id="hpt-${teamStr}-${index}">${c.currentHp}/${hpMax}</div>
-  </div>`;
 }
 
-// ==================== INTERACTION ====================
-function handleCourtClick(e){
-  if(!e)return;let tgt=e.target;
-  if(tgt.closest('.action-menu-fixed')||tgt.closest('.action-col-right'))return;
-  if(tgt.closest('.battle-card-wrapper'))return;
-  if(uiState==='AWAITING_TARGET'||uiState==='AWAITING_BENCH'){
-    uiState='IDLE';_enemyHoverDisabled=false;setTooltipEnabled(true);
-    logMsg("Action cancelled.",'sys');renderArena();hideActionMenus();
-  }
-  if(uiState==='IDLE')hideActionMenus();
+function openBenchView() {
+  if(playerBench.length===0)return;
+  $('bench-expanded-content').innerHTML = playerBench.map((c,i)=>`<div class="bench-expanded-card" onclick="onBenchClick(${i},event)" onmouseenter="showTooltip(event,'${escapeJS(getCardName(c))}')" onmouseleave="hideTooltip()"><img src="${getImgUrl(getCardImg(c),getCardName(c))}"></div>`).join('');
+  $('bench-expanded-overlay').style.display='flex';
 }
-function hideActionMenus(){$('action-menu-left').style.display='none';$('action-menu-right').style.display='none';}
+function closeBenchView(e) { if(e&&e.target.id==='bench-expanded-overlay') $('bench-expanded-overlay').style.display='none'; }
 
-function onCardClick(team,idx,e){
-  e.stopPropagation();if(isAnimating)return;hideTooltip();
-  if(uiState==='AWAITING_TARGET'){
-    if(team==='enemy'&&!enemyActive[idx].isDead){
-      let vt=getValidTargets(playerActive[pendingAction.actorIdx],enemyActive);
-      if(vt.some(v=>v.i===idx)){
-        stagedActions.push({...pendingAction,targetIdx:idx,targetTeam:'enemy'});
-        uiState='IDLE';_enemyHoverDisabled=false;setTooltipEnabled(true);
-        renderArena();renderCheckout();hideActionMenus();
-      }else logMsg("Invalid Target! Check positional rules.",'def');
-    }return;
-  }
-  if(uiState==='AWAITING_REACTIVE_TARGET'){
-    if(team==='enemy'&&!enemyActive[idx].isDead&&pendingReactiveAction){
-      let pCard=playerActive[pendingReactiveAction.playerCardIdx];
-      let sk=pCard.Skills[pendingReactiveAction.skillIdx];
-      let mods=sk.Logic_Engine?.Modifiers||[];
-      let targetCard=enemyActive[idx];
-      if(isCardImmuneToSteal(targetCard)){logMsg(`Cannot target ${shortName(getCardName(targetCard))} — immune to steals!`,'def');}
-      else{
-        reactiveResponses.push({...pendingReactiveAction,cancelledEnemyIdx:idx});
-        if(mods.includes('Preemptive_Cancel')){
-          logMsg(`🛡️ ${shortName(getCardName(pCard))}: ${sk.Name} — ${shortName(getCardName(targetCard))} blocked from acting this turn!`,'atk');
-          // Mark that enemy card as frozen this turn
-          frozenCards[`enemy_${idx}`]=true;
-        } else if(mods.includes('Reactionary_Intercept')){
-          logMsg(`🛡️ ${shortName(getCardName(pCard))}: ${sk.Name} intercepted ${shortName(getCardName(targetCard))}'s assist!`,'atk');
-          // Mark that specific action as intercepted
-          reactiveResponses[reactiveResponses.length-1].cancelledAction=`enemy_${turnCount}_${idx}`;
-        }
-        uiState='IDLE';pendingReactiveAction=null;setTooltipEnabled(true);_enemyHoverDisabled=false;renderArena();
-      }
-    }return;
-  }
-  if(team==='player'&&uiState==='IDLE'){
-    let card=playerActive[idx];if(card.isDead)return;
-    if(stagedActions.some(a=>a.actorIdx===idx)){logMsg("Card already staged this turn.",'sys');return;}
-    let maxMoves=Math.min(2,playerActive.filter(c=>!c.isDead).length);
-    if(stagedActions.length>=maxMoves){logMsg("Max moves staged! Click Lock In.",'sys');return;}
-    showActionMenuFixed(card,idx);
-  }
-}
-function onBenchClick(idx,e){
-  e.stopPropagation();
-  if(uiState==='AWAITING_BENCH'){stagedActions.push({...pendingAction,targetIdx:idx,targetTeam:'bench'});uiState='IDLE';renderArena();renderCheckout();hideActionMenus();}
+function logMsg(txt, cls) {
+  let l=$('battle-log');
+  l.innerHTML+=`<div class="retro-log-line log-${cls}">> ${txt.replace(/<b>(.*?)<\/b>/g, '$1')}</div>`;
+  l.scrollTop=l.scrollHeight;
 }
 
-function showActionMenuFixed(card,idx){
-  let name=getCardName(card);let dmg=getCardDMG(card);
-  let leftHtml=`<div class="action-menu-title" style="color:${getRoleColor(card.battleRole)};">${shortName(name)}</div>`;
-  if(playerBench.length>0)leftHtml+=`<button class="btn-primary" style="background:var(--pos-pg);text-align:left;" onclick="selectAction(${idx},'swap',0)">🔄 SWAP CARD</button>`;
-  leftHtml+=`<button class="btn-primary" style="background:var(--border-heavy);text-align:left;" onclick="selectAction(${idx},'pass',0)">⏭️ PASS TURN</button>`;
-  let rightHtml=`<button class="btn-primary" style="background:#7a2010;text-align:left;" onclick="selectAction(${idx},'basic',0)">⚔️ BASIC ATTACK (${dmg})</button>`;
-  (card.Skills||[]).forEach((sk,sIdx)=>{
+// --- INTERACTION ---
+function handleCourtClick(e) {
+  if(e.target.closest('.action-menu-fixed')||e.target.closest('.active-card-wrap')) return;
+  if(uiState==='AWAITING_TARGET'||uiState==='AWAITING_REACTIVE_TARGET') { uiState='IDLE'; logMsg("Targeting cancelled.", "sys"); renderArena(); }
+  $('action-menu').style.display='none';
+}
+
+function onCardClick(team, idx, e) {
+  e.stopPropagation(); if(isAnimating)return; hideTooltip();
+  if(uiState==='AWAITING_TARGET') {
+    if(team==='enemy'&&!enemyActive[idx].isDead) {
+      if(getValidTargets(playerActive[pendingAction.actorIdx], enemyActive).some(v=>v.i===idx)) {
+        stagedActions.push({...pendingAction, targetIdx:idx, targetTeam:'enemy'});
+        uiState='IDLE'; renderArena(); renderCheckout(); $('action-menu').style.display='none';
+      } else logMsg("Invalid Target! Check lane match.", "def");
+    } return;
+  }
+  if(uiState==='AWAITING_REACTIVE_TARGET') {
+    if(team==='enemy'&&!enemyActive[idx].isDead&&pendingReactiveAction) {
+      pendingReactiveAction.resolveReac(idx); // Callback to JIT modal
+      uiState='IDLE'; pendingReactiveAction=null; renderArena();
+    } return;
+  }
+  if(team==='player'&&uiState==='IDLE') {
+    let c=playerActive[idx]; if(c.isDead)return;
+    if(stagedActions.some(a=>a.actorIdx===idx)) { logMsg("Card already staged.", "sys"); return; }
+    if(stagedActions.length>=Math.min(2, playerActive.filter(x=>!x.isDead).length)) { logMsg("Max moves staged.", "sys"); return; }
+    showActionMenu(c, idx);
+  }
+}
+
+function showActionMenu(c, idx) {
+  let rHtml = `<button class="btn-glowing" style="background:#8B0000; border-color:#ff4444;" onclick="selectAction(${idx},'basic',0)">⚔️ BASIC ATTACK (${getCardDMG(c)})</button>`;
+  (c.Skills||[]).forEach((sk, sIdx)=>{
     if(!canSelectOnYourTurn(sk))return;
-    let mods=sk.Logic_Engine?.Modifiers||[];
-    // Check disabled
-    if(disabledSkills[`player_${idx}_${sIdx}`]>0)return;
-    let label=sk.Name;
-    // Show assist DMG preview
-    if((sk.Nature||'').toLowerCase().includes('assist')){
-      let teamArr=playerActive.filter(c=>!c.isDead&&getCardName(c)!==name);
-      let calcDmg=calcAssistDmg(sk,teamArr);
-      if(calcDmg)label+=` (~${calcDmg})`;
-    }
-    rightHtml+=`<button class="btn-primary" style="background:var(--pos-c);text-align:left;" onclick="selectAction(${idx},'skill',${sIdx})">✨ ${label}</button>`;
+    let pDmg = getSkillCategory(sk)==='assist-dmg' ? sk.Display_DMG : sk.Display_DMG;
+    rHtml += `<button class="btn-glowing" style="background:var(--pos-c); border-color:var(--pos-c);" onclick="selectAction(${idx},'skill',${sIdx})">✨ ${sk.Name} (${pDmg})</button>`;
   });
-  $('action-col-left').innerHTML=leftHtml;$('action-col-right').innerHTML=rightHtml;
-  $('action-menu-left').style.display='flex';$('action-menu-right').style.display='flex';
+  let lHtml = `<div style="color:var(--pos-pf); font-weight:900; margin-bottom:8px; font-size:1.1rem; text-align:center;">${shortName(getCardName(c))}</div>`;
+  if(playerBench.length>0) lHtml+=`<button class="btn-glowing" style="background:var(--pos-pg); border-color:var(--pos-pg);" onclick="selectAction(${idx},'swap',0)">🔄 SWAP CARD</button>`;
+  lHtml+=`<button class="btn-glowing" style="background:var(--border-heavy);" onclick="selectAction(${idx},'pass',0)">⏭️ PASS TURN</button>`;
+  
+  $('action-col-left').innerHTML=lHtml; $('action-col-right').innerHTML=rHtml;
+  $('action-menu').style.display='flex';
 }
 
-function selectAction(actorIdx,type,skillIdx){
-  hideActionMenus();let card=playerActive[actorIdx];let name=getCardName(card);let priority=1;
-  if(type==='skill'){
-    let sk=card.Skills[skillIdx];let cat=getSkillCategory(sk);let mods=sk.Logic_Engine?.Modifiers||[];
-    let desc=sk.Description_UI||'';
-    // Freeze (Dribble) — free action
-    if(cat==='freeze'){
-      pendingAction={actorIdx,actionType:type,skillIdx,priority:2,speed:getCardSPD(card),pos:card.battleRole||getCardPos(card)};
-      stagedActions.push({...pendingAction,targetIdx:null,targetTeam:null});
-      logMsg(`✨ <span class="lc-${card.battleRole}">YOU ${shortName(name)}</span>: ${sk.Name} staged (will freeze target)`,'atk');
-      renderArena();renderCheckout();return;
+function onBenchClick(idx, e) {
+  e.stopPropagation();
+  if(uiState==='AWAITING_BENCH') { stagedActions.push({...pendingAction, targetIdx:idx, targetTeam:'bench'}); uiState='IDLE'; $('bench-expanded-overlay').style.display='none'; renderArena(); renderCheckout(); }
+}
+
+const TARGET_MATRIX = { "PG":["PG","SG"], "SG":["SG","SF"], "SF":["SG","SF","PF"], "PF":["PF","C"], "C":["C","PF"], "6TH":["PG","SG","SF","PF","C"] };
+function getValidTargets(atkC, tgtTeam) {
+  let role = atkC.battleRole||getCardPos(atkC).split('/')[0].trim(), validRoles = TARGET_MATRIX[role]||[];
+  return tgtTeam.map((c,i)=>({c,i})).filter(d=>{ if(d.c.isDead)return false; return validRoles.includes(d.c.battleRole||getCardPos(d.c).split('/')[0].trim()); });
+}
+
+async function selectAction(actorIdx, type, skillIdx) {
+  $('action-menu').style.display='none';
+  let c=playerActive[actorIdx], priority=1, assistTeammateIdx=null;
+  if(type==='skill') {
+    let sk=c.Skills[skillIdx], cat=getSkillCategory(sk);
+    if(cat==='assist-dmg') {
+      assistTeammateIdx = await promptForAssistTeammate(c, sk);
+      if(assistTeammateIdx===-1) { logMsg("Action Cancelled.", "sys"); return; } // User cancelled
     }
-    // Nullify defensive skill
-    if(cat==='nullify-reactive'){
-      pendingAction={actorIdx,actionType:type,skillIdx,priority:1,speed:getCardSPD(card),pos:card.battleRole||getCardPos(card)};
-      uiState='AWAITING_TARGET';_enemyHoverDisabled=true;setTooltipEnabled(false);
-      logMsg(`Select enemy to nullify defensive skill for <b>${shortName(name)}</b>.`,'sys');
-      renderArena();return;
+    if(cat==='pre-turn-aura' || cat==='global-disable-all') {
+      stagedActions.push({actorIdx, actionType:type, skillIdx, priority:1, speed:getCardSPD(c), pos:c.battleRole, targetIdx:null, targetTeam:null});
+      renderArena(); renderCheckout(); return;
     }
-    // Pre-turn aura (Tim Duncan, Draymond, Isiah, Mutombo, Thurmond, Yao)
-    if(cat==='pre-turn-aura'){
-      let turns=3;let matchT=desc.match(/next (\d+) turn/i);if(matchT)turns=parseInt(matchT[1]);
-      let auraType='jumpshot-miss-chance';
-      if(mods.includes('Global_Status_Disable')||mods.includes('Unnullifiable')&&desc.toLowerCase().includes('no damaging skills'))auraType='all-skills-disabled';
-      else if(desc.toLowerCase().includes('close shot'))auraType='closeshot-miss-chance';
-      else if(mods.includes('Global_AnySkill_MissChance')||desc.toLowerCase().includes('damaging skill'))auraType='anyskill-miss-chance';
-      activeAuras.push({type:auraType,turnsLeft:turns,sourceTeam:'player',sourceName:sk.Name});
-      pendingAction={actorIdx,actionType:type,skillIdx,priority:3,speed:getCardSPD(card),pos:card.battleRole||getCardPos(card)};
-      stagedActions.push({...pendingAction,targetIdx:null,targetTeam:null});
-      logMsg(`✨ <span class="lc-${card.battleRole}">YOU ${shortName(name)}</span>: ${sk.Name} — ${auraType} aura for ${turns} turns!`,'atk');
-      renderArena();renderCheckout();return;
-    }
-    // Screen Navigator (Klay Captain)
-    if(mods.includes('Screen_Guarantee_Next_Skill')||desc.toLowerCase().includes('will not require any coin flips')&&desc.toLowerCase().includes('screen')){
-      jumpShotGuarantee=true;
-      pendingAction={actorIdx,actionType:type,skillIdx,priority:1,speed:getCardSPD(card),pos:card.battleRole||getCardPos(card)};
-      stagedActions.push({...pendingAction,targetIdx:null,targetTeam:null});
-      logMsg(`✨ ${shortName(name)}: ${sk.Name} — next damaging skill guaranteed!`,'atk');
-      renderArena();renderCheckout();return;
-    }
-    // Shutdown (Draymond Death Lineup)
-    if(mods.includes('Hard_Disable_Shutdown')||desc.toLowerCase().includes('shut down')){
-      pendingAction={actorIdx,actionType:type,skillIdx,priority:1,speed:getCardSPD(card),pos:card.battleRole||getCardPos(card)};
-      uiState='AWAITING_TARGET';_enemyHoverDisabled=true;setTooltipEnabled(false);
-      logMsg(`Select enemy to shut down for ${shortName(name)}.`,'sys');renderArena();return;
-    }
-    // Disable one skill (Gary Payton Supersonic Clamps, Walt Frazier Precocious Neophyte)
-    if(mods.includes('Hard_Disable_One_Skill')){
-      pendingAction={actorIdx,actionType:type,skillIdx,priority:3,speed:getCardSPD(card),pos:card.battleRole||getCardPos(card)};
-      uiState='AWAITING_TARGET';_enemyHoverDisabled=true;setTooltipEnabled(false);
-      logMsg(`Select enemy card to disable a skill from (${sk.Name}).`,'sys');renderArena();return;
-    }
-    // Steal skill (McGrady, Embiid)
-    if(mods.includes('Steal_Opponent_Skill')){
-      pendingAction={actorIdx,actionType:type,skillIdx,priority:3,speed:getCardSPD(card),pos:card.battleRole||getCardPos(card)};
-      uiState='AWAITING_TARGET';_enemyHoverDisabled=true;setTooltipEnabled(false);
-      logMsg(`Select enemy card to steal a skill from (${sk.Name}).`,'sys');renderArena();return;
-    }
-    // Heal (Iguodala)
-    if(mods.includes('Heal_Target')){
-      pendingAction={actorIdx,actionType:type,skillIdx,priority:1,speed:getCardSPD(card),pos:card.battleRole||getCardPos(card)};
-      stagedActions.push({...pendingAction,targetIdx:actorIdx,targetTeam:'self'});
-      logMsg(`✨ ${shortName(name)}: ${sk.Name} staged (will heal a teammate).`,'atk');
-      renderArena();renderCheckout();return;
-    }
-    // Stat buff (Austin Reaves)
-    if(mods.includes('Self_Stat_Buff')&&cat!=='pre-turn-aura'){
-      let buffAmt=450;let matchB=desc.match(/boost.*basic attack by (\d+)/i);if(matchB)buffAmt=parseInt(matchB[1]);
-      let buffTurns=3;let matchBT=desc.match(/for (\d+) turns/i);if(matchBT)buffTurns=parseInt(matchBT[1]);
-      applyStatBuff('player',actorIdx,'dmg',buffAmt,buffTurns);
-      pendingAction={actorIdx,actionType:type,skillIdx,priority:1,speed:getCardSPD(card),pos:card.battleRole||getCardPos(card)};
-      stagedActions.push({...pendingAction,targetIdx:null,targetTeam:null});
-      logMsg(`✨ ${shortName(name)}: ${sk.Name} — +${buffAmt} basic attack for ${buffTurns} turns!`,'atk');
-      renderArena();renderCheckout();return;
-    }
-    // Invulnerable self this turn (Luka Revenge Season)
-    if(mods.includes('Buffer_Self_This_Turn')||desc.toLowerCase().includes('block all incoming basic attacks and skills targeting')){
-      invulnerableCards[`player_${actorIdx}`]=1;
-      // Also apply stat buffs
-      applyStatBuff('player',actorIdx,'spd',2,3);applyStatBuff('player',actorIdx,'dmg',300,3);
-      pendingAction={actorIdx,actionType:type,skillIdx,priority:3,speed:getCardSPD(card),pos:card.battleRole||getCardPos(card)};
-      stagedActions.push({...pendingAction,targetIdx:null,targetTeam:null});
-      logMsg(`✨ ${shortName(name)}: ${sk.Name} — invulnerable this turn + stats buffed for 3 turns!`,'atk');
-      renderArena();renderCheckout();return;
-    }
-    let prioMatch=(sk.Description_UI||'').match(/x(\d) priority/i);if(prioMatch)priority=parseInt(prioMatch[1]);
+    let pMatch = (sk.Description_UI||'').match(/x(\d) priority/i); if(pMatch) priority=parseInt(pMatch[1]);
   }
-  pendingAction={actorIdx,actionType:type,skillIdx,priority,speed:getCardSPD(card),pos:card.battleRole||getCardPos(card)};
-  if(type==='pass'){stagedActions.push({...pendingAction,targetIdx:null,targetTeam:null});renderArena();renderCheckout();}
-  else if(type==='swap'){uiState='AWAITING_BENCH';logMsg(`Select bench card to swap in for <b>${shortName(name)}</b>.`,'sys');}
-  else{
-    let vt=getValidTargets(card,enemyActive);if(vt.length===0){logMsg(`<b>${shortName(name)}</b> has no valid targets!`,'def');return;}
-    _enemyHoverDisabled=true;setTooltipEnabled(false);uiState='AWAITING_TARGET';
-    logMsg(`Select target for <b>${shortName(name)}</b>.`,'sys');renderArena();
+  
+  pendingAction = {actorIdx, actionType:type, skillIdx, priority, speed:getCardSPD(c), pos:c.battleRole, assistTeammateIdx};
+  if(type==='pass') { stagedActions.push({...pendingAction, targetIdx:null, targetTeam:null}); renderArena(); renderCheckout(); }
+  else if(type==='swap') { uiState='AWAITING_BENCH'; logMsg(`Select bench card to swap in.`, "sys"); openBenchView(); }
+  else {
+    if(getValidTargets(c, enemyActive).length===0) { logMsg(`${shortName(getCardName(c))} has no valid targets!`, "def"); return; }
+    uiState='AWAITING_TARGET'; logMsg(`Select target for ${shortName(getCardName(c))}.`, "sys"); renderArena();
   }
 }
 
-function undoAction(idx){stagedActions=stagedActions.filter(a=>a.actorIdx!==idx);uiState='IDLE';renderArena();renderCheckout();}
+function undoAction(idx) { stagedActions=stagedActions.filter(a=>a.actorIdx!==idx); uiState='IDLE'; renderArena(); renderCheckout(); }
 
-function renderCheckout(){
-  let panel=$('checkout-panel');let maxMoves=Math.min(2,playerActive.filter(c=>!c.isDead).length);
-  $('staged-count').textContent=`${stagedActions.length}/${maxMoves}`;
-  if(stagedActions.length>0){
-    panel.classList.add('visible');
-    $('staged-list').innerHTML=stagedActions.map(a=>{
-      let actor=playerActive[a.actorIdx];let actorName=getCardName(actor);let rc=getRoleColor(actor.battleRole);
-      let actName=a.actionType==='pass'?'Pass':a.actionType==='swap'?`Swap in ${shortName(getCardName(playerBench[a.targetIdx]))}`:a.actionType==='skill'?actor.Skills[a.skillIdx].Name:'Basic Attack';
-      let tgtName=a.targetTeam==='enemy'?` ➔ ${shortName(getCardName(enemyActive[a.targetIdx]))}`:a.targetTeam==='self'?' (self/teammate)':'';
-      return`<div><span style="color:#69F0AE;">▶</span> <b style="color:${rc}">YOU</b> <span class="lc-${actor.battleRole}">${shortName(actorName)} • ${actor.battleRole}</span>: ${actName}${tgtName}</div>`;
+function renderCheckout() {
+  let max=Math.min(2, playerActive.filter(x=>!x.isDead).length), p=$('checkout-panel');
+  $('staged-count').textContent = `${stagedActions.length}/${max}`;
+  if(stagedActions.length>0) {
+    p.style.display='flex';
+    $('staged-list').innerHTML = stagedActions.map(a=>{
+      let ac=playerActive[a.actorIdx], n=a.actionType==='pass'?'Pass':a.actionType==='swap'?`Swap in ${shortName(getCardName(playerBench[a.targetIdx]))}`:a.actionType==='skill'?ac.Skills[a.skillIdx].Name:'Basic Attack';
+      let tgt = a.targetTeam==='enemy'?`➔ ${shortName(getCardName(enemyActive[a.targetIdx]))}`:'';
+      return `<div>▶ [${ac.battleRole}] ${shortName(getCardName(ac))}: ${n} ${tgt}</div>`;
     }).join('');
-    $('confirm-moves-btn').style.background='';$('confirm-moves-btn').textContent='LOCK IN MOVES';
-    $('confirm-moves-btn').onclick=confirmMovesWithDefense;
-    $('confirm-moves-btn').disabled=stagedActions.length<maxMoves&&playerActive.filter(c=>!c.isDead).length>stagedActions.length;
-  }else panel.classList.remove('visible');
+    $('confirm-moves-btn').disabled = stagedActions.length<max && playerActive.filter(x=>!x.isDead).length>stagedActions.length;
+  } else p.style.display='none';
 }
 
-// ==================== CONFIRM MOVES ====================
-async function confirmMovesWithDefense(){
-  $('checkout-panel').classList.remove('visible');hideActionMenus();isAnimating=true;
-  logMsg(`— TURN ${turnCount} —`,'sys');
-  let enemyStaged=generateEnemyAI();reactiveResponses=[];
-  await runReactivePhase(enemyStaged);
-  let masterQueue=[];
-  stagedActions.forEach(a=>masterQueue.push({...a,execTeam:'player',card:playerActive[a.actorIdx]}));
-  enemyStaged.forEach(a=>masterQueue.push({...a,execTeam:'enemy',card:enemyActive[a.actorIdx]}));
-  const POS_HIERARCHY={'PG':5,'SG':4,'SF':3,'PF':2,'C':1};
-  masterQueue.sort((a,b)=>{
-    if(a.priority!==b.priority)return b.priority-a.priority;
-    let aIs6=a.pos==='6TH',bIs6=b.pos==='6TH';if(aIs6&&!bIs6)return 1;if(!aIs6&&bIs6)return -1;
-    if(a.speed!==b.speed)return b.speed-a.speed;
-    let aP=POS_HIERARCHY[(a.pos||'').split('/')[0].trim()]||0;let bP=POS_HIERARCHY[(b.pos||'').split('/')[0].trim()]||0;
-    if(aP!==bP)return bP-aP;return Math.random()>0.5?1:-1;
+// --- ASSIST MODAL ---
+async function promptForAssistTeammate(actorCard, sk) {
+  let form = sk.Logic_Engine?.DMG_Formula||sk.S_Formula||'', posM = form.match(/\[([^\]]+)\]/);
+  if(!posM) return null;
+  let reqPos = posM[1].split(',').map(p=>p.trim());
+  let valids = playerActive.map((c,i)=>({c,i})).filter(x=>x.c&&!x.c.isDead&&reqPos.includes(x.c.battleRole)&&x.c!==actorCard);
+  
+  if(valids.length===0) return null;
+  if(valids.length===1) return valids[0].i;
+
+  return new Promise(resolve => {
+    $('assist-options').innerHTML = valids.map(v=>`<button class="btn-glowing" style="background:var(--pos-pf);" onclick="resolveAssistModal(${v.i})">${shortName(getCardName(v.c))} (${v.c.battleRole})</button>`).join('');
+    window.resolveAssistModal = (idx) => { $('assist-modal').style.display='none'; resolve(idx); };
+    window.cancelAssist = () => { $('assist-modal').style.display='none'; resolve(-1); };
+    $('assist-modal').style.display='flex';
   });
-  for(let action of masterQueue){
-    if(playerScore>=8||enemyScore>=8)break;
-    // Check frozen
-    let atkKey=`${action.execTeam}_${action.actorIdx}`;
-    if(frozenCards[atkKey]){logMsg(`${shortName(getCardName(action.execTeam==='player'?playerActive[action.actorIdx]:enemyActive[action.actorIdx]))} is frozen — skip!`,'sys');continue;}
-    // Check intercepted (by cancel)
-    let wasIntercepted=reactiveResponses.some(r=>r.cancelledAction===action._id||frozenCards[`enemy_${action.actorIdx}`]);
-    if(wasIntercepted&&action.execTeam==='enemy'){logMsg(`🛡️ Action blocked!`,'sys');continue;}
-    let auraResult=applyAuraEffectsToAction(action,action.execTeam);
-    if(auraResult.blocked){logMsg(`🚫 ${auraResult.reason}`,action.execTeam==='player'?'def':'atk');continue;}
-    await executeAction(action);
-  }
-  // Process pending extra moves
-  for(let em of pendingExtraMoves){
-    if(em.teamStr==='player'){
-      let c=playerActive[em.cardIdx];if(c&&!c.isDead){
-        let vt=getValidTargets(c,enemyActive);if(vt.length>0){
-          let tgt=vt[0];
-          logMsg(`⚡ Extra move: <span class="lc-${c.battleRole}">${shortName(getCardName(c))}</span> basic attack!`,'atk');
-          await playCombatAnimation(`player-${em.cardIdx}`,`enemy-${tgt.i}`,getCardDMG(c),tgt.c,'player');
-          if(tgt.c.currentHp<=0){tgt.c.isDead=true;playerScore++;$('score-player').textContent=playerScore;logMsg(`💀 ${shortName(getCardName(tgt.c))} KO'd!`,'ko');}
-        }
-      }
-    }
-  }
-  pendingExtraMoves=[];
-  await handleDeadReplacements('player',playerActive,playerBench);
-  await handleDeadReplacements('enemy',enemyActive,enemyBench);
-  tickDownAuras();jumpShotGuarantee=false;
-  stagedActions=[];reactiveResponses=[];uiState='IDLE';turnCount++;
-  if(playerScore<8&&enemyScore<8){isAnimating=false;renderArena();renderCheckout();}
 }
 
-// ==================== ENEMY AI ====================
-function generateEnemyAI(){
-  let actions=[];
-  let aliveEnemies=enemyActive.map((c,i)=>({c,i})).filter(x=>!x.c.isDead);
-  let moves=Math.min(2,aliveEnemies.length);
-  for(let i=0;i<moves;i++){
-    let actor=aliveEnemies[i];
-    let vt=getValidTargets(actor.c,playerActive);
-    if(vt.length>0){
-      let target=vt[Math.floor(Math.random()*vt.length)];
-      let offSkills=(actor.c.Skills||[]).map((sk,si)=>({sk,si})).filter(({sk,si})=>{
-        if(!canSelectOnYourTurn(sk))return false;
-        if(String(sk.Display_DMG||'').includes('N/A'))return false;
-        if(disabledSkills[`enemy_${actor.i}_${si}`]>0)return false;
-        return true;
-      });
-      let isSkill=Math.random()>0.4&&offSkills.length>0;
-      let chosenSkillIdx=isSkill?offSkills[0].si:0;
-      let priority=1;
-      if(isSkill){let pm=(actor.c.Skills[chosenSkillIdx].Description_UI||'').match(/x(\d) priority/i);if(pm)priority=parseInt(pm[1]);}
-      actions.push({actorIdx:actor.i,actionType:isSkill?'skill':'basic',skillIdx:chosenSkillIdx,targetIdx:target.i,targetTeam:'player',priority,speed:getCardSPD(actor.c),pos:actor.c.battleRole||getCardPos(actor.c),_id:`enemy_${turnCount}_${i}`});
-    }else actions.push({actorIdx:actor.i,actionType:'pass',skillIdx:0,targetIdx:null,priority:1,speed:getCardSPD(actor.c),pos:actor.c.battleRole||getCardPos(actor.c),_id:`enemy_${turnCount}_${i}`});
+// ==================== EXECUTION ENGINE (JUST-IN-TIME) ====================
+async function confirmMovesPhase() {
+  $('checkout-panel').style.display='none'; isAnimating=true;
+  logMsg(`\n--- TURN ${turnCount} EXECUTION ---`, "sys");
+
+  let eStaged = generateEnemyAI();
+  let master = [...stagedActions.map(a=>({...a, execTeam:'player', c:playerActive[a.actorIdx]})), ...eStaged.map(a=>({...a, execTeam:'enemy', c:enemyActive[a.actorIdx]}))];
+  
+  const PH = {'PG':5,'SG':4,'SF':3,'PF':2,'C':1};
+  master.sort((a,b)=>{
+    if(a.priority!==b.priority) return b.priority-a.priority;
+    let a6=a.pos==="6TH", b6=b.pos==="6TH"; if(a6&&!b6)return 1; if(!a6&&b6)return -1;
+    if(a.speed!==b.speed) return b.speed-a.speed;
+    let ap=PH[(a.pos||'').split('/')[0]]||0, bp=PH[(b.pos||'').split('/')[0]]||0;
+    if(ap!==bp) return bp-ap; return Math.random()>0.5?1:-1;
+  });
+
+  for(let act of master) {
+    if(playerScore>=8||enemyScore>=8) break;
+    if(act.c.isDead) continue;
+    
+    // Aura/Freeze checks
+    let aRes = applyAuraEffectsToAction(act, act.execTeam);
+    if(aRes.blocked) { logMsg(`🚫 ${aRes.reason}`, act.execTeam==='player'?'def':'atk'); continue; }
+
+    // JIT Reactive Prompt (If attacking the other team)
+    if(act.actionType!=='pass' && act.actionType!=='swap' && act.targetTeam!==act.execTeam) {
+      await checkAndPromptReactive(act);
+    }
+    
+    // Steal intercept check
+    if(act._stolenTargetIdx != null) { logMsg(`🛡️ Action intercepted!`, 'sys'); continue; }
+    
+    await executeAction(act);
   }
-  return actions;
+
+  await handleDeadReplacements('player', playerActive, playerBench);
+  await handleDeadReplacements('enemy', enemyActive, enemyBench);
+
+  tickDownAuras();
+  stagedActions=[]; uiState='IDLE'; turnCount++;
+  if(playerScore<8&&enemyScore<8) { isAnimating=false; $('turn-indicator').textContent=`STAGING PHASE (TURN ${turnCount})`; renderArena(); }
 }
 
-// ==================== EXECUTE ACTION ====================
-async function executeAction(action){
-  let{actorIdx,actionType,skillIdx,targetIdx,execTeam}=action;
-  let isP=execTeam==='player';
-  let attackers=isP?playerActive:enemyActive;
-  let defenders=isP?enemyActive:playerActive;
-  let attacker=attackers[actorIdx];
-  let aName=getCardName(attacker);let roleStr=attacker.battleRole||'';
-  let whoLabel=isP?`<span class="lc-${roleStr}">YOU</span>`:`<span class="lc-${roleStr}">BOT</span>`;
+// --- JIT REACTIVE ---
+async function checkAndPromptReactive(action) {
+  let defRoster = action.execTeam==='player'?enemyActive:playerActive;
+  let sk = action.actionType==='skill' ? action.c.Skills[action.skillIdx] : null;
+  let nat = sk?(sk.Nature||'').toLowerCase():'basic';
+  let isJ=nat.includes('jump shot'), isC=nat.includes('close shot'), isA=nat.includes('assist');
+  let isDmg = action.actionType==='basic' || (sk&&!String(sk.Display_DMG).includes('N/A'));
 
-  if(attacker.isDead)return;
-  if(actionType==='pass'){logMsg(`${whoLabel} ${shortName(aName)} passes.`,'sys');return;}
+  let valids = [];
+  for(let [i, c] of defRoster.entries()) {
+    if(c.isDead) continue;
+    for(let [si, rsk] of (c.Skills||[]).entries()) {
+      // Hardcode restrictions exactly as requested
+      if(rsk.Name==='Reed Denial' && !isJ) continue;
+      if(rsk.Name==='Havlicek Stole The Ball' && !isA) continue;
+      
+      let rcat = getSkillCategory(rsk);
+      if(!['reactive-block-full','reactive-block-partial','reactive-redirect','reactive-contest-jump','reactive-contest-close','reactive-intercept','reactive-rebound-pass'].includes(rcat)) continue;
+      
+      let v=false;
+      if(rcat.includes('block')||rcat.includes('redirect')) { if(isDmg) v=true; }
+      else if(rcat==='reactive-contest-jump') { if(isJ) v=true; }
+      else if(rcat==='reactive-contest-close') { if(isC) v=true; }
+      else if(rcat==='reactive-intercept') { if(isA) v=true; }
+      else if(rcat==='reactive-rebound-pass') { if(isDmg) v=true; }
 
-  if(actionType==='swap'){
-    let bArr=isP?playerBench:enemyBench;
-    let temp=attackers[actorIdx];attackers[actorIdx]=bArr[targetIdx];bArr[targetIdx]=temp;
-    logMsg(`🔄 ${whoLabel}: ${shortName(getCardName(temp))} ↔ ${shortName(getCardName(attackers[actorIdx]))}`,'atk');
-    renderArena();await delay(600);return;
-  }
-
-  // Handle freeze action
-  if(actionType==='skill'){
-    let sk=attacker.Skills[skillIdx];let cat=getSkillCategory(sk);
-    let mods=sk.Logic_Engine?.Modifiers||[];
-    let desc=(sk.Description_UI||'').toLowerCase();
-
-    // FREEZE
-    if(cat==='freeze'||mods.includes('Freeze_Target')){
-      let scope=desc.includes('adjacent')?'adjacent':'any';
-      // Pick target for freeze
-      let ftIdx=targetIdx;
-      if(ftIdx===null||ftIdx===undefined){
-        let vt=getValidTargets(attacker,defenders);if(vt.length>0)ftIdx=vt[0].i;
-      }
-      if(ftIdx!==null&&ftIdx!==undefined){
-        let target=defenders[ftIdx];
-        if(isCardImmuneToFreeze(target)){logMsg(`${shortName(getCardName(target))} cannot be frozen!`,'sys');}
-        else{
-          let tTeam=isP?'enemy':'player';
-          frozenCards[`${tTeam}_${ftIdx}`]=true;
-          logMsg(`🧊 ${whoLabel} <span class="lc-${roleStr}">${shortName(aName)}</span>: ${sk.Name} — ${shortName(getCardName(target))} frozen!`,isP?'atk':'def');
-        }
-      }
-      return;
-    }
-
-    // NULLIFY DEFENSE
-    if(mods.includes('Nullify_Defensive_Skill')){
-      // Remove last pending block for that target's team
-      pendingBlocks=pendingBlocks.filter((_,i)=>i!==pendingBlocks.length-1);
-      logMsg(`🚫 ${whoLabel} ${shortName(aName)}: ${sk.Name} — nullified a defensive skill!`,'atk');
-      return;
-    }
-
-    // SHUTDOWN (Draymond Death)
-    if(mods.includes('Hard_Disable_Shutdown')){
-      let tgt=defenders[targetIdx];if(tgt){
-        let tKey=`${isP?'enemy':'player'}_${targetIdx}`;
-        shutdownCards[tKey]=2;
-        logMsg(`🔇 ${whoLabel} ${shortName(aName)}: ${sk.Name} — ${shortName(getCardName(tgt))} shut down for 2 turns! (also 100 DMG)`,isP?'atk':'def');
-        await playCombatAnimation(`${isP?'player':'enemy'}-${actorIdx}`,`${isP?'enemy':'player'}-${targetIdx}`,100,tgt,execTeam);
-        if(tgt.currentHp<=0){tgt.isDead=true;if(isP)playerScore++;else enemyScore++;$('score-player').textContent=playerScore;$('score-enemy').textContent=enemyScore;}
-      }return;
-    }
-
-    // DISABLE ONE SKILL (Gary Payton Supersonic Clamps, Walt Frazier)
-    if(mods.includes('Hard_Disable_One_Skill')){
-      let tgt=defenders[targetIdx];if(tgt){
-        // Disable skill 0 of target (simplified — in full version player would choose which skill)
-        let tKey=`${isP?'enemy':'player'}_${targetIdx}_0`;
-        // Coin flip for Payton
-        if(sk.Name.toLowerCase().includes('clamps')){
-          if(Math.random()<0.5){logMsg(`🚫 ${shortName(aName)}: ${sk.Name} — coin flip missed, skill not disabled!`,'sys');return;}
-        }
-        disabledSkills[tKey]=3;
-        logMsg(`🚫 ${whoLabel} ${shortName(aName)}: ${sk.Name} — ${shortName(getCardName(tgt))}'s skill disabled for 3 turns!`,isP?'atk':'def');
-      }return;
-    }
-
-    // STEAL SKILL (McGrady / Embiid)
-    if(mods.includes('Steal_Opponent_Skill')){
-      let tgt=defenders[targetIdx];if(tgt){
-        let availSkills=(tgt.Skills||[]).filter(s=>s&&s.Name&&s.Name!=='-');
-        if(availSkills.length>0){
-          let stolen=availSkills[Math.floor(Math.random()*availSkills.length)];
-          let cloned=JSON.parse(JSON.stringify(stolen));
-          attacker.Skills=attacker.Skills||[];attacker.Skills.push(cloned);
-          stolenSkills[getCardName(tgt)]={thief:attacker,skillIdx:attacker.Skills.length-1};
-          logMsg(`✨ ${whoLabel} ${shortName(aName)}: ${sk.Name} — stole "${stolen.Name}" from ${shortName(getCardName(tgt))}!`,isP?'atk':'def');
-        }
-      }return;
-    }
-
-    // HEAL (Iguodala)
-    if(mods.includes('Heal_Target')){
-      let healAmt=300;let mH=desc.match(/heal (\d+) hp/i);if(mH)healAmt=parseInt(mH[1]);
-      // Heal self or adjacent — simplified: heals actor
-      let target=attackers[actorIdx];
-      target.currentHp=Math.min(getCardHP(target),target.currentHp+healAmt);
-      let fill=$(`hpf-${isP?'player':'enemy'}-${actorIdx}`);
-      if(fill){let pct=(target.currentHp/getCardHP(target))*100;fill.style.width=pct+'%';fill.style.background=pct>50?'#69F0AE':pct>20?'#FFD600':'#FF5252';}
-      logMsg(`💚 ${whoLabel} ${shortName(aName)}: ${sk.Name} — healed ${healAmt} HP!`,isP?'atk':'def');return;
-    }
-
-    // Wilt Counter-Attack (Swat Swat Revolution)
-    if(sk.Name&&sk.Name.toLowerCase().includes('swat')){
-      // Partial block handled via pendingBlocks — also counter-attack 1500 if coin flip
-      logMsg(`${whoLabel} ${shortName(aName)}: ${sk.Name}`,isP?'def':'atk');
-      // Will be handled when enemy hits this card via pendingBlocks
-      pendingBlocks.push({playerCardIdx:actorIdx,skillIdx,sk});
-      // Schedule counter
-      setTimeout(async()=>{
-        if(Math.random()<0.5){
-          let vt=getValidTargets(attacker,defenders);if(vt.length>0){
-            let tgt=vt[0];
-            logMsg(`⚡ ${shortName(aName)}: counter-attack 1500 DMG!`,'atk');
-            await playCombatAnimation(`${isP?'player':'enemy'}-${actorIdx}`,`${isP?'enemy':'player'}-${tgt.i}`,1500,tgt.c,execTeam);
-            if(tgt.c.currentHp<=0){tgt.c.isDead=true;if(isP)playerScore++;else enemyScore++;$('score-player').textContent=playerScore;$('score-enemy').textContent=enemyScore;}
-          }
-        }else logMsg(`${shortName(aName)}: counter-attack missed (coin flip).`,'sys');
-      },1200);
-      return;
+      if(v) { let u=(rsk._usesLeft!==undefined)?rsk._usesLeft:(rsk.Logic_Engine?.Max_Uses||1); if(u>0) valids.push({cIdx:i, sIdx:si, rsk, c}); }
     }
   }
 
-  let defender=defenders[targetIdx];
-  if(!defender||defender.isDead){
-    let vt=getValidTargets(attacker,defenders);if(vt.length===0){logMsg(`${shortName(aName)} has no targets!`,'sys');return;}
-    targetIdx=vt[0].i;defender=defenders[targetIdx];
-  }
+  if(valids.length===0) return false;
 
-  let dName=getCardName(defender);
-  let skill=actionType==='skill'?attacker.Skills[skillIdx]:null;
-  let moveName=skill?skill.Name:'Basic Attack';
-  let dmgStr=skill?(skill.Display_DMG||'0'):getCardDMG(attacker).toString();
-  let isAssist=skill&&(skill.Nature||'').toLowerCase().includes('assist');
-
-  // Check if attacker's skills are blocked (ability: Shai immune to defensive)
-  // Check target immunity (ability-based)
-  let defAb=(defender.Ability?.Description_UI||'').toLowerCase();
-
-  // Coin flip check for current action
-  let coinFlip=skill?.Logic_Engine?.Requires_Coin_Flip||false;
-  if(coinFlip&&!jumpShotGuarantee){
-    // Dual coin flip for already-random skills under aura
-    if(Math.random()<0.5){
-      logMsg(`${whoLabel} <span class="lc-${roleStr}">${shortName(aName)} • ${roleStr}</span>: <b>${moveName}</b> MISSED! (coin flip)`,isP?'atk':'def');
-      // T-Mac ability: get heat up on miss
-      checkHeatUp(attacker,isP?'player':'enemy',actorIdx);
-      return;
-    }
-  }
-  jumpShotGuarantee=false;
-
-  logMsg(`${whoLabel} <span class="lc-${roleStr}">${shortName(aName)} • ${roleStr}</span>: <b>${moveName}</b> → ${shortName(dName)}`,isP?'atk':'def');
-
-  let finalDmg=0;
-  if(isAssist){
-    let teamArr=isP?playerActive:enemyActive;
-    let calc=calcAssistDmg(skill,teamArr.filter(c=>!c.isDead&&getCardName(c)!==aName));
-    if(calc)finalDmg=calc;
-    else{logMsg(`✨ Assist — no matching teammate.`,'sys');return;}
-  } else if(dmgStr.includes('/')){
-    // Conditional DMG (Kawhi Homecoming 950/1600)
-    let parts=dmgStr.split('/').map(s=>parseInt(s.trim())).filter(n=>!isNaN(n));
-    if(parts.length>=2){
-      let myDeadCount=(isP?playerActive:enemyActive).filter(c=>c.isDead).length;
-      let enemyDeadCount=(isP?enemyActive:playerActive).filter(c=>c.isDead).length;
-      finalDmg=myDeadCount>enemyDeadCount?parts[1]:parts[0];
-    }else finalDmg=parseInt(parts[0])||0;
-  } else if(dmgStr.includes('block up to')){
-    // LeBron Fastbreak Mandate dual use
-    finalDmg=950;
-  } else if(!isNaN(parseInt(dmgStr))&&!dmgStr.includes('N/A')){
-    finalDmg=parseInt(dmgStr);
+  if(action.execTeam==='enemy') {
+    // Player is defending: Prompt UI
+    return new Promise(resolve => {
+      let dStr = sk ? `${sk.Name} (${sk.Display_DMG})` : `Basic Attack (${getCardDMG(action.c)})`;
+      $('reactive-desc').innerHTML = `<b>${shortName(getCardName(action.c))}</b> is using <b>${dStr}</b> on <b>${shortName(getCardName(playerActive[action.targetIdx]))}</b>!`;
+      $('reactive-options').innerHTML = valids.map(v=>`<button class="btn-glowing" style="background:var(--pos-pf);" onclick="resolveJIT(${v.cIdx},${v.sIdx})">${shortName(getCardName(v.c))}: 🛡️ ${v.rsk.Name}</button>`).join('');
+      
+      window.resolveJIT = async (cIdx, sIdx) => { $('reactive-modal').style.display='none'; await applyJITReactive(cIdx, sIdx, 'player', action); resolve(true); };
+      window.skipReactive = () => { $('reactive-modal').style.display='none'; resolve(false); };
+      $('reactive-modal').style.display='flex';
+    });
   } else {
-    logMsg(`✨ Status/Effect applied!`,'sys');
-    let atkEl=$(`wrap-${isP?'player':'enemy'}-${actorIdx}`);
-    if(atkEl){atkEl.classList.add('anim-waft-up');await delay(600);atkEl.classList.remove('anim-waft-up');}
-    return;
-  }
-
-  // Apply stat buff DMG
-  if(actionType==='basic'){
-    finalDmg+=getStatBuffTotal(isP?'player':'enemy',actorIdx,'dmg');
-    // Ability DMG buffs (speed/height conditional)
-    let ab=(attacker.Ability?.Description_UI||'').toLowerCase();
-    if(ab.includes('additional 300 dmg to opponents with 7 spd')&&getCardSPD(defender)<=7)finalDmg+=300;
-    if(ab.includes('additional 350 dmg for basic attacks if the opposing player is shorter')&&playerIsShortEnough(defender,getCardHeight(attacker)))finalDmg+=350;
-    if(ab.includes('additional 350 dmg for basic attacks if the opposing player is slower')&&getCardSPD(defender)<getCardSPD(attacker))finalDmg+=350;
-    if(ab.includes('additional 500 dmg when he is targeting any new york knick')&&getCardTeam(defender).toLowerCase().includes('knick'))finalDmg+=500;
-  }
-  if(actionType==='skill'&&skill){
-    finalDmg+=getStatBuffTotal(isP?'player':'enemy',actorIdx,'skill_dmg');
-  }
-
-  // Harden/Embiid: blocked penalty
-  let isBeingBlocked=pendingBlocks.length>0;
-  let atkAb=(attacker.Ability?.Description_UI||'').toLowerCase();
-  if(isBeingBlocked&&(atkAb.includes('results in an additional')||atkAb.includes('it results in an additional'))){
-    finalDmg+=300;logMsg(`💥 ${shortName(aName)} forced additional 300 DMG (block penalty)!`,'atk');
-  }
-
-  await playCombatAnimation(`${isP?'player':'enemy'}-${actorIdx}`,`${isP?'enemy':'player'}-${targetIdx}`,finalDmg,defender,execTeam);
-
-  // Check T-Mac heat up
-  checkHeatUp(attacker,isP?'player':'enemy',actorIdx);
-
-  // Chef Curry stacking
-  let atkAbRaw=(attacker.Ability?.Description_UI||'');
-  if(atkAbRaw.toLowerCase().includes('increase his basic attack by 400')){
-    if(skill&&skill.Name&&skill.Name.toLowerCase().includes('skyfucker')){
-      attacker.UI_Frontend_Data.Stats.Base_DMG=(attacker.UI_Frontend_Data.Stats.Base_DMG||0)+400;
-      logMsg(`🔥 ${shortName(aName)}: Chef Curry ability — +400 basic DMG permanently!`,'atk');
-    }
-  }
-
-  // Heatlemania putback ability
-  if(!isP&&action.execTeam==='enemy'){ /* enemy is LeBron team */ }
-  // Check LeBron Heatlemania (player side)
-  let lebronIdx=playerActive.findIndex(c=>getCardName(c).includes('LeBron')&&(c.Ability?.Name||'').includes('Heatlemania'));
-  if(lebronIdx>=0&&!playerActive[lebronIdx].isDead){
-    // handled via ability check on blocked/missed
-  }
-
-  if(defender.currentHp<=0){
-    defender.isDead=true;
-    if(isP)playerScore++;else enemyScore++;
-    $('score-player').textContent=playerScore;$('score-enemy').textContent=enemyScore;
-    let cardEl=$(`card-${isP?'enemy':'player'}-${targetIdx}`);
-    if(cardEl)cardEl.classList.add('dead-card');
-    logMsg(`💀 <span class="lc-${defender.battleRole}">${shortName(dName)}</span> KO'd!`,'ko');
-    // Clean stolen skills
-    let stolenEntry=stolenSkills[getCardName(defender)];
-    if(stolenEntry){
-      stolenEntry.thief.Skills=stolenEntry.thief.Skills.filter((_,i)=>i!==stolenEntry.skillIdx);
-      delete stolenSkills[getCardName(defender)];
-      logMsg(`✨ Stolen skill expired (${shortName(dName)} left court).`,'sys');
-    }
-    // Moses Malone Putback — fire after KO too
-    let mosesIdx=playerActive.findIndex(c=>getCardName(c).includes('Moses Malone')&&!c.isDead);
-    if(mosesIdx>=0&&isP===false){
-      // enemy KO'd by player, Moses checks if this was from a teammate block/miss — simplified: just fires
-    }
-    if(playerScore>=8)logMsg("🏆 YOU WIN!",'ko');
-    if(enemyScore>=8)logMsg("❌ YOU LOSE.",'ko');
-
-    // Luka Magic / Don of LA: survive at 1 HP
-    if(defender.currentHp<=0){
-      let ab=(defender.Ability?.Description_UI||'').toLowerCase();
-      let abName=defender.Ability?.Name||'';
-      if((ab.includes('hold on to 1 hp')||ab.includes('not drop below 1 hp'))&&!willHpRecovered[getCardName(defender)]){
-        defender.currentHp=1;defender.isDead=false;willHpRecovered[getCardName(defender)]=true;
-        if(isP)playerScore--;else enemyScore--;
-        $('score-player').textContent=playerScore;$('score-enemy').textContent=enemyScore;
-        logMsg(`⚡ ${shortName(dName)}: ${abName} — survived at 1 HP! Untargetable rest of turn.`,'sys');
-      }
-      // Don of LA: heal on death
-      if(ab.includes('healed for 1700 hp')&&!willHpRecovered[getCardName(defender)+'_heal']){
-        defender.currentHp=1700;defender.isDead=false;willHpRecovered[getCardName(defender)+'_heal']=true;
-        if(isP)playerScore--;else enemyScore--;
-        $('score-player').textContent=playerScore;$('score-enemy').textContent=enemyScore;
-        logMsg(`⚡ ${shortName(dName)}: Don of LA — healed to 1700 HP! Untargetable rest of turn.`,'sys');
-      }
-    }
-  }
-
-  // Bill Russell Monster on the Boards: after teammate miss/block — handled via reactive
-  // Robert Parish Boston Board: after teammate miss/block — grant extra move
-  // Westbrook Mr. Triple Double: after teammate miss/block
-  // These fire POST this action if the attack was blocked:
-  let wasBlocked=pendingBlocks.length>0;// already consumed above
-  // Check for rebound abilities (Larry Bird, Kevin Love, Moses Malone — ability)
-  if(defender.currentHp>0){ // skill hit but maybe was blocked... no, if blocked finalDmg=0
-    // Auto-putback for Larry Bird / Kevin Love / Moses Malone ability
-    let reboundChecks=[...playerActive,...enemyActive].filter(c=>!c.isDead);
-    for(let rc of reboundChecks){
-      let rcAb=(rc.Ability?.Description_UI||'').toLowerCase();
-      if(rcAb.includes('rebound the ball and instead deal basic attack damage')&&rcAb.includes('original target')){
-        // This fires when this card's OWN skill misses/is blocked
-        // Already handled in this action flow — simplified: skip (would need full block detection)
-      }
-    }
+    // AI Defending: RNG chance
+    if(Math.random()<0.4) { let p=valids[Math.floor(Math.random()*valids.length)]; await applyJITReactive(p.cIdx, p.sIdx, 'enemy', action); }
+    return false;
   }
 }
 
-function checkHeatUp(attacker,teamStr,idx){
-  // T-Mac ability heat up
-  let ab=(attacker.Ability?.Description_UI||'').toLowerCase();
-  if(ab.includes('gain an additional 100 dmg the next turn')){
-    applyStatBuff(teamStr,idx,'dmg',100,1);
-    logMsg(`🔥 ${shortName(getCardName(attacker))}: T-Mac heated up! +100 DMG next turn.`,teamStr==='player'?'atk':'def');
+async function applyJITReactive(cIdx, sIdx, defTeam, incAction) {
+  let roster = defTeam==='player'?playerActive:enemyActive;
+  let c=roster[cIdx], sk=c.Skills[sIdx], cat=getSkillCategory(sk);
+  sk._usesLeft--;
+
+  logMsg(`🛡️ ${shortName(getCardName(c))} uses ${sk.Name} in defense!`, defTeam==='player'?'atk':'def');
+  
+  if(cat==='reactive-intercept') {
+    if(defTeam==='player') {
+      uiState='AWAITING_REACTIVE_TARGET'; logMsg(`Click an enemy to intercept!`, 'sys');
+      return new Promise(resolve => {
+        pendingReactiveAction = { resolveReac: (tgtIdx) => { incAction._stolenTargetIdx=tgtIdx; resolve(); } };
+      });
+    } else { incAction._stolenTargetIdx=incAction.actorIdx; }
+  } else {
+    pendingBlocks.push({ playerCardIdx:cIdx, skillIdx:sIdx, sk, scope:'ANY_TEAMMATE', blockType: cat.includes('partial')?'partial':cat.includes('redirect')?'redirect':'full', lane:`player-${incAction.targetIdx}` });
   }
 }
 
-// ==================== COMBAT ANIMATION ====================
-async function playCombatAnimation(atkId,defId,dmg,targetObj,execTeam){
-  let atkEl=$(`wrap-${atkId}`);let defEl=$(`wrap-${defId}`);
-  if(atkEl)atkEl.classList.add('anim-waft-up');await delay(420);
-  let effectiveDmg=(execTeam==='enemy')?applyPendingBlocks(dmg,'player'):dmg;
-  // Player blocks applied too
-  if(execTeam==='player'&&pendingBlocks.length>0){
-    // Only apply if defending team has blocks
-    // (blocks set up by player reactive phase are for enemy attacks only)
+// --- AI ---
+function generateEnemyAI() {
+  let acts=[]; let alive=enemyActive.map((c,i)=>({c,i})).filter(x=>!x.c.isDead);
+  for(let i=0; i<Math.min(2,alive.length); i++) {
+    let act=alive[i], c=act.c; if(frozenCards[`enemy-${act.i}`] || drainedNextTurn[`enemy-${act.i}`]) continue;
+    let vT=getValidTargets(c, playerActive);
+    if(vT.length>0) {
+      let t=vT[Math.floor(Math.random()*vT.length)];
+      let oSk=(c.Skills||[]).map((sk,si)=>({sk,si})).filter(x=>canSelectOnYourTurn(x.sk)&&(x.sk._usesLeft>0));
+      let isSk=Math.random()>0.4&&oSk.length>0, cSi=isSk?oSk[0].si:0, prio=1;
+      acts.push({actorIdx:act.i, actionType:isSk?'skill':'basic', skillIdx:cSi, targetIdx:t.i, targetTeam:'player', priority:prio, speed:getCardSPD(c), pos:c.battleRole});
+    } else acts.push({actorIdx:act.i, actionType:'pass', skillIdx:0, targetIdx:null, priority:1, speed:getCardSPD(c), pos:c.battleRole});
+  } return acts;
+}
+
+// --- EXECUTE ---
+async function executeAction(a) {
+  let isP=a.execTeam==='player', atks=isP?playerActive:enemyActive, defs=isP?enemyActive:playerActive;
+  let atkC=atks[a.actorIdx]; if(!atkC||atkC.isDead)return;
+  if(a.actionType==='pass'){ logMsg(`${shortName(getCardName(atkC))} passes.`, 'sys'); return; }
+  if(a.actionType==='swap'){ /* Swap logic */ return; }
+
+  let defC = defs[a.targetIdx]; if(!defC||defC.isDead) defC = getValidTargets(atkC, defs)[0]?.c;
+  if(!defC) return;
+  let dIdx = defs.indexOf(defC);
+
+  let sk=a.actionType==='skill'?atkC.Skills[a.skillIdx]:null, mName=sk?sk.Name:'Basic Attack';
+  let res=resolveSkillDmg(sk||{Display_DMG:getCardDMG(atkC)}, atkC, a);
+  
+  logMsg(`${shortName(getCardName(atkC))} uses ${mName} on ${shortName(getCardName(defC))}!`, isP?'atk':'def');
+  
+  if(res.missed) { logMsg(`💨 MISSED!`, 'sys'); return; }
+  if(res.dmg===0 && getSkillCategory(sk)!=='standard') { logMsg(`✨ Status activated.`, 'sys'); return; }
+
+  await playCombatAnimation(`${isP?'player':'enemy'}-${a.actorIdx}`, `${isP?'enemy':'player'}-${dIdx}`, res.dmg, defC, a.execTeam, dIdx);
+
+  if(defC.currentHp<=0) {
+    defC.isDead=true; if(isP)playerScore++; else enemyScore++;
+    $('score-player').textContent=playerScore; $('score-enemy').textContent=enemyScore;
+    $(`card-${isP?'enemy':'player'}-${dIdx}`).classList.add('dead-card');
+    logMsg(`💀 ${shortName(getCardName(defC))} KO'D!`, isP?'atk':'def');
   }
-  if(defEl){
-    defEl.classList.add('anim-shake');
-    let pop=document.createElement('div');pop.className='dmg-popup';pop.innerHTML=`💥 -${effectiveDmg}`;defEl.appendChild(pop);
-  }
-  let hpMax=getCardHP(targetObj);
-  targetObj.currentHp=Math.max(0,targetObj.currentHp-effectiveDmg);
-  let pct=Math.max(0,(targetObj.currentHp/hpMax)*100);
-  let fill=$(`hpf-${defId}`);
-  if(fill){fill.style.width=pct+'%';fill.style.background=pct>50?'#69F0AE':pct>20?'#FFD600':'#FF5252';}
-  let hpt=$(`hpt-${defId}`);
-  if(hpt)hpt.textContent=`${targetObj.currentHp}/${hpMax}`;
+}
+
+async function playCombatAnimation(atkId, defId, dmg, targetObj, execTeam, defIdx) {
+  let aE=$(`wrap-${atkId}`), dE=$(`wrap-${defId}`);
+  if(aE) aE.classList.add('anim-waft-up'); await delay(400);
+
+  let eDmg = (execTeam==='enemy') ? applyPendingBlocks(dmg, 'player', defIdx) : dmg;
+
+  if(dE&&eDmg>0) { dE.classList.add('anim-shake'); let p=document.createElement('div'); p.className='dmg-popup'; p.innerHTML=`💥 -${eDmg}`; dE.appendChild(p); }
+  targetObj.currentHp = Math.max(0, targetObj.currentHp-eDmg);
+  let hpMax=getCardHP(targetObj), pct=Math.max(0,(targetObj.currentHp/hpMax)*100);
+  let fill=$(`hpf-${defId}`); if(fill){fill.style.width=pct+'%';fill.style.background=pct>50?'#69F0AE':pct>20?'#FFD600':'#FF5252';}
+  let hpt=$(`hpt-${defId}`); if(hpt)hpt.textContent=`${targetObj.currentHp}/${hpMax}`;
+  
   await delay(700);
-  if(atkEl)atkEl.classList.remove('anim-waft-up');
-  if(defEl){defEl.classList.remove('anim-shake');let pop=defEl.querySelector('.dmg-popup');if(pop)pop.remove();}
+  if(aE) aE.classList.remove('anim-waft-up');
+  if(dE){ dE.classList.remove('anim-shake'); let pop=dE.querySelector('.dmg-popup'); if(pop)pop.remove(); }
+}
+
+function applyPendingBlocks(dmg, tgtTeam, defIdx) {
+  if(pendingBlocks.length===0) return dmg;
+  let b = pendingBlocks.shift(), sk=b.sk, name=getCardName(playerActive[b.playerCardIdx]);
+  if(b.blockType==='redirect') { let r=Math.floor(dmg*0.5); logMsg(`🛡️ ${shortName(name)} redirect: halved to ${r}!`, 'atk'); return r; }
+  if(b.blockType==='partial') { let r=Math.max(0,dmg-800); logMsg(`🛡️ ${shortName(name)} blocked 800! (Dmg: ${r})`, 'atk'); return r; }
+  logMsg(`🛡️ ${shortName(name)} completely BLOCKED the attack!`, 'atk'); return 0;
 }
 
 // ==================== DEAD REPLACEMENTS ====================
-async function handleDeadReplacements(teamStr,activeArr,benchArr){
-  for(let i=0;i<activeArr.length;i++){
-    if(activeArr[i]&&activeArr[i].isDead){
-      let deadRole=activeArr[i].battleRole||getCardPos(activeArr[i]).split('/')[0].trim();
-      let vb=benchArr.map((c,idx)=>({c,idx})).filter(b=>{let bRole=b.c.battleRole||getCardPos(b.c).split('/')[0].trim();return bRole===deadRole;});
-      if(vb.length>0){
-        let rep=vb[0];
-        logMsg(`🔄 <span class="lc-${rep.c.battleRole||deadRole}">${shortName(getCardName(rep.c))}</span> stepped in!`,'sys');
-        let temp=activeArr[i];activeArr[i]=benchArr[rep.idx];benchArr[rep.idx]=temp;
-        renderArena();await delay(450);
+async function handleDeadReplacements(teamStr, activeArr, benchArr) {
+  for(let i=0; i<activeArr.length; i++) {
+    if(activeArr[i]&&activeArr[i].isDead) {
+      let dR = activeArr[i].battleRole||getCardPos(activeArr[i]).split('/')[0].trim();
+      let vB = benchArr.map((c,idx)=>({c,idx})).filter(b=>b.c.battleRole===dR);
+      if(vB.length>0) {
+        let r=vB[0]; logMsg(`🔄 ${shortName(getCardName(r.c))} steps in!`, 'sys');
+        let t=activeArr[i]; activeArr[i]=benchArr[r.idx]; benchArr[r.idx]=t;
+        renderArena(); await delay(500);
       }
     }
   }
