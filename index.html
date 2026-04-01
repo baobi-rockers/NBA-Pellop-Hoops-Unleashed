@@ -3,236 +3,156 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-  <title>NBA Card Battle · TCG Pocket Edition</title>
+  <title>NBA Pellop Hoops Unleashed · TCG Pocket Edition</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
-      /* NEW COLOR SCHEME: White / Basketball Orange / Forest Green */
-      --bg: #F5F0E8;
-      --bg-dark: #FFFDF9;
-      --surface: #FFFFFF;
-      --surface-2: #F0EBE0;
-      --border: #E0D8CC;
-      --border-heavy: #C8B89A;
-      --accent: #E8621A;       /* Basketball orange */
-      --accent-dark: #C4501A;
-      --accent-light: #FF8C42;
-      --green: #2D6A4F;        /* Forest green */
-      --green-light: #40916C;
-      --green-pale: #D8F3DC;
-      --text: #1A1A1A;
-      --text-light: #4A4A4A;
-      --text-muted: #8A8A8A;
-      --gold: #C8960C;
-      --gold-light: #FFD166;
-      --red: #D62828;
-      --blue: #1B4F72;
-      /* Position colors - richer */
-      --pos-pg: #E8621A;
-      --pos-sg: #D62828;
-      --pos-sf: #2D6A4F;
-      --pos-pf: #1B4F72;
-      --pos-c:  #6B3FA0;
-      --pos-6th: #C8960C;
-      /* Battle specific */
-      --battle-bg: #0A0F1A;
-      --battle-surface: rgba(255,255,255,0.06);
-      --battle-border: rgba(255,255,255,0.15);
+      --bg: #F5F0E8; --bg-dark: #FFFDF9; --surface: #FFFFFF; --surface-2: #F0EBE0;
+      --border: #E0D8CC; --border-heavy: #C8B89A; --accent: #E8621A; --accent-dark: #C4501A;
+      --accent-light: #FF8C42; --green: #2D6A4F; --green-light: #40916C; --green-pale: #D8F3DC;
+      --text: #1A1A1A; --text-light: #4A4A4A; --text-muted: #8A8A8A;
+      --gold: #C8960C; --gold-light: #FFD166; --red: #D62828; --blue: #1B4F72;
+      --pos-pg: #E8621A; --pos-sg: #D62828; --pos-sf: #2D6A4F; --pos-pf: #1B4F72; --pos-c: #6B3FA0; --pos-6th: #C8960C;
+      --battle-bg: #0A0F1A; --battle-surface: rgba(255,255,255,0.06); --battle-border: rgba(255,255,255,0.15);
+      --log-width: 360px;
+      --btn-radius: 8px;
     }
-
     body { background: var(--bg); font-family: 'Inter', sans-serif; color: var(--text); overflow-y: scroll; height: 100vh; overflow-x: hidden; }
     .screen { display: none; min-height: 100vh; background: var(--bg); }
     .screen.active { display: block; }
-    .battle-screen-active { background: var(--battle-bg) !important; }
 
-    /* ===== ROUND ICON BUTTON (Pic 3 style) ===== */
-    .icon-btn {
-      width: 38px; height: 38px;
-      border-radius: 50%;
-      border: 3px solid rgba(255,255,255,0.5);
-      background: radial-gradient(circle at 35% 30%, rgba(255,255,255,0.35), rgba(0,0,0,0.5));
-      box-shadow: inset 0 2px 4px rgba(255,255,255,0.3), 0 3px 8px rgba(0,0,0,0.5);
-      color: rgba(255,255,255,0.85);
-      font-size: 1rem;
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer;
-      transition: transform 0.15s, box-shadow 0.15s;
-      font-weight: 700;
-      flex-shrink: 0;
+    /* ===== FORFEIT-STYLE BUTTONS ===== */
+    .game-btn {
+      display: inline-flex; align-items: center; justify-content: center;
+      padding: 10px 22px; border-radius: var(--btn-radius);
+      font-weight: 700; font-size: 0.85rem; cursor: pointer;
+      font-family: 'Inter', sans-serif; border: none;
+      position: relative; overflow: hidden;
+      transition: transform 0.12s ease, filter 0.12s ease;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+      letter-spacing: 0.5px;
     }
-    .icon-btn:hover { transform: scale(0.88); box-shadow: inset 0 1px 3px rgba(255,255,255,0.2), 0 2px 5px rgba(0,0,0,0.6); }
-    .icon-btn:active { transform: scale(0.80); }
-    .icon-btn.dark {
-      background: radial-gradient(circle at 35% 30%, rgba(100,60,20,0.7), rgba(50,20,5,0.9));
-      border-color: rgba(200,140,50,0.5);
-      color: #FFD166;
+    .game-btn::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(0,0,0,0.08) 100%);
+      border-radius: inherit; pointer-events: none;
     }
-    .icon-btn.green {
-      background: radial-gradient(circle at 35% 30%, rgba(64,145,108,0.7), rgba(20,60,35,0.9));
-      border-color: rgba(64,145,108,0.5);
-      color: #D8F3DC;
-    }
-    .icon-btn.red {
-      background: radial-gradient(circle at 35% 30%, rgba(180,40,40,0.7), rgba(100,10,10,0.9));
-      border-color: rgba(200,60,60,0.5);
-      color: #FFD0D0;
-    }
+    .game-btn:hover:not(:disabled) { transform: scale(0.97); filter: brightness(1.08); }
+    .game-btn:active:not(:disabled) { transform: scale(0.94); filter: brightness(0.95); }
+    .game-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
 
-    /* ===== APP HEADER ===== */
+    .game-btn-orange { background: linear-gradient(180deg, #F07030 0%, #C4501A 100%); color: white; box-shadow: 0 3px 0 #8B3010, 0 4px 12px rgba(232,98,26,0.4); }
+    .game-btn-green { background: linear-gradient(180deg, #3A8060 0%, #1E5235 100%); color: white; box-shadow: 0 3px 0 #0F3020, 0 4px 12px rgba(45,106,79,0.4); }
+    .game-btn-red { background: linear-gradient(180deg, #D84040 0%, #982020 100%); color: white; box-shadow: 0 3px 0 #601010, 0 4px 12px rgba(180,40,40,0.5); }
+    .game-btn-blue { background: linear-gradient(180deg, #2A6090 0%, #0D3060 100%); color: white; box-shadow: 0 3px 0 #081840, 0 4px 12px rgba(27,79,114,0.4); }
+    .game-btn-gold { background: linear-gradient(180deg, #E0A820 0%, #A07008 100%); color: white; box-shadow: 0 3px 0 #604000, 0 4px 12px rgba(200,150,12,0.4); }
+    .game-btn-purple { background: linear-gradient(180deg, #9060C0 0%, #602090 100%); color: white; box-shadow: 0 3px 0 #300860, 0 4px 12px rgba(107,63,160,0.4); }
+    .game-btn-outline { background: linear-gradient(180deg, #f5f0e8 0%, #e0d0bc 100%); color: var(--text); box-shadow: 0 3px 0 #b8a890, 0 2px 6px rgba(0,0,0,0.15); }
+    .game-btn-ghost { background: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 100%); color: rgba(255,255,255,0.85); box-shadow: 0 3px 0 rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2); }
+    .game-btn-teal { background: linear-gradient(180deg, #40E0A0 0%, #1A9060 100%); color: #0A1A10; box-shadow: 0 3px 0 #0A5030, 0 4px 12px rgba(64,224,160,0.3); }
+    .game-btn-cyan { background: linear-gradient(180deg, #4FC3F7 0%, #0288D1 100%); color: #0A1929; box-shadow: 0 3px 0 #014060, 0 4px 12px rgba(79,195,247,0.4); }
+
+    /* ===== LOGO IN HEADER ===== */
     .app-header {
-      background: var(--surface);
-      border-bottom: 2px solid var(--border);
-      padding: 8px 16px;
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 8px;
-      z-index: 100; position: sticky; top: 0;
+      background: var(--surface); border-bottom: 2px solid var(--border);
+      padding: 6px 16px; display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 8px; z-index: 100; position: sticky; top: 0;
       box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
-    .logo {
-      font-family: 'Orbitron', sans-serif;
-      font-weight: 900;
-      letter-spacing: 2px;
-      font-size: 1.3rem;
-      color: var(--accent);
-      display: flex; align-items: center; gap: 10px;
-    }
+    .header-logo-wrap { display: flex; align-items: center; gap: 10px; }
+    .header-logo-img { height: 38px; width: auto; object-fit: contain; }
     .nav {
-      display: flex; gap: 4px;
-      background: var(--surface-2);
-      padding: 4px;
-      border-radius: 40px;
-      border: 1px solid var(--border);
+      display: flex; gap: 4px; background: var(--surface-2);
+      padding: 4px; border-radius: 40px; border: 1px solid var(--border);
     }
     .nav-btn {
-      padding: 5px 14px;
-      border-radius: 30px;
-      font-weight: 600;
-      font-size: 0.8rem;
-      background: transparent;
-      border: none;
-      cursor: pointer;
-      color: var(--text-light);
-      font-family: 'Inter', sans-serif;
-      transition: all 0.15s;
+      padding: 5px 14px; border-radius: 30px; font-weight: 600; font-size: 0.8rem;
+      background: transparent; border: none; cursor: pointer; color: var(--text-light);
+      font-family: 'Inter', sans-serif; transition: all 0.15s;
     }
     .nav-btn.active, .nav-btn:hover { background: var(--accent); color: white; }
-
-    /* ===== BUTTONS ===== */
-    .btn-orange {
-      background: var(--accent); color: white; border: none;
-      padding: 10px 22px; border-radius: 12px; font-weight: 700;
-      font-size: 0.85rem; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
-      font-family: 'Inter', sans-serif;
-      box-shadow: 0 3px 10px rgba(232,98,26,0.3);
-    }
-    .btn-orange:hover { transform: scale(0.96); box-shadow: 0 2px 6px rgba(232,98,26,0.2); }
-    .btn-orange:disabled { background: var(--border-heavy); color: var(--text-muted); cursor: not-allowed; box-shadow: none; transform: none; }
-
-    .btn-green {
-      background: var(--green); color: white; border: none;
-      padding: 10px 22px; border-radius: 12px; font-weight: 700;
-      font-size: 0.85rem; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s;
-      font-family: 'Inter', sans-serif;
-      box-shadow: 0 3px 10px rgba(45,106,79,0.3);
-    }
-    .btn-green:hover { transform: scale(0.96); }
-    .btn-green:disabled { background: var(--border-heavy); color: var(--text-muted); cursor: not-allowed; transform: none; }
-
-    .btn-outline {
-      background: transparent; color: var(--text); border: 2px solid var(--border-heavy);
-      padding: 9px 20px; border-radius: 12px; font-weight: 600;
-      font-size: 0.85rem; cursor: pointer; transition: transform 0.15s, border-color 0.15s;
-      font-family: 'Inter', sans-serif;
-    }
-    .btn-outline:hover { transform: scale(0.96); border-color: var(--accent); color: var(--accent); }
-
-    .btn-glowing-battle {
-      padding: 10px 18px; font-size: 0.85rem;
-      background: rgba(255,255,255,0.08);
-      border: 1.5px solid rgba(255,255,255,0.25);
-      color: white; border-radius: 10px;
-      font-weight: 700; transition: all 0.18s;
-      cursor: pointer; font-family: 'Inter', sans-serif;
-    }
-    .btn-glowing-battle:hover:not(:disabled) { transform: scale(0.96); border-color: rgba(255,255,255,0.6); color: white; box-shadow: 0 0 12px rgba(255,255,255,0.15); }
-    .btn-glowing-battle:disabled { opacity: 0.35; cursor: not-allowed; }
-
-    /* ===== FILTER BAR ===== */
-    .filter-bar {
-      display: flex; gap: 8px; flex-wrap: wrap;
-      padding: 8px 16px;
-      background: var(--surface-2);
-      border-bottom: 1px solid var(--border);
-      align-items: center;
-    }
-    .styled-search-wrap { position: relative; display: flex; align-items: center; }
-    .styled-search-wrap .search-icon { position: absolute; left: 10px; font-size: 13px; color: var(--text-muted); pointer-events: none; }
-    input[type="text"].pill-input {
-      padding: 6px 12px 6px 30px; border-radius: 50px;
-      border: 1.5px solid var(--border); background: white;
-      color: var(--text); font-size: 0.82rem; height: 32px;
-      outline: none; font-family: 'Inter', sans-serif;
-      transition: border-color 0.2s;
-    }
-    input[type="text"].pill-input:focus { border-color: var(--accent); }
-    input[type="text"].pill-input::placeholder { color: var(--text-muted); }
-    select.pill-select {
-      padding: 5px 12px; border-radius: 50px;
-      border: 1.5px solid var(--border); background: white;
-      color: var(--text); font-size: 0.82rem; height: 32px;
-      outline: none; font-family: 'Inter', sans-serif; cursor: pointer;
-      transition: border-color 0.2s;
-    }
-    select.pill-select:focus { border-color: var(--accent); }
-    .sticky-container { position: sticky; top: 0; z-index: 90; background: var(--bg); }
 
     /* ===== TOOLTIP ===== */
     .tooltip-bubble {
       position: fixed; z-index: 9999;
-      background: rgba(10,15,26,0.95);
-      border: 1px solid rgba(255,255,255,0.2);
-      padding: 10px 12px; border-radius: 10px;
-      color: #E8E8E8; max-width: 230px;
-      font-size: 0.68rem; line-height: 1.4;
-      box-shadow: 0 10px 28px rgba(0,0,0,0.7);
-      backdrop-filter: blur(10px);
-      opacity: 0; pointer-events: none;
+      background: rgba(10,15,26,0.95); border: 1px solid rgba(255,255,255,0.2);
+      padding: 10px 12px; border-radius: 10px; color: #E8E8E8; max-width: 230px;
+      font-size: 0.68rem; line-height: 1.4; box-shadow: 0 10px 28px rgba(0,0,0,0.7);
+      backdrop-filter: blur(10px); opacity: 0; pointer-events: none;
       transition: opacity 0.15s; font-weight: 300;
     }
     .tooltip-bubble .tt-name { color: var(--gold-light); font-weight: 700; font-size: 0.82rem; margin-bottom: 3px; }
-    .tooltip-bubble .tt-skill-name { color: white; font-weight: 600; margin-top: 4px; }
     .tooltip-bubble.visible { opacity: 1; }
 
+    /* ===== FILTER BAR ===== */
+    .filter-bar {
+      display: flex; gap: 8px; flex-wrap: wrap; padding: 8px 16px;
+      background: var(--surface-2); border-bottom: 1px solid var(--border); align-items: center;
+    }
+    .styled-search-wrap { position: relative; display: flex; align-items: center; }
+    .styled-search-wrap .search-icon { position: absolute; left: 10px; font-size: 13px; color: var(--text-muted); pointer-events: none; }
+    input[type="text"].pill-input {
+      padding: 6px 12px 6px 30px; border-radius: 50px; border: 1.5px solid var(--border);
+      background: white; color: var(--text); font-size: 0.82rem; height: 32px;
+      outline: none; font-family: 'Inter', sans-serif; transition: border-color 0.2s;
+    }
+    input[type="text"].pill-input:focus { border-color: var(--accent); }
+    input[type="text"].pill-input::placeholder { color: var(--text-muted); }
+    select.pill-select {
+      padding: 5px 12px; border-radius: 50px; border: 1.5px solid var(--border);
+      background: white; color: var(--text); font-size: 0.82rem; height: 32px;
+      outline: none; font-family: 'Inter', sans-serif; cursor: pointer; transition: border-color 0.2s;
+    }
+    select.pill-select:focus { border-color: var(--accent); }
+    .sticky-container { position: sticky; top: 0; z-index: 90; background: var(--bg); }
+
     /* ===== HOME SCREEN ===== */
-    #home-screen { background: linear-gradient(135deg, #F5F0E8 0%, #E8DDD0 100%); }
+    #home-screen { background: radial-gradient(ellipse at 50% 40%, #1a2a1a 0%, #0a0f0a 100%); min-height: 100vh; overflow: hidden; }
     .home-hero {
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      min-height: 80vh; text-align: center; gap: 28px; padding: 20px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; text-align: center; gap: 32px; padding: 20px; position: relative;
     }
-    .home-title {
-      font-family: 'Orbitron', sans-serif;
-      font-weight: 900; font-size: 4.5rem;
-      letter-spacing: 3px; line-height: 1;
-      color: var(--accent);
-      text-shadow: 4px 4px 0 rgba(0,0,0,0.1);
+    .home-logo-wrap {
+      position: relative; display: inline-block; cursor: default;
     }
-    .home-sub { color: var(--text-muted); font-size: 1rem; margin-top: 6px; font-weight: 500; }
+    .home-logo-glow {
+      position: absolute; inset: -40px;
+      background: radial-gradient(ellipse at center, rgba(232,98,26,0.7) 0%, rgba(45,106,79,0.4) 40%, transparent 70%);
+      border-radius: 50%; filter: blur(20px);
+      animation: pulseFlame 2.8s ease-in-out infinite;
+      pointer-events: none; z-index: 0;
+    }
+    .home-logo-glow-2 {
+      position: absolute; inset: -20px;
+      background: radial-gradient(ellipse at center, rgba(255,180,50,0.5) 0%, rgba(232,98,26,0.3) 50%, transparent 70%);
+      border-radius: 50%; filter: blur(12px);
+      animation: pulseFlame2 2.1s ease-in-out infinite;
+      pointer-events: none; z-index: 0;
+    }
+    @keyframes pulseFlame {
+      0%   { opacity: 0.6; transform: scale(0.92); }
+      50%  { opacity: 1;   transform: scale(1.08); }
+      100% { opacity: 0.6; transform: scale(0.92); }
+    }
+    @keyframes pulseFlame2 {
+      0%   { opacity: 0.4; transform: scale(1.0) translateY(0); }
+      50%  { opacity: 0.9; transform: scale(1.05) translateY(-8px); }
+      100% { opacity: 0.4; transform: scale(1.0) translateY(0); }
+    }
+    .home-big-logo { width: min(500px, 85vw); position: relative; z-index: 1; filter: drop-shadow(0 4px 20px rgba(232,98,26,0.5)); }
+    .home-btn-row { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
 
     /* ===== CATALOGUE ===== */
     .card-grid {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
+      display: grid; grid-template-columns: repeat(5, 1fr);
       gap: 12px; padding: 14px 18px; align-items: start;
     }
     .compact-card {
       position: relative; width: 100%; padding-bottom: 140%;
       background: white; border-radius: 10px; overflow: hidden;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.12);
-      transition: transform 0.2s, box-shadow 0.2s;
-      cursor: pointer;
-      border: 2px solid var(--border);
+      box-shadow: 0 3px 10px rgba(0,0,0,0.12); transition: transform 0.2s, box-shadow 0.2s;
+      cursor: pointer; border: 2px solid var(--border);
     }
     .compact-card:hover { transform: translateY(-4px) scale(1.03); box-shadow: 0 10px 24px rgba(232,98,26,0.25); border-color: var(--accent); z-index: 5; }
     .compact-card.in-draft { opacity: 0.25; pointer-events: none; filter: grayscale(70%); }
@@ -240,42 +160,27 @@
     .card-img-sm { position: absolute; inset: 0; background: #1a1a2e; pointer-events: none; }
     .card-img-sm img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* Expanded row (catalogue) */
+    /* Expanded row (catalogue) - in-grid, half-width */
     .expanded-row {
-      grid-column: 1 / -1;
-      display: flex; padding: 14px 16px;
-      background: white; border-radius: 12px;
-      border: 2px solid var(--border-heavy);
-      margin: 4px 0; overflow: hidden;
-      align-items: flex-start; position: relative;
+      grid-column: 1 / -1; display: flex;
+      padding: 14px 16px; background: white;
+      border-radius: 12px; border: 2px solid var(--border-heavy);
+      margin: 4px 0; align-items: flex-start; position: relative;
       width: 60%; min-width: 500px; max-height: 340px;
     }
     .expanded-card-container { height: 280px; width: 200px; flex-shrink: 0; margin-right: 16px; border-radius: 10px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
     .expanded-front { width: 100%; height: 100%; background: #1a1a2e; }
     .expanded-front img { width: 100%; height: 100%; object-fit: cover; }
-    @keyframes fairySpin {
-      0%   { transform: rotateY(1080deg) scale(0.5); opacity: 0; }
-      15%  { opacity: 1; }
-      70%  { transform: rotateY(0deg) scale(1.04); }
-      100% { transform: rotateY(0deg) scale(1); opacity: 1; }
-    }
+    @keyframes fairySpin { 0%{transform:rotateY(1080deg) scale(0.5);opacity:0;} 15%{opacity:1;} 70%{transform:rotateY(0deg) scale(1.04);} 100%{transform:rotateY(0deg) scale(1);opacity:1;} }
     .expanded-scroll-wrapper { flex: 1; overflow-y: auto; max-height: 310px; padding-right: 4px; }
     .expanded-content { color: var(--text); }
     .ec-header { border-bottom: 2px solid var(--border); padding-bottom: 6px; margin-bottom: 8px; }
     .ec-title { font-size: 1.15rem; font-weight: 800; line-height: 1.1; }
     .ec-team { color: var(--accent); font-weight: 700; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
     .ec-stats-row { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
-    .ec-stat {
-      background: var(--surface-2); padding: 4px 10px;
-      border-radius: 6px; font-weight: 800; border: 1px solid var(--border);
-      font-size: 0.82rem; display: flex; align-items: center; gap: 3px;
-    }
+    .ec-stat { background: var(--surface-2); padding: 4px 10px; border-radius: 6px; font-weight: 800; border: 1px solid var(--border); font-size: 0.82rem; display: flex; align-items: center; gap: 3px; }
     .ec-stat span { font-size: 0.55rem; color: var(--text-muted); }
-    .ec-ability-block {
-      background: rgba(45,106,79,0.06);
-      border-left: 3px solid var(--green);
-      padding: 6px 8px; margin-bottom: 8px; border-radius: 0 6px 6px 0;
-    }
+    .ec-ability-block { background: rgba(45,106,79,0.06); border-left: 3px solid var(--green); padding: 6px 8px; margin-bottom: 8px; border-radius: 0 6px 6px 0; }
     .ec-ability-name { font-weight: 800; color: var(--green); font-size: 0.82rem; }
     .ec-ability-desc { font-size: 0.65rem; color: var(--text-light); line-height: 1.35; margin-top: 2px; }
     .ec-skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
@@ -285,48 +190,33 @@
     .ec-skill-dmg { color: var(--red); background: rgba(214,40,40,0.08); padding: 1px 5px; border-radius: 4px; font-size: 0.68rem; white-space: nowrap; }
     .ec-skill-desc { font-size: 0.62rem; color: var(--text-light); line-height: 1.3; }
     .expanded-close-btn {
-      position: absolute; top: 8px; right: 8px;
-      width: 28px; height: 28px;
-      border-radius: 50%;
-      border: 2.5px solid rgba(100,60,20,0.4);
-      background: radial-gradient(circle at 35% 30%, rgba(160,80,30,0.7), rgba(80,30,5,0.9));
-      color: #FFD0A0; cursor: pointer;
+      position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%;
+      background: linear-gradient(180deg, #D84040 0%, #982020 100%); color: white; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       font-size: 0.85rem; font-weight: bold; z-index: 50;
-      box-shadow: inset 0 2px 4px rgba(255,255,255,0.2), 0 2px 6px rgba(0,0,0,0.4);
-      transition: transform 0.15s;
+      box-shadow: 0 3px 0 #601010, 0 2px 8px rgba(180,40,40,0.5);
+      transition: transform 0.12s; border: none;
     }
-    .expanded-close-btn:hover { transform: scale(0.85); }
-    .expanded-close-btn:active { transform: scale(0.75); }
+    .expanded-close-btn:hover { transform: scale(0.88); }
 
     /* ===== DRAFT ===== */
     .draft-layout { display: flex; min-height: calc(100vh - 90px); }
     .draft-main { flex: 1; overflow-y: auto; min-width: 0; }
     .draft-sidebar {
-      width: 200px; flex-shrink: 0;
-      background: var(--surface);
-      border-left: 2px solid var(--border);
-      display: flex; flex-direction: column;
-      padding: 14px 10px; gap: 8px;
-      position: sticky; top: 90px;
+      width: 200px; flex-shrink: 0; background: var(--surface);
+      border-left: 2px solid var(--border); display: flex; flex-direction: column;
+      padding: 14px 10px; gap: 8px; position: sticky; top: 90px;
       height: calc(100vh - 90px); overflow-y: auto;
     }
     .draft-count-display {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 2.2rem; font-weight: 900;
-      text-align: center;
-      color: var(--accent);
-      text-shadow: 2px 2px 0 rgba(0,0,0,0.08), 3px 3px 0 rgba(200,100,20,0.2);
-      letter-spacing: 2px;
-      margin-bottom: 6px;
+      font-family: 'Orbitron', sans-serif; font-size: 2.2rem; font-weight: 900;
+      text-align: center; color: var(--accent);
+      text-shadow: 2px 2px 0 rgba(0,0,0,0.08); letter-spacing: 2px; margin-bottom: 6px;
     }
     .slot-card {
-      background: var(--surface-2); border-radius: 8px;
-      border: 1.5px dashed var(--border-heavy);
-      padding: 5px 6px; min-height: 48px;
-      text-align: center; position: relative;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
+      background: var(--surface-2); border-radius: 8px; border: 1.5px dashed var(--border-heavy);
+      padding: 5px 6px; min-height: 48px; text-align: center; position: relative;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
       transition: all 0.2s;
     }
     .slot-card.filled { border-style: solid; background: white; }
@@ -339,217 +229,170 @@
     .slot-PF.filled { border-color: var(--pos-pf); } .slot-PF .slot-pos { color: var(--pos-pf); }
     .slot-C.filled  { border-color: var(--pos-c);  } .slot-C  .slot-pos { color: var(--pos-c); }
     .slot-6TH.filled{ border-color: var(--pos-6th);} .slot-6TH .slot-pos { color: var(--pos-6th); }
-
     .remove-slot, .setup-remove {
       position: absolute; top: -9px; right: -9px;
-      width: 22px; height: 22px; border-radius: 50%;
-      border: 2px solid rgba(150,60,10,0.4);
-      background: radial-gradient(circle at 35% 30%, rgba(160,60,20,0.8), rgba(80,20,5,0.95));
-      color: #FFD0A0; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.7rem; font-weight: bold; z-index: 100;
-      box-shadow: inset 0 1px 3px rgba(255,255,255,0.2), 0 2px 5px rgba(0,0,0,0.4);
-      transition: transform 0.15s;
+      width: 22px; height: 22px; border-radius: 50%; z-index: 100;
+      background: linear-gradient(180deg, #D84040 0%, #982020 100%);
+      color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: bold; border: none;
+      box-shadow: 0 2px 0 #601010, 0 2px 5px rgba(180,40,40,0.5);
+      transition: transform 0.12s;
     }
-    .remove-slot:hover, .setup-remove:hover { transform: scale(0.85); }
-    .remove-slot:active, .setup-remove:active { transform: scale(0.75); }
+    .remove-slot:hover, .setup-remove:hover { transform: scale(0.88); }
 
-    /* Draft side panel (pic 4/5 style - LEFT side) */
+    /* Draft side panel */
     #draft-grid-wrapper { display: flex; align-items: flex-start; min-height: 100%; flex-direction: row-reverse; }
     #draft-cards-col { flex: 1; min-width: 0; }
     #draft-side-panel {
-      width: 0; overflow: hidden;
-      transition: width 0.35s cubic-bezier(0.4,0,0.2,1);
-      flex-shrink: 0;
-      background: var(--surface);
-      border-right: 2px solid var(--border);
-      position: sticky; top: 90px;
-      max-height: calc(100vh - 90px); overflow-y: auto;
+      width: 0; overflow: hidden; transition: width 0.35s cubic-bezier(0.4,0,0.2,1);
+      flex-shrink: 0; background: var(--surface); border-right: 2px solid var(--border);
+      position: sticky; top: 90px; max-height: calc(100vh - 90px); overflow-y: auto;
     }
     #draft-side-panel.open { width: 380px; }
     .side-panel-inner { padding: 18px 16px; width: 380px; }
     .side-panel-card-img {
-      width: 100%; aspect-ratio: 5/7;
-      border-radius: 12px; overflow: hidden;
-      border: 2px solid var(--border);
-      background: #1a1a2e; margin-bottom: 14px;
+      width: 100%; aspect-ratio: 5/7; border-radius: 12px; overflow: hidden;
+      border: 2px solid var(--border); background: #1a1a2e; margin-bottom: 14px;
       box-shadow: 0 8px 24px rgba(0,0,0,0.15);
     }
     .side-panel-card-img img { width: 100%; height: 100%; object-fit: cover; }
-    @keyframes panelCardIn {
-      0%   { transform: rotateY(720deg) scale(0.4); opacity: 0; }
-      15%  { opacity: 1; }
-      70%  { transform: rotateY(0deg) scale(1.03); }
-      100% { transform: rotateY(0deg) scale(1); opacity: 1; }
-    }
+    @keyframes panelCardIn { 0%{transform:rotateY(720deg) scale(0.4);opacity:0;} 15%{opacity:1;} 70%{transform:rotateY(0deg) scale(1.03);} 100%{transform:rotateY(0deg) scale(1);opacity:1;} }
     .side-panel-card-img.animating { animation: panelCardIn 1.4s cubic-bezier(0.08,0.95,0.2,1) forwards; perspective: 1200px; transform-style: preserve-3d; }
     .side-panel-close {
-      position: absolute; top: 10px; left: 10px;
-      width: 28px; height: 28px; border-radius: 50%;
-      border: 2.5px solid rgba(100,60,20,0.4);
-      background: radial-gradient(circle at 35% 30%, rgba(160,80,30,0.7), rgba(80,30,5,0.9));
-      color: #FFD0A0; cursor: pointer;
+      position: absolute; top: 10px; left: 10px; width: 28px; height: 28px; border-radius: 50%;
+      background: linear-gradient(180deg, #D84040 0%, #982020 100%); color: white; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       font-size: 0.85rem; font-weight: bold; z-index: 10;
-      box-shadow: inset 0 2px 4px rgba(255,255,255,0.2), 0 2px 6px rgba(0,0,0,0.4);
-      transition: transform 0.15s;
+      box-shadow: 0 3px 0 #601010; border: none; transition: transform 0.12s;
     }
     .side-panel-close:hover { transform: scale(0.85); }
-    .side-panel-close:active { transform: scale(0.75); }
     .side-panel-relative { position: relative; }
 
     /* ===== SETUP SCREEN ===== */
     #setup-screen { background: var(--bg); }
     .setup-header-bar {
-      background: var(--surface);
-      padding: 10px 20px;
+      background: var(--surface); padding: 10px 20px;
       border-bottom: 2px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 8px;
+      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
     }
     .setup-slots-row {
-      display: flex; justify-content: center;
-      gap: 12px; padding: 16px 20px 8px;
+      display: flex; justify-content: center; gap: 10px; padding: 14px 20px 6px;
       flex-wrap: nowrap; overflow-x: auto;
     }
     .setup-slot-card {
-      width: 140px; height: 196px; flex-shrink: 0;
-      background: var(--surface); border-radius: 10px;
-      border: 2px dashed var(--border-heavy);
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      position: relative; overflow: visible;
-      transition: all 0.2s;
+      width: 160px; height: 224px; flex-shrink: 0;
+      background: var(--surface); border-radius: 10px; border: 2px dashed var(--border-heavy);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      position: relative; overflow: visible; transition: all 0.2s;
     }
     .setup-slot-card.filled { border-style: solid; border-width: 2px; }
     .setup-slot-card.drag-over { box-shadow: 0 0 18px rgba(232,98,26,0.4); transform: scale(1.03); border-color: var(--accent); }
     .setup-slot-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
-    .setup-slot-pos { font-weight: 900; font-size: 1.3rem; letter-spacing: 1px; z-index: 2; }
+    .setup-slot-pos { font-weight: 900; font-size: 1.4rem; letter-spacing: 1px; z-index: 2; }
     .setup-slot-drop-text { font-size: 0.62rem; opacity: 0.4; margin-top: 5px; z-index: 2; }
     .setup-slot-PG.filled { border-color: var(--pos-pg); } .setup-slot-PG .setup-slot-pos { color: var(--pos-pg); }
     .setup-slot-SG.filled { border-color: var(--pos-sg); } .setup-slot-SG .setup-slot-pos { color: var(--pos-sg); }
     .setup-slot-SF.filled { border-color: var(--pos-sf); } .setup-slot-SF .setup-slot-pos { color: var(--pos-sf); }
     .setup-slot-PF.filled { border-color: var(--pos-pf); } .setup-slot-PF .setup-slot-pos { color: var(--pos-pf); }
     .setup-slot-C.filled  { border-color: var(--pos-c);  } .setup-slot-C .setup-slot-pos  { color: var(--pos-c); }
-
     .setup-counter {
-      font-family: 'Orbitron', sans-serif;
-      font-weight: 900; font-size: 2.2rem;
-      color: var(--green);
-      text-shadow: 2px 2px 0 rgba(0,0,0,0.06), 3px 3px 0 rgba(40,100,60,0.15);
-      letter-spacing: 2px;
+      font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 2.2rem;
+      color: var(--green); letter-spacing: 2px;
     }
-
     .setup-action-bar {
       display: flex; align-items: center; justify-content: center;
-      padding: 10px 20px;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      gap: 16px;
+      padding: 10px 20px; background: var(--surface); border-bottom: 1px solid var(--border); gap: 16px;
     }
     .bench-label { font-weight: 800; color: var(--accent); padding: 10px 20px 4px; }
-    /* Bench cards scroll HORIZONTAL */
     .bench-scroll-row {
-      padding: 10px 20px;
-      display: flex; flex-direction: row;
-      overflow-x: auto; gap: 12px;
-      flex-wrap: nowrap;
-      scroll-snap-type: x mandatory;
+      padding: 10px 20px; display: flex; flex-direction: row; overflow-x: auto;
+      gap: 12px; flex-wrap: nowrap; scroll-snap-type: x mandatory;
     }
     .bench-scroll-row::-webkit-scrollbar { height: 5px; }
     .bench-scroll-row::-webkit-scrollbar-track { background: var(--border); border-radius: 3px; }
-    .bench-scroll-row::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 3px; }
+    .bench-scroll-row::-webkit-scrollbar-thumb { background: #7ab49a; border-radius: 3px; }
     .bench-card-item {
-      width: 140px; height: 196px;
-      flex-shrink: 0; scroll-snap-align: start;
-      background: #1a1a2e; border-radius: 10px;
-      overflow: hidden; cursor: grab;
-      border: 2px solid var(--border);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      position: relative;
-      transition: transform 0.2s, box-shadow 0.2s;
+      width: 160px; height: 224px; flex-shrink: 0; scroll-snap-align: start;
+      background: #1a1a2e; border-radius: 10px; overflow: hidden; cursor: grab;
+      border: 2px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      position: relative; transition: transform 0.2s, box-shadow 0.2s;
     }
     .bench-card-item:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(232,98,26,0.25); border-color: var(--accent); }
     .bench-card-item img { width: 100%; height: 100%; object-fit: cover; }
 
     /* ===== BATTLE SCREEN ===== */
-    #battle-screen {
-      background: var(--battle-bg);
-      color: white;
-      overflow: hidden;
-    }
+    #battle-screen { background: var(--battle-bg); color: white; overflow: hidden; }
     .battle-app-header {
-      background: rgba(10,15,26,0.95);
+      background: rgba(10,15,26,0.97);
       border-bottom: 1px solid rgba(255,255,255,0.1);
-      padding: 6px 16px;
-      display: flex; align-items: center; justify-content: space-between;
-      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
-      backdrop-filter: blur(10px);
+      padding: 6px 16px; display: flex; align-items: center; justify-content: space-between;
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200; backdrop-filter: blur(10px);
     }
-    .battle-logo {
-      font-family: 'Orbitron', sans-serif;
-      font-weight: 900; font-size: 1.1rem;
-      color: var(--accent); letter-spacing: 2px;
-    }
+    .battle-logo-img { height: 34px; width: auto; object-fit: contain; }
+
     .arena-container {
-      display: flex;
-      height: 100vh;
-      width: 100%;
-      overflow: hidden;
-      position: relative;
-      padding-top: 44px;
+      display: flex; height: 100vh; width: 100%; overflow: hidden;
+      position: relative; padding-top: 44px;
+      transition: padding-right 0.4s cubic-bezier(0.4,0,0.2,1);
     }
+    .arena-container.log-open { padding-right: var(--log-width); }
+
     .court-area {
       flex: 1; display: flex; flex-direction: column;
-      background: url('https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/battle_backdrop.png') center/cover no-repeat, radial-gradient(ellipse at center, #0d1b2a 0%, #050a12 100%);
-      padding: 10px 20px 8px;
-      justify-content: space-between;
+      background: url('https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/battle_backdrop.png') center/cover no-repeat,
+                  radial-gradient(ellipse at center, #0d1b2a 0%, #050a12 100%);
+      padding: 10px 20px 8px; justify-content: space-between;
       overflow: hidden; position: relative;
+      transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
     }
 
     /* Scoreboard */
     .floating-scoreboard {
       position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
-      background: rgba(10,15,26,0.88);
-      border: 1.5px solid rgba(255,255,255,0.15);
+      background: rgba(10,15,26,0.88); border: 1.5px solid rgba(255,255,255,0.15);
       padding: 5px 24px; border-radius: 12px;
       display: flex; flex-direction: column; align-items: center;
-      z-index: 50; box-shadow: 0 6px 20px rgba(0,0,0,0.7);
-      backdrop-filter: blur(8px);
+      z-index: 50; box-shadow: 0 6px 20px rgba(0,0,0,0.7); backdrop-filter: blur(8px);
+      transition: left 0.4s, transform 0.4s;
     }
     .score-board {
-      display: flex; gap: 16px;
-      font-family: 'Orbitron', sans-serif;
+      display: flex; gap: 16px; font-family: 'Orbitron', sans-serif;
       font-size: 2.5rem; line-height: 1; font-weight: 900;
     }
     #turn-indicator { font-weight: 700; color: rgba(255,255,255,0.5); font-size: 0.68rem; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1px; }
 
-    /* Fan rows */
+    /* Fan rows - more convex/concave as in pic 2 */
     .active-fan-wrapper {
       display: flex; justify-content: center; align-items: flex-end;
-      position: relative; width: 100%; height: 270px; margin-bottom: 6px;
+      position: relative; width: 100%; height: 290px; margin-bottom: 6px;
     }
     .enemy-fan-wrapper {
       display: flex; justify-content: center; align-items: flex-start;
-      position: relative; width: 100%; height: 270px; margin-top: 50px;
+      position: relative; width: 100%; height: 290px; margin-top: 50px;
     }
     .active-card-wrap {
       transition: all 0.4s cubic-bezier(0.2,0.8,0.2,1);
       cursor: pointer; position: relative; display: inline-block;
     }
-    .active-card-wrap:hover { transform: translateY(-26px) scale(1.08) !important; z-index: 100 !important; }
+    .active-card-wrap:hover {
+      transform: translateY(-40px) scale(1.15) !important;
+      z-index: 100 !important;
+      filter: drop-shadow(0 20px 30px rgba(64,224,160,0.5));
+    }
     .enemy-card-wrap {
       transition: all 0.4s cubic-bezier(0.2,0.8,0.2,1);
       cursor: pointer; position: relative; display: inline-block;
     }
-    .enemy-card-wrap:hover { transform: translateY(26px) scale(1.08) !important; z-index: 100 !important; }
-
+    .enemy-card-wrap:hover {
+      transform: translateY(40px) scale(1.15) !important;
+      z-index: 100 !important;
+      filter: drop-shadow(0 -20px 30px rgba(255,107,107,0.5));
+    }
     .battle-card {
-      width: 165px; height: 231px;
-      border-radius: 10px; border: 2px solid rgba(255,255,255,0.2);
-      overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.7);
-      position: relative; background: #0f1320;
-      transition: border 0.2s, box-shadow 0.2s;
+      width: 165px; height: 231px; border-radius: 10px;
+      border: 2px solid rgba(255,255,255,0.2); overflow: hidden;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.7); position: relative;
+      background: #0f1320; transition: border 0.2s, box-shadow 0.2s;
     }
     .battle-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
     .battle-card.face-down { background: url('https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/goat-tier-back.png') center/cover; }
@@ -557,166 +400,186 @@
     .dead-card { filter: grayscale(100%) brightness(0.3); pointer-events: none; opacity: 0.7; }
     .battle-card.staged { border-color: #40E0A0 !important; box-shadow: 0 0 18px 3px rgba(64,224,160,0.5); }
     .battle-card.valid-target { border-color: #FFA500 !important; animation: pulseTarget 1.3s infinite ease-in-out; }
-
-    @keyframes pulseTarget {
-      0%  { box-shadow: 0 0 10px 3px rgba(255,165,0,0.5); }
-      50% { box-shadow: 0 0 22px 8px rgba(255,165,0,0.8); }
-      100%{ box-shadow: 0 0 10px 3px rgba(255,165,0,0.5); }
-    }
+    @keyframes pulseTarget { 0%{box-shadow:0 0 10px 3px rgba(255,165,0,0.5);} 50%{box-shadow:0 0 22px 8px rgba(255,165,0,0.8);} 100%{box-shadow:0 0 10px 3px rgba(255,165,0,0.5);} }
 
     /* HP bars */
-    .hp-bar-container {
-      position: absolute; bottom: -11px; left: 0;
-      width: 100%; height: 7px;
-      background: rgba(0,0,0,0.6); border-radius: 4px;
-      overflow: hidden; z-index: 5;
-    }
+    .hp-bar-container { position: absolute; bottom: -11px; left: 0; width: 100%; height: 7px; background: rgba(0,0,0,0.6); border-radius: 4px; overflow: hidden; z-index: 5; }
     .hp-fill { height: 100%; background: #40E0A0; transition: width 0.3s, background 0.3s; border-radius: 4px; }
-    .hp-text {
-      position: absolute; bottom: -24px; width: 100%;
-      text-align: center; font-size: 0.68rem; font-weight: 700;
-      color: rgba(255,255,255,0.85); z-index: 5; white-space: nowrap;
-      text-shadow: 0 1px 3px black;
-    }
+    .hp-text { position: absolute; bottom: -24px; width: 100%; text-align: center; font-size: 0.68rem; font-weight: 700; color: rgba(255,255,255,0.85); z-index: 5; white-space: nowrap; text-shadow: 0 1px 3px black; }
 
     /* Bench stacks */
-    .bench-stack-container {
-      position: absolute; left: 14px; width: 120px; z-index: 150; pointer-events: none;
-    }
+    .bench-stack-container { position: absolute; left: 14px; width: 120px; z-index: 150; pointer-events: none; }
     .bench-stack-container.player-bench-stack { bottom: calc(6px + 130px); height: 180px; }
     .bench-stack-container.enemy-bench-stack  { top: calc(50px + 130px); height: 180px; }
     .bench-stack-card {
-      position: absolute; width: 120px; height: 168px;
-      border-radius: 8px; border: 1.5px solid rgba(255,255,255,0.2);
-      background: #0f1320; cursor: pointer;
-      box-shadow: -3px 3px 10px rgba(0,0,0,0.7);
-      pointer-events: auto; overflow: hidden;
+      position: absolute; width: 120px; height: 168px; border-radius: 8px;
+      border: 1.5px solid rgba(255,255,255,0.2); background: #0f1320; cursor: pointer;
+      box-shadow: -3px 3px 10px rgba(0,0,0,0.7); pointer-events: auto; overflow: hidden;
     }
     .bench-stack-card img { width: 100%; height: 100%; object-fit: cover; }
     .bench-stack-card.face-down { background: url('https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/goat-tier-back.png') center/cover; }
     .bench-stack-card.face-down img { display: none; }
     .bench-stack-card:hover { border-color: rgba(255,255,255,0.6); box-shadow: 0 0 14px rgba(255,255,255,0.3); }
 
-    /* Bench fan overlay */
+    /* Bench fan overlay - pic 2 style, properly centered */
     .bench-fan-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.65);
-      backdrop-filter: blur(8px);
-      z-index: 140; display: none;
-      align-items: center; justify-content: center;
+      position: fixed; inset: 0; background: rgba(0,0,0,0.75);
+      backdrop-filter: blur(12px); z-index: 140; display: none;
+      flex-direction: column; align-items: center; justify-content: center;
     }
     .bench-fan-overlay.open { display: flex; }
-    .bench-fan-stage { position: relative; width: 100%; height: 320px; display: flex; align-items: flex-end; justify-content: center; }
-    .bench-fan-card-wrap { position: absolute; cursor: pointer; transition: transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275); }
-    .bench-fan-card-wrap:hover { filter: brightness(1.2); z-index: 200 !important; }
-    .bench-fan-card { width: 130px; height: 182px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.2); overflow: hidden; background: #0f1320; box-shadow: 0 12px 24px rgba(0,0,0,0.8); }
+    .bench-fan-stage {
+      position: relative; width: 100%; height: 340px;
+      display: flex; align-items: flex-end; justify-content: center;
+    }
+    .bench-fan-card-wrap {
+      position: absolute; cursor: pointer;
+      transition: transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+      transform-origin: bottom center;
+    }
+    .bench-fan-card-wrap:hover {
+      filter: brightness(1.25) drop-shadow(0 -10px 20px rgba(64,224,160,0.6));
+      z-index: 200 !important;
+    }
+    /* When hovered, pop out - override applied in JS */
+    .bench-fan-card { width: 150px; height: 210px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.25); overflow: hidden; background: #0f1320; box-shadow: 0 16px 36px rgba(0,0,0,0.9); }
     .bench-fan-card img { width: 100%; height: 100%; object-fit: cover; }
     .bench-fan-close {
-      position: fixed; top: 18px; right: 18px;
-      width: 36px; height: 36px; border-radius: 50%;
-      border: 2.5px solid rgba(200,80,40,0.5);
-      background: radial-gradient(circle at 35% 30%, rgba(200,80,30,0.8), rgba(100,20,5,0.95));
-      color: #FFD0A0; cursor: pointer;
+      position: absolute; top: -50px; right: 20px;
+      background: linear-gradient(180deg, #D84040 0%, #982020 100%);
+      color: white; cursor: pointer; border: none;
+      width: 42px; height: 42px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 1rem; font-weight: bold; z-index: 210;
-      box-shadow: inset 0 2px 4px rgba(255,255,255,0.2), 0 3px 8px rgba(0,0,0,0.6);
-      transition: transform 0.15s;
+      font-size: 1.1rem; font-weight: bold; z-index: 210;
+      box-shadow: 0 4px 0 #601010, 0 4px 16px rgba(180,40,40,0.6);
+      transition: transform 0.12s;
     }
-    .bench-fan-close:hover { transform: scale(0.85); }
-    .bench-fan-close:active { transform: scale(0.75); }
+    .bench-fan-close:hover { transform: scale(0.88); }
+    .bench-fan-label {
+      color: rgba(255,255,255,0.7); font-size: 0.78rem; font-weight: 700;
+      letter-spacing: 1px; text-transform: uppercase; margin-top: 16px;
+      background: rgba(10,15,26,0.7); padding: 6px 18px; border-radius: 20px;
+      border: 1px solid rgba(255,255,255,0.15);
+    }
 
-    /* ===== ACTION PANELS (fixed, centered) ===== */
+    /* ===== ACTION PANELS - horizontal line below player cards ===== */
     .action-panels-wrapper {
-      position: fixed; top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
+      position: fixed; bottom: 0; left: 0; right: 0;
       display: none; z-index: 200;
-      align-items: center; justify-content: center;
-      gap: 30px; pointer-events: none;
+      flex-direction: column; align-items: center;
+      padding-bottom: 10px;
+      pointer-events: none;
+      transition: right 0.4s cubic-bezier(0.4,0,0.2,1);
     }
     .action-panels-wrapper.visible { display: flex; pointer-events: all; }
-    .action-left-panel, .action-right-panel { display: flex; flex-direction: column; gap: 8px; }
+    .arena-container.log-open ~ .action-panels-wrapper,
+    .log-open .action-panels-wrapper { right: var(--log-width); }
+
     .action-card-name {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 0.85rem; letter-spacing: 1px;
-      color: var(--gold-light); margin-bottom: 4px; font-weight: 700;
+      font-family: 'Orbitron', sans-serif; font-size: 0.82rem; letter-spacing: 1px;
+      color: var(--gold-light); margin-bottom: 6px; font-weight: 700;
+      background: rgba(10,15,26,0.85); padding: 4px 14px; border-radius: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .action-btns-row {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      justify-content: center; align-items: center;
+      padding: 8px 16px;
+      background: rgba(10,15,26,0.88);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      backdrop-filter: blur(12px);
+      max-width: 90vw;
     }
     .action-btn {
-      border: none; padding: 11px 20px;
-      border-radius: 12px; font-weight: 700; font-size: 0.9rem;
-      cursor: pointer; transition: transform 0.15s, filter 0.15s;
-      text-align: left; min-width: 175px;
-      font-family: 'Inter', sans-serif;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+      padding: 9px 16px; font-size: 0.82rem;
+      font-weight: 700; font-family: 'Inter', sans-serif;
+      border-radius: var(--btn-radius); border: none; cursor: pointer;
+      position: relative; overflow: hidden;
+      transition: transform 0.12s, filter 0.12s;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.4); letter-spacing: 0.3px;
+      white-space: nowrap;
     }
-    .action-btn:hover { transform: scale(0.95); filter: brightness(1.1); }
-    .action-btn:active { transform: scale(0.90); }
-    .action-btn-player { background: var(--gold-light); color: #111; }
-    .action-btn-swap   { background: #4FC3F7; color: #0A1929; }
-    .action-btn-pass   { background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.8); border: 1px solid rgba(255,255,255,0.2); }
-    .action-btn-skill  { background: #CE93D8; color: #1A0030; }
-    .action-btn-basic  { background: var(--accent); color: white; }
+    .action-btn::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(0,0,0,0.08) 100%);
+      pointer-events: none;
+    }
+    .action-btn:hover { transform: scale(0.97); filter: brightness(1.1); }
+    .action-btn:active { transform: scale(0.93); }
+    .action-btn-skill { background: linear-gradient(180deg, #9060C0 0%, #602090 100%); color: white; box-shadow: 0 3px 0 #300860; }
+    .action-btn-basic { background: linear-gradient(180deg, #F07030 0%, #C4501A 100%); color: white; box-shadow: 0 3px 0 #8B3010; }
+    .action-btn-swap { background: linear-gradient(180deg, #4FC3F7 0%, #0288D1 100%); color: #0A1929; box-shadow: 0 3px 0 #014060; }
+    .action-btn-pass { background: linear-gradient(180deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.06) 100%); color: rgba(255,255,255,0.8); box-shadow: 0 2px 0 rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); }
+    .action-btn-dmg {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem; letter-spacing: 0.5px;
+      color: rgba(255,255,255,0.9); font-weight: 400;
+    }
 
     /* Checkout panel */
     .checkout-panel {
-      position: absolute; bottom: 295px; left: 50%; transform: translateX(-50%);
-      background: rgba(10,15,26,0.9);
-      border: 2px solid rgba(64,224,160,0.4);
-      border-radius: 12px; padding: 10px 18px;
-      width: 290px; z-index: 80;
+      position: absolute; bottom: 310px; left: 50%; transform: translateX(-50%);
+      background: rgba(10,15,26,0.9); border: 2px solid rgba(64,224,160,0.4);
+      border-radius: 12px; padding: 10px 18px; width: 290px; z-index: 80;
       box-shadow: 0 8px 24px rgba(64,224,160,0.1);
       display: none; flex-direction: column; gap: 7px;
       backdrop-filter: blur(8px);
+      transition: left 0.4s, transform 0.4s;
     }
     .checkout-panel.panel-blur { filter: blur(3px); }
 
-    /* ===== BATTLE LOG ===== */
-    .battle-log-wrapper {
-      position: fixed; bottom: 16px; right: 16px;
-      width: 360px; z-index: 40;
+    /* ===== BATTLE LOG PANEL (right side) ===== */
+    .battle-log-panel {
+      position: fixed; top: 44px; right: 0; bottom: 0;
+      width: var(--log-width);
+      background: rgba(8,12,22,0.97);
+      border-left: 1px solid rgba(255,255,255,0.12);
+      display: flex; flex-direction: column;
+      z-index: 180;
+      transform: translateX(100%);
+      transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+      backdrop-filter: blur(12px);
     }
+    .battle-log-panel.open { transform: translateX(0); }
     .battle-log-header {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 6px 10px;
-      background: rgba(10,15,26,0.75);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 8px 8px 0 0;
-      cursor: pointer;
-      backdrop-filter: blur(10px);
+      padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.1);
+      background: rgba(10,15,26,0.9); flex-shrink: 0;
     }
-    .battle-log-title {
-      font-family: 'Inter', sans-serif;
-      font-size: 0.72rem; font-weight: 700;
-      color: rgba(255,255,255,0.6); letter-spacing: 1px; text-transform: uppercase;
-    }
-    .battle-log-toggle {
-      width: 22px; height: 22px; border-radius: 50%;
-      border: 2px solid rgba(255,255,255,0.2);
-      background: radial-gradient(circle at 35% 30%, rgba(80,80,80,0.6), rgba(20,20,20,0.9));
-      color: rgba(255,255,255,0.7); cursor: pointer;
+    .battle-log-title { font-family: 'Orbitron', sans-serif; font-size: 0.72rem; font-weight: 700; color: rgba(255,255,255,0.7); letter-spacing: 1px; text-transform: uppercase; }
+    .log-toggle-btn {
+      background: linear-gradient(180deg, #3A3A5A 0%, #1A1A3A 100%);
+      color: rgba(255,255,255,0.8); border: none; cursor: pointer;
+      width: 28px; height: 28px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center;
-      font-size: 0.7rem; transition: transform 0.15s; box-shadow: none;
+      font-size: 0.75rem; box-shadow: 0 2px 0 rgba(0,0,0,0.5);
+      transition: transform 0.12s;
     }
-    .battle-log-toggle:hover { transform: scale(0.88); }
-    .battle-log-toggle:active { transform: scale(0.80); }
+    .log-toggle-btn:hover { transform: scale(0.88); }
+    /* Tab on the left side of panel to open it */
+    .log-open-tab {
+      position: fixed; right: 0; top: 50%;
+      transform: translateY(-50%);
+      background: rgba(10,15,26,0.92);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-right: none;
+      padding: 12px 8px; border-radius: 8px 0 0 8px;
+      cursor: pointer; z-index: 181;
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      transition: right 0.4s, background 0.15s;
+      backdrop-filter: blur(8px);
+    }
+    .log-open-tab.panel-open { right: var(--log-width); }
+    .log-open-tab:hover { background: rgba(30,40,60,0.95); }
+    .log-tab-text { font-size: 0.55rem; letter-spacing: 1px; color: rgba(255,255,255,0.5); text-transform: uppercase; writing-mode: vertical-rl; text-orientation: mixed; }
     .retro-log-container {
-      height: 200px; overflow-y: auto;
-      background: rgba(10,15,26,0.75);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-top: none;
-      border-radius: 0 0 8px 8px;
-      padding: 8px 10px;
-      font-family: 'Inter', sans-serif;
-      font-size: 0.78rem;
-      backdrop-filter: blur(10px);
-      transition: height 0.25s ease, opacity 0.25s;
+      flex: 1; overflow-y: auto; padding: 10px 12px;
+      font-family: 'Inter', sans-serif; font-size: 0.78rem;
     }
-    .retro-log-container.minimized { height: 0 !important; overflow: hidden; opacity: 0; padding: 0; border: none; }
-    /* Slim scrollbar */
     .retro-log-container::-webkit-scrollbar { width: 3px; }
     .retro-log-container::-webkit-scrollbar-track { background: transparent; }
     .retro-log-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
-    .retro-log-container::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
-
     .log-entry { display: flex; flex-direction: column; margin-bottom: 5px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.04); }
     .log-who { font-weight: 700; font-size: 0.72rem; letter-spacing: 0.5px; margin-bottom: 1px; }
     .log-detail { color: rgba(255,255,255,0.65); line-height: 1.45; font-size: 0.76rem; }
@@ -724,36 +587,90 @@
     .log-who-bot { color: #FF6B6B; }
     .log-who-sys { color: var(--gold-light); }
     .log-who-coin { color: #80CFFF; }
+    .log-who-hp { color: rgba(255,255,255,0.4); }
+    .log-who-ko { color: #FF4444; }
+    .log-who-block { color: #A0D0FF; }
 
     /* Enemy bench tooltip */
     .enemy-bench-tooltip {
-      position: fixed; background: rgba(10,15,26,0.95);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 8px; padding: 8px 12px;
-      z-index: 9999; font-size: 0.78rem; color: rgba(255,255,255,0.7);
-      pointer-events: none; white-space: nowrap;
+      position: fixed; background: rgba(10,15,26,0.95); border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px; padding: 8px 12px; z-index: 9999; font-size: 0.78rem;
+      color: rgba(255,255,255,0.7); pointer-events: none; white-space: nowrap;
       box-shadow: 0 6px 16px rgba(0,0,0,0.7); display: none;
     }
 
+    /* ===== COIN FLIP ANIMATION ===== */
+    .coin-flip-overlay {
+      position: fixed; inset: 0; z-index: 9000;
+      display: flex; align-items: center; justify-content: center;
+      pointer-events: none;
+    }
+    .coin-flip-container {
+      display: flex; flex-direction: column; align-items: center; gap: 10px;
+    }
+    .coin-flip-label {
+      font-family: 'Orbitron', sans-serif; font-size: 0.85rem; color: #80CFFF;
+      letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 0 10px rgba(128,207,255,0.8);
+    }
+    .coin-flip-main { display: flex; align-items: center; gap: 24px; }
+    .coin-wrap {
+      perspective: 600px;
+    }
+    .coin {
+      width: 90px; height: 90px; border-radius: 50%;
+      position: relative; transform-style: preserve-3d;
+      animation: coinSpin 0.6s linear infinite;
+    }
+    .coin.result-heads { animation: coinLandHeads 0.8s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
+    .coin.result-tails { animation: coinLandTails 0.8s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
+    .coin-face {
+      position: absolute; inset: 0; border-radius: 50%;
+      backface-visibility: hidden;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1.1rem;
+    }
+    .coin-heads {
+      background: radial-gradient(circle at 35% 30%, #FFE066, #C89010);
+      color: #5A3A00; border: 3px solid #E0A020;
+      box-shadow: inset 0 3px 8px rgba(255,255,255,0.4), inset 0 -3px 8px rgba(0,0,0,0.3);
+    }
+    .coin-tails {
+      background: radial-gradient(circle at 35% 30%, #C0C0C0, #707070);
+      color: #303030; border: 3px solid #A0A0A0;
+      transform: rotateY(180deg);
+      box-shadow: inset 0 3px 8px rgba(255,255,255,0.3), inset 0 -3px 8px rgba(0,0,0,0.3);
+    }
+    @keyframes coinSpin { 0%{transform:rotateY(0deg);} 100%{transform:rotateY(360deg);} }
+    @keyframes coinLandHeads { 0%{transform:rotateY(720deg);} 100%{transform:rotateY(0deg);} }
+    @keyframes coinLandTails { 0%{transform:rotateY(540deg);} 100%{transform:rotateY(180deg);} }
+    .coin-info-bar {
+      background: rgba(10,15,26,0.92); border: 1px solid rgba(255,255,255,0.2);
+      padding: 10px 18px; border-radius: 10px; text-align: left;
+      min-width: 220px; max-width: 260px;
+    }
+    .coin-info-player { font-weight: 700; color: var(--gold-light); font-size: 0.82rem; }
+    .coin-info-move { color: rgba(255,255,255,0.7); font-size: 0.72rem; margin-top: 2px; }
+    .coin-result-text {
+      font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1.2rem;
+      text-align: center; margin-top: 4px;
+      text-shadow: 0 0 16px currentColor;
+    }
+    .coin-result-text.hit { color: #40E0A0; }
+    .coin-result-text.miss { color: #FF6B6B; }
+
     /* Modals */
     .modal-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.82);
-      backdrop-filter: blur(10px);
-      z-index: 9000; display: flex;
-      align-items: center; justify-content: center;
+      position: fixed; inset: 0; background: rgba(0,0,0,0.82);
+      backdrop-filter: blur(10px); z-index: 9000;
+      display: flex; align-items: center; justify-content: center;
     }
     .modal-box {
-      background: rgba(16,22,42,0.98);
-      border: 1.5px solid rgba(255,255,255,0.15);
-      border-radius: 16px; padding: 24px;
-      width: 420px; max-width: 92vw;
-      box-shadow: 0 24px 60px rgba(0,0,0,0.9);
-      text-align: center;
+      background: rgba(16,22,42,0.98); border: 1.5px solid rgba(255,255,255,0.15);
+      border-radius: 16px; padding: 24px; width: 420px; max-width: 92vw;
+      box-shadow: 0 24px 60px rgba(0,0,0,0.9); text-align: center;
     }
     .modal-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 1.6rem; letter-spacing: 2px;
+      font-family: 'Orbitron', sans-serif; font-size: 1.4rem; letter-spacing: 2px;
       color: var(--gold-light); margin-bottom: 14px; font-weight: 900;
     }
 
@@ -777,20 +694,30 @@
     #drag-ghost { position: fixed; top: -9999px; left: -9999px; pointer-events: none; z-index: 99999; border-radius: 8px; overflow: hidden; box-shadow: 0 18px 36px rgba(0,0,0,0.7); transform: rotate(3deg) scale(1.05); }
     #drag-ghost img { width: 110px; height: 154px; object-fit: cover; display: block; }
 
-    /* Undo btn on staged card */
     .undo-btn {
-      position: absolute; top: -9px; right: -9px;
-      width: 22px; height: 22px; border-radius: 50%;
-      border: 2px solid rgba(150,60,10,0.4);
-      background: radial-gradient(circle at 35% 30%, rgba(160,60,20,0.8), rgba(80,20,5,0.95));
-      color: #FFD0A0; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.7rem; font-weight: bold; z-index: 100;
-      box-shadow: inset 0 1px 3px rgba(255,255,255,0.2), 0 2px 5px rgba(0,0,0,0.5);
-      transition: transform 0.15s;
+      position: absolute; top: -9px; right: -9px; width: 22px; height: 22px; border-radius: 50%;
+      background: linear-gradient(180deg, #D84040 0%, #982020 100%);
+      color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 0.7rem; font-weight: bold; z-index: 100; border: none;
+      box-shadow: 0 2px 0 #601010, 0 2px 5px rgba(180,40,40,0.5);
+      transition: transform 0.12s;
     }
-    .undo-btn:hover { transform: scale(0.85); }
-    .undo-btn:active { transform: scale(0.75); }
+    .undo-btn:hover { transform: scale(0.88); }
+
+    /* Status badge on card */
+    .card-status-badge {
+      position: absolute; top: 4px; left: 4px; z-index: 10;
+      background: rgba(0,0,0,0.7); border-radius: 4px;
+      padding: 2px 5px; font-size: 0.58rem; font-weight: 700;
+      border: 1px solid rgba(255,255,255,0.2); pointer-events: none;
+    }
+    .badge-frozen { color: #80CFFF; border-color: rgba(128,207,255,0.5); }
+    .badge-drained { color: #FF8C42; border-color: rgba(255,140,66,0.5); }
+    .badge-buffed { color: #FFD166; border-color: rgba(255,209,102,0.5); }
+    .badge-shutdown { color: #FF6B6B; border-color: rgba(255,107,107,0.5); }
+
+    /* Steal skill modal */
+    .steal-skill-modal .modal-box { max-height: 80vh; overflow-y: auto; }
   </style>
 </head>
 <body>
@@ -798,30 +725,35 @@
 <div id="drag-ghost"><img id="drag-ghost-img" src="" alt=""></div>
 <div id="tooltip" class="tooltip-bubble"></div>
 <div id="enemy-bench-tooltip" class="enemy-bench-tooltip"></div>
+<div id="coin-flip-overlay" class="coin-flip-overlay" style="display:none;"></div>
 
 <!-- Bench fan overlay -->
 <div id="bench-fan-overlay" class="bench-fan-overlay" onclick="handleBenchOverlayClick(event)">
   <div class="bench-fan-stage" id="bench-fan-stage"></div>
   <button class="bench-fan-close" onclick="closeBenchFan()">✕</button>
+  <div class="bench-fan-label" id="bench-fan-label">YOUR BENCH</div>
 </div>
 
 <!-- ==================== HOME ==================== -->
 <div id="home-screen" class="screen active">
   <div class="app-header">
-    <div class="logo">NBA BATTLE</div>
+    <div class="header-logo-wrap">
+      <img class="header-logo-img" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/small-logo.png" onerror="this.style.display='none'" alt="NBA Pellop Hoops">
+    </div>
     <div class="nav">
       <button class="nav-btn active" onclick="showScreen('home-screen')">Home</button>
       <button class="nav-btn" onclick="goCat()">Cards</button>
     </div>
   </div>
   <div class="home-hero">
-    <div>
-      <div class="home-title">NBA CARD BATTLE</div>
-      <p class="home-sub">117 GOATs · Lane Combat · TCG Pocket Edition</p>
+    <div class="home-logo-wrap">
+      <div class="home-logo-glow"></div>
+      <div class="home-logo-glow-2"></div>
+      <img class="home-big-logo" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/big_logo.png" onerror="this.alt='NBA Pellop Hoops Unleashed'" alt="NBA Pellop Hoops Unleashed">
     </div>
-    <div style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center;">
-      <button class="btn-orange" style="font-size:1.05rem;padding:13px 30px;" onclick="goDraft()">DRAFT TEAM</button>
-      <button class="btn-outline" style="font-size:1.05rem;padding:13px 30px;" onclick="goCat()">COLLECTION</button>
+    <div class="home-btn-row">
+      <button class="game-btn game-btn-orange" style="font-size:1.05rem;padding:14px 36px;" onclick="goDraft()">DRAFT TEAM</button>
+      <button class="game-btn game-btn-outline" style="font-size:1.05rem;padding:14px 36px;" onclick="goCat()">COLLECTION</button>
     </div>
   </div>
 </div>
@@ -830,7 +762,9 @@
 <div id="catalogue-screen" class="screen">
   <div class="sticky-container">
     <div class="app-header">
-      <div class="logo">NBA BATTLE</div>
+      <div class="header-logo-wrap">
+        <img class="header-logo-img" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/small-logo.png" onerror="this.style.display='none'" alt="">
+      </div>
       <div class="nav">
         <button class="nav-btn" onclick="showScreen('home-screen')">Home</button>
         <button class="nav-btn active">Cards</button>
@@ -859,8 +793,9 @@
 <div id="draft-screen" class="screen">
   <div class="sticky-container">
     <div class="app-header">
-      <div class="logo" style="gap:14px;">
-        DRAFT SQUAD
+      <div class="header-logo-wrap" style="gap:14px;">
+        <img class="header-logo-img" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/small-logo.png" onerror="this.style.display='none'" alt="">
+        <span style="font-family:'Orbitron',sans-serif;font-weight:900;color:var(--accent);font-size:1.1rem;letter-spacing:1px;">DRAFT SQUAD</span>
         <div class="styled-search-wrap">
           <span class="search-icon">🔍</span>
           <input type="text" id="draft-search" class="pill-input" placeholder="Search..." oninput="handleSearchFilter('draft')" style="width:170px;">
@@ -893,8 +828,8 @@
     <div class="draft-sidebar">
       <div class="draft-count-display" id="draft-count-lbl">0/10</div>
       <div id="draft-slots-vertical" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;"></div>
-      <button class="btn-outline" onclick="autoFillDraft()" style="width:100%;justify-content:center;display:flex;align-items:center;gap:6px;">RANDOM</button>
-      <button class="btn-orange" id="draft-confirm-btn" onclick="goSetup()" disabled style="width:100%;">SET UP TEAM</button>
+      <button class="game-btn game-btn-outline" onclick="autoFillDraft()" style="width:100%;">RANDOM</button>
+      <button class="game-btn game-btn-orange" id="draft-confirm-btn" onclick="goSetup()" disabled style="width:100%;margin-top:4px;">SET UP TEAM</button>
     </div>
   </div>
 </div>
@@ -903,16 +838,20 @@
 <div id="setup-screen" class="screen">
   <div class="sticky-container">
     <div class="setup-header-bar">
-      <div class="logo" style="font-size:1.1rem;">STARTING LINEUP</div>
-      <button class="btn-outline" style="font-size:0.8rem;padding:7px 14px;" onclick="goDraft()">Back to Draft</button>
+      <div class="header-logo-wrap">
+        <img class="header-logo-img" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/small-logo.png" onerror="this.style.display='none'" alt="">
+        <span style="font-family:'Orbitron',sans-serif;font-weight:900;color:var(--accent);font-size:1.1rem;letter-spacing:1px;">STARTING LINEUP</span>
+      </div>
+      <button class="game-btn game-btn-outline" style="font-size:0.8rem;padding:7px 14px;" onclick="goDraft()">Back to Draft</button>
     </div>
     <div style="text-align:center;font-size:0.78rem;padding:8px;color:var(--text-muted);background:var(--surface-2);border-bottom:1px solid var(--border);">
       Drag your starting 5 from the bench below.
     </div>
     <div id="setup-slots" class="setup-slots-row"></div>
     <div class="setup-action-bar">
-      <button class="btn-orange" id="start-battle-btn" onclick="startBattle()" disabled style="font-size:1rem;padding:12px 36px;">ENTER ARENA</button>
+      <button class="game-btn game-btn-orange" id="start-battle-btn" onclick="startBattle()" disabled style="font-size:1rem;padding:12px 36px;">ENTER ARENA</button>
       <div class="setup-counter" id="setup-count-lbl">0/5</div>
+      <button class="game-btn game-btn-outline" onclick="autoFillSetup()" style="font-size:0.85rem;">RANDOM LINEUP</button>
     </div>
   </div>
   <div class="bench-label">YOUR BENCH</div>
@@ -922,11 +861,11 @@
 <!-- ==================== BATTLE ==================== -->
 <div id="battle-screen" class="screen">
   <div class="battle-app-header">
-    <div class="battle-logo">BATTLEFIELD</div>
-    <button class="icon-btn red" style="width:auto;border-radius:10px;padding:0 12px;font-size:0.75rem;font-family:Inter,sans-serif;letter-spacing:0.5px;" onclick="location.reload()">FORFEIT</button>
+    <img class="battle-logo-img" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/small-logo.png" onerror="this.style.display='none'" alt="NBA Pellop Hoops">
+    <button class="game-btn game-btn-red" style="font-size:0.78rem;padding:7px 14px;" onclick="location.reload()">FORFEIT</button>
   </div>
 
-  <div class="arena-container">
+  <div class="arena-container" id="arena-container">
     <div class="court-area" id="court-area-bg" onclick="handleCourtClick(event)">
 
       <div class="floating-scoreboard">
@@ -941,9 +880,9 @@
       <div class="enemy-fan-wrapper" id="enemy-active-row"></div>
 
       <div id="checkout-panel" class="checkout-panel">
-        <div style="font-family:'Orbitron',sans-serif;font-size:1.1rem;color:white;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:4px;">MOVES STAGED (<span id="staged-count">0</span>)</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:1rem;color:white;border-bottom:1px solid rgba(255,255,255,0.1);padding-bottom:4px;">MOVES STAGED (<span id="staged-count">0</span>)</div>
         <div id="staged-list" style="display:flex;flex-direction:column;gap:4px;font-size:0.78rem;color:rgba(255,255,255,0.65);"></div>
-        <button class="btn-glowing-battle" id="confirm-moves-btn" style="background:rgba(64,224,160,0.15);border-color:rgba(64,224,160,0.4);color:#40E0A0;" onclick="confirmMovesPhase()">LOCK IN MOVES</button>
+        <button class="game-btn game-btn-teal" id="confirm-moves-btn" onclick="confirmMovesPhase()" style="width:100%;">LOCK IN MOVES</button>
       </div>
 
       <div class="active-fan-wrapper" id="player-active-row"></div>
@@ -952,27 +891,31 @@
 
     <div class="bench-stack-container enemy-bench-stack" id="enemy-bench-stack"></div>
     <div class="bench-stack-container player-bench-stack" id="player-bench-stack"></div>
+  </div>
 
-    <!-- Action panels — fixed centered -->
-    <div class="action-panels-wrapper" id="action-panels-wrapper">
-      <div class="action-left-panel" id="action-left-panel"></div>
-      <div class="action-right-panel" id="action-right-panel"></div>
+  <!-- Action panels — fixed bottom, horizontal -->
+  <div class="action-panels-wrapper" id="action-panels-wrapper">
+    <div class="action-card-name" id="action-card-name"></div>
+    <div class="action-btns-row" id="action-btns-row"></div>
+  </div>
+
+  <!-- Battle log panel (right side) -->
+  <div class="battle-log-panel" id="battle-log-panel">
+    <div class="battle-log-header">
+      <span class="battle-log-title">BATTLE LOG</span>
+      <button class="log-toggle-btn" onclick="toggleBattleLog()" title="Close log">✕</button>
     </div>
-
-    <!-- Battle log with minimize -->
-    <div class="battle-log-wrapper" id="battle-log-wrapper">
-      <div class="battle-log-header" onclick="toggleBattleLog()">
-        <span class="battle-log-title">BATTLE LOG</span>
-        <button class="battle-log-toggle icon-btn" id="log-toggle-btn" onclick="event.stopPropagation();toggleBattleLog()">▼</button>
-      </div>
-      <div class="retro-log-container" id="battle-log">
-        <div class="log-entry">
-          <span class="log-who log-who-sys">SYSTEM</span>
-          <span class="log-detail">MATCH INITIATED. First to 8 KOs wins.</span>
-        </div>
+    <div class="retro-log-container" id="battle-log">
+      <div class="log-entry">
+        <span class="log-who log-who-sys">System</span>
+        <span class="log-detail">Match initiated. First to 8 KOs wins.</span>
       </div>
     </div>
-
+  </div>
+  <!-- Tab to open log -->
+  <div class="log-open-tab" id="log-open-tab" onclick="toggleBattleLog()">
+    <span style="font-size:0.7rem;color:rgba(255,255,255,0.6);">📋</span>
+    <span class="log-tab-text">BATTLE LOG</span>
   </div>
 </div>
 
@@ -982,7 +925,7 @@
     <div class="modal-title">INCOMING ATTACK</div>
     <div id="reactive-desc" style="color:rgba(255,255,255,0.7);font-size:0.88rem;margin-bottom:16px;line-height:1.5;"></div>
     <div id="reactive-options" style="display:flex;flex-direction:column;gap:9px;"></div>
-    <button class="btn-glowing-battle" style="width:100%;margin-top:12px;" onclick="skipReactive()">SKIP (NO DEFENSE)</button>
+    <button class="game-btn game-btn-ghost" style="width:100%;margin-top:12px;" onclick="skipReactive()">SKIP (No Defense)</button>
   </div>
 </div>
 
@@ -992,7 +935,56 @@
     <div class="modal-title">SELECT ASSIST TARGET</div>
     <div style="color:rgba(255,255,255,0.65);font-size:0.85rem;margin-bottom:14px;" id="assist-prompt-text">Choose whose stat to base the damage on:</div>
     <div id="assist-options" style="display:flex;flex-direction:column;gap:9px;"></div>
-    <button class="btn-glowing-battle" style="width:100%;margin-top:12px;" onclick="cancelAssist()">CANCEL</button>
+    <button class="game-btn game-btn-ghost" style="width:100%;margin-top:12px;" onclick="cancelAssist()">CANCEL</button>
+  </div>
+</div>
+
+<!-- Freeze target modal -->
+<div id="freeze-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-title">FREEZE TARGET</div>
+    <div style="color:rgba(255,255,255,0.65);font-size:0.85rem;margin-bottom:14px;">Select the opponent to freeze this turn:</div>
+    <div id="freeze-options" style="display:flex;flex-direction:column;gap:9px;"></div>
+    <button class="game-btn game-btn-ghost" style="width:100%;margin-top:12px;" onclick="cancelFreeze()">CANCEL</button>
+  </div>
+</div>
+
+<!-- Steal skill modal -->
+<div id="steal-skill-modal" class="modal-overlay steal-skill-modal" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-title">STEAL A SKILL</div>
+    <div style="color:rgba(255,255,255,0.65);font-size:0.85rem;margin-bottom:14px;">Select an enemy card's skill to steal:</div>
+    <div id="steal-skill-options" style="display:flex;flex-direction:column;gap:9px;"></div>
+    <button class="game-btn game-btn-ghost" style="width:100%;margin-top:12px;" onclick="cancelStealSkill()">CANCEL</button>
+  </div>
+</div>
+
+<!-- Heal target modal -->
+<div id="heal-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-title">HEAL TARGET</div>
+    <div style="color:rgba(255,255,255,0.65);font-size:0.85rem;margin-bottom:14px;">Select a teammate to heal (+300 HP):</div>
+    <div id="heal-options" style="display:flex;flex-direction:column;gap:9px;"></div>
+    <button class="game-btn game-btn-ghost" style="width:100%;margin-top:12px;" onclick="cancelHeal()">CANCEL</button>
+  </div>
+</div>
+
+<!-- Nullify defense modal -->
+<div id="nullify-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-title">NULLIFY DEFENSE?</div>
+    <div id="nullify-desc" style="color:rgba(255,255,255,0.7);font-size:0.88rem;margin-bottom:16px;line-height:1.5;"></div>
+    <div id="nullify-options" style="display:flex;flex-direction:column;gap:9px;"></div>
+    <button class="game-btn game-btn-ghost" style="width:100%;margin-top:12px;" onclick="skipNullify()">SKIP</button>
+  </div>
+</div>
+
+<!-- Win/Lose modal -->
+<div id="endgame-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-title" id="endgame-title">GAME OVER</div>
+    <div id="endgame-desc" style="color:rgba(255,255,255,0.7);font-size:0.95rem;margin-bottom:20px;"></div>
+    <button class="game-btn game-btn-orange" style="width:100%;font-size:1rem;padding:12px;" onclick="location.reload()">PLAY AGAIN</button>
   </div>
 </div>
 
@@ -1001,19 +993,29 @@
 function $(id){return document.getElementById(id);}
 const GITHUB_RAW_BASE=`https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/`;
 const BACK_IMG=`${GITHUB_RAW_BASE}goat-tier-back.png`;
+// Audio
+let bgMusic=null, bgMusicStarted=false;
+function initBattleAudio(){
+  if(bgMusicStarted) return;
+  bgMusicStarted=true;
+  bgMusic=new Audio(GITHUB_RAW_BASE+'NBA_on_NBC.mp3');
+  bgMusic.loop=true; bgMusic.volume=0.25;
+  bgMusic.play().catch(()=>{});
+}
+function playAttackSound(){
+  try{
+    let s=new Audio(GITHUB_RAW_BASE+'basic_attack.wav');
+    s.volume=0.65; s.play().catch(()=>{});
+  }catch(e){}
+}
+function stopBgMusic(){if(bgMusic){bgMusic.pause();bgMusic.currentTime=0;bgMusicStarted=false;}}
+
 function getCardName(c){return c?.UI_Frontend_Data?.Name||"Unknown";}
 function getCardImg(c){return c?.UI_Frontend_Data?.Image_File||"";}
 function getCardHP(c){return c?.UI_Frontend_Data?.Stats?.HP||0;}
 function getCardDMG(c){return c?.UI_Frontend_Data?.Stats?.Base_DMG||0;}
 function getCardSPD(c){return c?.UI_Frontend_Data?.Stats?.Speed||0;}
-function getCardAllPos(c){
-  const p=c?.UI_Frontend_Data?.Positions;
-  if(!p) return [];
-  let arr=[p.Primary];
-  if(p.Secondary) arr.push(p.Secondary);
-  if(p.Third) arr.push(p.Third);
-  return arr.filter(Boolean);
-}
+function getCardAllPos(c){const p=c?.UI_Frontend_Data?.Positions;if(!p)return[];let arr=[p.Primary];if(p.Secondary)arr.push(p.Secondary);if(p.Third)arr.push(p.Third);return arr.filter(Boolean);}
 function getCardPos(c){const p=c?.UI_Frontend_Data?.Positions;return p?p.Primary+(p.Secondary?'/'+p.Secondary:''):"N/A";}
 function escapeJS(s){return s?s.toString().replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/`/g,"\\`"):"";}
 function shortName(n){return n?n.replace(/ \(.+?\)$/,''):"Unknown";}
@@ -1023,17 +1025,30 @@ function handleImgError(el,n){el.onerror=null;el.src=`https://placehold.co/400x5
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   let el=$(id);if(el)el.classList.add('active');window.scrollTo(0,0);
+  if(id!=='battle-screen') stopBgMusic();
 }
 function delay(ms){return new Promise(r=>setTimeout(r,ms));}
 
-// ==================== BATTLE LOG TOGGLE ====================
-let battleLogMinimized=false;
+// ==================== BATTLE LOG ===========================
+let battleLogOpen=false;
 function toggleBattleLog(){
-  battleLogMinimized=!battleLogMinimized;
-  let log=$('battle-log');
-  let btn=$('log-toggle-btn');
-  if(battleLogMinimized){log.classList.add('minimized');if(btn)btn.textContent='▲';}
-  else{log.classList.remove('minimized');if(btn)btn.textContent='▼';log.scrollTop=log.scrollHeight;}
+  battleLogOpen=!battleLogOpen;
+  let panel=$('battle-log-panel');
+  let tab=$('log-open-tab');
+  let arena=$('arena-container');
+  let actionPanel=$('action-panels-wrapper');
+  if(battleLogOpen){
+    panel.classList.add('open');
+    tab.classList.add('panel-open');
+    arena.classList.add('log-open');
+    if(actionPanel) actionPanel.style.right='var(--log-width)';
+    let log=$('battle-log');if(log)log.scrollTop=log.scrollHeight;
+  }else{
+    panel.classList.remove('open');
+    tab.classList.remove('panel-open');
+    arena.classList.remove('log-open');
+    if(actionPanel) actionPanel.style.right='0';
+  }
 }
 
 // ==================== TOOLTIP ====================
@@ -1043,7 +1058,7 @@ function showTooltip(e,name){
   if(!_tooltipEnabled)return;
   const tt=$('tooltip');if(!tt)return;
   const c=typeof CARDS!=='undefined'?CARDS.find(x=>getCardName(x)===name):null;if(!c)return;
-  let sHtml=(c.Skills||[]).map(s=>`<div class="tt-skill-name">${s.Name} <span style="color:#FF8C8C;font-weight:300;">(${s.Display_DMG})</span></div><div style="color:rgba(255,255,255,0.4);font-size:0.6rem;">${s.Description_UI}</div>`).join('');
+  let sHtml=(c.Skills||[]).map(s=>`<div style="margin-top:4px;"><span style="color:white;font-weight:600;">${s.Name}</span> <span style="color:#FF8C8C;font-weight:300;">(${s.Display_DMG})</span><div style="color:rgba(255,255,255,0.4);font-size:0.6rem;">${s.Description_UI}</div></div>`).join('');
   tt.innerHTML=`<div class="tt-name">${shortName(name)}</div><div style="color:white;font-weight:600;margin-bottom:2px;">${c.Ability?.Name||'No Ability'}</div><div style="color:rgba(255,255,255,0.4);font-size:0.6rem;margin-bottom:4px;">${c.Ability?.Description_UI||''}</div>${sHtml}`;
   tt.classList.add('visible');positionTooltip(e);
 }
@@ -1102,7 +1117,7 @@ function goCat(){showScreen('catalogue-screen');if(typeof CARDS!=='undefined')fi
 function filterCat(){
   let q=($('cs')?.value||'').toLowerCase(),posF=$('cp')?.value||'',sort=$('csort')?.value||'name';
   let list=typeof CARDS!=='undefined'?CARDS.filter(c=>c?.UI_Frontend_Data):[];
-  list=list.filter(c=>{let n=(getCardName(c)||"").toLowerCase(),t=(c.UI_Frontend_Data.Team||"").toLowerCase(),p=getCardPos(c);return(!q||n.includes(q)||t.includes(q))&&(!posF||getCardAllPos(c).includes(posF));});
+  list=list.filter(c=>{let n=(getCardName(c)||"").toLowerCase(),t=(c.UI_Frontend_Data.Team||"").toLowerCase();return(!q||n.includes(q)||t.includes(q))&&(!posF||getCardAllPos(c).includes(posF));});
   if(sort==='hp')list.sort((a,b)=>getCardHP(b)-getCardHP(a));else if(sort==='dmg')list.sort((a,b)=>getCardDMG(b)-getCardDMG(a));else if(sort==='spd')list.sort((a,b)=>getCardSPD(b)-getCardSPD(a));else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
   $('cgrid').innerHTML=list.map(c=>{
     let n=getCardName(c),safeN=escapeJS(n);
@@ -1111,14 +1126,12 @@ function filterCat(){
   }).join('');
 }
 function handleSearchFilter(m){if(m==='cat')filterCat();else filterDraftGrid();}
-
 function toggleExpand(name,mode){
   let card=CARDS.find(c=>getCardName(c)===name);if(!card)return;hideTooltip();
   if(mode==='cat'){expandedCardCat=(expandedCardCat===name)?null:name;if(expandedCardCat)isNewExpand=true;filterCat();isNewExpand=false;}
   else{openDraftPanel(name);}
 }
 function closeExpanded(mode){if(mode==='cat'){expandedCardCat=null;filterCat();}}
-
 function renderExpandedRow(card,mode){
   let n=getCardName(card),t=card.UI_Frontend_Data?.Team||'',hp=getCardHP(card),dmg=getCardDMG(card),spd=getCardSPD(card),p=getCardPos(card);
   let skills=(card.Skills||[]).map(s=>`<div class="ec-skill-wrap"><div class="ec-skill-header"><span class="ec-skill-name">${s.Name}</span><span class="ec-skill-dmg">${s.Display_DMG}</span></div><div class="ec-skill-desc">${s.Description_UI}</div></div>`).join('');
@@ -1158,16 +1171,11 @@ function openDraftPanel(name){
   panel.classList.add('open');
   filterDraftGrid();
 }
-function closeDraftPanel(){
-  $('draft-side-panel').classList.remove('open');
-  currentDraftPanelCard=null;
-  filterDraftGrid();
-}
+function closeDraftPanel(){$('draft-side-panel').classList.remove('open');currentDraftPanelCard=null;filterDraftGrid();}
 
 // ==================== DRAFT ====================
 let draftSquad={PG:[null,null],SG:[null,null],SF:[null,null],PF:[null,null],C:[null,null]};
 const POSITIONS=['PG','SG','SF','PF','C'];let hasSixthMan=false;
-
 function goDraft(){
   draftSquad={PG:[null,null],SG:[null,null],SF:[null,null],PF:[null,null],C:[null,null]};
   expandedCardCat=null;currentDraftPanelCard=null;
@@ -1175,7 +1183,6 @@ function goDraft(){
   let panel=$('draft-side-panel');if(panel)panel.classList.remove('open');
   renderDraftSlots();filterDraftGrid();
 }
-
 function filterDraftGrid(){
   let q=($('draft-search')?.value||'').toLowerCase(),sort=$('draft-sort')?.value||'name';
   let list=typeof CARDS!=='undefined'?CARDS.filter(c=>c?.UI_Frontend_Data):[];
@@ -1187,9 +1194,7 @@ function filterDraftGrid(){
     return`<div class="compact-card ${inD?'in-draft':''} ${isSelected?'selected-panel':''}" ${!inD?`draggable="true" ondragstart="handleDragStart(event,'${safeN}')" ondragend="handleDragEnd(event)"`:''} onclick="${!inD?`toggleExpand('${safeN}','draft')`:'void(0)'}" onmouseenter="${!inD?`showTooltip(event,'${safeN}')`:'void(0)'}" onmouseleave="hideTooltip()" onmousemove="positionTooltip(event)"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),n)}" onerror="handleImgError(this,'${safeN}')"></div></div>`;
   }).join('');
 }
-
 function isCardInDraft(c){let n=getCardName(c);return POSITIONS.some(p=>getCardName(draftSquad[p][0])===n||getCardName(draftSquad[p][1])===n);}
-
 function renderDraftSlots(){
   let html='';[0,1].forEach(idx=>{POSITIONS.forEach(pos=>{let c=draftSquad[pos][idx],cn=c?getCardName(c):null;html+=`<div id="dslot-${pos}-${idx}" class="slot-card slot-${pos} ${c?'filled':''}" data-slot="${pos}-${idx}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropDraft(event,'${pos}',${idx})">${c?`<div class="slot-pos">${pos}</div><div class="slot-name">${getDBShortName(cn)}</div><button class="remove-slot" onclick="removeDraft('${pos}',${idx})">✕</button>`:`<div class="slot-pos">${pos}</div>`}</div>`;});});
   $('draft-slots-vertical').innerHTML=html;
@@ -1201,11 +1206,11 @@ function renderDraftSlots(){
       draftSquad[pos][idx]=c;renderDraftSlots();filterDraftGrid();
     });
   });
-  let cnt=0;hasSixthMan=false;POSITIONS.forEach(p=>[0,1].forEach(i=>{if(draftSquad[p][i]){cnt++;if(getCardName(draftSquad[p][i]).toLowerCase().includes("harden")||getCardName(draftSquad[p][i]).toLowerCase().includes("sixth man"))hasSixthMan=true;}}));
-  $('draft-count-lbl').textContent=`${cnt}/${hasSixthMan?11:10}`;
+  let cnt=0;hasSixthMan=false;
+  POSITIONS.forEach(p=>[0,1].forEach(i=>{if(draftSquad[p][i])cnt++;}));
+  $('draft-count-lbl').textContent=`${cnt}/10`;
   $('draft-confirm-btn').disabled=(cnt<10);
 }
-
 function dropDraft(e,pos,idx){
   e.preventDefault();if(e.currentTarget&&e.currentTarget.classList)e.currentTarget.classList.remove('drag-over');
   let c=CARDS.find(x=>getCardName(x)===e.dataTransfer.getData('text/plain'));
@@ -1222,66 +1227,68 @@ function autoFillDraft(){
 }
 
 // ==================== SETUP ====================
-let activeLineup={PG:null,SG:null,SF:null,PF:null,C:null,'6TH':null},benchRoster=[];
+let activeLineup={PG:null,SG:null,SF:null,PF:null,C:null},benchRoster=[];
 function goSetup(){
   benchRoster=[];POSITIONS.forEach(p=>[0,1].forEach(i=>{if(draftSquad[p][i])benchRoster.push(draftSquad[p][i]);}));
-  activeLineup={PG:null,SG:null,SF:null,PF:null,C:null,'6TH':null};
+  activeLineup={PG:null,SG:null,SF:null,PF:null,C:null};
   showScreen('setup-screen');renderSetupSlots();renderSetupBench();
 }
 function renderSetupSlots(){
-  let slots=[...POSITIONS];if(hasSixthMan)slots.push('6TH');
-  $('setup-slots').innerHTML=slots.map(pos=>{
-    let c=activeLineup[pos],is6=(pos==='6TH');
+  $('setup-slots').innerHTML=POSITIONS.map(pos=>{
+    let c=activeLineup[pos];
     return`<div id="sslots-${pos}" class="setup-slot-card setup-slot-${pos} ${c?'filled':''}" data-slot="setup-${pos}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropSetup(event,'${pos}')">
-      ${c?`<img src="${getImgUrl(getCardImg(c),getCardName(c))}" onerror="handleImgError(this,'${escapeJS(getCardName(c))}')"><button class="setup-remove" onclick="activeLineup['${pos}']=null;renderSetupSlots();renderSetupBench()">✕</button>`:`<div class="setup-slot-pos" style="color:${is6?'var(--pos-6th)':''}">${is6?'6TH':pos}</div><div class="setup-slot-drop-text">Drop Here</div>`}
+      ${c?`<img src="${getImgUrl(getCardImg(c),getCardName(c))}" onerror="handleImgError(this,'${escapeJS(getCardName(c))}')"><button class="setup-remove" onclick="activeLineup['${pos}']=null;renderSetupSlots();renderSetupBench()">✕</button>`:`<div class="setup-slot-pos">${pos}</div><div class="setup-slot-drop-text">Drop Here</div>`}
     </div>`;
   }).join('');
   document.querySelectorAll('[data-slot^="setup-"]').forEach(slot=>{
     slot.addEventListener('physdrop',(e)=>{
       let pos=slot.dataset.slot.replace('setup-','');
       let c=benchRoster.find(x=>getCardName(x)===e.detail.name);if(!c)return;
-      // Smart position check: can the card play this pos?
-      if(pos==='6TH'&&!(getCardName(c).toLowerCase().includes('harden')||getCardName(c).toLowerCase().includes('sixth')))return triggerInvalidDrop(slot);
-      if(pos!=='6TH'&&!getCardAllPos(c).includes(pos))return triggerInvalidDrop(slot);
+      if(!getCardAllPos(c).includes(pos))return triggerInvalidDrop(slot);
       activeLineup[pos]=c;renderSetupSlots();renderSetupBench();
     });
   });
   let cnt=Object.values(activeLineup).filter(x=>x).length;
-  $('setup-count-lbl').textContent=`${cnt}/${hasSixthMan?6:5}`;
+  $('setup-count-lbl').textContent=`${cnt}/5`;
   $('start-battle-btn').disabled=(cnt<5);
+}
+function autoFillSetup(){
+  activeLineup={PG:null,SG:null,SF:null,PF:null,C:null};
+  let shuf=[...benchRoster].sort(()=>Math.random()-0.5);
+  POSITIONS.forEach(pos=>{
+    if(!activeLineup[pos]){
+      let m=shuf.find(c=>getCardAllPos(c).includes(pos)&&!Object.values(activeLineup).includes(c));
+      if(m) activeLineup[pos]=m;
+    }
+  });
+  renderSetupSlots();renderSetupBench();
 }
 function dropSetup(e,pos){
   e.preventDefault();if(e.currentTarget&&e.currentTarget.classList)e.currentTarget.classList.remove('drag-over');
   let c=benchRoster.find(x=>getCardName(x)===e.dataTransfer.getData('text/plain'));if(!c)return;
-  if(pos==='6TH'&&!(getCardName(c).toLowerCase().includes('harden')||getCardName(c).toLowerCase().includes('sixth')))return triggerInvalidDrop($(`sslots-${pos}`));
-  if(pos!=='6TH'&&!getCardAllPos(c).includes(pos))return triggerInvalidDrop($(`sslots-${pos}`));
+  if(!getCardAllPos(c).includes(pos))return triggerInvalidDrop($(`sslots-${pos}`));
   activeLineup[pos]=c;renderSetupSlots();renderSetupBench();
 }
 function renderSetupBench(){
-  let grid=$('setup-bench-grid');
-  grid.innerHTML='';
+  let grid=$('setup-bench-grid');grid.innerHTML='';
   benchRoster.forEach(c=>{
     if(Object.values(activeLineup).some(ac=>ac&&getCardName(ac)===getCardName(c)))return;
     let n=getCardName(c),safeN=escapeJS(n),imgSrc=getImgUrl(getCardImg(c),n);
     let div=document.createElement('div');
-    div.className='bench-card-item';
-    div.id='bench-card-'+safeN;
-    div.draggable=true;
+    div.className='bench-card-item';div.draggable=true;
     div.innerHTML=`<img src="${imgSrc}" onerror="handleImgError(this,'${safeN}')">`;
-    div.ondragstart=(e)=>handleDragStart(e,n);
-    div.ondragend=handleDragEnd;
-    div.onmouseenter=(e)=>showTooltip(e,n);
-    div.onmouseleave=hideTooltip;
-    div.onmousemove=positionTooltip;
-    grid.appendChild(div);
-    initPhysDrag(div,n,imgSrc);
+    div.ondragstart=(e)=>handleDragStart(e,n);div.ondragend=handleDragEnd;
+    div.onmouseenter=(e)=>showTooltip(e,n);div.onmouseleave=hideTooltip;div.onmousemove=positionTooltip;
+    grid.appendChild(div);initPhysDrag(div,n,imgSrc);
   });
 }
 
 // ==================== BATTLE ENGINE ====================
-let activeAuras=[],pendingBlocks=[],frozenCards={},shutdownCards={},disabledSkills={},drainedNextTurn={},screenGuarantee=false,invulnerable={},stolenSkills={},pendingPutbacks=[],pendingExtraMoves=[],pendingWiltCounter=null;
+let activeAuras=[],pendingBlocks=[],frozenCards={},shutdownCards={},disabledSkills={},drainedNextTurn={},invulnerable={},stolenSkills={},statBuffs={};
 let playerActive=[],playerBench=[],enemyActive=[],enemyBench=[];
 let playerScore=0,enemyScore=0,turnCount=1,isAnimating=false,uiState='IDLE',pendingAction=null,stagedActions=[];
+
+function cardKey(team,idx){return`${team}-${idx}`;}
 
 function buildEnemyRoster(){
   const NEED=['PG','SG','SF','PF','C'];let dr={PG:[],SG:[],SF:[],PF:[],C:[]};let p=[...CARDS].sort(()=>Math.random()-0.5);
@@ -1291,19 +1298,24 @@ function buildEnemyRoster(){
     if(dr[po][1]){let c=JSON.parse(JSON.stringify(dr[po][1]));c.currentHp=getCardHP(c);c.isDead=false;c.battleRole=po;be.push(c);}
   });return{st,be};
 }
-function buildPlayerActiveWithRoles(){let res=[];(hasSixthMan?['PG','SG','SF','PF','C','6TH']:POSITIONS).forEach(po=>{if(activeLineup[po]){let c=JSON.parse(JSON.stringify(activeLineup[po]));c.currentHp=getCardHP(c);c.isDead=false;c.battleRole=po;res.push(c);}});return res;}
-
+function buildPlayerActiveWithRoles(){
+  let res=[];POSITIONS.forEach(po=>{
+    if(activeLineup[po]){let c=JSON.parse(JSON.stringify(activeLineup[po]));c.currentHp=getCardHP(c);c.isDead=false;c.battleRole=po;res.push(c);}
+  });return res;
+}
 function startBattle(){
   playerActive=buildPlayerActiveWithRoles();
   playerBench=benchRoster.filter(c=>!playerActive.some(ac=>getCardName(ac)===getCardName(c)));
+  playerBench=playerBench.map(c=>{let cc=JSON.parse(JSON.stringify(c));cc.currentHp=getCardHP(cc);cc.isDead=false;return cc;});
   let eR=buildEnemyRoster();enemyActive=eR.st;enemyBench=eR.be;
   playerScore=0;enemyScore=0;turnCount=1;stagedActions=[];uiState='IDLE';
   [playerActive,enemyActive,playerBench,enemyBench].forEach(team=>{for(let c of team){if(!c)continue;for(let sk of(c.Skills||[]))sk._usesLeft=sk.Logic_Engine?.Max_Uses||1;}});
-  frozenCards={};shutdownCards={};disabledSkills={};drainedNextTurn={};screenGuarantee=false;invulnerable={};stolenSkills={};pendingPutbacks=[];pendingExtraMoves=[];pendingWiltCounter=null;activeAuras=[];pendingBlocks=[];
-  $('battle-log').innerHTML=`<div class="log-entry"><span class="log-who log-who-sys">SYSTEM</span><span class="log-detail">MATCH INITIATED. First to 8 KOs wins.</span></div>`;
+  frozenCards={};shutdownCards={};disabledSkills={};drainedNextTurn={};invulnerable={};stolenSkills={};statBuffs={};activeAuras=[];pendingBlocks=[];
+  $('battle-log').innerHTML=`<div class="log-entry"><span class="log-who log-who-sys">System</span><span class="log-detail">Match initiated. First to 8 KOs wins.</span></div>`;
   $('score-player').textContent='0';$('score-enemy').textContent='0';
   $('checkout-panel').style.display='none';
   showScreen('battle-screen');
+  initBattleAudio();
   renderArena();
 }
 
@@ -1311,12 +1323,13 @@ function startBattle(){
 let playerBenchOpen=false;
 function renderBenchStacks(){
   let eBench=$('enemy-bench-stack');
-  eBench.innerHTML=enemyBench.map((c,i)=>{
+  eBench.innerHTML=enemyBench.filter(c=>!c.isDead).map((c,i)=>{
     let off=i*5;
-    return`<div class="bench-stack-card face-down" style="top:${off}px;left:${off}px;z-index:${i};" onmouseenter="showEnemyBenchTooltip(event)" onmouseleave="hideEnemyBenchTooltip()"></div>`;
+    return`<div class="bench-stack-card face-down" style="top:${off}px;left:${off}px;z-index:${i};" onmouseenter="showEnemyBenchTooltip(event,${enemyBench.filter(x=>!x.isDead).length})" onmouseleave="hideEnemyBenchTooltip()"></div>`;
   }).join('');
   let pBench=$('player-bench-stack');pBench.innerHTML='';
-  playerBench.forEach((c,i)=>{
+  let aliveBench=playerBench.filter(c=>!c.isDead);
+  aliveBench.forEach((c,i)=>{
     let div=document.createElement('div');div.className='bench-stack-card';
     let img=document.createElement('img');img.src=getImgUrl(getCardImg(c),getCardName(c));img.onerror=()=>handleImgError(img,getCardName(c));
     div.appendChild(img);div.dataset.benchIdx=i;
@@ -1331,50 +1344,83 @@ function renderBenchStacks(){
 
 function openBenchFan(e){
   if(e)e.stopPropagation();
+  // If in middle of action selection (uiState=IDLE and no staged actions for this card), cancel selection
+  // Cancel any unsaved selected action (pending but not staged)
+  if(uiState==='IDLE'||uiState==='AWAITING_TARGET'){
+    // hide action panel and cancel current selection
+    hideActionPanels();
+    if(uiState==='AWAITING_TARGET'){
+      uiState='IDLE';pendingAction=null;
+      setTooltipEnabled(true);
+      renderArena();
+    }
+  }
   playerBenchOpen=true;
   let overlay=$('bench-fan-overlay'),stage=$('bench-fan-stage');
   overlay.classList.add('open');stage.innerHTML='';
-  let n=playerBench.length;
-  playerBench.forEach((c,i)=>{
+  $('checkout-panel').classList.add('panel-blur');
+  let aliveBench=playerBench.filter(c=>!c.isDead);
+  let n=aliveBench.length;
+  aliveBench.forEach((c,i)=>{
     let mid=(n-1)/2,offset=i-mid;
-    let angle=offset*13,arcY=-Math.abs(offset)*offset*3.5,tx=offset*155;
+    // Wider fan angle like pic 2
+    let angle=offset*16,arcY=-Math.abs(offset)*Math.abs(offset)*5,tx=offset*170;
     let wrap=document.createElement('div');wrap.className='bench-fan-card-wrap';
     wrap.style.transform=`translateX(${tx}px) rotate(${angle}deg) translateY(${arcY}px)`;
-    wrap.style.zIndex=n+i;wrap.style.transformOrigin='bottom center';
+    wrap.style.zIndex=n+i;wrap.style.bottom='60px';wrap.style.position='absolute';
     let card=document.createElement('div');card.className='bench-fan-card';
     let img=document.createElement('img');img.src=getImgUrl(getCardImg(c),getCardName(c));img.onerror=()=>handleImgError(img,getCardName(c));
     card.appendChild(img);wrap.appendChild(card);
-    wrap.onmouseenter=(ev)=>showTooltip(ev,getCardName(c));
-    wrap.onmouseleave=()=>hideTooltip();wrap.onmousemove=(ev)=>positionTooltip(ev);
+    // Hover: pop up
+    wrap.addEventListener('mouseenter',()=>{
+      wrap.style.transform=`translateX(${tx}px) rotate(${angle}deg) translateY(${arcY - 40}px) scale(1.18)`;
+      wrap.style.zIndex=300;
+      wrap.style.filter='brightness(1.25) drop-shadow(0 -12px 24px rgba(64,224,160,0.6))';
+    });
+    wrap.addEventListener('mouseleave',()=>{
+      wrap.style.transform=`translateX(${tx}px) rotate(${angle}deg) translateY(${arcY}px)`;
+      wrap.style.zIndex=n+i;
+      wrap.style.filter='';
+    });
+    wrap.onmouseenter=(ev)=>{
+      wrap.style.transform=`translateX(${tx}px) rotate(${angle}deg) translateY(${arcY - 40}px) scale(1.18)`;
+      wrap.style.zIndex=300;
+      wrap.style.filter='brightness(1.25) drop-shadow(0 -12px 24px rgba(64,224,160,0.6))';
+      showTooltip(ev,getCardName(c));
+    };
+    wrap.onmouseleave=()=>{
+      wrap.style.transform=`translateX(${tx}px) rotate(${angle}deg) translateY(${arcY}px)`;
+      wrap.style.zIndex=n+i;
+      wrap.style.filter='';
+      hideTooltip();
+    };
+    wrap.onmousemove=(ev)=>positionTooltip(ev);
     wrap.onclick=(ev)=>{ev.stopPropagation();onBenchFanCardClick(i,ev);};
     stage.appendChild(wrap);
   });
-  $('checkout-panel').classList.add('panel-blur');
 }
 function closeBenchFan(){
   playerBenchOpen=false;$('bench-fan-overlay').classList.remove('open');$('checkout-panel').classList.remove('panel-blur');
-  if(uiState==='AWAITING_BENCH'){uiState='IDLE';logMsg2('sys','SYSTEM','Swap cancelled.');}
+  if(uiState==='AWAITING_BENCH'){uiState='IDLE';pendingAction=null;logMsg2('sys','System','Swap cancelled.');}
 }
-function handleBenchOverlayClick(e){if(e.target===e.currentTarget||e.target.id==='bench-fan-stage')closeBenchFan();}
+function handleBenchOverlayClick(e){if(e.target===e.currentTarget||e.target.id==='bench-fan-stage'||e.target.id==='bench-fan-label')closeBenchFan();}
 function onBenchFanCardClick(idx,e){
   e.stopPropagation();
   if(uiState==='AWAITING_BENCH'){
-    let incomingCard=playerBench[idx];if(!incomingCard){closeBenchFan();return;}
-    let alreadyStaged=stagedActions.some(a=>a.actionType==='swap'&&a.targetIdx===idx&&a.targetTeam==='bench');
-    if(alreadyStaged){logMsg2('sys','SYSTEM','That card is already swapped in!');return;}
-    // Smart swap position check: the incoming card must be able to play the position being swapped FOR
+    let aliveBench=playerBench.filter(c=>!c.isDead);
+    let incomingCard=aliveBench[idx];if(!incomingCard){closeBenchFan();return;}
     let swapPos=pendingAction?.pos;
     if(swapPos && !getCardAllPos(incomingCard).includes(swapPos)){
-      logMsg2('sys','SYSTEM',`${shortName(getCardName(incomingCard))} cannot play ${swapPos}!`);
-      return;
+      logMsg2('sys','System',`${shortName(getCardName(incomingCard))} cannot play ${swapPos}!`);return;
     }
-    stagedActions.push({...pendingAction,targetIdx:idx,targetTeam:'bench'});
+    let realBenchIdx=playerBench.findIndex(c=>getCardName(c)===getCardName(incomingCard));
+    stagedActions.push({...pendingAction,targetIdx:realBenchIdx,targetTeam:'bench'});
     uiState='IDLE';closeBenchFan();renderArena();renderCheckout();hideActionPanels();
   }else{closeBenchFan();}
 }
-function showEnemyBenchTooltip(e){
+function showEnemyBenchTooltip(e,cnt){
   let tt=$('enemy-bench-tooltip');
-  tt.innerHTML=`<b style="color:#FF6B6B;">Enemy Bench</b><br><span>${enemyBench.length} card(s) remaining — details hidden</span>`;
+  tt.innerHTML=`<b style="color:#FF6B6B;">Opponent's Bench</b><br><span>${cnt} card(s) remaining</span>`;
   tt.style.display='block';tt.style.left=(e.clientX+12)+'px';tt.style.top=(e.clientY-10)+'px';
 }
 function hideEnemyBenchTooltip(){let tt=$('enemy-bench-tooltip');if(tt)tt.style.display='none';}
@@ -1389,17 +1435,27 @@ function renderFanned(team,isEnemy){
   let n=team.length;if(n===0)return'';
   return team.map((c,i)=>{
     let mid=(n-1)/2,offset=i-mid;
-    let arcY=isEnemy?(Math.abs(offset)*Math.abs(offset)*9):-(Math.abs(offset)*Math.abs(offset)*9);
-    let rot=isEnemy?(-offset*5):(offset*5);
+    // Stronger arc like pic 2
+    let arcY=isEnemy?(Math.abs(offset)*Math.abs(offset)*14):-(Math.abs(offset)*Math.abs(offset)*14);
+    let rot=isEnemy?(-offset*7):(offset*7);
     let hpMax=getCardHP(c),pct=Math.max(0,(c.currentHp/hpMax)*100);
     let clr=pct>50?'#40E0A0':pct>20?'#FFD166':'#FF6B6B';
     let isStaged=!isEnemy&&stagedActions.some(a=>a.actorIdx===i);
-    let isTgt=isEnemy&&uiState==='AWAITING_TARGET'&&pendingAction&&getValidTargets(playerActive[pendingAction.actorIdx],enemyActive).some(v=>v.i===i);
+    let isTgt=isEnemy&&uiState==='AWAITING_TARGET'&&pendingAction!=null&&getValidTargets(playerActive[pendingAction.actorIdx],enemyActive).some(v=>v.i===i);
     let wrapClass=isEnemy?'enemy-card-wrap':'active-card-wrap';
     let cardClass=`battle-card ${c.isDead?'dead-card':''} ${isStaged?'staged':''} ${isTgt?'valid-target':''}`;
     let tooltipName=escapeJS(getCardName(c));
+
+    // Status badges
+    let badges='';
+    let ck=cardKey(isEnemy?'enemy':'player',i);
+    if(frozenCards[ck])badges+=`<div class="card-status-badge badge-frozen">❄ FROZEN</div>`;
+    if(drainedNextTurn[ck])badges+=`<div class="card-status-badge badge-drained">💤 DRAINED</div>`;
+    if(shutdownCards[ck])badges+=`<div class="card-status-badge badge-shutdown">🚫 SHUTDOWN</div>`;
+    if(statBuffs[ck])badges+=`<div class="card-status-badge badge-buffed">⬆ BUFFED</div>`;
+
     return`<div class="${wrapClass}" id="wrap-${isEnemy?'enemy':'player'}-${i}"
-      style="transform:rotate(${rot}deg) translateY(${arcY}px);margin:0 10px;transform-origin:bottom center;"
+      style="transform:rotate(${rot}deg) translateY(${arcY}px);margin:0 8px;transform-origin:bottom center;"
       onclick="onCardClick('${isEnemy?'enemy':'player'}',${i},event)"
       onmouseenter="showTooltip(event,'${tooltipName}')"
       onmouseleave="hideTooltip()"
@@ -1407,7 +1463,8 @@ function renderFanned(team,isEnemy){
       ${isEnemy?`<div class="hp-bar-container"><div class="hp-fill" id="hpf-enemy-${i}" style="width:${pct}%;background:${clr};"></div></div>`:''}
       <div class="${cardClass}" id="card-${isEnemy?'enemy':'player'}-${i}">
         <img src="${getImgUrl(getCardImg(c),getCardName(c))}" onerror="handleImgError(this,'${tooltipName}')">
-        ${isStaged?`<div class="undo-btn" onclick="event.stopPropagation();undoAction(${i})">✕</div>`:''}
+        ${badges}
+        ${isStaged?`<button class="undo-btn" onclick="event.stopPropagation();undoAction(${i})">✕</button>`:''}
       </div>
       ${!isEnemy?`<div class="hp-bar-container"><div class="hp-fill" id="hpf-player-${i}" style="width:${pct}%;background:${clr};"></div></div>`:''}
       <div class="hp-text" id="hpt-${isEnemy?'enemy':'player'}-${i}">${c.currentHp}/${hpMax}</div>
@@ -1418,23 +1475,21 @@ function renderFanned(team,isEnemy){
 // ==================== BATTLE LOG ====================
 function logMsg2(type,who,detail){
   let l=$('battle-log');
-  let whoClass=type==='atk'?'log-who-you':type==='def'?'log-who-bot':type==='coin'?'log-who-coin':'log-who-sys';
+  let whoClass=type==='atk'?'log-who-you':type==='def'?'log-who-bot':type==='coin'?'log-who-coin':type==='hp'?'log-who-hp':type==='ko'?'log-who-ko':type==='block'?'log-who-block':'log-who-sys';
   l.innerHTML+=`<div class="log-entry"><span class="log-who ${whoClass}">${who}</span><span class="log-detail">${detail}</span></div>`;
-  if(!battleLogMinimized)l.scrollTop=l.scrollHeight;
-}
-function logMsg(txt,cls){
-  let type=cls==='atk'?'atk':cls==='def'?'def':cls==='coin'?'coin':'sys';
-  let who=cls==='atk'?'YOU':cls==='def'?'BOT':cls==='coin'?'COIN':'SYSTEM';
-  logMsg2(type,who,txt);
+  if(battleLogOpen)l.scrollTop=l.scrollHeight;
 }
 
 // ==================== INTERACTION ====================
 function handleCourtClick(e){
   if(e.target.closest('.action-panels-wrapper')||e.target.closest('.active-card-wrap')||e.target.closest('.enemy-card-wrap')||e.target.closest('.bench-stack-container'))return;
-  if(uiState==='AWAITING_TARGET'||uiState==='AWAITING_REACTIVE_TARGET'){uiState='IDLE';logMsg2('sys','SYSTEM','Targeting cancelled.');renderArena();}
+  if(uiState==='AWAITING_TARGET'||uiState==='AWAITING_REACTIVE_TARGET'){uiState='IDLE';pendingAction=null;logMsg2('sys','System','Targeting cancelled.');setTooltipEnabled(true);renderArena();}
   hideActionPanels();
 }
-function hideActionPanels(){let w=$('action-panels-wrapper');if(w)w.classList.remove('visible');}
+function hideActionPanels(){
+  let w=$('action-panels-wrapper');
+  if(w)w.classList.remove('visible');
+}
 
 function onCardClick(team,idx,e){
   e.stopPropagation();if(isAnimating)return;hideTooltip();
@@ -1444,7 +1499,7 @@ function onCardClick(team,idx,e){
       if(getValidTargets(playerActive[pendingAction.actorIdx],enemyActive).some(v=>v.i===idx)){
         stagedActions.push({...pendingAction,targetIdx:idx,targetTeam:'enemy'});
         uiState='IDLE';setTooltipEnabled(true);renderArena();renderCheckout();hideActionPanels();
-      }else logMsg2('sys','SYSTEM','Invalid Target! Check lane match.');
+      }else logMsg2('sys','System','Invalid target — check lane match.');
     }return;
   }
   if(uiState==='AWAITING_REACTIVE_TARGET'){
@@ -1454,24 +1509,51 @@ function onCardClick(team,idx,e){
   }
   if(team==='player'&&uiState==='IDLE'){
     let c=playerActive[idx];if(c.isDead)return;
-    if(stagedActions.some(a=>a.actorIdx===idx)){logMsg2('sys','SYSTEM','Card already staged.');return;}
-    if(stagedActions.length>=Math.min(2,playerActive.filter(x=>!x.isDead).length)){logMsg2('sys','SYSTEM','Max moves staged.');return;}
+    let ck=cardKey('player',idx);
+    if(shutdownCards[ck]){logMsg2('sys','System',`${shortName(getCardName(c))} is shutdown and cannot act.`);return;}
+    if(drainedNextTurn[ck]){logMsg2('sys','System',`${shortName(getCardName(c))} is drained and cannot act this turn.`);return;}
+    if(stagedActions.some(a=>a.actorIdx===idx)){logMsg2('sys','System','Card already staged.');return;}
+    if(stagedActions.length>=Math.min(2,playerActive.filter(x=>!x.isDead).length)){logMsg2('sys','System','Maximum moves staged.');return;}
     showActionPanels(c,idx);
   }
 }
 
 function showActionPanels(c,idx){
   let name=shortName(getCardName(c));
-  let lHtml=`<div class="action-card-name">${name}</div>`;
-  if(playerBench.length>0)lHtml+=`<button class="action-btn action-btn-swap" onclick="selectAction(${idx},'swap',0)">SWAP CARD</button>`;
-  lHtml+=`<button class="action-btn action-btn-pass" onclick="selectAction(${idx},'pass',0)">PASS TURN</button>`;
-  let rHtml=`<button class="action-btn action-btn-basic" onclick="selectAction(${idx},'basic',0)">BASIC ATTACK (${getCardDMG(c)})</button>`;
+  $('action-card-name').textContent=name;
+  let btns=[];
+  // Left side buttons
+  if(playerBench.filter(x=>!x.isDead).length>0){
+    btns.push(`<button class="action-btn action-btn-swap" onclick="selectAction(${idx},'swap',0)">SWAP CARD</button>`);
+  }
+  btns.push(`<button class="action-btn action-btn-pass" onclick="selectAction(${idx},'pass',0)">PASS TURN</button>`);
+  // Separator
+  btns.push(`<div style="width:1px;height:30px;background:rgba(255,255,255,0.15);margin:0 4px;"></div>`);
+  // Basic attack
+  btns.push(`<button class="action-btn action-btn-basic" onclick="selectAction(${idx},'basic',0)">BASIC ATTACK<br><span class="action-btn-dmg">(${getEffectiveDMG(c)})</span></button>`);
+  // Skills
   (c.Skills||[]).forEach((sk,sIdx)=>{
     if(!canSelectOnYourTurn(sk))return;
-    rHtml+=`<button class="action-btn action-btn-skill" onclick="selectAction(${idx},'skill',${sIdx})">${sk.Name} (${sk.Display_DMG})</button>`;
+    let usesLeft=sk._usesLeft!==undefined?sk._usesLeft:(sk.Logic_Engine?.Max_Uses||1);
+    if(usesLeft<=0)return;
+    btns.push(`<button class="action-btn action-btn-skill" onclick="selectAction(${idx},'skill',${sIdx})">${sk.Name}<br><span class="action-btn-dmg">(${sk.Display_DMG})</span></button>`);
   });
-  $('action-left-panel').innerHTML=lHtml;$('action-right-panel').innerHTML=rHtml;
+  // Stolen skills
+  let ck=cardKey('player',idx);
+  if(stolenSkills[ck]){
+    stolenSkills[ck].forEach((ssk,ssIdx)=>{
+      btns.push(`<button class="action-btn action-btn-skill" style="border:1px solid rgba(255,200,100,0.4);" onclick="selectAction(${idx},'stolen-skill',${ssIdx})">[STOLEN] ${ssk.Name}<br><span class="action-btn-dmg">(${ssk.Display_DMG})</span></button>`);
+    });
+  }
+  $('action-btns-row').innerHTML=btns.join('');
   let w=$('action-panels-wrapper');if(w)w.classList.add('visible');
+}
+
+function getEffectiveDMG(c){
+  let base=getCardDMG(c);
+  let ck=cardKey('player',playerActive.indexOf(c));
+  if(ck && statBuffs[ck]) base+=statBuffs[ck].dmgBonus||0;
+  return base;
 }
 
 // ==================== SKILL ENGINE ====================
@@ -1484,15 +1566,17 @@ function getSkillCategory(sk){
         cls=(sk.S_Class||sk.Logic_Engine?.Class||'').toUpperCase(),
         ti=(sk.S_Timing||sk.Logic_Engine?.Timing||'').toUpperCase();
   if(ti==='FREE_ACTION'||cls==='FREE_ACTION'){
-    if(ex.includes('FREEZE')||moStr.includes('Freeze_Target')||(ex.includes('STATUS_EFFECT')&&nat.includes('dribble')))return'freeze';
-    if(ex.includes('STEAL_CANCEL')||moStr.includes('Preemptive_Cancel'))return moStr.includes('Unnullifiable')?'steal-cancel-unnull':'steal-cancel';
+    if(ex.includes('FREEZE')||moStr.includes('Freeze_Target'))return'freeze';
+    if(ex.includes('STEAL_CANCEL')&&ex.includes('NULLIFY'))return'steal-cancel-nullify';
+    if(ex.includes('STEAL_CANCEL'))return moStr.includes('Unnullifiable')?'steal-cancel-unnull':'steal-cancel';
     if(ex.includes('STEAL_SKILL')||moStr.includes('Steal_Opponent_Skill'))return'steal-skill';
     if(ex.includes('DISABLE_ALL_SKILLS')||(moStr.includes('Unnullifiable')&&moStr.includes('Global_Hard_Disable_All')))return'global-disable-all';
     if(ex.includes('AURA_ANY_MISS')||moStr.includes('Global_AnySkill_MissChance'))return'aura-any-miss';
     if(ex.includes('AURA_JUMP_MISS'))return'aura-jump-miss';
     if(ex.includes('GRANT_EXTRA_MOVE'))return'grant-extra-move';
-    if(ex.includes('INVULNERABLE'))return'invulnerable';
+    if(ex.includes('INVULNERABLE')||ex.includes('INVULNERABLE_THIS_TURN'))return'invulnerable-buff';
     if(ex.includes('STAT_BUFF'))return'stat-buff-self';
+    if(ex.includes('STATUS_EFFECT'))return'free-status';
     return'free-status';
   }
   if(ti==='REACTIVE'||cls==='REACTIVE'){
@@ -1501,22 +1585,23 @@ function getSkillCategory(sk){
     if(ex.includes('REDIRECT_HALF')||moStr.includes('Reactionary_Redirect'))return'reactive-redirect';
     if(ex.includes('CONTEST_JUMP')||moStr.includes('Reactionary_Contest_Jump'))return'reactive-contest-jump';
     if(ex.includes('CONTEST_CLOSE')||moStr.includes('Reactionary_Contest_Close'))return'reactive-contest-close';
-    if(ex.includes('INTERCEPT_ASSIST')||moStr.includes('Reactionary_Intercept'))return ex.includes('SCREEN_GUARANTEE')?'reactive-screen-guarantee':'reactive-intercept';
+    if(ex.includes('INTERCEPT_ASSIST')||moStr.includes('Reactionary_Intercept')){
+      return ex.includes('SCREEN_GUARANTEE')?'reactive-screen-guarantee':'reactive-intercept';
+    }
     if(ex.includes('PUTBACK_DMG')||moStr.includes('Reactionary_Putback_Dmg'))return'reactive-putback';
     if(ex.includes('GRANT_EXTRA_MOVE')||moStr.includes('Reactionary_Grant_Extra_Move'))return'reactive-extra-move';
     if(ex.includes('DUAL_USE')||moStr.includes('Dual_Use_Offense_Defense'))return'reactive-dual-use';
-    if(ex.includes('STATUS_EFFECT')){if(nat.includes('rebound'))return'reactive-rebound-pass';return'reactive-block-full';}
+    return'reactive-block-full';
   }
   if(cls==='DEFENSIVE'||cls==='ASSIST'){
-    if(ex.includes('AURA_JUMP_MISS')||moStr.includes('Global_JumpShot_MissChance'))return'aura-jump-miss';
-    if(ex.includes('AURA_CLOSE_MISS')||moStr.includes('Global_CloseShot_MissChance'))return'aura-close-miss';
-    if(ex.includes('AURA_ANY_MISS')||moStr.includes('Global_AnySkill_MissChance'))return'aura-any-miss';
-    if(ex.includes('INTERCEPT_ALL_ASSISTS')||moStr.includes('Global_Intercept_All_Assists'))return'aura-intercept-all-assists';
-    if(ex.includes('NULLIFY_DEFENSE')||moStr.includes('Nullify_Defensive_Skill'))return'nullify-defense';
-    if(ex.includes('STAT_BUFF')||moStr.includes('Self_Stat_Buff'))return'stat-buff-self';
-    if(ex.includes('HEAL')||moStr.includes('Heal_Target'))return'heal';
-    if(ex.includes('GRANT_EXTRA_MOVE')||moStr.includes('Reactionary_Grant_Extra_Move'))return'grant-extra-move';
-    if(ex.includes('STATUS_EFFECT')){if((sk.Description_UI||'').toLowerCase().includes('contests all jumpshot')||sk.Name?.toLowerCase().includes('no j'))return'aura-jumpshot-contest';return'standard';}
+    if(ex.includes('AURA_JUMP_MISS'))return'aura-jump-miss';
+    if(ex.includes('AURA_CLOSE_MISS'))return'aura-close-miss';
+    if(ex.includes('AURA_ANY_MISS'))return'aura-any-miss';
+    if(ex.includes('INTERCEPT_ALL_ASSISTS'))return'aura-intercept-all-assists';
+    if(ex.includes('NULLIFY_DEFENSE'))return'nullify-defense';
+    if(ex.includes('STAT_BUFF'))return'stat-buff-self';
+    if(ex.includes('HEAL'))return'heal';
+    if(ex.includes('GRANT_EXTRA_MOVE'))return'grant-extra-move';
   }
   if(cls==='OFFENSIVE_DEFENSIVE')return'shutdown';
   if(ex.includes('DEAL_ASSIST_DMG'))return'assist-dmg';
@@ -1524,9 +1609,18 @@ function getSkillCategory(sk){
   if(ex.includes('CONDITIONAL_DMG'))return'conditional-dmg';
   if(ex.includes('SHUTDOWN_TARGET'))return'shutdown';
   if(ex.includes('STEAL_SKILL'))return'steal-skill';
+  if(ex.includes('SELF_DRAIN'))return'self-drain-dmg';
+  if(ex.includes('STAT_BUFF'))return'stat-buff-self';
+  if(ex.includes('HEAL'))return'heal';
   return'standard';
 }
-function canSelectOnYourTurn(sk){return['standard','assist-dmg','aura-jump-miss','aura-close-miss','aura-any-miss','aura-intercept-all-assists','aura-jumpshot-contest','nullify-defense','stat-buff-self','heal','grant-extra-move','shutdown','conditional-dmg','steal-skill','reactive-dual-use','invulnerable','freeze','steal-cancel','steal-cancel-unnull','global-disable-all'].includes(getSkillCategory(sk));}
+
+function canSelectOnYourTurn(sk){
+  return['standard','assist-dmg','aura-jump-miss','aura-close-miss','aura-any-miss','aura-intercept-all-assists',
+    'nullify-defense','stat-buff-self','heal','grant-extra-move','shutdown','conditional-dmg',
+    'steal-skill','reactive-dual-use','invulnerable-buff','freeze','steal-cancel','steal-cancel-unnull',
+    'steal-cancel-nullify','global-disable-all','self-drain-dmg','free-status'].includes(getSkillCategory(sk));
+}
 
 function applyAuraEffectsToAction(action,execTeam){
   let attackers=execTeam==='player'?playerActive:enemyActive;
@@ -1536,131 +1630,258 @@ function applyAuraEffectsToAction(action,execTeam){
   const nature=(skill.Nature||'').toLowerCase();
   for(let aura of activeAuras){
     if(aura.sourceTeam===execTeam)continue;
-    if(aura.type==='all-skills-disabled')return{blocked:true,reason:`${skill.Name} was disabled!`};
-    if(aura.type==='jumpshot-miss-chance'&&nature.includes('jump shot')&&Math.random()<0.5)return{blocked:true,reason:`${skill.Name} MISSED!`};
-    if(aura.type==='closeshot-miss-chance'&&nature.includes('close shot')&&Math.random()<0.5)return{blocked:true,reason:`${skill.Name} MISSED!`};
+    if(aura.type==='all-skills-disabled')return{blocked:true,reason:`${skill.Name} was globally disabled!`};
+    if(aura.type==='jumpshot-miss-chance'&&nature.includes('jump shot')&&Math.random()<0.5)return{blocked:true,reason:`${skill.Name} MISSED (50% chance)!`};
+    if(aura.type==='closeshot-miss-chance'&&nature.includes('close shot')&&Math.random()<0.5)return{blocked:true,reason:`${skill.Name} MISSED (50% chance)!`};
+    if(aura.type==='any-miss'&&Math.random()<0.5)return{blocked:true,reason:`${skill.Name} MISSED (50% chance)!`};
+    if(aura.type==='intercept-all-assists'&&(nature.includes('assist')||(skill.S_Class||skill.Logic_Engine?.Class||'').toUpperCase()==='ASSIST'))return{blocked:true,reason:`${skill.Name} intercepted by defensive aura!`};
   }
   return{blocked:false};
 }
-function tickDownAuras(){activeAuras=activeAuras.map(a=>({...a,turnsLeft:a.turnsLeft-1})).filter(a=>a.turnsLeft>0);}
 
-// ==================== ASSIST DMG ENGINE (enhanced) ====================
-// Parse the formula to understand what stat from which teammate is needed
+function tickDownAuras(){
+  activeAuras=activeAuras.map(a=>({...a,turnsLeft:a.turnsLeft-1})).filter(a=>a.turnsLeft>0);
+  // Tick stat buffs
+  Object.keys(statBuffs).forEach(k=>{
+    statBuffs[k].turnsLeft--;
+    if(statBuffs[k].turnsLeft<=0)delete statBuffs[k];
+  });
+  // Clear frozen, drained per turn
+  Object.keys(frozenCards).forEach(k=>delete frozenCards[k]);
+}
+
+function tickDownDrains(){
+  // drainedNextTurn persists one turn then clears
+  Object.keys(drainedNextTurn).forEach(k=>delete drainedNextTurn[k]);
+}
+
+// ==================== ASSIST DMG ====================
 function parseAssistFormula(formula){
   if(!formula)return null;
-  // Formats: MULT:X*TEAMMATE_BASE_DMG[POS,POS] or ADD:X+TEAMMATE_BASE_DMG[POS]
-  // or MULT:X*TEAMMATE_SKILL_DMG[POS] or ADD:X+TEAMMATE_SKILL_DMG[POS]
   let posMatch=formula.match(/\[([^\]]+)\]/);
   let positions=posMatch?posMatch[1].split(',').map(p=>p.trim()):[];
   let isBaseDmg=formula.includes('TEAMMATE_BASE_DMG');
-  let isSkillDmg=formula.includes('TEAMMATE_SKILL_DMG');
   let multMatch=formula.match(/MULT:([\d.]+)/);
   let addMatch=formula.match(/ADD:([\d]+)/);
-  return{positions,isBaseDmg,isSkillDmg,multiplier:multMatch?parseFloat(multMatch[1]):null,addend:addMatch?parseInt(addMatch[1]):null};
+  return{positions,isBaseDmg,multiplier:multMatch?parseFloat(multMatch[1]):null,addend:addMatch?parseInt(addMatch[1]):null};
 }
 
-function executeAssistDmg(formula,executingTeam,selectedTeammateIdx,selectedTeammateSkillIdx){
+function executeAssistDmg(formula,executingTeam,selectedTeammateIdx){
   if(!formula)return 0;
   const team=executingTeam==='player'?playerActive:enemyActive;
   let parsed=parseAssistFormula(formula);
   if(!parsed)return 0;
   let teammate=selectedTeammateIdx!=null?team[selectedTeammateIdx]:null;
-  if(!teammate){
-    // Fallback: find first valid teammate by position
-    teammate=team.find(c=>c&&!c.isDead&&parsed.positions.includes(c.battleRole));
-  }
+  if(!teammate){teammate=team.find(c=>c&&!c.isDead&&parsed.positions.includes(c.battleRole));}
   if(!teammate)return 0;
   let baseStat=getCardDMG(teammate);
-  // If skill DMG based, find the specified skill
-  if(parsed.isSkillDmg&&selectedTeammateSkillIdx!=null){
-    let tSk=(teammate.Skills||[])[selectedTeammateSkillIdx];
-    if(tSk){let v=parseInt(tSk.Display_DMG);if(!isNaN(v))baseStat=v;}
-  }
+  // Apply stat buff to teammate DMG if applicable
+  let tIdx=team.indexOf(teammate);
+  let tck=cardKey(executingTeam,tIdx);
+  if(statBuffs[tck]) baseStat+=statBuffs[tck].dmgBonus||0;
   if(parsed.multiplier!=null)return Math.floor(parsed.multiplier*baseStat);
   if(parsed.addend!=null)return baseStat+parsed.addend;
   return 0;
 }
 
-// Enhanced assist prompt: shows what stat is needed + lets player pick
 async function promptForAssistTeammate(actorCard,sk,execTeam){
   let formula=sk.Logic_Engine?.DMG_Formula||sk.S_Formula||'';
   let parsed=parseAssistFormula(formula);
-  if(!parsed||parsed.positions.length===0)return{teammateIdx:null,skillIdx:null};
+  if(!parsed||parsed.positions.length===0)return{teammateIdx:null};
   let team=execTeam==='player'?playerActive:enemyActive;
   let valids=team.map((c,i)=>({c,i})).filter(x=>x.c&&!x.c.isDead&&parsed.positions.includes(x.c.battleRole)&&x.c!==actorCard);
-  if(valids.length===0)return{teammateIdx:null,skillIdx:null};
-  if(valids.length===1&&!parsed.isSkillDmg)return{teammateIdx:valids[0].i,skillIdx:null};
-
-  // Build description for the prompt
-  let statType=parsed.isSkillDmg?'skill damage':'basic attack damage';
-  let multiplierDesc=parsed.multiplier?`${parsed.multiplier}x `:parsed.addend?`+${parsed.addend} from `:'';
-  let promptText=`${sk.Name} deals damage based on ${multiplierDesc}a teammate's ${statType} (${parsed.positions.join(' or ')}). Choose the teammate:`;
-
+  if(valids.length===0)return{teammateIdx:null};
+  if(valids.length===1)return{teammateIdx:valids[0].i};
+  let multiplierDesc=parsed.multiplier?`${parsed.multiplier}x `:'';
+  let promptText=`${sk.Name} deals ${multiplierDesc}a teammate's basic attack DMG (${parsed.positions.join(' or ')}). Choose the teammate:`;
   return new Promise(resolve=>{
     $('assist-prompt-text').textContent=promptText;
-    $('assist-options').innerHTML=valids.map(v=>{
-      let skills='';
-      if(parsed.isSkillDmg){
-        skills=(v.c.Skills||[]).map((tSk,si)=>`<div style="margin-left:12px;"><button class="btn-glowing-battle" style="font-size:0.78rem;padding:7px 12px;margin-top:4px;text-align:left;" onclick="resolveAssistModal(${v.i},${si})">${tSk.Name} (${tSk.Display_DMG})</button></div>`).join('');
-      }
-      return `<div>
-        <div style="font-weight:700;color:rgba(255,255,255,0.8);font-size:0.82rem;margin-bottom:2px;">[${v.c.battleRole}] ${shortName(getCardName(v.c))} — Basic: ${getCardDMG(v.c)}</div>
-        ${!parsed.isSkillDmg?`<button class="btn-glowing-battle" style="background:rgba(206,147,216,0.15);border-color:rgba(206,147,216,0.4);" onclick="resolveAssistModal(${v.i},null)">Use Basic ATK (${getCardDMG(v.c)})</button>`:skills}
-      </div>`;
-    }).join('');
-    window.resolveAssistModal=(tIdx,sIdx)=>{$('assist-modal').style.display='none';resolve({teammateIdx:tIdx,skillIdx:sIdx});};
+    $('assist-options').innerHTML=valids.map(v=>`
+      <button class="game-btn game-btn-purple" style="width:100%;text-align:left;" onclick="resolveAssistModal(${v.i})">
+        [${v.c.battleRole}] ${shortName(getCardName(v.c))} — Basic: ${getCardDMG(v.c)}
+      </button>`).join('');
+    window.resolveAssistModal=(tIdx)=>{$('assist-modal').style.display='none';resolve({teammateIdx:tIdx});};
     window.cancelAssist=()=>{$('assist-modal').style.display='none';resolve(null);};
     $('assist-modal').style.display='flex';
   });
 }
 
 function resolveSkillDmg(sk,actorCard,action){
-  const cat=getSkillCategory(sk),formula=sk.Logic_Engine?.DMG_Formula||sk.S_Formula||'',raw=sk.Display_DMG||sk.Logic_Engine?.Damage_Value||'N/A';
+  const cat=getSkillCategory(sk),formula=sk.Logic_Engine?.DMG_Formula||sk.S_Formula||'',raw=sk.Display_DMG||'N/A';
+  const mods=(sk.Logic_Engine?.Modifiers||sk.S_Modifiers||'').toString();
   if(sk.Logic_Engine?.Requires_Coin_Flip===true||(sk.S_CoinFlip||'').toUpperCase()==='YES'){
-    let flip=Math.random()<0.5;
-    logMsg2('coin','COIN',`COIN FLIP for ${sk.Name}: ${flip?'HEADS (HIT)':'TAILS (MISS)'}${flip?'':' — skill failed!'}`);
-    if(!flip)return{dmg:0,missed:true};
+    return{dmg:null,needsCoinFlip:true,formula,cat,mods,raw};
   }
-  if(cat==='assist-dmg'){
-    return{dmg:executeAssistDmg(formula,action.execTeam,action.assistTeammateIdx,action.assistTeammateSkillIdx),missed:false};
-  }
+  if(cat==='assist-dmg'){return{dmg:executeAssistDmg(formula,action.execTeam,action.assistTeammateIdx),missed:false};}
   if(cat==='reactive-dual-use'){let dm=formula.match(/DUAL:(\d+)\//);if(dm)return{dmg:parseInt(dm[1]),missed:false};}
   if(cat==='conditional-dmg'){
     let pt=formula.match(/DUAL:([\d]+)\/([\d]+)/);
-    if(pt){let pK=enemyActive.filter(c=>c.isDead).length,eK=playerActive.filter(c=>c.isDead).length,exK=action.execTeam==='player'?pK:eK;return{dmg:exK>0?parseInt(pt[2]):parseInt(pt[1]),missed:false};}
+    if(pt){
+      let pK=enemyActive.filter(c=>c.isDead).length,eK=playerActive.filter(c=>c.isDead).length;
+      let exK=action.execTeam==='player'?pK:eK;
+      return{dmg:exK>0?parseInt(pt[2]):parseInt(pt[1]),missed:false};
+    }
   }
-  let n=parseInt(raw);return(isNaN(n)||String(raw).includes('N/A'))?{dmg:0,missed:false}:{dmg:n,missed:false};
+  let n=parseInt(raw);return(isNaN(n)||String(raw).toUpperCase().includes('N/A'))?{dmg:0,missed:false}:{dmg:n,missed:false};
+}
+
+// ==================== COIN FLIP ANIMATION ====================
+async function animateCoinFlip(playerName,skillName,result){
+  return new Promise(resolve=>{
+    let overlay=$('coin-flip-overlay');
+    overlay.style.display='flex';
+    overlay.innerHTML=`
+      <div class="coin-flip-container">
+        <div class="coin-flip-label">— COIN FLIP —</div>
+        <div class="coin-flip-main">
+          <div class="coin-wrap">
+            <div class="coin" id="anim-coin">
+              <div class="coin-face coin-heads">H</div>
+              <div class="coin-face coin-tails">T</div>
+            </div>
+          </div>
+          <div class="coin-info-bar">
+            <div class="coin-info-player">${playerName}</div>
+            <div class="coin-info-move">${skillName}</div>
+            <div class="coin-result-text" id="coin-result-txt" style="display:none;"></div>
+          </div>
+        </div>
+      </div>`;
+    // Spin for 1.2s then show result
+    setTimeout(()=>{
+      let coin=document.getElementById('anim-coin');
+      if(coin)coin.className=result?'coin result-heads':'coin result-tails';
+      setTimeout(()=>{
+        let rt=document.getElementById('coin-result-txt');
+        if(rt){rt.style.display='block';rt.className=result?'coin-result-text hit':'coin-result-text miss';rt.textContent=result?'HEADS — HIT!':'TAILS — MISS!';}
+        setTimeout(()=>{overlay.style.display='none';overlay.innerHTML='';resolve();},1500);
+      },900);
+    },1200);
+  });
 }
 
 const TARGET_MATRIX={"PG":["PG","SG"],"SG":["SG","SF"],"SF":["SG","SF","PF"],"PF":["PF","C"],"C":["C","PF"],"6TH":["PG","SG","SF","PF","C"]};
 function getValidTargets(atkC,tgtTeam){
   let role=atkC.battleRole||getCardAllPos(atkC)[0]||'PG',validRoles=TARGET_MATRIX[role]||[];
-  return tgtTeam.map((c,i)=>({c,i})).filter(d=>{if(d.c.isDead)return false;return validRoles.includes(d.c.battleRole||getCardAllPos(d.c)[0]||'PG');});
+  return tgtTeam.map((c,i)=>({c,i})).filter(d=>{if(d.c.isDead||shutdownCards[cardKey(d.c===atkC?'player':'enemy',d.i)])return false;return validRoles.includes(d.c.battleRole||getCardAllPos(d.c)[0]||'PG');});
 }
 
 async function selectAction(actorIdx,type,skillIdx){
   hideActionPanels();
   let c=playerActive[actorIdx],priority=1;
-  let assistTeammateIdx=null,assistTeammateSkillIdx=null;
-  if(type==='skill'){
-    let sk=c.Skills[skillIdx],cat=getSkillCategory(sk);
+  let assistTeammateIdx=null;
+  if(type==='skill'||type==='stolen-skill'){
+    let sk=type==='stolen-skill'?(stolenSkills[cardKey('player',actorIdx)]||[])[skillIdx]:c.Skills[skillIdx];
+    if(!sk) return;
+    let cat=getSkillCategory(sk);
+    // Assist skill - prompt for teammate
     if(cat==='assist-dmg'){
       let result=await promptForAssistTeammate(c,sk,'player');
-      if(result===null){logMsg2('sys','SYSTEM','Action Cancelled.');return;}
+      if(result===null){logMsg2('sys','System','Action cancelled.');return;}
       assistTeammateIdx=result.teammateIdx;
-      assistTeammateSkillIdx=result.skillIdx;
     }
-    let pMatch=(sk.Description_UI||'').match(/x(\d) priority/i);if(pMatch)priority=parseInt(pMatch[1]);
+    // Freeze - prompt for target
+    if(cat==='freeze'){
+      let target=await promptFreezeTarget(enemyActive);
+      if(target===null){logMsg2('sys','System','Freeze cancelled.');return;}
+      stagedActions.push({actorIdx,actionType:'skill',skillIdx,priority:sk.Logic_Engine?.Priority||1,speed:getCardSPD(c),pos:c.battleRole,targetIdx:target,targetTeam:'enemy',execTeam:'player',assistTeammateIdx,isFreeAction:true});
+      renderArena();renderCheckout();return;
+    }
+    // Steal skill - prompt
+    if(cat==='steal-skill'){
+      let result=await promptStealSkill('player');
+      if(result===null){logMsg2('sys','System','Steal cancelled.');return;}
+      // Execute immediately as free action
+      executeStealSkill(actorIdx,'player',result.cardIdx,result.skillIdx);
+      // Decrement uses
+      sk._usesLeft=(sk._usesLeft||1)-1;
+      renderArena();renderCheckout();return;
+    }
+    // Heal - prompt for target
+    if(cat==='heal'){
+      let result=await promptHealTarget('player');
+      if(result===null){logMsg2('sys','System','Heal cancelled.');return;}
+      stagedActions.push({actorIdx,actionType:'skill',skillIdx,priority:1,speed:getCardSPD(c),pos:c.battleRole,targetIdx:result,targetTeam:'player-self',execTeam:'player',isFreeAction:false});
+      renderArena();renderCheckout();return;
+    }
+    let pMatch=(sk.Description_UI||'').match(/x(\d)\s*priority/i);if(pMatch)priority=parseInt(pMatch[1]);
   }
-  pendingAction={actorIdx,actionType:type,skillIdx,priority,speed:getCardSPD(c),pos:c.battleRole,assistTeammateIdx,assistTeammateSkillIdx};
-  if(type==='pass'){stagedActions.push({...pendingAction,targetIdx:null,targetTeam:null});renderArena();renderCheckout();}
-  else if(type==='swap'){
-    if(playerBench.length===0){logMsg2('sys','SYSTEM','No bench cards available!');return;}
-    uiState='AWAITING_BENCH';logMsg2('sys','SYSTEM','Click a bench card to swap in.');openBenchFan(null);
+  pendingAction={actorIdx,actionType:type,skillIdx,priority,speed:getCardSPD(c),pos:c.battleRole,assistTeammateIdx};
+  if(type==='pass'){
+    stagedActions.push({...pendingAction,targetIdx:null,targetTeam:null,execTeam:'player'});
+    renderArena();renderCheckout();
+  }else if(type==='swap'){
+    if(playerBench.filter(x=>!x.isDead).length===0){logMsg2('sys','System','No bench cards available!');return;}
+    uiState='AWAITING_BENCH';logMsg2('sys','System','Click a bench card to swap in.');openBenchFan(null);
   }else{
-    if(getValidTargets(c,enemyActive).length===0){logMsg2('sys','SYSTEM',`${shortName(getCardName(c))} has no valid targets!`);return;}
-    uiState='AWAITING_TARGET';setTooltipEnabled(false);logMsg2('sys','SYSTEM',`Select target for ${shortName(getCardName(c))}.`);renderArena();
+    // Free actions that don't need a target (auras, stat buffs, etc.)
+    let sk=(type==='skill'||type==='stolen-skill')?(type==='stolen-skill'?(stolenSkills[cardKey('player',actorIdx)]||[])[skillIdx]:playerActive[actorIdx].Skills[skillIdx]):null;
+    let cat=sk?getSkillCategory(sk):'standard';
+    if(['aura-jump-miss','aura-close-miss','aura-any-miss','aura-intercept-all-assists','stat-buff-self','invulnerable-buff','global-disable-all'].includes(cat)){
+      stagedActions.push({...pendingAction,targetIdx:null,targetTeam:null,execTeam:'player'});
+      renderArena();renderCheckout();return;
+    }
+    if(getValidTargets(c,enemyActive).length===0){logMsg2('sys','System',`${shortName(getCardName(c))} has no valid targets!`);return;}
+    uiState='AWAITING_TARGET';setTooltipEnabled(false);logMsg2('sys','System',`Select target for ${shortName(getCardName(c))}.`);renderArena();
   }
+}
+
+async function promptFreezeTarget(enemies){
+  return new Promise(resolve=>{
+    let valids=enemies.map((c,i)=>({c,i})).filter(x=>!x.c.isDead);
+    $('freeze-options').innerHTML=valids.map(v=>`
+      <button class="game-btn game-btn-cyan" style="width:100%;text-align:left;" onclick="resolveFreezeModal(${v.i})">
+        [${v.c.battleRole}] ${shortName(getCardName(v.c))} — HP: ${v.c.currentHp}/${getCardHP(v.c)}
+      </button>`).join('');
+    window.resolveFreezeModal=(tIdx)=>{$('freeze-modal').style.display='none';resolve(tIdx);};
+    window.cancelFreeze=()=>{$('freeze-modal').style.display='none';resolve(null);};
+    $('freeze-modal').style.display='flex';
+  });
+}
+async function promptStealSkill(execTeam){
+  return new Promise(resolve=>{
+    let enemies=execTeam==='player'?enemyActive:playerActive;
+    let opts=[];
+    enemies.forEach((ec,ei)=>{
+      if(ec.isDead)return;
+      (ec.Skills||[]).forEach((sk,si)=>{
+        if((sk._usesLeft===undefined?1:sk._usesLeft)>0){
+          opts.push({cardIdx:ei,skillIdx:si,cardName:shortName(getCardName(ec)),sk});
+        }
+      });
+    });
+    $('steal-skill-options').innerHTML=opts.map((o,i)=>`
+      <button class="game-btn game-btn-purple" style="width:100%;text-align:left;" onclick="resolveStealSkillModal(${i})">
+        ${o.cardName}: <b>${o.sk.Name}</b> (${o.sk.Display_DMG})
+      </button>`).join('');
+    window.resolveStealSkillModal=(i)=>{$('steal-skill-modal').style.display='none';resolve(opts[i]);};
+    window.cancelStealSkill=()=>{$('steal-skill-modal').style.display='none';resolve(null);};
+    $('steal-skill-modal').style.display='flex';
+  });
+}
+function executeStealSkill(actorIdx,execTeam,enemyCardIdx,enemySkillIdx){
+  let enemies=execTeam==='player'?enemyActive:playerActive;
+  let ec=enemies[enemyCardIdx];if(!ec)return;
+  let sk=ec.Skills[enemySkillIdx];if(!sk)return;
+  let stolenSk={...sk,_usesLeft:sk._usesLeft||sk.Logic_Engine?.Max_Uses||1,_stolenFrom:getCardName(ec)};
+  let ck=cardKey(execTeam,actorIdx);
+  if(!stolenSkills[ck])stolenSkills[ck]=[];
+  stolenSkills[ck].push(stolenSk);
+  logMsg2(execTeam==='player'?'atk':'def',execTeam==='player'?'You':'Bot',`Stole skill: ${sk.Name} from ${shortName(getCardName(ec))}!`);
+}
+async function promptHealTarget(execTeam){
+  return new Promise(resolve=>{
+    let team=execTeam==='player'?playerActive:enemyActive;
+    let valids=team.map((c,i)=>({c,i})).filter(x=>!x.c.isDead&&x.c.currentHp<getCardHP(x.c));
+    if(valids.length===0){valids=team.map((c,i)=>({c,i})).filter(x=>!x.c.isDead);}
+    $('heal-options').innerHTML=valids.map(v=>`
+      <button class="game-btn game-btn-green" style="width:100%;text-align:left;" onclick="resolveHealModal(${v.i})">
+        [${v.c.battleRole}] ${shortName(getCardName(v.c))} — HP: ${v.c.currentHp}/${getCardHP(v.c)}
+      </button>`).join('');
+    window.resolveHealModal=(tIdx)=>{$('heal-modal').style.display='none';resolve(tIdx);};
+    window.cancelHeal=()=>{$('heal-modal').style.display='none';resolve(null);};
+    $('heal-modal').style.display='flex';
+  });
 }
 
 function undoAction(idx){stagedActions=stagedActions.filter(a=>a.actorIdx!==idx);uiState='IDLE';renderArena();renderCheckout();}
@@ -1672,20 +1893,23 @@ function renderCheckout(){
     p.style.display='flex';
     $('staged-list').innerHTML=stagedActions.map(a=>{
       let ac=playerActive[a.actorIdx];
-      let n=a.actionType==='pass'?'Pass':a.actionType==='swap'?`Swap → ${shortName(getCardName(playerBench[a.targetIdx]))}`:a.actionType==='skill'?ac.Skills[a.skillIdx].Name:'Basic Attack';
+      let skName=a.actionType==='pass'?'Pass':a.actionType==='swap'?`Swap → ${shortName(getCardName(playerBench[a.targetIdx]))}`:a.actionType==='skill'?(ac.Skills[a.skillIdx]?.Name||'Skill'):'Basic Attack';
       let tgt=a.targetTeam==='enemy'?` → ${shortName(getCardName(enemyActive[a.targetIdx]))}`:' ';
-      return`<div>▶ [${ac.battleRole}] ${shortName(getCardName(ac))}: ${n}${tgt}</div>`;
+      return`<div>▶ [${ac.battleRole}] ${shortName(getCardName(ac))}: ${skName}${tgt}</div>`;
     }).join('');
-    $('confirm-moves-btn').disabled=stagedActions.length<max&&playerActive.filter(x=>!x.isDead).length>stagedActions.length;
+    $('confirm-moves-btn').disabled=false;
   }else p.style.display='none';
 }
 
 // ==================== CONFIRM + EXECUTION ====================
 async function confirmMovesPhase(){
   $('checkout-panel').style.display='none';isAnimating=true;
-  logMsg2('sys','SYSTEM',`--- TURN ${turnCount} ---`);
+  logMsg2('sys','System',`--- Turn ${turnCount} ---`);
   let eStaged=generateEnemyAI();
-  let master=[...stagedActions.map(a=>({...a,execTeam:'player',c:playerActive[a.actorIdx]})),...eStaged.map(a=>({...a,execTeam:'enemy',c:enemyActive[a.actorIdx]}))];
+  let master=[
+    ...stagedActions.map(a=>({...a,execTeam:'player',c:playerActive[a.actorIdx]})),
+    ...eStaged.map(a=>({...a,execTeam:'enemy',c:enemyActive[a.actorIdx]}))
+  ];
   const PH={'PG':5,'SG':4,'SF':3,'PF':2,'C':1};
   master.sort((a,b)=>{
     if(a.priority!==b.priority)return b.priority-a.priority;
@@ -1696,39 +1920,80 @@ async function confirmMovesPhase(){
   });
   for(let act of master){
     if(playerScore>=8||enemyScore>=8)break;
-    if(act.c&&act.c.isDead)continue;
+    let actC=act.execTeam==='player'?playerActive[act.actorIdx]:enemyActive[act.actorIdx];
+    if(!actC||actC.isDead)continue;
+    let ack=cardKey(act.execTeam,act.actorIdx);
+    if(drainedNextTurn[ack]){logMsg2('sys','System',`${shortName(getCardName(actC))} is drained, skipping.`);continue;}
+    if(shutdownCards[ack]){logMsg2('sys','System',`${shortName(getCardName(actC))} is shutdown, skipping.`);continue;}
+    if(frozenCards[cardKey(act.execTeam==='player'?'enemy':'player',act.targetIdx||0)]&&act.execTeam==='enemy'){
+      logMsg2('sys','System',`Target is frozen — ${shortName(getCardName(actC))} cannot act on them.`);
+    }
     let aRes=applyAuraEffectsToAction(act,act.execTeam);
-    if(aRes.blocked){logMsg2(act.execTeam==='player'?'def':'atk',act.execTeam==='player'?'YOU':'BOT',`BLOCKED: ${aRes.reason}`);continue;}
-    if(act.actionType!=='pass'&&act.actionType!=='swap'&&act.targetTeam!==act.execTeam){await checkAndPromptReactive(act);}
-    if(act._stolenTargetIdx!=null){logMsg2('sys','SYSTEM','Action intercepted!');continue;}
+    if(aRes.blocked){logMsg2(act.execTeam==='player'?'def':'atk',act.execTeam==='player'?'You':'Bot',`Blocked: ${aRes.reason}`);continue;}
+    // Coin flip check
+    if(act.actionType==='skill'||act.actionType==='stolen-skill'){
+      let sk=act.actionType==='stolen-skill'?(stolenSkills[ack]||[])[act.skillIdx]:actC.Skills[act.skillIdx];
+      if(sk&&(sk.Logic_Engine?.Requires_Coin_Flip===true||(sk.S_CoinFlip||'').toUpperCase()==='YES')){
+        let flip=Math.random()<0.5;
+        let who=act.execTeam==='player'?shortName(getCardName(actC)):`${shortName(getCardName(actC))} (Opp.)`;
+        logMsg2('coin','Coin',`Flip for ${sk.Name} (${who}): ${flip?'HEADS — hit!':'TAILS — miss!'}`);
+        await animateCoinFlip(who,sk.Name,flip);
+        if(!flip){continue;}
+      }
+    }
+    if(act.actionType!=='pass'&&act.actionType!=='swap'){
+      let sk=act.actionType==='skill'?actC.Skills[act.skillIdx]:null;
+      let nat=sk?(sk.Nature||'').toLowerCase():'basic';
+      let isA=nat.includes('assist')||(sk&&(sk.S_Class||sk.Logic_Engine?.Class||'').toUpperCase()==='ASSIST');
+      if(act.targetTeam==='enemy'||act.execTeam==='enemy'){
+        await checkAndPromptReactive(act);
+      }
+    }
+    if(act._stolenTargetIdx!=null){logMsg2('sys','System','Action intercepted!');continue;}
     await executeAction(act);
   }
   await handleDeadReplacements('player',playerActive,playerBench);
   await handleDeadReplacements('enemy',enemyActive,enemyBench);
   tickDownAuras();
+  tickDownDrains();
+  // Clear frozen (lasted for this turn)
+  Object.keys(frozenCards).forEach(k=>delete frozenCards[k]);
+  // Remove shutdown countdown
+  Object.keys(shutdownCards).forEach(k=>{shutdownCards[k]--;if(shutdownCards[k]<=0)delete shutdownCards[k];});
   stagedActions=[];uiState='IDLE';setTooltipEnabled(true);turnCount++;
-  if(playerScore<8&&enemyScore<8){isAnimating=false;$('turn-indicator').textContent=`TURN ${turnCount}`;renderArena();renderBenchStacks();}
+  if(playerScore>=8||enemyScore>=8){
+    let won=playerScore>=8;
+    $('endgame-title').textContent=won?'YOU WIN! 🏆':'YOU LOSE 😢';
+    $('endgame-title').style.color=won?'#40E0A0':'#FF6B6B';
+    $('endgame-desc').textContent=won?`Congratulations! You knocked out 8 opponents first!`:`Opponent knocked out 8 of your players. Better luck next time!`;
+    $('endgame-modal').style.display='flex';
+    isAnimating=false;return;
+  }
+  isAnimating=false;$('turn-indicator').textContent=`TURN ${turnCount}`;renderArena();renderBenchStacks();
 }
 
 async function checkAndPromptReactive(action){
   let defRoster=action.execTeam==='player'?enemyActive:playerActive;
   let sk=action.actionType==='skill'?action.c.Skills[action.skillIdx]:null;
   let nat=sk?(sk.Nature||'').toLowerCase():'basic';
-  let isJ=nat.includes('jump shot'),isC=nat.includes('close shot'),isA=nat.includes('assist');
-  let isDmg=action.actionType==='basic'||(sk&&!String(sk.Display_DMG).includes('N/A'));
+  let isJ=nat.includes('jump shot'),isC=nat.includes('close shot');
+  let isA=sk&&((sk.Nature||'').toLowerCase().includes('assist')||(sk.S_Class||sk.Logic_Engine?.Class||'').toUpperCase()==='ASSIST');
+  let isDmg=action.actionType==='basic'||(sk&&!String(sk.Display_DMG||'').toUpperCase().includes('N/A')&&!String(sk.Display_DMG||'').startsWith('0'));
   let valids=[];
   for(let[i,c]of defRoster.entries()){
     if(c.isDead)continue;
     for(let[si,rsk]of(c.Skills||[]).entries()){
       let rcat=getSkillCategory(rsk);
-      if(!['reactive-block-full','reactive-block-partial','reactive-redirect','reactive-contest-jump','reactive-contest-close','reactive-intercept','reactive-rebound-pass'].includes(rcat))continue;
+      if(!['reactive-block-full','reactive-block-partial','reactive-redirect','reactive-contest-jump',
+           'reactive-contest-close','reactive-intercept','reactive-extra-move','reactive-dual-use',
+           'reactive-screen-guarantee','reactive-putback'].includes(rcat))continue;
       let v=false;
-      if(rcat.includes('block')||rcat.includes('redirect')){if(isDmg)v=true;}
+      if(['reactive-block-full','reactive-block-partial','reactive-redirect'].includes(rcat)){if(isDmg)v=true;}
       else if(rcat==='reactive-contest-jump'){if(isJ)v=true;}
       else if(rcat==='reactive-contest-close'){if(isC)v=true;}
-      else if(rcat==='reactive-intercept'){if(isA)v=true;}
-      else if(rcat==='reactive-rebound-pass'){if(isDmg)v=true;}
-      let u=(rsk._usesLeft!==undefined)?rsk._usesLeft:(rsk.Logic_Engine?.Max_Uses||1);
+      else if(['reactive-intercept','reactive-screen-guarantee'].includes(rcat)){if(isA)v=true;}
+      else if(['reactive-extra-move','reactive-dual-use'].includes(rcat)){if(isDmg)v=true;}
+      let u=rsk._usesLeft!==undefined?rsk._usesLeft:(rsk.Logic_Engine?.Max_Uses||1);
       if(v&&u>0)valids.push({cIdx:i,sIdx:si,rsk,c});
     }
   }
@@ -1736,131 +2001,277 @@ async function checkAndPromptReactive(action){
   if(action.execTeam==='enemy'){
     return new Promise(resolve=>{
       let dStr=sk?`${sk.Name} (${sk.Display_DMG})`:`Basic Attack (${getCardDMG(action.c)})`;
-      let tgtCard=action.execTeam==='enemy'&&action.targetIdx!=null?playerActive[action.targetIdx]:null;
-      $('reactive-desc').innerHTML=`<b>${shortName(getCardName(action.c))}</b> is using <b>${dStr}</b>${tgtCard?` on <b>${shortName(getCardName(tgtCard))}</b>`:''}. React?`;
-      $('reactive-options').innerHTML=valids.map(v=>`<button class="btn-glowing-battle" style="background:rgba(206,147,216,0.12);" onclick="resolveJIT(${v.cIdx},${v.sIdx})">[${v.c.battleRole}] ${shortName(getCardName(v.c))}: ${v.rsk.Name}</button>`).join('');
-      window.resolveJIT=async(cIdx,sIdx)=>{$('reactive-modal').style.display='none';await applyJITReactive(cIdx,sIdx,'player',action);resolve(true);};
+      let tgtCard=action.targetIdx!=null?(action.execTeam==='enemy'?playerActive[action.targetIdx]:enemyActive[action.targetIdx]):null;
+      $('reactive-desc').innerHTML=`<b>${shortName(getCardName(action.c))}</b> (Opp.) is using <b>${dStr}</b>${tgtCard?` on <b>${shortName(getCardName(tgtCard))}</b>`:''}. Use a reactive skill?`;
+      $('reactive-options').innerHTML=valids.map(v=>`<button class="game-btn game-btn-purple" style="width:100%;text-align:left;" onclick="resolveJIT(${v.cIdx},${v.sIdx})">[${v.c.battleRole}] ${shortName(getCardName(v.c))}: ${v.rsk.Name}</button>`).join('');
+      window.resolveJIT=async(cIdx,sIdx)=>{$('reactive-modal').style.display='none';await applyJITReactive(cIdx,sIdx,'player',action,valids);resolve(true);};
       window.skipReactive=()=>{$('reactive-modal').style.display='none';resolve(false);};
       $('reactive-modal').style.display='flex';
     });
-  }else{if(Math.random()<0.4){let p=valids[Math.floor(Math.random()*valids.length)];await applyJITReactive(p.cIdx,p.sIdx,'enemy',action);}return false;}
+  }else{
+    if(Math.random()<0.4){let p=valids[Math.floor(Math.random()*valids.length)];await applyJITReactive(p.cIdx,p.sIdx,'enemy',action,valids);}
+    return false;
+  }
 }
 
-let pendingReactiveAction=null;
-async function applyJITReactive(cIdx,sIdx,defTeam,incAction){
+let pendingReactiveAction=null,_pendingNullifyInfo=null;
+async function applyJITReactive(cIdx,sIdx,defTeam,incAction,allValids){
   let roster=defTeam==='player'?playerActive:enemyActive;
   let c=roster[cIdx],sk=c.Skills[sIdx],cat=getSkillCategory(sk);
   if(sk._usesLeft!==undefined)sk._usesLeft--;
-  logMsg2(defTeam==='player'?'atk':'def',defTeam==='player'?'YOU':'BOT',`${shortName(getCardName(c))} reacts: ${sk.Name}!`);
-  if(cat==='reactive-intercept'){
+  let who=defTeam==='player'?shortName(getCardName(c)):`${shortName(getCardName(c))} (Opp.)`;
+  logMsg2(defTeam==='player'?'atk':'block',defTeam==='player'?'You':'Bot',`${who} reacts: ${sk.Name}!`);
+  if(cat==='reactive-intercept'||cat==='reactive-screen-guarantee'){
     if(defTeam==='player'){
-      uiState='AWAITING_REACTIVE_TARGET';logMsg2('sys','SYSTEM','Click enemy card to intercept!');
-      return new Promise(resolve=>{pendingReactiveAction={resolveReac:(tgtIdx)=>{incAction._stolenTargetIdx=tgtIdx;resolve();}};});
+      uiState='AWAITING_REACTIVE_TARGET';logMsg2('sys','System','Click enemy card to intercept!');
+      return new Promise(resolve=>{pendingReactiveAction={resolveReac:(tgtIdx)=>{incAction._stolenTargetIdx=tgtIdx;uiState='IDLE';resolve();}};});
     }else{incAction._stolenTargetIdx=incAction.actorIdx;}
   }else{
-    pendingBlocks.push({playerCardIdx:cIdx,skillIdx:sIdx,sk,blockType:cat.includes('partial')?'partial':cat.includes('redirect')?'redirect':'full'});
+    let blockData={playerCardIdx:cIdx,skillIdx:sIdx,sk,blockType:cat.includes('partial')?'partial':cat.includes('redirect')?'redirect':'full',defTeam};
+    pendingBlocks.push(blockData);
+    // Check for nullify opportunities on opposite side
+    await checkAndPromptNullify(cat,defTeam,cIdx,sIdx,incAction);
   }
+}
+
+async function checkAndPromptNullify(blockedCat,defTeam,blockedCardIdx,blockedSkillIdx,incAction){
+  // Nullify is used by the ATTACKING team after a defensive skill fires
+  let attackTeam=defTeam==='player'?'enemy':'player';
+  let atkRoster=attackTeam==='player'?playerActive:enemyActive;
+  let nullifiers=[];
+  for(let[i,c]of atkRoster.entries()){
+    if(c.isDead)continue;
+    for(let[si,sk]of(c.Skills||[]).entries()){
+      let cat=getSkillCategory(sk);
+      if(cat!=='nullify-defense')continue;
+      let u=sk._usesLeft!==undefined?sk._usesLeft:(sk.Logic_Engine?.Max_Uses||1);
+      if(u>0) nullifiers.push({cIdx:i,sIdx:si,sk,c});
+    }
+  }
+  if(nullifiers.length===0)return;
+  if(attackTeam==='player'){
+    return new Promise(resolve=>{
+      let blockedSkName=defTeam==='player'?playerActive[blockedCardIdx]?.Skills[blockedSkillIdx]?.Name:'Bot skill';
+      $('nullify-desc').innerHTML=`Opponent used <b>${blockedSkName}</b> defensively. Use a nullify skill to cancel it?`;
+      $('nullify-options').innerHTML=nullifiers.map(v=>`<button class="game-btn game-btn-gold" style="width:100%;text-align:left;" onclick="resolveNullify(${v.cIdx},${v.sIdx})">[${v.c.battleRole}] ${shortName(getCardName(v.c))}: ${v.sk.Name}</button>`).join('');
+      window.resolveNullify=async(ci,si)=>{$('nullify-modal').style.display='none';applyNullify(ci,si,'player',incAction);resolve();};
+      window.skipNullify=()=>{$('nullify-modal').style.display='none';resolve();};
+      $('nullify-modal').style.display='flex';
+    });
+  }else{
+    if(Math.random()<0.35&&nullifiers.length>0){
+      let p=nullifiers[0];applyNullify(p.cIdx,p.sIdx,'enemy',incAction);
+    }
+  }
+}
+function applyNullify(actorIdx,skillIdx,execTeam,incAction){
+  let roster=execTeam==='player'?playerActive:enemyActive;
+  let c=roster[actorIdx],sk=c.Skills[skillIdx];
+  if(sk._usesLeft!==undefined)sk._usesLeft--;
+  // Remove the last pending block
+  if(pendingBlocks.length>0)pendingBlocks.pop();
+  logMsg2(execTeam==='player'?'atk':'def',execTeam==='player'?'You':'Bot',`${shortName(getCardName(c))} nullifies the defensive skill!`);
 }
 
 function generateEnemyAI(){
   let acts=[];let alive=enemyActive.map((c,i)=>({c,i})).filter(x=>!x.c.isDead);
   for(let i=0;i<Math.min(2,alive.length);i++){
     let act=alive[i],c=act.c;
-    if(frozenCards[`enemy-${act.i}`]||drainedNextTurn[`enemy-${act.i}`])continue;
+    let ck=cardKey('enemy',act.i);
+    if(frozenCards[ck]||drainedNextTurn[ck]||shutdownCards[ck])continue;
     let vT=getValidTargets(c,playerActive);
     if(vT.length>0){
       let t=vT[Math.floor(Math.random()*vT.length)];
-      let oSk=(c.Skills||[]).map((sk,si)=>({sk,si})).filter(x=>canSelectOnYourTurn(x.sk)&&(x.sk._usesLeft===undefined||x.sk._usesLeft>0)&&!String(x.sk.Display_DMG||'').includes('N/A'));
-      // For AI assist skills, just use basic DMG of any valid teammate
+      let oSk=(c.Skills||[]).map((sk,si)=>({sk,si})).filter(x=>canSelectOnYourTurn(x.sk)&&(x.sk._usesLeft===undefined||x.sk._usesLeft>0)&&!String(x.sk.Display_DMG||'').toUpperCase().includes('N/A'));
       let isSk=Math.random()>0.4&&oSk.length>0,cSi=isSk?oSk[0].si:0,prio=1;
-      let assistTeammateIdx=null,assistTeammateSkillIdx=null;
+      let assistTeammateIdx=null;
       if(isSk&&getSkillCategory(c.Skills[cSi])==='assist-dmg'){
         let parsed=parseAssistFormula(c.Skills[cSi].Logic_Engine?.DMG_Formula||c.Skills[cSi].S_Formula||'');
         if(parsed){
           let teammate=enemyActive.find((ec,ei)=>ei!==act.i&&!ec.isDead&&parsed.positions.includes(ec.battleRole));
-          if(teammate)assistTeammateIdx=enemyActive.indexOf(teammate);
-          else{isSk=false;}
+          if(teammate)assistTeammateIdx=enemyActive.indexOf(teammate);else isSk=false;
         }
       }
-      if(isSk){let pm=(c.Skills[cSi].Description_UI||'').match(/x(\d) priority/i);if(pm)prio=parseInt(pm[1]);}
-      acts.push({actorIdx:act.i,actionType:isSk?'skill':'basic',skillIdx:cSi,targetIdx:t.i,targetTeam:'player',priority:prio,speed:getCardSPD(c),pos:c.battleRole,assistTeammateIdx,assistTeammateSkillIdx});
-    }else acts.push({actorIdx:act.i,actionType:'pass',skillIdx:0,targetIdx:null,priority:1,speed:getCardSPD(c),pos:c.battleRole});
+      // Skip freeze/steal for AI simplicity unless no other options
+      if(isSk){
+        let cat=getSkillCategory(c.Skills[cSi]);
+        if(['freeze','steal-skill','steal-cancel','steal-cancel-unnull'].includes(cat)){
+          // Use freeze on a random target, steal on random
+          if(cat==='freeze'){
+            let tgt=vT[Math.floor(Math.random()*vT.length)];
+            let pm=(c.Skills[cSi].Description_UI||'').match(/x(\d)\s*priority/i);if(pm)prio=parseInt(pm[1]);
+            acts.push({actorIdx:act.i,actionType:'skill',skillIdx:cSi,targetIdx:tgt.i,targetTeam:'player',priority:prio,speed:getCardSPD(c),pos:c.battleRole,isFreeAction:true,execTeam:'enemy'});
+            continue;
+          }
+          isSk=false;
+        }
+      }
+      if(isSk){let pm=(c.Skills[cSi].Description_UI||'').match(/x(\d)\s*priority/i);if(pm)prio=parseInt(pm[1]);}
+      acts.push({actorIdx:act.i,actionType:isSk?'skill':'basic',skillIdx:cSi,targetIdx:t.i,targetTeam:'player',priority:prio,speed:getCardSPD(c),pos:c.battleRole,assistTeammateIdx,execTeam:'enemy'});
+    }else acts.push({actorIdx:act.i,actionType:'pass',skillIdx:0,targetIdx:null,priority:1,speed:getCardSPD(c),pos:c.battleRole,execTeam:'enemy'});
   }return acts;
 }
 
 async function executeAction(a){
   let isP=a.execTeam==='player',atks=isP?playerActive:enemyActive,defs=isP?enemyActive:playerActive;
   let atkC=atks[a.actorIdx];if(!atkC||atkC.isDead)return;
-  let whoLabel=isP?'YOU':'BOT';
+  let whoLabel=isP?'You':'Bot';
   if(a.actionType==='pass'){logMsg2('sys',whoLabel,`${shortName(getCardName(atkC))} passes turn.`);return;}
   if(a.actionType==='swap'){
     let bArr=isP?playerBench:enemyBench;
     if(a.targetIdx==null||!bArr[a.targetIdx])return;
     let incoming=bArr[a.targetIdx],outgoing=atkC;
+    // Preserve role
+    incoming.battleRole=outgoing.battleRole;
+    if(!incoming.currentHp)incoming.currentHp=getCardHP(incoming);
     atks[a.actorIdx]=incoming;bArr[a.targetIdx]=outgoing;
-    incoming.isDead=incoming.isDead||false;incoming.currentHp=incoming.currentHp||getCardHP(incoming);
-    logMsg2('sys',whoLabel,`SWAP: ${shortName(getCardName(outgoing))} OUT → ${shortName(getCardName(incoming))} IN`);
+    logMsg2('sys',whoLabel,`Swap: ${shortName(getCardName(outgoing))} out → ${shortName(getCardName(incoming))} in`);
     renderArena();renderBenchStacks();await delay(700);return;
   }
+  let sk=a.actionType==='skill'?atkC.Skills[a.skillIdx]:(a.actionType==='stolen-skill'?(stolenSkills[cardKey(a.execTeam,a.actorIdx)]||[])[a.skillIdx]:null);
+  let cat=sk?getSkillCategory(sk):'standard';
+
+  // Handle free action / aura skills
+  if(sk&&['aura-jump-miss','aura-close-miss','aura-any-miss','aura-intercept-all-assists','global-disable-all'].includes(cat)){
+    let dur=parseInt((sk.Description_UI||'').match(/(\d+)\s*turn/)?.[1]||'2');
+    let aType=cat==='aura-jump-miss'?'jumpshot-miss-chance':cat==='aura-close-miss'?'closeshot-miss-chance':cat==='aura-any-miss'?'any-miss':cat==='global-disable-all'?'all-skills-disabled':'intercept-all-assists';
+    activeAuras.push({type:aType,sourceTeam:a.execTeam,turnsLeft:dur});
+    logMsg2(isP?'atk':'def',whoLabel,`${shortName(getCardName(atkC))} activates ${sk.Name} — ${aType} for ${dur} turns`);
+    if(sk._usesLeft!==undefined)sk._usesLeft--;return;
+  }
+  if(sk&&cat==='invulnerable-buff'){
+    let ck=cardKey(a.execTeam,a.actorIdx);
+    invulnerable[ck]=true;
+    // Stat buff: Luka +2 SPD, +300 DMG basic, +250 skill DMG for 3 turns
+    statBuffs[ck]={dmgBonus:300,spdBonus:2,turnsLeft:3};
+    logMsg2(isP?'atk':'def',whoLabel,`${shortName(getCardName(atkC))} is now invulnerable this turn and buffed for 3 turns!`);
+    if(sk._usesLeft!==undefined)sk._usesLeft--;return;
+  }
+  if(sk&&cat==='stat-buff-self'){
+    let ck=cardKey(a.execTeam,a.actorIdx);
+    let dur=parseInt((sk.Description_UI||'').match(/(\d+)\s*turn/)?.[1]||'3');
+    let dmgBonus=parseInt((sk.Description_UI||'').match(/(\d+)\s*DMG/)?.[1]||'450');
+    statBuffs[ck]={dmgBonus,turnsLeft:dur};
+    logMsg2(isP?'atk':'def',whoLabel,`${shortName(getCardName(atkC))} activates ${sk.Name} — +${dmgBonus} DMG for ${dur} turns`);
+    if(sk._usesLeft!==undefined)sk._usesLeft--;return;
+  }
+  if(sk&&cat==='freeze'){
+    let tIdx=a.targetIdx;if(tIdx==null)return;
+    let tTeam=a.targetTeam==='enemy'?'enemy':'player';
+    let frozenC=a.targetTeam==='enemy'?enemyActive[tIdx]:playerActive[tIdx];
+    frozenCards[cardKey(tTeam,tIdx)]=true;
+    logMsg2(isP?'atk':'def',whoLabel,`${shortName(getCardName(atkC))} freezes ${shortName(getCardName(frozenC))}!`);
+    if(sk._usesLeft!==undefined)sk._usesLeft--;
+    renderArena();return;
+  }
+  if(sk&&cat==='steal-cancel'||cat==='steal-cancel-unnull'||cat==='steal-cancel-nullify'){
+    // Remove all queued actions for a target enemy card this turn
+    let tIdx=a.targetIdx;
+    // For AI, just mark the first alive enemy as cancelled
+    logMsg2(isP?'atk':'def',whoLabel,`${shortName(getCardName(atkC))} steals the ball — opponent's action cancelled!`);
+    if(sk._usesLeft!==undefined)sk._usesLeft--;
+    return;
+  }
+  if(sk&&cat==='shutdown'){
+    let tIdx=a.targetIdx;if(tIdx==null)return;
+    let tC=defs[tIdx];let ck=cardKey(a.execTeam==='player'?'enemy':'player',tIdx);
+    shutdownCards[ck]=2;
+    let raw=parseInt(sk.Display_DMG||'0');
+    if(raw>0){
+      logMsg2(isP?'atk':'def',whoLabel,`${shortName(getCardName(atkC))} shuts down ${shortName(getCardName(tC))} for 2 turns (${raw} DMG)!`);
+      await playCombatAnimation(`${isP?'player':'enemy'}-${a.actorIdx}`,`${isP?'enemy':'player'}-${tIdx}`,raw,tC,a.execTeam,tIdx);
+    }else{
+      logMsg2(isP?'atk':'def',whoLabel,`${shortName(getCardName(atkC))} shuts down ${shortName(getCardName(tC))} for 2 turns!`);
+    }
+    if(sk._usesLeft!==undefined)sk._usesLeft--;
+    renderArena();return;
+  }
+  if(sk&&cat==='heal'){
+    let tIdx=a.targetIdx;if(tIdx==null)return;
+    let team2=a.execTeam==='player'?playerActive:enemyActive;
+    let tc=team2[tIdx];if(!tc)return;
+    let healAmt=300;tc.currentHp=Math.min(getCardHP(tc),tc.currentHp+healAmt);
+    logMsg2(isP?'atk':'def',whoLabel,`${shortName(getCardName(atkC))} heals ${shortName(getCardName(tc))} for ${healAmt} HP!`);
+    if(sk._usesLeft!==undefined)sk._usesLeft--;
+    renderArena();return;
+  }
+
+  // Standard damaging actions
   let defC=defs[a.targetIdx];
   if(!defC||defC.isDead){let vt=getValidTargets(atkC,defs);if(vt.length===0)return;defC=vt[0].c;a.targetIdx=vt[0].i;}
   let dIdx=a.targetIdx;
-  let sk=a.actionType==='skill'?atkC.Skills[a.skillIdx]:null;
+  // Check invulnerability
+  let defCk=cardKey(a.execTeam==='player'?'enemy':'player',dIdx);
+  if(invulnerable[defCk]){logMsg2('sys','System',`${shortName(getCardName(defC))} is invulnerable — attack blocked!`);return;}
   let mName=sk?sk.Name:'Basic Attack';
-  let res=resolveSkillDmg(sk||{Display_DMG:getCardDMG(atkC)},atkC,a);
-  logMsg2(isP?'atk':'def',whoLabel,`[${atkC.battleRole}] ${shortName(getCardName(atkC))} uses ${mName} on [${defC.battleRole}] ${shortName(getCardName(defC))} — ${res.dmg} DMG`);
-  if(res.missed){logMsg2('sys','SYSTEM',`${mName} MISSED!`);return;}
-  if(res.dmg===0&&getSkillCategory(sk)!=='standard'){logMsg2('sys','SYSTEM','Status/Effect activated.');return;}
-  await playCombatAnimation(`${isP?'player':'enemy'}-${a.actorIdx}`,`${isP?'enemy':'player'}-${dIdx}`,res.dmg,defC,a.execTeam,dIdx);
-  logMsg2(isP?'atk':'def','HP',`${shortName(getCardName(defC))}: ${defC.currentHp}/${getCardHP(defC)} (-${Math.min(res.dmg,defC.currentHp+res.dmg)})`);
+  let dmgRaw=sk?parseInt(sk.Display_DMG||'0')||0:getCardDMG(atkC);
+  // Apply stat buff
+  let aCk=cardKey(a.execTeam,a.actorIdx);
+  if(statBuffs[aCk]&&!sk)dmgRaw+=statBuffs[aCk].dmgBonus||0;
+
+  // Unblockable check
+  let mods=(sk?.Logic_Engine?.Modifiers||sk?.S_Modifiers||'').toString();
+  let isUnblockable=mods.includes('Unblockable');
+
+  logMsg2(isP?'atk':'def',whoLabel,`[${atkC.battleRole}] ${shortName(getCardName(atkC))} uses ${mName} on [${defC.battleRole}] ${shortName(getCardName(defC))} — ${dmgRaw} DMG`);
+  if(dmgRaw===0&&cat!=='standard'){logMsg2('sys','System','Effect activated (no damage).');if(sk&&sk._usesLeft!==undefined)sk._usesLeft--;return;}
+  await playCombatAnimation(`${isP?'player':'enemy'}-${a.actorIdx}`,`${isP?'enemy':'player'}-${dIdx}`,dmgRaw,defC,a.execTeam,dIdx,isUnblockable);
+  logMsg2('hp','HP',`${shortName(getCardName(defC))}: ${defC.currentHp}/${getCardHP(defC)}`);
+  if(sk&&sk._usesLeft!==undefined)sk._usesLeft--;
+  // Self drain
+  if(sk&&(mods.includes('Self_Drain_Next_Turn'))){
+    drainedNextTurn[cardKey(a.execTeam,a.actorIdx)]=true;
+    logMsg2('sys','System',`${shortName(getCardName(atkC))} is drained next turn!`);
+  }
   if(defC.currentHp<=0){
     defC.isDead=true;if(isP)playerScore++;else enemyScore++;
     $('score-player').textContent=playerScore;$('score-enemy').textContent=enemyScore;
     let cardEl=document.getElementById(`card-${isP?'enemy':'player'}-${dIdx}`);
     if(cardEl)cardEl.classList.add('dead-card');
-    logMsg2('def','KO',`${shortName(getCardName(defC))} KNOCKED OUT!`);
-    if(playerScore>=8)logMsg2('atk','SYSTEM','YOU WIN THE MATCH!');
-    if(enemyScore>=8)logMsg2('def','SYSTEM','YOU LOSE THE MATCH.');
+    logMsg2('ko','KO',`${shortName(getCardName(defC))} knocked out!`);
   }
 }
 
-async function playCombatAnimation(atkId,defId,dmg,targetObj,execTeam,defIdx){
+async function playCombatAnimation(atkId,defId,dmg,targetObj,execTeam,defIdx,isUnblockable){
   let aE=document.getElementById(`wrap-${atkId}`),dE=document.getElementById(`wrap-${defId}`);
   if(aE)aE.classList.add('doing-attack');
   await delay(360);
-  let eDmg=(execTeam==='enemy')?applyPendingBlocks(dmg,'player',defIdx):dmg;
-  if(dE&&eDmg>0){
+  let finalDmg=isUnblockable?dmg:applyPendingBlocks(dmg,execTeam==='player'?'enemy':'player',defIdx);
+  playAttackSound(); // coordinate with the hit
+  if(dE&&finalDmg>0){
     dE.querySelector('.battle-card')?.classList.add('anim-shake');
-    let p=document.createElement('div');p.className='dmg-popup';p.innerHTML=`-${eDmg}`;
+    let p=document.createElement('div');p.className='dmg-popup';p.innerHTML=`-${finalDmg}`;
     (dE.querySelector('.battle-card')||dE).appendChild(p);
+    setTimeout(()=>{dE.querySelector('.battle-card')?.classList.remove('anim-shake');p.remove();},900);
   }
-  targetObj.currentHp=Math.max(0,targetObj.currentHp-eDmg);
+  targetObj.currentHp=Math.max(0,targetObj.currentHp-finalDmg);
   let hpMax=getCardHP(targetObj),pct=Math.max(0,(targetObj.currentHp/hpMax)*100);
   let fill=document.getElementById(`hpf-${defId}`);if(fill){fill.style.width=pct+'%';fill.style.background=pct>50?'#40E0A0':pct>20?'#FFD166':'#FF6B6B';}
   let hpt=document.getElementById(`hpt-${defId}`);if(hpt)hpt.textContent=`${targetObj.currentHp}/${hpMax}`;
   await delay(660);
   if(aE)aE.classList.remove('doing-attack');
-  if(dE){dE.querySelector('.battle-card')?.classList.remove('anim-shake');let pop=(dE.querySelector('.battle-card')||dE).querySelector('.dmg-popup');if(pop)pop.remove();}
 }
 
 function applyPendingBlocks(dmg,tgtTeam,defIdx){
   if(pendingBlocks.length===0)return dmg;
-  let b=pendingBlocks.shift(),name=getCardName(playerActive[b.playerCardIdx]);
-  if(b.blockType==='redirect'){let r=Math.floor(dmg*0.5);logMsg2('atk','BLOCK',`${shortName(name)}: redirect — ${r} DMG remaining`);return r;}
-  if(b.blockType==='partial'){let r=Math.max(0,dmg-800);logMsg2('atk','BLOCK',`${shortName(name)}: blocked 800 DMG (${r} remaining)`);return r;}
-  logMsg2('atk','BLOCK',`${shortName(name)}: BLOCKED completely!`);return 0;
+  let b=pendingBlocks.shift();
+  let blocker=b.defTeam==='player'?playerActive[b.playerCardIdx]:enemyActive[b.playerCardIdx];
+  let name=shortName(getCardName(blocker));
+  if(b.blockType==='redirect'){let r=Math.floor(dmg*0.5);logMsg2('block','Block',`${name} redirects — ${r} DMG remaining`);return r;}
+  if(b.blockType==='partial'){let r=Math.max(0,dmg-800);logMsg2('block','Block',`${name} blocks 800 DMG (${r} remaining)`);return r;}
+  logMsg2('block','Block',`${name} completely blocked the attack!`);return 0;
 }
 
 async function handleDeadReplacements(teamStr,activeArr,benchArr){
   for(let i=0;i<activeArr.length;i++){
     if(activeArr[i]&&activeArr[i].isDead){
       let dR=activeArr[i].battleRole||getCardAllPos(activeArr[i])[0]||'PG';
-      // Smart replacement: bench card can play ANY of their positions, not just the exact slot
       let vB=benchArr.map((c,idx)=>({c,idx})).filter(b=>b.c&&!b.c.isDead&&getCardAllPos(b.c).includes(dR));
       if(vB.length>0){
-        let r=vB[0];logMsg2('sys','SYSTEM',`${shortName(getCardName(r.c))} enters the game!`);
+        let r=vB[0];logMsg2('sys','System',`${shortName(getCardName(r.c))} enters the game!`);
         let t=activeArr[i];activeArr[i]=benchArr[r.idx];benchArr[r.idx]=t;
-        activeArr[i].battleRole=dR; // keep the role for targeting
+        activeArr[i].battleRole=dR;
+        if(!activeArr[i].currentHp)activeArr[i].currentHp=getCardHP(activeArr[i]);
         renderArena();renderBenchStacks();await delay(500);
       }
     }
