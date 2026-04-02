@@ -402,19 +402,21 @@
       transition: all 0.4s cubic-bezier(0.2,0.8,0.2,1);
       cursor: pointer; position: relative; display: inline-block;
     }
-    .active-card-wrap:hover {
-      transform: translateY(-40px) scale(1.15) !important;
+  .active-card-wrap:hover {
+      transform: rotate(var(--base-rot)) translateY(var(--base-y)) scale(1.5) !important;
+      margin: 0 25px !important; /* This gently pushes the adjacent cards outward! */
       z-index: 100 !important;
       filter: drop-shadow(0 20px 30px rgba(64,224,160,0.5));
     }
     .enemy-card-wrap {
-      transition: all 0.4s cubic-bezier(0.2,0.8,0.2,1);
+      transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1);
       cursor: pointer; position: relative; display: inline-block;
     }
     .enemy-card-wrap:hover {
-      transform: translateY(40px) scale(1.15) !important;
+      /* No scaling/moving for enemy cards, just a visual glow */
+      transform: rotate(var(--base-rot)) translateY(var(--base-y)) !important;
       z-index: 100 !important;
-      filter: drop-shadow(0 -20px 30px rgba(255,107,107,0.5));
+      filter: drop-shadow(0 -10px 30px rgba(255,107,107,0.7));
     }
     .battle-card {
       width: 165px; height: 231px; border-radius: 10px;
@@ -436,9 +438,10 @@
     .hp-text { position: absolute; bottom: -24px; width: 100%; text-align: center; font-size: 0.68rem; font-weight: 700; color: rgba(255,255,255,0.85); z-index: 5; white-space: nowrap; text-shadow: 0 1px 3px black; }
 
     /* Bench stacks */
+    /* Bench stacks - Shifted lower and equidistant from center */
     .bench-stack-container { position: absolute; left: 14px; width: 120px; z-index: 150; pointer-events: none; }
-   .bench-stack-container.player-bench-stack { top: calc(50% + 20px); bottom: auto; height: 180px; }
-    .bench-stack-container.enemy-bench-stack  { bottom: calc(50% + 20px); top: auto; height: 180px; }
+    .bench-stack-container.enemy-bench-stack  { top: calc(56% - 210px); bottom: auto; height: 180px; }
+    .bench-stack-container.player-bench-stack { top: calc(56% + 30px); bottom: auto; height: 180px; }
     .bench-stack-card {
       position: absolute; width: 120px; height: 168px; border-radius: 8px;
       border: 1.5px solid rgba(255,255,255,0.2); background: #0f1320; cursor: pointer;
@@ -1118,19 +1121,25 @@ function positionTooltip(e){
   tt.style.left=`${Math.max(pad,px)}px`;tt.style.top=`${Math.max(pad,py)}px`;
 }
 function isInnerRegionOfCard(e, el) {
-  if (!el) return true;
-  const rect = el.getBoundingClientRect();
-  const mx = e.touches ? e.touches[0].clientX : e.clientX;
-  const my = e.touches ? e.touches[0].clientY : e.clientY;
-  // INCREASED MARGINS: Ignores the outer 35% of the card, leaving only the dead center active
-  const edgeMarginX = rect.width * 0.35;
-  const edgeMarginY = rect.height * 0.35;
-  return mx > rect.left + edgeMarginX && mx < rect.right - edgeMarginX &&
-         my > rect.top + edgeMarginY && my < rect.bottom - edgeMarginY;
+  if (!el) return true;
+  const rect = el.getBoundingClientRect();
+  const mx = e.touches ? e.touches[0].clientX : e.clientX;
+  const my = e.touches ? e.touches[0].clientY : e.clientY;
+  // Creates a dead-center hit zone
+  const edgeMarginX = rect.width * 0.28;
+  const edgeMarginY = rect.height * 0.28;
+  return mx > rect.left + edgeMarginX && mx < rect.right - edgeMarginX &&
+         my > rect.top + edgeMarginY && my < rect.bottom - edgeMarginY;
 }
-function showTooltipIfInner(e, name, el) {
-  if (!isInnerRegionOfCard(e, el)) { hideTooltip(); return; }
-  showTooltip(e, name);
+
+// Unified function that handles both showing and tracking the tooltip perfectly
+function handleTooltipHover(e, name, el) {
+  if(isInnerRegionOfCard(e, el)) {
+    if (!$('tooltip').classList.contains('visible')) showTooltip(e, name);
+    positionTooltip(e);
+  } else {
+    hideTooltip();
+  }
 }
 
 // ==================== PHYSICS DRAG ====================
@@ -1469,35 +1478,29 @@ function openBenchFan(e){
   let aliveBench=playerBench.filter(c=>!c.isDead);
   let n=aliveBench.length;
   aliveBench.forEach((c,i)=>{
-    let mid=(n-1)/2,offset=i-mid;
-    // Arch fan
-   // arcY is now positive (downward rainbow arch) and angle is tweaked for outward tilt
-let angle=offset*15,arcY=(offset*offset*12),tx=offset*160;
+   let mid=(n-1)/2,offset=i-mid;
+    
+    // Matched downward arch and outward tilt math
+    let angle=offset*10, arcY=(offset*offset*12), tx=offset*110;
+    
     let wrap=document.createElement('div');wrap.className='bench-fan-card-wrap';
-    wrap.style.transform=`translateX(${tx}px) rotate(${angle}deg) translateY(${arcY}px)`;
-    wrap.style.zIndex=n+i;wrap.style.bottom='60px';wrap.style.position='absolute';
+    
+    // Apply CSS variables so the transition remembers its place
+    wrap.style.cssText = `position:absolute; bottom:60px; z-index:${n+i}; --base-tx:${tx}px; --base-rot:${angle}deg; --base-y:${arcY}px; transform: translateX(var(--base-tx)) rotate(var(--base-rot)) translateY(var(--base-y)); transform-origin: bottom center; transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1);`;
+    
     let card=document.createElement('div');card.className='bench-fan-card';
     let img=document.createElement('img');img.src=getImgUrl(getCardImg(c),getCardName(c));img.onerror=()=>handleImgError(img,getCardName(c));
     card.appendChild(img);wrap.appendChild(card);
-    // Hover: pop up
-    wrap.addEventListener('mouseenter',()=>{
-      wrap.style.transform=`translateX(${tx}px) rotate(${angle}deg) translateY(${arcY - 40}px) scale(1.18)`;
+    
+    // Hover: 1.5x scale from bottom
+    wrap.onmousemove=(ev)=>{
+      wrap.style.transform=`translateX(var(--base-tx)) rotate(var(--base-rot)) translateY(var(--base-y)) scale(1.5)`;
       wrap.style.zIndex=300;
       wrap.style.filter='brightness(1.25) drop-shadow(0 -12px 24px rgba(64,224,160,0.6))';
-    });
-    wrap.addEventListener('mouseleave',()=>{
-      wrap.style.transform=`translateX(${tx}px) rotate(${angle}deg) translateY(${arcY}px)`;
-      wrap.style.zIndex=n+i;
-      wrap.style.filter='';
-    });
-    wrap.onmouseenter=(ev)=>{
-      wrap.style.transform=`translateX(${tx}px) rotate(${angle}deg) translateY(${arcY - 40}px) scale(1.18)`;
-      wrap.style.zIndex=300;
-      wrap.style.filter='brightness(1.25) drop-shadow(0 -12px 24px rgba(64,224,160,0.6))';
-      showTooltipIfInnerCard(ev,getCardName(c),wrap);
+      handleTooltipHover(ev,getCardName(c),wrap);
     };
     wrap.onmouseleave=()=>{
-      wrap.style.transform=`translateX(${tx}px) rotate(${angle}deg) translateY(${arcY}px)`;
+      wrap.style.transform=`translateX(var(--base-tx)) rotate(var(--base-rot)) translateY(var(--base-y)) scale(1)`;
       wrap.style.zIndex=n+i;
       wrap.style.filter='';
       hideTooltip();
@@ -1553,9 +1556,11 @@ function renderFanned(team,isEnemy){
   let n=team.length;if(n===0)return'';
   return team.map((c,i)=>{
     let mid=(n-1)/2,offset=i-mid;
-    // Arch fan: cards curve into arch shape
-    let arcY=isEnemy?-(offset*offset*18):(offset*offset*18);
-    let rot=isEnemy?(-offset*9):(offset*9);
+    
+    // Identical math for both rows: Downward arch & outward tilt
+    let arcY = (offset * offset * 12); 
+    let rot = (offset * 8); 
+    
     let hpMax=getCardHP(c),pct=Math.max(0,(c.currentHp/hpMax)*100);
     let clr=pct>50?'#40E0A0':pct>20?'#FFD166':'#FF6B6B';
     let isStaged=!isEnemy&&stagedActions.some(a=>a.actorIdx===i);
@@ -1564,7 +1569,6 @@ function renderFanned(team,isEnemy){
     let cardClass=`battle-card ${c.isDead?'dead-card':''} ${isStaged?'staged':''} ${isTgt?'valid-target':''}`;
     let tooltipName=escapeJS(getCardName(c));
 
-    // Status badges
     let badges='';
     let ck=cardKey(isEnemy?'enemy':'player',i);
     if(frozenCards[ck])badges+=`<div class="card-status-badge badge-frozen">❄ FROZEN</div>`;
@@ -1572,12 +1576,13 @@ function renderFanned(team,isEnemy){
     if(shutdownCards[ck])badges+=`<div class="card-status-badge badge-shutdown">🚫 SHUTDOWN</div>`;
     if(statBuffs[ck])badges+=`<div class="card-status-badge badge-buffed">⬆ BUFFED</div>`;
 
+    // Notice we use --base-rot and --base-y so CSS can remember the arch on hover!
+    // We also use the new handleTooltipHover function.
     return`<div class="${wrapClass}" id="wrap-${isEnemy?'enemy':'player'}-${i}"
-      style="transform:rotate(${rot}deg) translateY(${arcY}px);margin:0 8px;transform-origin:bottom center;"
+      style="--base-rot: ${rot}deg; --base-y: ${arcY}px; transform: rotate(var(--base-rot)) translateY(var(--base-y)); margin: 0 8px; transform-origin: bottom center;"
       onclick="onCardClick('${isEnemy?'enemy':'player'}',${i},event)"
-      onmouseenter="showTooltipIfInnerCard(event,'${tooltipName}',this)"
-      onmouseleave="hideTooltip()"
-      onmousemove="positionTooltipIfInnerCard(event,this)">
+      onmousemove="handleTooltipHover(event, '${tooltipName}', this)"
+      onmouseleave="hideTooltip()">
       ${isEnemy?`<div class="hp-bar-container"><div class="hp-fill" id="hpf-enemy-${i}" style="width:${pct}%;background:${clr};"></div></div>`:''}
       <div class="${cardClass}" id="card-${isEnemy?'enemy':'player'}-${i}">
         <img src="${getImgUrl(getCardImg(c),getCardName(c))}" onerror="handleImgError(this,'${tooltipName}')">
