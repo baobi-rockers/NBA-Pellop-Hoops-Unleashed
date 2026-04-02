@@ -399,14 +399,15 @@
       position: relative; width: 100%; height: 290px; margin-top: 50px;
     }
     /* Active Card Wrappers - Overlapping Hand Effect */
+/* ===== ACTIVE & ENEMY CARD WRAPPERS (OVERLAPPING & PUSH EFFECT) ===== */
     .active-card-wrap {
       transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1);
       cursor: pointer; position: relative; display: inline-block;
-      margin: 0 -15px; /* NEGATIVE MARGIN: Forces the cards to overlap */
+      margin: 0 -20px; /* OVERLAP: Matches the tight fan of the bench cards */
     }
     .active-card-wrap:hover {
       transform: rotate(var(--base-rot)) translateY(var(--base-y)) scale(1.4) !important;
-      margin: 0 25px !important; /* POSITIVE MARGIN: Pushes siblings aside */
+      margin: 0 25px !important; /* PUSH SIBLINGS ASIDE */
       z-index: 100 !important;
       filter: drop-shadow(0 20px 30px rgba(64,224,160,0.5));
     }
@@ -414,14 +415,16 @@
     .enemy-card-wrap {
       transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1);
       cursor: pointer; position: relative; display: inline-block;
-      margin: 0 -15px; /* OVERLAP */
+      margin: 0 -20px; /* OVERLAP */
     }
     .enemy-card-wrap:hover {
+      /* No scaling/moving for enemy cards, just a visual glow */
       transform: rotate(var(--base-rot)) translateY(var(--base-y)) !important;
       z-index: 100 !important;
       filter: drop-shadow(0 -10px 30px rgba(255,107,107,0.7));
     }
-    }
+
+    /* ===== THE PHYSICAL CARD STYLING (THIS WAS MISSING!) ===== */
     .battle-card {
       width: 165px; height: 231px; border-radius: 10px;
       border: 2px solid rgba(255,255,255,0.2); overflow: hidden;
@@ -436,13 +439,12 @@
     .battle-card.valid-target { border-color: #FFA500 !important; animation: pulseTarget 1.3s infinite ease-in-out; }
     @keyframes pulseTarget { 0%{box-shadow:0 0 10px 3px rgba(255,165,0,0.5);} 50%{box-shadow:0 0 22px 8px rgba(255,165,0,0.8);} 100%{box-shadow:0 0 10px 3px rgba(255,165,0,0.5);} }
 
-    /* HP bars */
+    /* ===== HP BARS (RESTORED & ALIGNED) ===== */
     .hp-bar-container { position: absolute; bottom: -11px; left: 0; width: 100%; height: 7px; background: rgba(0,0,0,0.6); border-radius: 4px; overflow: hidden; z-index: 5; }
     .hp-fill { height: 100%; background: #40E0A0; transition: width 0.3s, background 0.3s; border-radius: 4px; }
     .hp-text { position: absolute; bottom: -24px; width: 100%; text-align: center; font-size: 0.68rem; font-weight: 700; color: rgba(255,255,255,0.85); z-index: 5; white-space: nowrap; text-shadow: 0 1px 3px black; }
 
-    /* Bench stacks */
-    /* Bench stacks - Shifted lower and equidistant from center */
+    /* ===== BENCH STACKS (LOWERED) ===== */
     .bench-stack-container { position: absolute; left: 14px; width: 120px; z-index: 150; pointer-events: none; }
     .bench-stack-container.enemy-bench-stack  { top: calc(56% - 210px); bottom: auto; height: 180px; }
     .bench-stack-container.player-bench-stack { top: calc(56% + 30px); bottom: auto; height: 180px; }
