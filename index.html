@@ -436,8 +436,8 @@
 
     /* Bench stacks */
     .bench-stack-container { position: absolute; left: 14px; width: 120px; z-index: 150; pointer-events: none; }
-    .bench-stack-container.player-bench-stack { bottom: calc(130px + 128px); height: 180px; }
-    .bench-stack-container.enemy-bench-stack  { top: calc(50px + 130px); height: 180px; }
+   .bench-stack-container.player-bench-stack { top: calc(50% + 20px); bottom: auto; height: 180px; }
+    .bench-stack-container.enemy-bench-stack  { bottom: calc(50% + 20px); top: auto; height: 180px; }
     .bench-stack-card {
       position: absolute; width: 120px; height: 168px; border-radius: 8px;
       border: 1.5px solid rgba(255,255,255,0.2); background: #0f1320; cursor: pointer;
@@ -1117,13 +1117,15 @@ function positionTooltip(e){
   tt.style.left=`${Math.max(pad,px)}px`;tt.style.top=`${Math.max(pad,py)}px`;
 }
 function isInnerRegionOfCard(e, el) {
-  if (!el) return true;
-  const rect = el.getBoundingClientRect();
-  const mx = e.touches ? e.touches[0].clientX : e.clientX;
-  const my = e.touches ? e.touches[0].clientY : e.clientY;
-  const edgeMargin = Math.min(rect.width * 0.18, rect.height * 0.13, 22);
-  return mx > rect.left + edgeMargin && mx < rect.right - edgeMargin &&
-         my > rect.top + edgeMargin && my < rect.bottom - edgeMargin;
+  if (!el) return true;
+  const rect = el.getBoundingClientRect();
+  const mx = e.touches ? e.touches[0].clientX : e.clientX;
+  const my = e.touches ? e.touches[0].clientY : e.clientY;
+  // INCREASED MARGINS: Ignores the outer 35% of the card, leaving only the dead center active
+  const edgeMarginX = rect.width * 0.35;
+  const edgeMarginY = rect.height * 0.35;
+  return mx > rect.left + edgeMarginX && mx < rect.right - edgeMarginX &&
+         my > rect.top + edgeMarginY && my < rect.bottom - edgeMarginY;
 }
 function showTooltipIfInner(e, name, el) {
   if (!isInnerRegionOfCard(e, el)) { hideTooltip(); return; }
@@ -1468,7 +1470,8 @@ function openBenchFan(e){
   aliveBench.forEach((c,i)=>{
     let mid=(n-1)/2,offset=i-mid;
     // Arch fan
-    let angle=offset*18,arcY=-(Math.abs(offset)*Math.abs(offset)*8),tx=offset*160;
+   // arcY is now positive (downward rainbow arch) and angle is tweaked for outward tilt
+let angle=offset*15,arcY=(offset*offset*12),tx=offset*160;
     let wrap=document.createElement('div');wrap.className='bench-fan-card-wrap';
     wrap.style.transform=`translateX(${tx}px) rotate(${angle}deg) translateY(${arcY}px)`;
     wrap.style.zIndex=n+i;wrap.style.bottom='60px';wrap.style.position='absolute';
@@ -1551,7 +1554,7 @@ function renderFanned(team,isEnemy){
     let mid=(n-1)/2,offset=i-mid;
     // Arch fan: cards curve into arch shape
     let arcY=isEnemy?-(offset*offset*18):(offset*offset*18);
-    let rot=isEnemy?(offset*9):(-offset*9);
+    let rot=isEnemy?(-offset*9):(offset*9);
     let hpMax=getCardHP(c),pct=Math.max(0,(c.currentHp/hpMax)*100);
     let clr=pct>50?'#40E0A0':pct>20?'#FFD166':'#FF6B6B';
     let isStaged=!isEnemy&&stagedActions.some(a=>a.actorIdx===i);
