@@ -131,12 +131,10 @@
     .cat-left-card-img.animating { animation: catCardIn 1.4s cubic-bezier(0.08,0.95,0.2,1) forwards; perspective: 1200px; transform-style: preserve-3d; }
     #cat-right-panel { flex: 1; min-width: 0; }
     #cgrid {
-    display: grid;
-    /* Bumping minmax up locks the cards so they don't shrink too small */
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 20px; padding: 14px 18px; align-items: start;
-  }
-
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 20px; padding: 14px 18px; align-items: start;
+    }
 
     /* ===== HOME SCREEN ===== */
     #home-screen { background: radial-gradient(ellipse at 50% 40%, #1a2a1a 0%, #0a0f0a 100%); min-height: 100vh; overflow: hidden; }
@@ -397,24 +395,26 @@
       display: flex; justify-content: center; align-items: flex-start;
       position: relative; width: 100%; height: 290px; margin-top: 50px;
     }
-    .active-card-wrap {
-      transition: all 0.4s cubic-bezier(0.2,0.8,0.2,1);
+
+    /* ===== ACTIVE & ENEMY CARD WRAPPERS (OVERLAPPING & PUSH EFFECT) ===== */
+    .active-card-wrap, .enemy-card-wrap {
+      transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1);
       cursor: pointer; position: relative; display: inline-block;
+      margin: 0 -20px; /* OVERLAP: Tucks the cards tightly together */
+    }
+    /* Hover applies to ALL cards in the battle page now! */
+    .active-card-wrap:hover, .enemy-card-wrap:hover {
+      transform: rotate(var(--base-rot)) translateY(var(--base-y)) scale(1.4) !important;
+      margin: 0 35px !important; /* PUSH SIBLINGS ASIDE to make room for 1.4x scale */
+      z-index: 100 !important;
     }
     .active-card-wrap:hover {
-      transform: translateY(-40px) scale(1.15) !important;
-      z-index: 100 !important;
       filter: drop-shadow(0 20px 30px rgba(64,224,160,0.5));
     }
-    .enemy-card-wrap {
-      transition: all 0.4s cubic-bezier(0.2,0.8,0.2,1);
-      cursor: pointer; position: relative; display: inline-block;
-    }
     .enemy-card-wrap:hover {
-      transform: translateY(40px) scale(1.15) !important;
-      z-index: 100 !important;
-      filter: drop-shadow(0 -20px 30px rgba(255,107,107,0.5));
+      filter: drop-shadow(0 -10px 30px rgba(255,107,107,0.7));
     }
+
     .battle-card {
       width: 165px; height: 231px; border-radius: 10px;
       border: 2px solid rgba(255,255,255,0.2); overflow: hidden;
@@ -448,7 +448,7 @@
     .bench-stack-card.face-down img { display: none; }
     .bench-stack-card:hover { border-color: rgba(255,255,255,0.6); box-shadow: 0 0 14px rgba(255,255,255,0.3); }
 
-    /* Bench fan overlay - pic 2 style, properly centered */
+    /* Bench fan overlay */
     .bench-fan-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.75);
       backdrop-filter: blur(12px); z-index: 140; display: none;
@@ -459,16 +459,21 @@
       position: relative; width: 100%; height: 340px;
       display: flex; align-items: flex-end; justify-content: center;
     }
+
     .bench-fan-card-wrap {
-      position: absolute; cursor: pointer;
-      transition: transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+      position: relative; /* Must be relative to push siblings! */
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1);
       transform-origin: bottom center;
+      margin: 0 -20px; /* OVERLAP */
     }
     .bench-fan-card-wrap:hover {
-      filter: brightness(1.25) drop-shadow(0 -10px 20px rgba(64,224,160,0.6));
-      z-index: 200 !important;
+      transform: rotate(var(--base-rot)) translateY(var(--base-y)) scale(1.4) !important;
+      margin: 0 35px !important; /* PUSH ASIDE */
+      z-index: 300 !important;
+      filter: brightness(1.25) drop-shadow(0 -12px 24px rgba(64,224,160,0.6));
     }
-    /* When hovered, pop out - override applied in JS */
+
     .bench-fan-card { width: 150px; height: 210px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.25); overflow: hidden; background: #0f1320; box-shadow: 0 16px 36px rgba(0,0,0,0.9); }
     .bench-fan-card img { width: 100%; height: 100%; object-fit: cover; }
     .bench-fan-card-wrap.ineligible { pointer-events: none !important; cursor: not-allowed; }
@@ -1023,6 +1028,7 @@
 function $(id){return document.getElementById(id);}
 const GITHUB_RAW_BASE=`https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/`;
 const BACK_IMG=`${GITHUB_RAW_BASE}goat-tier-back.png`;
+
 // Audio
 let bgMusic=null, bgMusicStarted=false;
 function initBattleAudio(){
@@ -1100,65 +1106,66 @@ function positionTooltip(e){
   if(px+tw>window.innerWidth-pad)px=x-tw-15;if(py+th>window.innerHeight-pad)py=y-th-15;
   tt.style.left=`${Math.max(pad,px)}px`;tt.style.top=`${Math.max(pad,py)}px`;
 }
-  function isInnerRegionOfCard(e, el) {
-  if (!el) return true;
-  const rect = el.getBoundingClientRect();
-  const mx = e.touches ? e.touches[0].clientX : e.clientX;
-  const my = e.touches ? e.touches[0].clientY : e.clientY;
-  // 16% safe zone in the center!
-  const edgeMarginX = rect.width * 0.16;
-  const edgeMarginY = rect.height * 0.16;
-  return mx > rect.left + edgeMarginX && mx < rect.right - edgeMarginX &&
-         my > rect.top + edgeMarginY && my < rect.bottom - edgeMarginY;
+
+function isInnerRegionOfCard(e, el) {
+  if (!el) return true;
+  const rect = el.getBoundingClientRect();
+  const mx = e.touches ? e.touches[0].clientX : e.clientX;
+  const my = e.touches ? e.touches[0].clientY : e.clientY;
+  // 15% safe zone in the center!
+  const edgeMarginX = rect.width * 0.15;
+  const edgeMarginY = rect.height * 0.15;
+  return mx > rect.left + edgeMarginX && mx < rect.right - edgeMarginX &&
+         my > rect.top + edgeMarginY && my < rect.bottom - edgeMarginY;
 }
 function handleTooltipHover(e, name, el) {
-  if(isInnerRegionOfCard(e, el)) {
-    if (!$('tooltip').classList.contains('visible')) showTooltip(e, name);
-    positionTooltip(e);
-  } else {
-    hideTooltip();
-  }
+  if(isInnerRegionOfCard(e, el)) {
+    if (!$('tooltip').classList.contains('visible')) showTooltip(e, name);
+    positionTooltip(e);
+  } else {
+    hideTooltip();
+  }
 }
 function showTooltipIfInnerCard(e, name, el) { handleTooltipHover(e, name, el); }
 function positionTooltipIfInnerCard(e, el) {
-  if(!isInnerRegionOfCard(e, el)) { hideTooltip(); return; }
-  positionTooltip(e);
+  if(!isInnerRegionOfCard(e, el)) { hideTooltip(); return; }
+  positionTooltip(e);
 }
 
 // ==================== PHYSICS DRAG ====================
 let _physDragging=false,_physDragName='',_physDragImg='',_snapTarget=null;
 function initPhysDrag(el,name,imgSrc){
-  el.addEventListener('mousedown',(e)=>{
-    if(e.button!==0)return;e.preventDefault();
-    _physDragging=true;_physDragName=name;_physDragImg=imgSrc;
-    let ghost=$('drag-ghost');let ghostImg=$('drag-ghost-img');
-    if(ghostImg)ghostImg.src=imgSrc;
-    ghost.style.display='block';ghost.style.left=(e.clientX-55)+'px';ghost.style.top=(e.clientY-77)+'px';
-    el.classList.add('dragging');document.body.style.userSelect='none';
-  });
+  el.addEventListener('mousedown',(e)=>{
+    if(e.button!==0)return;e.preventDefault();
+    _physDragging=true;_physDragName=name;_physDragImg=imgSrc;
+    let ghost=$('drag-ghost');let ghostImg=$('drag-ghost-img');
+    if(ghostImg)ghostImg.src=imgSrc;
+    ghost.style.display='block';ghost.style.left=(e.clientX-55)+'px';ghost.style.top=(e.clientY-77)+'px';
+    el.classList.add('dragging');document.body.style.userSelect='none';
+  });
 }
 document.addEventListener('mousemove',(e)=>{
-  if(!_physDragging)return;
-  let ghost=$('drag-ghost');ghost.style.left=(e.clientX-55)+'px';ghost.style.top=(e.clientY-77)+'px';
-  let over=document.elementFromPoint(e.clientX,e.clientY);let slot=over?.closest('[data-slot]');
-  if(slot){ghost.style.transform='rotate(0deg) scale(0.93)';_snapTarget=slot;}
-  else{ghost.style.transform='rotate(3deg) scale(1.05)';_snapTarget=null;}
+  if(!_physDragging)return;
+  let ghost=$('drag-ghost');ghost.style.left=(e.clientX-55)+'px';ghost.style.top=(e.clientY-77)+'px';
+  let over=document.elementFromPoint(e.clientX,e.clientY);let slot=over?.closest('[data-slot]');
+  if(slot){ghost.style.transform='rotate(0deg) scale(0.93)';_snapTarget=slot;}
+  else{ghost.style.transform='rotate(3deg) scale(1.05)';_snapTarget=null;}
 });
 document.addEventListener('mouseup',(e)=>{
-  if(!_physDragging)return;_physDragging=false;
-  let ghost=$('drag-ghost');ghost.style.display='none';ghost.style.left='-9999px';document.body.style.userSelect='';
-  document.querySelectorAll('.dragging').forEach(el=>el.classList.remove('dragging'));
-  if(_snapTarget){let ev=new CustomEvent('physdrop',{bubbles:true,detail:{name:_physDragName}});_snapTarget.dispatchEvent(ev);_snapTarget=null;}
+  if(!_physDragging)return;_physDragging=false;
+  let ghost=$('drag-ghost');ghost.style.display='none';ghost.style.left='-9999px';document.body.style.userSelect='';
+  document.querySelectorAll('.dragging').forEach(el=>el.classList.remove('dragging'));
+  if(_snapTarget){let ev=new CustomEvent('physdrop',{bubbles:true,detail:{name:_physDragName}});_snapTarget.dispatchEvent(ev);_snapTarget=null;}
 });
 
 // ==================== DRAG & DROP ====================
 function handleDragStart(e,name){
-  hideTooltip();e.dataTransfer.setData('text/plain',name);e.dataTransfer.effectAllowed='move';
-  let ghost=$('drag-ghost');let ghostImg=$('drag-ghost-img');
-  let c=typeof CARDS!=='undefined'?CARDS.find(x=>getCardName(x)===name):null;
-  if(c&&ghostImg)ghostImg.src=getImgUrl(getCardImg(c),name);
-  if(ghost)e.dataTransfer.setDragImage(ghost,-9999,-9999);
-  setTimeout(()=>{if(e.target&&e.target.classList)e.target.classList.add('dragging');},0);
+  hideTooltip();e.dataTransfer.setData('text/plain',name);e.dataTransfer.effectAllowed='move';
+  let ghost=$('drag-ghost');let ghostImg=$('drag-ghost-img');
+  let c=typeof CARDS!=='undefined'?CARDS.find(x=>getCardName(x)===name):null;
+  if(c&&ghostImg)ghostImg.src=getImgUrl(getCardImg(c),name);
+  if(ghost)e.dataTransfer.setDragImage(ghost,-9999,-9999);
+  setTimeout(()=>{if(e.target&&e.target.classList)e.target.classList.add('dragging');},0);
 }
 function handleDragEnd(e){if(e.target&&e.target.classList)e.target.classList.remove('dragging');}
 function handleDragOver(e){e.preventDefault();if(e.currentTarget&&e.currentTarget.classList)e.currentTarget.classList.add('drag-over');}
@@ -1169,90 +1176,75 @@ function triggerInvalidDrop(el){if(!el)return;el.classList.add('shake-invalid');
 let expandedCardCat=null,isNewExpand=false;
 function goCat(){showScreen('catalogue-screen');if(typeof CARDS!=='undefined')filterCat();}
 function filterCat(){
-  let q=($('cs')?.value||'').toLowerCase(),posF=$('cp')?.value||'',sort=$('csort')?.value||'name';
-  let list=typeof CARDS!=='undefined'?CARDS.filter(c=>c?.UI_Frontend_Data):[];
-  list=list.filter(c=>{let n=(getCardName(c)||"").toLowerCase(),t=(c.UI_Frontend_Data.Team||"").toLowerCase();return(!q||n.includes(q)||t.includes(q))&&(!posF||getCardAllPos(c).includes(posF));});
-  if(sort==='hp')list.sort((a,b)=>getCardHP(b)-getCardHP(a));else if(sort==='dmg')list.sort((a,b)=>getCardDMG(b)-getCardDMG(a));else if(sort==='spd')list.sort((a,b)=>getCardSPD(b)-getCardSPD(a));else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
-  $('cgrid').innerHTML=list.map(c=>{
-    let n=getCardName(c),safeN=escapeJS(n);
-    let isSelected=(n===expandedCardCat);
-    return`<div class="compact-card ${isSelected?'selected-panel':''}" onclick="toggleExpand('${safeN}','cat')" onmousemove="handleTooltipHover(event,'${safeN}',this)" onmouseleave="hideTooltip()"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),n)}" onerror="handleImgError(this,'${safeN}')"></div></div>`;
-  }).join('');
+  let q=($('cs')?.value||'').toLowerCase(),posF=$('cp')?.value||'',sort=$('csort')?.value||'name';
+  let list=typeof CARDS!=='undefined'?CARDS.filter(c=>c?.UI_Frontend_Data):[];
+  list=list.filter(c=>{let n=(getCardName(c)||"").toLowerCase(),t=(c.UI_Frontend_Data.Team||"").toLowerCase();return(!q||n.includes(q)||t.includes(q))&&(!posF||getCardAllPos(c).includes(posF));});
+  if(sort==='hp')list.sort((a,b)=>getCardHP(b)-getCardHP(a));else if(sort==='dmg')list.sort((a,b)=>getCardDMG(b)-getCardDMG(a));else if(sort==='spd')list.sort((a,b)=>getCardSPD(b)-getCardSPD(a));else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
+  $('cgrid').innerHTML=list.map(c=>{
+    let n=getCardName(c),safeN=escapeJS(n);
+    let isSelected=(n===expandedCardCat);
+    return`<div class="compact-card ${isSelected?'selected-panel':''}" onclick="toggleExpand('${safeN}','cat')" onmousemove="handleTooltipHover(event,'${safeN}',this)" onmouseleave="hideTooltip()"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),n)}" onerror="handleImgError(this,'${safeN}')"></div></div>`;
+  }).join('');
 }
 function closeCatLeftPanel(){
-  expandedCardCat=null;
-  let panel=$('cat-left-panel');if(panel)panel.classList.remove('open');
-  filterCat();
+  expandedCardCat=null;
+  let panel=$('cat-left-panel');if(panel)panel.classList.remove('open');
+  filterCat();
 }
 function handleSearchFilter(m){if(m==='cat')filterCat();else filterDraftGrid();}
 function toggleExpand(name,mode){
-  let card=CARDS.find(c=>getCardName(c)===name);if(!card)return;hideTooltip();
-  if(mode==='cat'){
-    let prev=expandedCardCat;
-    expandedCardCat=(expandedCardCat===name)?null:name;
-    if(expandedCardCat){
-      isNewExpand=true;
-      openCatLeftPanel(card);
-    } else {
-      closeCatLeftPanel();
-    }
-    filterCat();isNewExpand=false;
-  }
-  else{openDraftPanel(name);}
+  let card=CARDS.find(c=>getCardName(c)===name);if(!card)return;hideTooltip();
+  if(mode==='cat'){
+    let prev=expandedCardCat;
+    expandedCardCat=(expandedCardCat===name)?null:name;
+    if(expandedCardCat){
+      isNewExpand=true;
+      openCatLeftPanel(card);
+    } else {
+      closeCatLeftPanel();
+    }
+    filterCat();isNewExpand=false;
+  }
+  else{openDraftPanel(name);}
 }
 function openCatLeftPanel(card){
-  let n=getCardName(card),t=card.UI_Frontend_Data?.Team||'',hp=getCardHP(card),dmg=getCardDMG(card),spd=getCardSPD(card),p=getCardPos(card);
-  let skills=(card.Skills||[]).map(s=>`<div class="ec-skill-wrap" style="margin-bottom:4px; padding: 4px 6px;"><div class="ec-skill-header" style="margin-bottom:0;"><span class="ec-skill-name" style="font-size:0.75rem;">${s.Name}</span><span class="ec-skill-dmg" style="font-size:0.65rem;">${s.Display_DMG}</span></div><div class="ec-skill-desc" style="font-size:0.6rem; line-height:1.1;">${s.Description_UI}</div></div>`).join('');
-  let imgEl=$('cat-left-img-el'),imgWrap=$('cat-left-img-wrap');
-  imgEl.src=getImgUrl(getCardImg(card),n);imgEl.onerror=()=>handleImgError(imgEl,n);
-  imgWrap.classList.remove('animating');void imgWrap.offsetWidth;imgWrap.classList.add('animating');
-  $('cat-left-content').innerHTML=`
-    <div class="ec-header" style="margin-bottom:10px;"><div class="ec-title" style="font-size:1.2rem;">${n}</div><div class="ec-team">${t} · ${p}</div></div>
-    <div class="ec-stats-row"><div class="ec-stat">${hp} <span>HP</span></div><div class="ec-stat">${dmg} <span>DMG</span></div><div class="ec-stat">${spd} <span>SPD</span></div></div>
-    <div class="ec-ability-block"><div class="ec-ability-name">${card.Ability?.Name||'No Ability'}</div><div class="ec-ability-desc">${card.Ability?.Description_UI||''}</div></div>
-    <div style="font-size:0.68rem;color:var(--text-muted);font-weight:700;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">Skills</div>
-    ${skills}`;
-  $('cat-left-panel').classList.add('open');
+  let n=getCardName(card),t=card.UI_Frontend_Data?.Team||'',hp=getCardHP(card),dmg=getCardDMG(card),spd=getCardSPD(card),p=getCardPos(card);
+  let skills=(card.Skills||[]).map(s=>`<div class="ec-skill-wrap" style="margin-bottom:4px; padding: 4px 6px;"><div class="ec-skill-header" style="margin-bottom:0;"><span class="ec-skill-name" style="font-size:0.75rem;">${s.Name}</span><span class="ec-skill-dmg" style="font-size:0.65rem;">${s.Display_DMG}</span></div><div class="ec-skill-desc" style="font-size:0.6rem; line-height:1.1;">${s.Description_UI}</div></div>`).join('');
+  let imgEl=$('cat-left-img-el'),imgWrap=$('cat-left-img-wrap');
+  imgEl.src=getImgUrl(getCardImg(card),n);imgEl.onerror=()=>handleImgError(imgEl,n);
+  imgWrap.classList.remove('animating');void imgWrap.offsetWidth;imgWrap.classList.add('animating');
+  $('cat-left-content').innerHTML=`
+    <div class="ec-header" style="margin-bottom:10px;"><div class="ec-title" style="font-size:1.2rem;">${n}</div><div class="ec-team">${t} · ${p}</div></div>
+    <div class="ec-stats-row"><div class="ec-stat">${hp} <span>HP</span></div><div class="ec-stat">${dmg} <span>DMG</span></div><div class="ec-stat">${spd} <span>SPD</span></div></div>
+    <div class="ec-ability-block"><div class="ec-ability-name">${card.Ability?.Name||'No Ability'}</div><div class="ec-ability-desc">${card.Ability?.Description_UI||''}</div></div>
+    <div style="font-size:0.68rem;color:var(--text-muted);font-weight:700;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">Skills</div>
+    ${skills}`;
+  $('cat-left-panel').classList.add('open');
 }
 function closeExpanded(mode){if(mode==='cat'){expandedCardCat=null;filterCat();}}
-function renderExpandedRow(card,mode){
-  let n=getCardName(card),t=card.UI_Frontend_Data?.Team||'',hp=getCardHP(card),dmg=getCardDMG(card),spd=getCardSPD(card),p=getCardPos(card);
-  let skills=(card.Skills||[]).map(s=>`<div class="ec-skill-wrap"><div class="ec-skill-header"><span class="ec-skill-name">${s.Name}</span><span class="ec-skill-dmg">${s.Display_DMG}</span></div><div class="ec-skill-desc">${s.Description_UI}</div></div>`).join('');
-  let animStyle=isNewExpand?'animation:fairySpin 1.6s cubic-bezier(0.08,0.95,0.2,1) forwards;transform-style:preserve-3d;':'';
-  return`<div class="expanded-row">
-    <button class="expanded-close-btn" onclick="closeExpanded('${mode}')">✕</button>
-    <div class="expanded-card-container" style="${animStyle}"><div class="expanded-front"><img src="${getImgUrl(getCardImg(card),n)}" onerror="handleImgError(this,'${escapeJS(n)}')"></div></div>
-    <div class="expanded-scroll-wrapper"><div class="expanded-content">
-      <div class="ec-header"><div class="ec-title">${n}</div><div class="ec-team">${t} · ${p}</div></div>
-      <div class="ec-stats-row"><div class="ec-stat">${hp} <span>HP</span></div><div class="ec-stat">${dmg} <span>DMG</span></div><div class="ec-stat">${spd} <span>SPD</span></div></div>
-      <div class="ec-ability-block"><div class="ec-ability-name">${card.Ability?.Name||'No Ability'}</div><div class="ec-ability-desc">${card.Ability?.Description_UI||''}</div></div>
-      <div class="ec-skills-grid">${skills}</div>
-    </div></div>
-  </div>`;
-}
 
 // ==================== DRAFT SIDE PANEL ====================
 let currentDraftPanelCard=null;
 function openDraftPanel(name){
-  let card=CARDS.find(c=>getCardName(c)===name);if(!card)return;
-  currentDraftPanelCard=name;
-  let panel=$('draft-side-panel');
-  let imgEl=$('draft-panel-img-el');
-  let imgWrap=$('draft-panel-img');
-  let contentEl=$('draft-panel-content');
-  let n=getCardName(card),t=card.UI_Frontend_Data?.Team||'',hp=getCardHP(card),dmg=getCardDMG(card),spd=getCardSPD(card),p=getCardPos(card);
-  let skills=(card.Skills||[]).map(s=>`<div class="ec-skill-wrap" style="margin-bottom:8px;"><div class="ec-skill-header"><span class="ec-skill-name">${s.Name}</span><span class="ec-skill-dmg">${s.Display_DMG}</span></div><div class="ec-skill-desc">${s.Description_UI}</div></div>`).join('');
-  imgEl.src=getImgUrl(getCardImg(card),n);
-  imgEl.onerror=()=>handleImgError(imgEl,n);
-  imgWrap.classList.remove('animating');void imgWrap.offsetWidth;imgWrap.classList.add('animating');
-  contentEl.innerHTML=`
-    <div class="ec-header" style="margin-bottom:10px;"><div class="ec-title" style="font-size:1.2rem;">${n}</div><div class="ec-team">${t} · ${p}</div></div>
-    <div class="ec-stats-row"><div class="ec-stat">${hp} <span>HP</span></div><div class="ec-stat">${dmg} <span>DMG</span></div><div class="ec-stat">${spd} <span>SPD</span></div></div>
-    <div class="ec-ability-block"><div class="ec-ability-name">${card.Ability?.Name||'No Ability'}</div><div class="ec-ability-desc">${card.Ability?.Description_UI||''}</div></div>
-    <div style="font-size:0.68rem;color:var(--text-muted);font-weight:700;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">Skills</div>
-    ${skills}`;
-  panel.classList.add('open');
-  filterDraftGrid();
+  let card=CARDS.find(c=>getCardName(c)===name);if(!card)return;
+  currentDraftPanelCard=name;
+  let panel=$('draft-side-panel');
+  let imgEl=$('draft-panel-img-el');
+  let imgWrap=$('draft-panel-img');
+  let contentEl=$('draft-panel-content');
+  let n=getCardName(card),t=card.UI_Frontend_Data?.Team||'',hp=getCardHP(card),dmg=getCardDMG(card),spd=getCardSPD(card),p=getCardPos(card);
+  let skills=(card.Skills||[]).map(s=>`<div class="ec-skill-wrap" style="margin-bottom:8px;"><div class="ec-skill-header"><span class="ec-skill-name">${s.Name}</span><span class="ec-skill-dmg">${s.Display_DMG}</span></div><div class="ec-skill-desc">${s.Description_UI}</div></div>`).join('');
+  imgEl.src=getImgUrl(getCardImg(card),n);
+  imgEl.onerror=()=>handleImgError(imgEl,n);
+  imgWrap.classList.remove('animating');void imgWrap.offsetWidth;imgWrap.classList.add('animating');
+  contentEl.innerHTML=`
+    <div class="ec-header" style="margin-bottom:10px;"><div class="ec-title" style="font-size:1.2rem;">${n}</div><div class="ec-team">${t} · ${p}</div></div>
+    <div class="ec-stats-row"><div class="ec-stat">${hp} <span>HP</span></div><div class="ec-stat">${dmg} <span>DMG</span></div><div class="ec-stat">${spd} <span>SPD</span></div></div>
+    <div class="ec-ability-block"><div class="ec-ability-name">${card.Ability?.Name||'No Ability'}</div><div class="ec-ability-desc">${card.Ability?.Description_UI||''}</div></div>
+    <div style="font-size:0.68rem;color:var(--text-muted);font-weight:700;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">Skills</div>
+    ${skills}`;
+  panel.classList.add('open');
+  filterDraftGrid();
 }
 function closeDraftPanel(){$('draft-side-panel').classList.remove('open');currentDraftPanelCard=null;filterDraftGrid();}
 
@@ -1260,111 +1252,111 @@ function closeDraftPanel(){$('draft-side-panel').classList.remove('open');curren
 let draftSquad={PG:[null,null],SG:[null,null],SF:[null,null],PF:[null,null],C:[null,null]};
 const POSITIONS=['PG','SG','SF','PF','C'];let hasSixthMan=false;
 function goDraft(){
-  draftSquad={PG:[null,null],SG:[null,null],SF:[null,null],PF:[null,null],C:[null,null]};
-  expandedCardCat=null;currentDraftPanelCard=null;
-  showScreen('draft-screen');
-  let panel=$('draft-side-panel');if(panel)panel.classList.remove('open');
-  renderDraftSlots();filterDraftGrid();
+  draftSquad={PG:[null,null],SG:[null,null],SF:[null,null],PF:[null,null],C:[null,null]};
+  expandedCardCat=null;currentDraftPanelCard=null;
+  showScreen('draft-screen');
+  let panel=$('draft-side-panel');if(panel)panel.classList.remove('open');
+  renderDraftSlots();filterDraftGrid();
 }
 function filterDraftGrid(){
-  let q=($('draft-search')?.value||'').toLowerCase(),sort=$('draft-sort')?.value||'name';
-  let list=typeof CARDS!=='undefined'?CARDS.filter(c=>c?.UI_Frontend_Data):[];
-  list=list.filter(c=>(!q||(getCardName(c)||"").toLowerCase().includes(q)||(c.UI_Frontend_Data.Team||"").toLowerCase().includes(q)));
-  if(sort==='hp')list.sort((a,b)=>getCardHP(b)-getCardHP(a));else if(sort==='dmg')list.sort((a,b)=>getCardDMG(b)-getCardDMG(a));else if(sort==='spd')list.sort((a,b)=>getCardSPD(b)-getCardSPD(a));else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
-  $('draft-grid').innerHTML=list.map(c=>{
-    let n=getCardName(c),inD=isCardInDraft(c),safeN=escapeJS(n);
-    let isSelected=(n===currentDraftPanelCard);
-    return`<div class="compact-card ${inD?'in-draft':''} ${isSelected?'selected-panel':''}" ${!inD?`draggable="true" ondragstart="handleDragStart(event,'${safeN}')" ondragend="handleDragEnd(event)"`:''} onclick="${!inD?`toggleExpand('${safeN}','draft')`:'void(0)'}" onmousemove="handleTooltipHover(event,'${safeN}',this)" onmouseleave="hideTooltip()"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),n)}" onerror="handleImgError(this,'${safeN}')"></div></div>`;
-  }).join('');
+  let q=($('draft-search')?.value||'').toLowerCase(),sort=$('draft-sort')?.value||'name';
+  let list=typeof CARDS!=='undefined'?CARDS.filter(c=>c?.UI_Frontend_Data):[];
+  list=list.filter(c=>(!q||(getCardName(c)||"").toLowerCase().includes(q)||(c.UI_Frontend_Data.Team||"").toLowerCase().includes(q)));
+  if(sort==='hp')list.sort((a,b)=>getCardHP(b)-getCardHP(a));else if(sort==='dmg')list.sort((a,b)=>getCardDMG(b)-getCardDMG(a));else if(sort==='spd')list.sort((a,b)=>getCardSPD(b)-getCardSPD(a));else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
+  $('draft-grid').innerHTML=list.map(c=>{
+    let n=getCardName(c),inD=isCardInDraft(c),safeN=escapeJS(n);
+    let isSelected=(n===currentDraftPanelCard);
+    return`<div class="compact-card ${inD?'in-draft':''} ${isSelected?'selected-panel':''}" ${!inD?`draggable="true" ondragstart="handleDragStart(event,'${safeN}')" ondragend="handleDragEnd(event)"`:''} onclick="${!inD?`toggleExpand('${safeN}','draft')`:'void(0)'}" onmousemove="handleTooltipHover(event,'${safeN}',this)" onmouseleave="hideTooltip()"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),n)}" onerror="handleImgError(this,'${safeN}')"></div></div>`;
+  }).join('');
 }
 function isCardInDraft(c){let n=getCardName(c);return POSITIONS.some(p=>getCardName(draftSquad[p][0])===n||getCardName(draftSquad[p][1])===n);}
 function renderDraftSlots(){
-  let html='';[0,1].forEach(idx=>{POSITIONS.forEach(pos=>{let c=draftSquad[pos][idx],cn=c?getCardName(c):null;html+=`<div id="dslot-${pos}-${idx}" class="slot-card slot-${pos} ${c?'filled':''}" data-slot="${pos}-${idx}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropDraft(event,'${pos}',${idx})">${c?`<div class="slot-pos">${pos}</div><div class="slot-name">${getDBShortName(cn)}</div><button class="remove-slot" onclick="removeDraft('${pos}',${idx})">✕</button>`:`<div class="slot-pos">${pos}</div>`}</div>`;});});
-  $('draft-slots-vertical').innerHTML=html;
-  document.querySelectorAll('#draft-slots-vertical [data-slot]').forEach(slot=>{
-    slot.addEventListener('physdrop',(e)=>{
-      let parts=slot.dataset.slot.split('-');let pos=parts[0],idx=parseInt(parts[1]);
-      let c=CARDS.find(x=>getCardName(x)===e.detail.name);if(!c||isCardInDraft(c))return;
-      if(!getCardAllPos(c).includes(pos))return triggerInvalidDrop(slot);
-      draftSquad[pos][idx]=c;renderDraftSlots();filterDraftGrid();
-    });
-  });
-  let cnt=0;hasSixthMan=false;
-  POSITIONS.forEach(p=>[0,1].forEach(i=>{if(draftSquad[p][i])cnt++;}));
-  $('draft-count-lbl').textContent=`${cnt}/10`;
-  $('draft-confirm-btn').disabled=(cnt<10);
+  let html='';[0,1].forEach(idx=>{POSITIONS.forEach(pos=>{let c=draftSquad[pos][idx],cn=c?getCardName(c):null;html+=`<div id="dslot-${pos}-${idx}" class="slot-card slot-${pos} ${c?'filled':''}" data-slot="${pos}-${idx}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropDraft(event,'${pos}',${idx})">${c?`<div class="slot-pos">${pos}</div><div class="slot-name">${getDBShortName(cn)}</div><button class="remove-slot" onclick="removeDraft('${pos}',${idx})">✕</button>`:`<div class="slot-pos">${pos}</div>`}</div>`;});});
+  $('draft-slots-vertical').innerHTML=html;
+  document.querySelectorAll('#draft-slots-vertical [data-slot]').forEach(slot=>{
+    slot.addEventListener('physdrop',(e)=>{
+      let parts=slot.dataset.slot.split('-');let pos=parts[0],idx=parseInt(parts[1]);
+      let c=CARDS.find(x=>getCardName(x)===e.detail.name);if(!c||isCardInDraft(c))return;
+      if(!getCardAllPos(c).includes(pos))return triggerInvalidDrop(slot);
+      draftSquad[pos][idx]=c;renderDraftSlots();filterDraftGrid();
+    });
+  });
+  let cnt=0;hasSixthMan=false;
+  POSITIONS.forEach(p=>[0,1].forEach(i=>{if(draftSquad[p][i])cnt++;}));
+  $('draft-count-lbl').textContent=`${cnt}/10`;
+  $('draft-confirm-btn').disabled=(cnt<10);
 }
 function dropDraft(e,pos,idx){
-  e.preventDefault();if(e.currentTarget&&e.currentTarget.classList)e.currentTarget.classList.remove('drag-over');
-  let c=CARDS.find(x=>getCardName(x)===e.dataTransfer.getData('text/plain'));
-  if(!c||isCardInDraft(c))return;
-  if(!getCardAllPos(c).includes(pos))return triggerInvalidDrop($(`dslot-${pos}-${idx}`));
-  draftSquad[pos][idx]=c;renderDraftSlots();filterDraftGrid();
+  e.preventDefault();if(e.currentTarget&&e.currentTarget.classList)e.currentTarget.classList.remove('drag-over');
+  let c=CARDS.find(x=>getCardName(x)===e.dataTransfer.getData('text/plain'));
+  if(!c||isCardInDraft(c))return;
+  if(!getCardAllPos(c).includes(pos))return triggerInvalidDrop($(`dslot-${pos}-${idx}`));
+  draftSquad[pos][idx]=c;renderDraftSlots();filterDraftGrid();
 }
 function removeDraft(pos,idx){draftSquad[pos][idx]=null;renderDraftSlots();filterDraftGrid();}
 function autoFillDraft(){
-  draftSquad={PG:[null,null],SG:[null,null],SF:[null,null],PF:[null,null],C:[null,null]};
-  let shuf=[...CARDS].sort(()=>Math.random()-0.5);
-  POSITIONS.forEach(pos=>{let m=shuf.filter(c=>getCardAllPos(c).includes(pos)&&!isCardInDraft(c));if(m[0])draftSquad[pos][0]=m[0];if(m[1])draftSquad[pos][1]=m[1];});
-  renderDraftSlots();filterDraftGrid();
+  draftSquad={PG:[null,null],SG:[null,null],SF:[null,null],PF:[null,null],C:[null,null]};
+  let shuf=[...CARDS].sort(()=>Math.random()-0.5);
+  POSITIONS.forEach(pos=>{let m=shuf.filter(c=>getCardAllPos(c).includes(pos)&&!isCardInDraft(c));if(m[0])draftSquad[pos][0]=m[0];if(m[1])draftSquad[pos][1]=m[1];});
+  renderDraftSlots();filterDraftGrid();
 }
 
 // ==================== SETUP ====================
 let activeLineup={PG:null,SG:null,SF:null,PF:null,C:null},benchRoster=[];
 function goSetup(){
-  benchRoster=[];POSITIONS.forEach(p=>[0,1].forEach(i=>{if(draftSquad[p][i])benchRoster.push(draftSquad[p][i]);}));
-  activeLineup={PG:null,SG:null,SF:null,PF:null,C:null};
-  showScreen('setup-screen');renderSetupSlots();renderSetupBench();
+  benchRoster=[];POSITIONS.forEach(p=>[0,1].forEach(i=>{if(draftSquad[p][i])benchRoster.push(draftSquad[p][i]);}));
+  activeLineup={PG:null,SG:null,SF:null,PF:null,C:null};
+  showScreen('setup-screen');renderSetupSlots();renderSetupBench();
 }
 function renderSetupSlots(){
-  $('setup-slots').innerHTML=POSITIONS.map(pos=>{
-    let c=activeLineup[pos];
-    return`<div id="sslots-${pos}" class="setup-slot-card setup-slot-${pos} ${c?'filled':''}" data-slot="setup-${pos}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropSetup(event,'${pos}')">
-      ${c?`<img src="${getImgUrl(getCardImg(c),getCardName(c))}" onerror="handleImgError(this,'${escapeJS(getCardName(c))}')"><button class="setup-remove" onclick="activeLineup['${pos}']=null;renderSetupSlots();renderSetupBench()">✕</button>`:`<div class="setup-slot-pos">${pos}</div><div class="setup-slot-drop-text">Drop Here</div>`}
-    </div>`;
-  }).join('');
-  document.querySelectorAll('[data-slot^="setup-"]').forEach(slot=>{
-    slot.addEventListener('physdrop',(e)=>{
-      let pos=slot.dataset.slot.replace('setup-','');
-      let c=benchRoster.find(x=>getCardName(x)===e.detail.name);if(!c)return;
-      if(!getCardAllPos(c).includes(pos))return triggerInvalidDrop(slot);
-      activeLineup[pos]=c;renderSetupSlots();renderSetupBench();
-    });
-  });
-  let cnt=Object.values(activeLineup).filter(x=>x).length;
-  $('setup-count-lbl').textContent=`${cnt}/5`;
-  $('start-battle-btn').disabled=(cnt<5);
+  $('setup-slots').innerHTML=POSITIONS.map(pos=>{
+    let c=activeLineup[pos];
+    return`<div id="sslots-${pos}" class="setup-slot-card setup-slot-${pos} ${c?'filled':''}" data-slot="setup-${pos}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropSetup(event,'${pos}')">
+      ${c?`<img src="${getImgUrl(getCardImg(c),getCardName(c))}" onerror="handleImgError(this,'${escapeJS(getCardName(c))}')"><button class="setup-remove" onclick="activeLineup['${pos}']=null;renderSetupSlots();renderSetupBench()">✕</button>`:`<div class="setup-slot-pos">${pos}</div><div class="setup-slot-drop-text">Drop Here</div>`}
+    </div>`;
+  }).join('');
+  document.querySelectorAll('[data-slot^="setup-"]').forEach(slot=>{
+    slot.addEventListener('physdrop',(e)=>{
+      let pos=slot.dataset.slot.replace('setup-','');
+      let c=benchRoster.find(x=>getCardName(x)===e.detail.name);if(!c)return;
+      if(!getCardAllPos(c).includes(pos))return triggerInvalidDrop(slot);
+      activeLineup[pos]=c;renderSetupSlots();renderSetupBench();
+    });
+  });
+  let cnt=Object.values(activeLineup).filter(x=>x).length;
+  $('setup-count-lbl').textContent=`${cnt}/5`;
+  $('start-battle-btn').disabled=(cnt<5);
 }
 function autoFillSetup(){
-  activeLineup={PG:null,SG:null,SF:null,PF:null,C:null};
-  let shuf=[...benchRoster].sort(()=>Math.random()-0.5);
-  POSITIONS.forEach(pos=>{
-    if(!activeLineup[pos]){
-      let m=shuf.find(c=>getCardAllPos(c).includes(pos)&&!Object.values(activeLineup).includes(c));
-      if(m) activeLineup[pos]=m;
-    }
-  });
-  renderSetupSlots();renderSetupBench();
+  activeLineup={PG:null,SG:null,SF:null,PF:null,C:null};
+  let shuf=[...benchRoster].sort(()=>Math.random()-0.5);
+  POSITIONS.forEach(pos=>{
+    if(!activeLineup[pos]){
+      let m=shuf.find(c=>getCardAllPos(c).includes(pos)&&!Object.values(activeLineup).includes(c));
+      if(m) activeLineup[pos]=m;
+    }
+  });
+  renderSetupSlots();renderSetupBench();
 }
 function dropSetup(e,pos){
-  e.preventDefault();if(e.currentTarget&&e.currentTarget.classList)e.currentTarget.classList.remove('drag-over');
-  let c=benchRoster.find(x=>getCardName(x)===e.dataTransfer.getData('text/plain'));if(!c)return;
-  if(!getCardAllPos(c).includes(pos))return triggerInvalidDrop($(`sslots-${pos}`));
-  activeLineup[pos]=c;renderSetupSlots();renderSetupBench();
+  e.preventDefault();if(e.currentTarget&&e.currentTarget.classList)e.currentTarget.classList.remove('drag-over');
+  let c=benchRoster.find(x=>getCardName(x)===e.dataTransfer.getData('text/plain'));if(!c)return;
+  if(!getCardAllPos(c).includes(pos))return triggerInvalidDrop($(`sslots-${pos}`));
+  activeLineup[pos]=c;renderSetupSlots();renderSetupBench();
 }
 function renderSetupBench(){
-  let grid=$('setup-bench-grid');grid.innerHTML='';
-  benchRoster.forEach(c=>{
-    if(Object.values(activeLineup).some(ac=>ac&&getCardName(ac)===getCardName(c)))return;
-    let n=getCardName(c),safeN=escapeJS(n),imgSrc=getImgUrl(getCardImg(c),n);
-    let div=document.createElement('div');
-    div.className='bench-card-item';div.draggable=true;
-    div.innerHTML=`<img src="${imgSrc}" onerror="handleImgError(this,'${safeN}')">`;
-    div.ondragstart=(e)=>handleDragStart(e,n);div.ondragend=handleDragEnd;
-    div.onmousemove=(ev)=>handleTooltipHover(ev, n, div);
-    div.onmouseleave=hideTooltip;
-    grid.appendChild(div);initPhysDrag(div,n,imgSrc);
-  });
+  let grid=$('setup-bench-grid');grid.innerHTML='';
+  benchRoster.forEach(c=>{
+    if(Object.values(activeLineup).some(ac=>ac&&getCardName(ac)===getCardName(c)))return;
+    let n=getCardName(c),safeN=escapeJS(n),imgSrc=getImgUrl(getCardImg(c),n);
+    let div=document.createElement('div');
+    div.className='bench-card-item';div.draggable=true;
+    div.innerHTML=`<img src="${imgSrc}" onerror="handleImgError(this,'${safeN}')">`;
+    div.ondragstart=(e)=>handleDragStart(e,n);div.ondragend=handleDragEnd;
+    div.onmousemove=(ev)=>handleTooltipHover(ev, n, div);
+    div.onmouseleave=hideTooltip;
+    grid.appendChild(div);initPhysDrag(div,n,imgSrc);
+  });
 }
 
 // ==================== BATTLE ENGINE ====================
@@ -1376,246 +1368,173 @@ let playerScore=0,enemyScore=0,turnCount=1,isAnimating=false,uiState='IDLE',pend
 function cardKey(team,idx){return`${team}-${idx}`;}
 
 function buildEnemyRoster(){
-  const NEED=['PG','SG','SF','PF','C'];let dr={PG:[],SG:[],SF:[],PF:[],C:[]};let p=[...CARDS].sort(()=>Math.random()-0.5);
-  for(let c of p){let ps=getCardAllPos(c);for(let po of ps){if(NEED.includes(po)&&dr[po].length<2){if(!NEED.some(x=>dr[x].some(y=>getCardName(y)===getCardName(c)))){dr[po].push(c);break;}}}if(NEED.every(x=>dr[x].length>=2))break;}
-  let st=[],be=[];NEED.forEach(po=>{
-    if(dr[po][0]){let c=JSON.parse(JSON.stringify(dr[po][0]));c.currentHp=getCardHP(c);c.isDead=false;c.battleRole=po;st.push(c);}
-    if(dr[po][1]){let c=JSON.parse(JSON.stringify(dr[po][1]));c.currentHp=getCardHP(c);c.isDead=false;c.battleRole=po;be.push(c);}
-  });return{st,be};
+  const NEED=['PG','SG','SF','PF','C'];let dr={PG:[],SG:[],SF:[],PF:[],C:[]};let p=[...CARDS].sort(()=>Math.random()-0.5);
+  for(let c of p){let ps=getCardAllPos(c);for(let po of ps){if(NEED.includes(po)&&dr[po].length<2){if(!NEED.some(x=>dr[x].some(y=>getCardName(y)===getCardName(c)))){dr[po].push(c);break;}}}if(NEED.every(x=>dr[x].length>=2))break;}
+  let st=[],be=[];NEED.forEach(po=>{
+    if(dr[po][0]){let c=JSON.parse(JSON.stringify(dr[po][0]));c.currentHp=getCardHP(c);c.isDead=false;c.battleRole=po;st.push(c);}
+    if(dr[po][1]){let c=JSON.parse(JSON.stringify(dr[po][1]));c.currentHp=getCardHP(c);c.isDead=false;c.battleRole=po;be.push(c);}
+  });return{st,be};
 }
 function buildPlayerActiveWithRoles(){
-  let res=[];POSITIONS.forEach(po=>{
-    if(activeLineup[po]){let c=JSON.parse(JSON.stringify(activeLineup[po]));c.currentHp=getCardHP(c);c.isDead=false;c.battleRole=po;res.push(c);}
-  });return res;
+  let res=[];POSITIONS.forEach(po=>{
+    if(activeLineup[po]){let c=JSON.parse(JSON.stringify(activeLineup[po]));c.currentHp=getCardHP(c);c.isDead=false;c.battleRole=po;res.push(c);}
+  });return res;
 }
 function startBattle(){
-  playerActive=buildPlayerActiveWithRoles();
-  playerBench=benchRoster.filter(c=>!playerActive.some(ac=>getCardName(ac)===getCardName(c)));
-  playerBench=playerBench.map(c=>{let cc=JSON.parse(JSON.stringify(c));cc.currentHp=getCardHP(cc);cc.isDead=false;return cc;});
-  let eR=buildEnemyRoster();enemyActive=eR.st;enemyBench=eR.be;
-  playerScore=0;enemyScore=0;turnCount=1;stagedActions=[];uiState='IDLE';
-  [playerActive,enemyActive,playerBench,enemyBench].forEach(team=>{for(let c of team){if(!c)continue;for(let sk of(c.Skills||[]))sk._usesLeft=sk.Logic_Engine?.Max_Uses||1;}});
-  
-  abilityState={};
-  initAllAbilities(playerActive);initAllAbilities(enemyActive);
-  initAllAbilities(playerBench);initAllAbilities(enemyBench);
-  frozenCards={};shutdownCards={};disabledSkills={};drainedNextTurn={};invulnerable={};stolenSkills={};statBuffs={};activeAuras=[];pendingBlocks=[];
-  
-  $('battle-log').innerHTML=`<div class="log-entry"><span class="log-who log-who-sys">System</span><span class="log-detail">Match initiated. First to 8 KOs wins.</span></div>`;
-  $('score-player').textContent='0';$('score-enemy').textContent='0';
-  $('checkout-panel').style.display='none';
-  showScreen('battle-screen');
-  initBattleAudio();
-  renderArena();
+  playerActive=buildPlayerActiveWithRoles();
+  playerBench=benchRoster.filter(c=>!playerActive.some(ac=>getCardName(ac)===getCardName(c)));
+  playerBench=playerBench.map(c=>{let cc=JSON.parse(JSON.stringify(c));cc.currentHp=getCardHP(cc);cc.isDead=false;return cc;});
+  let eR=buildEnemyRoster();enemyActive=eR.st;enemyBench=eR.be;
+  playerScore=0;enemyScore=0;turnCount=1;stagedActions=[];uiState='IDLE';
+  [playerActive,enemyActive,playerBench,enemyBench].forEach(team=>{for(let c of team){if(!c)continue;for(let sk of(c.Skills||[]))sk._usesLeft=sk.Logic_Engine?.Max_Uses||1;}});
+  
+  abilityState={};
+  initAllAbilities(playerActive);initAllAbilities(enemyActive);
+  initAllAbilities(playerBench);initAllAbilities(enemyBench);
+  frozenCards={};shutdownCards={};disabledSkills={};drainedNextTurn={};invulnerable={};stolenSkills={};statBuffs={};activeAuras=[];pendingBlocks=[];
+  
+  $('battle-log').innerHTML=`<div class="log-entry"><span class="log-who log-who-sys">System</span><span class="log-detail">Match initiated. First to 8 KOs wins.</span></div>`;
+  $('score-player').textContent='0';$('score-enemy').textContent='0';
+  $('checkout-panel').style.display='none';
+  showScreen('battle-screen');
+  initBattleAudio();
+  renderArena();
 }
 
 // ==================== BENCH STACKS + FAN OVERLAY ====================
 let playerBenchOpen=false;
 function renderBenchStacks(){
-  let eBench=$('enemy-bench-stack');
-  eBench.innerHTML=enemyBench.filter(c=>!c.isDead).map((c,i)=>{
-    let off=i*5;
-    return`<div class="bench-stack-card face-down" style="top:${off}px;left:${off}px;z-index:${i};" onmouseenter="showEnemyBenchTooltip(event,${enemyBench.filter(x=>!x.isDead).length})" onmouseleave="hideEnemyBenchTooltip()"></div>`;
-  }).join('');
-  let pBench=$('player-bench-stack');pBench.innerHTML='';
-  let aliveBench=playerBench.filter(c=>!c.isDead);
-  aliveBench.forEach((c,i)=>{
-    let div=document.createElement('div');div.className='bench-stack-card';
-    let img=document.createElement('img');img.src=getImgUrl(getCardImg(c),getCardName(c));img.onerror=()=>handleImgError(img,getCardName(c));
-    div.appendChild(img);div.dataset.benchIdx=i;
-    div.style.top=(i*5)+'px';div.style.left=(i*5)+'px';div.style.zIndex=i;
-    div.onmouseenter=(e)=>{if(!playerBenchOpen)showTooltip(e,getCardName(c));};
-    div.onmouseleave=()=>hideTooltip();div.onmousemove=(e)=>positionTooltip(e);
-    div.onclick=(e)=>{e.stopPropagation();openBenchFan(e);};
-    pBench.appendChild(div);
-  });
-  pBench.style.pointerEvents='auto';
+  let eBench=$('enemy-bench-stack');
+  eBench.innerHTML=enemyBench.filter(c=>!c.isDead).map((c,i)=>{
+    let off=i*5;
+    return`<div class="bench-stack-card face-down" style="top:${off}px;left:${off}px;z-index:${i};" onmouseenter="showEnemyBenchTooltip(event,${enemyBench.filter(x=>!x.isDead).length})" onmouseleave="hideEnemyBenchTooltip()"></div>`;
+  }).join('');
+  let pBench=$('player-bench-stack');pBench.innerHTML='';
+  let aliveBench=playerBench.filter(c=>!c.isDead);
+  aliveBench.forEach((c,i)=>{
+    let div=document.createElement('div');div.className='bench-stack-card';
+    let img=document.createElement('img');img.src=getImgUrl(getCardImg(c),getCardName(c));img.onerror=()=>handleImgError(img,getCardName(c));
+    div.appendChild(img);div.dataset.benchIdx=i;
+    div.style.top=(i*5)+'px';div.style.left=(i*5)+'px';div.style.zIndex=i;
+    div.onmouseenter=(e)=>{if(!playerBenchOpen)showTooltip(e,getCardName(c));};
+    div.onmouseleave=()=>hideTooltip();div.onmousemove=(e)=>positionTooltip(e);
+    div.onclick=(e)=>{e.stopPropagation();openBenchFan(e);};
+    pBench.appendChild(div);
+  });
+  pBench.style.pointerEvents='auto';
 }
 
 function openBenchFan(e){
-  if(e)e.stopPropagation();
-  if(uiState==='IDLE'||uiState==='AWAITING_TARGET'){
-    hideActionPanels();
-    if(uiState==='AWAITING_TARGET'){
-      uiState='IDLE';pendingAction=null;
-      setTooltipEnabled(true);
-      renderArena();
-    }
-  }
-  playerBenchOpen=true;
-  let overlay=$('bench-fan-overlay'),stage=$('bench-fan-stage');
-  overlay.classList.add('open');stage.innerHTML='';
-  $('checkout-panel').classList.add('panel-blur');
-  let aliveBench=playerBench.filter(c=>!c.isDead);
-  let n=aliveBench.length;
-  aliveBench.forEach((c,i)=>{
-    let mid=(n-1)/2,offset=i-mid;
-    let angle=offset*10, arcY=(offset*offset*12);
-    let wrap=document.createElement('div');
-    wrap.className='bench-fan-card-wrap';
-    wrap.style.cssText = `z-index:${n+i}; --base-rot:${angle}deg; --base-y:${arcY}px; transform: rotate(var(--base-rot)) translateY(var(--base-y));`;
-    let card=document.createElement('div');card.className='bench-fan-card';
-    let img=document.createElement('img');img.src=getImgUrl(getCardImg(c),getCardName(c));img.onerror=()=>handleImgError(img,getCardName(c));
-    card.appendChild(img);wrap.appendChild(card);
-    wrap.onmousemove=(ev)=>{handleTooltipHover(ev,getCardName(c),wrap);};
-    wrap.onmouseleave=()=>{hideTooltip();};
-    if(uiState==='AWAITING_BENCH' && pendingAction?.pos){
-      let swapPos=pendingAction.pos;
-      if(!getCardAllPos(c).includes(swapPos)){
-        wrap.classList.add('ineligible');
-        wrap.style.opacity='0.5';
-        wrap.onmousemove=null;wrap.onmouseleave=null;
-      }
-    }
-    wrap.onclick=(ev)=>{ev.stopPropagation();onBenchFanCardClick(i,ev);};
-    stage.appendChild(wrap);
-  });
+  if(e)e.stopPropagation();
+  if(uiState==='IDLE'||uiState==='AWAITING_TARGET'){
+    hideActionPanels();
+    if(uiState==='AWAITING_TARGET'){
+      uiState='IDLE';pendingAction=null;
+      setTooltipEnabled(true);
+      renderArena();
+    }
+  }
+  playerBenchOpen=true;
+  let overlay=$('bench-fan-overlay'),stage=$('bench-fan-stage');
+  overlay.classList.add('open');stage.innerHTML='';
+  $('checkout-panel').classList.add('panel-blur');
+  let aliveBench=playerBench.filter(c=>!c.isDead);
+  let n=aliveBench.length;
+  aliveBench.forEach((c,i)=>{
+    let mid=(n-1)/2,offset=i-mid;
+    let angle=offset*10, arcY=(offset*offset*12);
+    let wrap=document.createElement('div');
+    wrap.className='bench-fan-card-wrap';
+    wrap.style.cssText = `z-index:${n+i}; --base-rot:${angle}deg; --base-y:${arcY}px; transform: rotate(var(--base-rot)) translateY(var(--base-y));`;
+    let card=document.createElement('div');card.className='bench-fan-card';
+    let img=document.createElement('img');img.src=getImgUrl(getCardImg(c),getCardName(c));img.onerror=()=>handleImgError(img,getCardName(c));
+    card.appendChild(img);wrap.appendChild(card);
+    wrap.onmousemove=(ev)=>{handleTooltipHover(ev,getCardName(c),wrap);};
+    wrap.onmouseleave=()=>{hideTooltip();};
+    if(uiState==='AWAITING_BENCH' && pendingAction?.pos){
+      let swapPos=pendingAction.pos;
+      if(!getCardAllPos(c).includes(swapPos)){
+        wrap.classList.add('ineligible');
+        wrap.style.opacity='0.5';
+        wrap.onmousemove=null;wrap.onmouseleave=null;
+      }
+    }
+    wrap.onclick=(ev)=>{ev.stopPropagation();onBenchFanCardClick(i,ev);};
+    stage.appendChild(wrap);
+  });
 }
 function closeBenchFan(){
-  playerBenchOpen=false;$('bench-fan-overlay').classList.remove('open');$('checkout-panel').classList.remove('panel-blur');
-  if(uiState==='AWAITING_BENCH'){uiState='IDLE';pendingAction=null;logMsg2('sys','System','Swap cancelled.');}
+  playerBenchOpen=false;$('bench-fan-overlay').classList.remove('open');$('checkout-panel').classList.remove('panel-blur');
+  if(uiState==='AWAITING_BENCH'){uiState='IDLE';pendingAction=null;logMsg2('sys','System','Swap cancelled.');}
 }
 function handleBenchOverlayClick(e){if(e.target===e.currentTarget||e.target.id==='bench-fan-stage'||e.target.id==='bench-fan-label')closeBenchFan();}
 function onBenchFanCardClick(idx,e){
-  e.stopPropagation();
-  if(uiState==='AWAITING_BENCH'){
-    let aliveBench=playerBench.filter(c=>!c.isDead);
-    let incomingCard=aliveBench[idx];if(!incomingCard){closeBenchFan();return;}
-    let swapPos=pendingAction?.pos;
-    if(swapPos && !getCardAllPos(incomingCard).includes(swapPos)){
-      logMsg2('sys','System',`${shortName(getCardName(incomingCard))} cannot play ${swapPos}!`);return;
-    }
-    let realBenchIdx=playerBench.findIndex(c=>getCardName(c)===getCardName(incomingCard));
-    stagedActions.push({...pendingAction,targetIdx:realBenchIdx,targetTeam:'bench'});
-    uiState='IDLE';closeBenchFan();renderArena();renderCheckout();hideActionPanels();
-  }else{closeBenchFan();}
+  e.stopPropagation();
+  if(uiState==='AWAITING_BENCH'){
+    let aliveBench=playerBench.filter(c=>!c.isDead);
+    let incomingCard=aliveBench[idx];if(!incomingCard){closeBenchFan();return;}
+    let swapPos=pendingAction?.pos;
+    if(swapPos && !getCardAllPos(incomingCard).includes(swapPos)){
+      logMsg2('sys','System',`${shortName(getCardName(incomingCard))} cannot play ${swapPos}!`);return;
+    }
+    let realBenchIdx=playerBench.findIndex(c=>getCardName(c)===getCardName(incomingCard));
+    stagedActions.push({...pendingAction,targetIdx:realBenchIdx,targetTeam:'bench'});
+    uiState='IDLE';closeBenchFan();renderArena();renderCheckout();hideActionPanels();
+  }else{closeBenchFan();}
 }
 function showEnemyBenchTooltip(e,cnt){
-  let tt=$('enemy-bench-tooltip');
-  tt.innerHTML=`<b style="color:#FF6B6B;">Opponent's Bench</b><br><span>${cnt} card(s) remaining</span>`;
-  tt.style.display='block';tt.style.left=(e.clientX+12)+'px';tt.style.top=(e.clientY-10)+'px';
+  let tt=$('enemy-bench-tooltip');
+  tt.innerHTML=`<b style="color:#FF6B6B;">Opponent's Bench</b><br><span>${cnt} card(s) remaining</span>`;
+  tt.style.display='block';tt.style.left=(e.clientX+12)+'px';tt.style.top=(e.clientY-10)+'px';
 }
 function hideEnemyBenchTooltip(){let tt=$('enemy-bench-tooltip');if(tt)tt.style.display='none';}
 
 // ==================== ARENA RENDER ====================
 function renderArena(){
-  renderBenchStacks();
-  $('enemy-active-row').innerHTML=renderFanned(enemyActive,true);
-  $('player-active-row').innerHTML=renderFanned(playerActive,false);
+  renderBenchStacks();
+  $('enemy-active-row').innerHTML=renderFanned(enemyActive,true);
+  $('player-active-row').innerHTML=renderFanned(playerActive,false);
 }
 function renderFanned(team,isEnemy){
-  let n=team.length;if(n===0)return'';
-  return team.map((c,i)=>{
-    let mid=(n-1)/2,offset=i-mid;
-    // ENEMY arches concave (negative), PLAYER arches convex (positive)
-    let arcY = isEnemy ? -(offset * offset * 12) : (offset * offset * 12); 
-    let rot = isEnemy ? (-offset * 8) : (offset * 8); 
-    let hpMax=getCardHP(c),pct=Math.max(0,(c.currentHp/hpMax)*100);
-    let clr=pct>50?'#40E0A0':pct>20?'#FFD166':'#FF6B6B';
-    let isStaged=!isEnemy&&stagedActions.some(a=>a.actorIdx===i);
-    let validTgt = isEnemy && uiState==='AWAITING_TARGET' && pendingAction && playerActive[pendingAction.actorIdx] 
-        ? getValidTargets(playerActive[pendingAction.actorIdx], enemyActive) : [];
-    let isTgt = validTgt.some(v=>v.i===i);
-    let wrapClass=isEnemy?'enemy-card-wrap':'active-card-wrap';
-    let cardClass=`battle-card ${c.isDead?'dead-card':''} ${isStaged?'staged':''} ${isTgt?'valid-target':''}`;
-    let tooltipName=escapeJS(getCardName(c));
+  let n=team.length;if(n===0)return'';
+  return team.map((c,i)=>{
+    let mid=(n-1)/2,offset=i-mid;
+    // ENEMY arches concave (negative), PLAYER arches convex (positive)
+    let arcY = isEnemy ? -(offset * offset * 12) : (offset * offset * 12); 
+    let rot = isEnemy ? (-offset * 8) : (offset * 8); 
+    let hpMax=getCardHP(c),pct=Math.max(0,(c.currentHp/hpMax)*100);
+    let clr=pct>50?'#40E0A0':pct>20?'#FFD166':'#FF6B6B';
+    let isStaged=!isEnemy&&stagedActions.some(a=>a.actorIdx===i);
+    let validTgt = isEnemy && uiState==='AWAITING_TARGET' && pendingAction && playerActive[pendingAction.actorIdx] 
+        ? getValidTargets(playerActive[pendingAction.actorIdx], enemyActive) : [];
+    let isTgt = validTgt.some(v=>v.i===i);
+    let wrapClass=isEnemy?'enemy-card-wrap':'active-card-wrap';
+    let cardClass=`battle-card ${c.isDead?'dead-card':''} ${isStaged?'staged':''} ${isTgt?'valid-target':''}`;
+    let tooltipName=escapeJS(getCardName(c));
 
-    let badges='';
-    let ck=cardKey(isEnemy?'enemy':'player',i);
-    if(frozenCards[ck])badges+=`<div class="card-status-badge badge-frozen">❄ FROZEN</div>`;
-    if(drainedNextTurn[ck])badges+=`<div class="card-status-badge badge-drained">💤 DRAINED</div>`;
-    if(shutdownCards[ck])badges+=`<div class="card-status-badge badge-shutdown">🚫 SHUTDOWN</div>`;
-    if(statBuffs[ck])badges+=`<div class="card-status-badge badge-buffed">⬆ BUFFED</div>`;
+    let badges='';
+    let ck=cardKey(isEnemy?'enemy':'player',i);
+    if(frozenCards[ck])badges+=`<div class="card-status-badge badge-frozen">❄ FROZEN</div>`;
+    if(drainedNextTurn[ck])badges+=`<div class="card-status-badge badge-drained">💤 DRAINED</div>`;
+    if(shutdownCards[ck])badges+=`<div class="card-status-badge badge-shutdown">🚫 SHUTDOWN</div>`;
+    if(statBuffs[ck])badges+=`<div class="card-status-badge badge-buffed">⬆ BUFFED</div>`;
 
-    return`<div class="${wrapClass}" id="wrap-${isEnemy?'enemy':'player'}-${i}"
-      style="--base-rot: ${rot}deg; --base-y: ${arcY}px; transform: rotate(var(--base-rot)) translateY(var(--base-y)); transform-origin: bottom center;"
-      onclick="onCardClick('${isEnemy?'enemy':'player'}',${i},event)"
-      onmousemove="handleTooltipHover(event, '${tooltipName}', this)"
-      onmouseleave="hideTooltip()">
-      ${isEnemy?`<div class="hp-bar-container"><div class="hp-fill" id="hpf-enemy-${i}" style="width:${pct}%;background:${clr};"></div></div>`:''}
-      <div class="${cardClass}" id="card-${isEnemy?'enemy':'player'}-${i}">
-        <img src="${getImgUrl(getCardImg(c),getCardName(c))}" onerror="handleImgError(this,'${tooltipName}')">
-        ${badges}
-      </div>
-            ${isStaged?`<button class="undo-btn" onclick="event.stopPropagation();undoAction(${i})">✕</button>`:''}
-      ${!isEnemy?`<div class="hp-bar-container"><div class="hp-fill" id="hpf-player-${i}" style="width:${pct}%;background:${clr};"></div></div>`:''}
-      <div class="hp-text" id="hpt-${isEnemy?'enemy':'player'}-${i}">${c.currentHp}/${hpMax}</div>
-    </div>`;
-  }).join('');
+    return`<div class="${wrapClass}" id="wrap-${isEnemy?'enemy':'player'}-${i}"
+      style="--base-rot: ${rot}deg; --base-y: ${arcY}px; transform: rotate(var(--base-rot)) translateY(var(--base-y)); transform-origin: ${isEnemy ? 'top center' : 'bottom center'};"
+      onclick="onCardClick('${isEnemy?'enemy':'player'}',${i},event)"
+      onmousemove="handleTooltipHover(event, '${tooltipName}', this)"
+      onmouseleave="hideTooltip()">
+      ${isEnemy?`<div class="hp-bar-container"><div class="hp-fill" id="hpf-enemy-${i}" style="width:${pct}%;background:${clr};"></div></div>`:''}
+      <div class="${cardClass}" id="card-${isEnemy?'enemy':'player'}-${i}">
+        <img src="${getImgUrl(getCardImg(c),getCardName(c))}" onerror="handleImgError(this,'${tooltipName}')">
+        ${badges}
+      </div>
+            ${isStaged?`<button class="undo-btn" onclick="event.stopPropagation();undoAction(${i})">✕</button>`:''}
+      ${!isEnemy?`<div class="hp-bar-container"><div class="hp-fill" id="hpf-player-${i}" style="width:${pct}%;background:${clr};"></div></div>`:''}
+      <div class="hp-text" id="hpt-${isEnemy?'enemy':'player'}-${i}">${c.currentHp}/${hpMax}</div>
+    </div>`;
+  }).join('');
 }
-
-// ==================== BATTLE LOG ====================
-function logMsg2(type,who,detail){
-  let l=$('battle-log');
-  let whoClass=type==='atk'?'log-who-you':type==='def'?'log-who-bot':type==='coin'?'log-who-coin':type==='hp'?'log-who-hp':type==='ko'?'log-who-ko':type==='block'?'log-who-block':'log-who-sys';
-  l.innerHTML+=`<div class="log-entry"><span class="log-who ${whoClass}">${who}</span><span class="log-detail">${detail}</span></div>`;
-  if(battleLogOpen)l.scrollTop=l.scrollHeight;
-}
-
-// ==================== INTERACTION ====================
-function handleCourtClick(e){
-  if(e.target.closest('.action-panels-wrapper')||e.target.closest('.active-card-wrap')||e.target.closest('.enemy-card-wrap')||e.target.closest('.bench-stack-container'))return;
-  if(uiState==='AWAITING_TARGET'||uiState==='AWAITING_REACTIVE_TARGET'){uiState='IDLE';pendingAction=null;logMsg2('sys','System','Targeting cancelled.');setTooltipEnabled(true);renderArena();}
-  hideActionPanels();
-}
-function hideActionPanels(){
-  let w=$('action-panels-wrapper');
-  if(w)w.classList.remove('visible');
-}
-function undoAction(idx){stagedActions=stagedActions.filter(a=>a.actorIdx!==idx);uiState='IDLE';renderArena();renderCheckout();}
-function renderCheckout(){
-  let max=Math.min(2,playerActive.filter(x=>!x.isDead).length),p=$('checkout-panel');
-  $('staged-count').textContent=`${stagedActions.length}/${max}`;
-  if(stagedActions.length>0){
-    p.style.display='flex';
-    $('staged-list').innerHTML=stagedActions.map(a=>{
-      let ac=playerActive[a.actorIdx];
-      let skName=a.actionType==='pass'?'Pass':a.actionType==='swap'?`Swap → ${shortName(getCardName(playerBench[a.targetIdx]))}`:a.actionType==='skill'?(ac.Skills[a.skillIdx]?.Name||'Skill'):'Basic Attack';
-      let tgt=a.targetTeam==='enemy'?` → ${shortName(getCardName(enemyActive[a.targetIdx]))}`:' ';
-      return`<div>▶ [${ac.battleRole}] ${shortName(getCardName(ac))}: ${skName}${tgt}</div>`;
-    }).join('');
-    $('confirm-moves-btn').disabled=false;
-  }else p.style.display='none';
-}
-
-
-AND ADD THIS IN CSS: 
-/* ===== ACTIVE & ENEMY CARD WRAPPERS (OVERLAPPING & PUSH EFFECT) ===== */
-    .active-card-wrap, .enemy-card-wrap {
-      transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1);
-      cursor: pointer; position: relative; display: inline-block;
-      margin: 0 -20px; /* OVERLAP: Tucks the cards tightly together */
-    }
-    
-    /* Hover applies to ALL cards in the battle page now! */
-    .active-card-wrap:hover, .enemy-card-wrap:hover {
-      transform: rotate(var(--base-rot)) translateY(var(--base-y)) scale(1.4) !important;
-      margin: 0 35px !important; /* PUSH SIBLINGS ASIDE to make room for 1.4x scale */
-      z-index: 100 !important;
-    }
-    
-    .active-card-wrap:hover {
-      filter: drop-shadow(0 20px 30px rgba(64,224,160,0.5));
-    }
-    .enemy-card-wrap:hover {
-      filter: drop-shadow(0 -10px 30px rgba(255,107,107,0.7));
-    }
-
-.bench-fan-card-wrap {
-      position: relative; /* Must be relative to push siblings! */
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1);
-      transform-origin: bottom center;
-      margin: 0 -20px; /* OVERLAP */
-    }
-    .bench-fan-card-wrap:hover {
-      transform: rotate(var(--base-rot)) translateY(var(--base-y)) scale(1.4) !important;
-      margin: 0 35px !important; /* PUSH ASIDE */
-      z-index: 300 !important;
-      filter: brightness(1.25) drop-shadow(0 -12px 24px rgba(64,224,160,0.6));
-    }
-
-document.querySelectorAll('.undo-btn').forEach(btn => btn.style.display = 'none'); inside confirmMovesPhase.
 
 // ==================== BATTLE LOG ====================
 function logMsg2(type,who,detail){
@@ -2062,7 +1981,9 @@ function renderCheckout(){
 
 // ==================== CONFIRM + EXECUTION ====================
 async function confirmMovesPhase(){
-  $('checkout-panel').style.display='none';isAnimating=true;
+  $('checkout-panel').style.display='none';
+  document.querySelectorAll('.undo-btn').forEach(btn => btn.style.display = 'none');
+  isAnimating=true;
   logMsg2('sys','System',`--- Turn ${turnCount} ---`);
   let eStaged=generateEnemyAI();
   let master=[
@@ -2607,7 +2528,8 @@ async function executeAction(a){
   if (finalDmg === 0 && dmgRaw > 0) {
       await onSkillFailure(atkC, a.actorIdx, defC, dIdx, a.execTeam);
   } else {
-      if(sk&&defC.currentHp<getCardHP(defC)){onSkillHit(atkC,sk,a.execTeam,a.actorIdx);}
+      // Corrected logic: Check if finalDmg > 0 before applying hit buffs.
+      if(sk && finalDmg > 0){onSkillHit(atkC,sk,a.execTeam,a.actorIdx);}
       logMsg2('hp','HP',`${shortName(getCardName(defC))}: ${defC.currentHp}/${getCardHP(defC)}`);
       checkHPRecoverAbility(defC);
       if(defC.currentHp<=0){handleKO(defC, isP?'enemy':'player', dIdx);}
@@ -2919,7 +2841,6 @@ async function promptAssistPositionChoice(sk, execTeam){
     $('assist-modal').style.display='flex';
   });
 }
-
 // ==================== NEW LOGIC-READY CARDS DB ====================
 const CARDS = [
   {
