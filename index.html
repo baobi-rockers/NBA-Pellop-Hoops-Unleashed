@@ -1045,7 +1045,7 @@ function initBattleAudio(){
   if(bgMusicStarted) return;
   bgMusicStarted=true;
   bgMusic=new Audio(GITHUB_RAW_BASE+'NBA_on_NBC.mp3');
-  bgMusic.loop=true; bgMusic.volume=0.10;
+  bgMusic.loop=true; bgMusic.volume=0.05;
   bgMusic.play().catch(()=>{});
 }
 function playAttackSound(){
