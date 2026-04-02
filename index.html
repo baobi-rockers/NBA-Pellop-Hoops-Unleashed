@@ -398,25 +398,29 @@
       display: flex; justify-content: center; align-items: flex-start;
       position: relative; width: 100%; height: 290px; margin-top: 50px;
     }
+    /* Active Card Wrappers - Overlapping Hand Effect */
     .active-card-wrap {
-      transition: all 0.4s cubic-bezier(0.2,0.8,0.2,1);
+      transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1);
       cursor: pointer; position: relative; display: inline-block;
+      margin: 0 -15px; /* NEGATIVE MARGIN: Forces the cards to overlap */
     }
-  .active-card-wrap:hover {
-      transform: rotate(var(--base-rot)) translateY(var(--base-y)) scale(1.5) !important;
-      margin: 0 25px !important; /* This gently pushes the adjacent cards outward! */
+    .active-card-wrap:hover {
+      transform: rotate(var(--base-rot)) translateY(var(--base-y)) scale(1.4) !important;
+      margin: 0 25px !important; /* POSITIVE MARGIN: Pushes siblings aside */
       z-index: 100 !important;
       filter: drop-shadow(0 20px 30px rgba(64,224,160,0.5));
     }
+    
     .enemy-card-wrap {
       transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1);
       cursor: pointer; position: relative; display: inline-block;
+      margin: 0 -15px; /* OVERLAP */
     }
     .enemy-card-wrap:hover {
-      /* No scaling/moving for enemy cards, just a visual glow */
       transform: rotate(var(--base-rot)) translateY(var(--base-y)) !important;
       z-index: 100 !important;
       filter: drop-shadow(0 -10px 30px rgba(255,107,107,0.7));
+    }
     }
     .battle-card {
       width: 165px; height: 231px; border-radius: 10px;
@@ -464,13 +468,17 @@
       display: flex; align-items: flex-end; justify-content: center;
     }
     .bench-fan-card-wrap {
-      position: absolute; cursor: pointer;
-      transition: transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+      position: relative; /* RELATIVE lets Flexbox center them and margins work! */
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1);
       transform-origin: bottom center;
+      margin: 0 -25px; /* NEGATIVE MARGIN: Overlaps the bench hand */
     }
     .bench-fan-card-wrap:hover {
-      filter: brightness(1.25) drop-shadow(0 -10px 20px rgba(64,224,160,0.6));
-      z-index: 200 !important;
+      transform: rotate(var(--base-rot)) translateY(var(--base-y)) scale(1.4) !important;
+      margin: 0 35px !important; /* POSITIVE MARGIN: Pushes siblings aside! */
+      z-index: 300 !important;
+      filter: brightness(1.25) drop-shadow(0 -12px 24px rgba(64,224,160,0.6));
     }
     /* When hovered, pop out - override applied in JS */
     .bench-fan-card { width: 150px; height: 210px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.25); overflow: hidden; background: #0f1320; box-shadow: 0 16px 36px rgba(0,0,0,0.9); }
@@ -1479,33 +1487,28 @@ function openBenchFan(e){
   let aliveBench=playerBench.filter(c=>!c.isDead);
   let n=aliveBench.length;
   aliveBench.forEach((c,i)=>{
-   let mid=(n-1)/2,offset=i-mid;
+ let mid=(n-1)/2,offset=i-mid;
     
-    // Matched downward arch and outward tilt math
-    let angle=offset*10, arcY=(offset*offset*12), tx=offset*110;
+    let angle=offset*10, arcY=(offset*offset*12);
     
-    let wrap=document.createElement('div');wrap.className='bench-fan-card-wrap';
+    let wrap=document.createElement('div');
+    wrap.className='bench-fan-card-wrap';
     
-    // Apply CSS variables so the transition remembers its place
-    wrap.style.cssText = `position:absolute; bottom:60px; z-index:${n+i}; --base-tx:${tx}px; --base-rot:${angle}deg; --base-y:${arcY}px; transform: translateX(var(--base-tx)) rotate(var(--base-rot)) translateY(var(--base-y)); transform-origin: bottom center; transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1);`;
+    // Notice we removed position: absolute and translateX entirely! Flexbox handles it now.
+    wrap.style.cssText = `z-index:${n+i}; --base-rot:${angle}deg; --base-y:${arcY}px; transform: rotate(var(--base-rot)) translateY(var(--base-y));`;
     
     let card=document.createElement('div');card.className='bench-fan-card';
     let img=document.createElement('img');img.src=getImgUrl(getCardImg(c),getCardName(c));img.onerror=()=>handleImgError(img,getCardName(c));
     card.appendChild(img);wrap.appendChild(card);
     
-    // Hover: 1.5x scale from bottom
+    // Clean JS: Only handles the tooltip, CSS handles the animation!
     wrap.onmousemove=(ev)=>{
-      wrap.style.transform=`translateX(var(--base-tx)) rotate(var(--base-rot)) translateY(var(--base-y)) scale(1.5)`;
-      wrap.style.zIndex=300;
-      wrap.style.filter='brightness(1.25) drop-shadow(0 -12px 24px rgba(64,224,160,0.6))';
       handleTooltipHover(ev,getCardName(c),wrap);
     };
     wrap.onmouseleave=()=>{
-      wrap.style.transform=`translateX(var(--base-tx)) rotate(var(--base-rot)) translateY(var(--base-y)) scale(1)`;
-      wrap.style.zIndex=n+i;
-      wrap.style.filter='';
       hideTooltip();
     };
+    
     wrap.onmousemove=(ev)=>positionTooltip(ev);
     // Mark ineligible for position if in AWAITING_BENCH (swap)
     if(uiState==='AWAITING_BENCH' && pendingAction?.pos){
@@ -1580,7 +1583,7 @@ function renderFanned(team,isEnemy){
     // Notice we use --base-rot and --base-y so CSS can remember the arch on hover!
     // We also use the new handleTooltipHover function.
     return`<div class="${wrapClass}" id="wrap-${isEnemy?'enemy':'player'}-${i}"
-      style="--base-rot: ${rot}deg; --base-y: ${arcY}px; transform: rotate(var(--base-rot)) translateY(var(--base-y)); margin: 0 8px; transform-origin: bottom center;"
+      style="--base-rot: ${rot}deg; --base-y: ${arcY}px; transform: rotate(var(--base-rot)) translateY(var(--base-y)); transform-origin: bottom center;"
       onclick="onCardClick('${isEnemy?'enemy':'player'}',${i},event)"
       onmousemove="handleTooltipHover(event, '${tooltipName}', this)"
       onmouseleave="hideTooltip()">
