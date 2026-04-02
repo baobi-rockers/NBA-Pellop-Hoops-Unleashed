@@ -767,7 +767,7 @@
 <div id="home-screen" class="screen active">
   <div class="app-header">
     <div class="header-logo-wrap">
-      <img class="header-logo-img" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/small-logo.png" onerror="this.style.display='none'" alt="NBA Pellop Hoops">
+      <img class="header-logo-img" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/small_logo.png" onerror="this.style.display='none'" alt="NBA Pellop Hoops">
     </div>
     <div class="nav">
       <button class="nav-btn active" onclick="showScreen('home-screen')">Home</button>
@@ -792,7 +792,7 @@
   <div class="sticky-container">
     <div class="app-header">
       <div class="header-logo-wrap">
-        <img class="header-logo-img" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/small-logo.png" onerror="this.style.display='none'" alt="">
+        <img class="header-logo-img" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/small_logo.png" onerror="this.style.display='none'" alt="">
       </div>
       <div class="nav">
         <button class="nav-btn" onclick="showScreen('home-screen')">Home</button>
@@ -839,7 +839,7 @@
   <div class="sticky-container">
     <div class="app-header">
       <div class="header-logo-wrap" style="gap:14px;">
-        <img class="header-logo-img" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/small-logo.png" onerror="this.style.display='none'" alt="">
+        <img class="header-logo-img" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/small_logo.png" onerror="this.style.display='none'" alt="">
         <span style="font-family:'Orbitron',sans-serif;font-weight:900;color:var(--accent);font-size:1.1rem;letter-spacing:1px;">DRAFT SQUAD</span>
         <div class="styled-search-wrap">
           <span class="search-icon">🔍</span>
@@ -884,7 +884,7 @@
   <div class="sticky-container">
     <div class="setup-header-bar">
       <div class="header-logo-wrap">
-        <img class="header-logo-img" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/small-logo.png" onerror="this.style.display='none'" alt="">
+        <img class="header-logo-img" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/small_logo.png" onerror="this.style.display='none'" alt="">
         <span style="font-family:'Orbitron',sans-serif;font-weight:900;color:var(--accent);font-size:1.1rem;letter-spacing:1px;">STARTING LINEUP</span>
       </div>
       <button class="game-btn game-btn-outline" style="font-size:0.8rem;padding:7px 14px;" onclick="goDraft()">Back to Draft</button>
@@ -906,7 +906,7 @@
 <!-- ==================== BATTLE ==================== -->
 <div id="battle-screen" class="screen">
   <div class="battle-app-header">
-    <img class="battle-logo-img" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/small-logo.png" onerror="this.style.display='none'" alt="NBA Pellop Hoops">
+    <img class="battle-logo-img" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/small_logo.png" onerror="this.style.display='none'" alt="NBA Pellop Hoops">
     <button class="game-btn game-btn-red" style="font-size:0.78rem;padding:7px 14px;" onclick="location.reload()">FORFEIT</button>
   </div>
 
@@ -1044,7 +1044,7 @@ function initBattleAudio(){
   if(bgMusicStarted) return;
   bgMusicStarted=true;
   bgMusic=new Audio(GITHUB_RAW_BASE+'NBA_on_NBC.mp3');
-  bgMusic.loop=true; bgMusic.volume=0.25;
+  bgMusic.loop=true; bgMusic.volume=0.10;
   bgMusic.play().catch(()=>{});
 }
 function playAttackSound(){
