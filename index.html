@@ -377,23 +377,24 @@
       display: flex; justify-content: center; align-items: flex-start;
       position: relative; width: 100%; height: 290px; margin-top: 50px;
     }
-    .active-card-wrap {
-      transition: all 0.4s cubic-bezier(0.2,0.8,0.2,1);
+  /* ACTIVE & ENEMY WRAPPERS (Overlapping Hand Effect) */
+    .active-card-wrap, .enemy-card-wrap {
+      transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1);
       cursor: pointer; position: relative; display: inline-block;
+      margin: 0 -20px; /* OVERLAP: Tucks cards together */
     }
     .active-card-wrap:hover {
-      transform: translateY(-40px) scale(1.15) !important;
+      /* Scales 1.4x WITHOUT jumping up, uses CSS vars to remember the arch */
+      transform: rotate(var(--base-rot)) translateY(var(--base-y)) scale(1.4) !important;
+      margin: 0 25px !important; /* PUSH ASIDE: Makes room for the 1.4x scale */
       z-index: 100 !important;
       filter: drop-shadow(0 20px 30px rgba(64,224,160,0.5));
     }
-    .enemy-card-wrap {
-      transition: all 0.4s cubic-bezier(0.2,0.8,0.2,1);
-      cursor: pointer; position: relative; display: inline-block;
-    }
     .enemy-card-wrap:hover {
-      transform: translateY(40px) scale(1.15) !important;
+      /* Enemy cards only glow, no scale/push */
+      transform: rotate(var(--base-rot)) translateY(var(--base-y)) !important;
       z-index: 100 !important;
-      filter: drop-shadow(0 -20px 30px rgba(255,107,107,0.5));
+      filter: drop-shadow(0 -10px 30px rgba(255,107,107,0.7));
     }
     .battle-card {
       width: 165px; height: 231px; border-radius: 10px;
@@ -439,14 +440,18 @@
       position: relative; width: 100%; height: 340px;
       display: flex; align-items: flex-end; justify-content: center;
     }
-    .bench-fan-card-wrap {
-      position: absolute; cursor: pointer;
-      transition: transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+.bench-fan-card-wrap {
+      position: relative; /* Must be relative to push siblings! */
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1);
       transform-origin: bottom center;
+      margin: 0 -20px; /* OVERLAP */
     }
     .bench-fan-card-wrap:hover {
-      filter: brightness(1.25) drop-shadow(0 -10px 20px rgba(64,224,160,0.6));
-      z-index: 200 !important;
+      transform: rotate(var(--base-rot)) translateY(var(--base-y)) scale(1.4) !important;
+      margin: 0 35px !important; /* PUSH ASIDE */
+      z-index: 300 !important;
+      filter: brightness(1.25) drop-shadow(0 -12px 24px rgba(64,224,160,0.6));
     }
     /* When hovered, pop out - override applied in JS */
     .bench-fan-card { width: 150px; height: 210px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.25); overflow: hidden; background: #0f1320; box-shadow: 0 16px 36px rgba(0,0,0,0.9); }
@@ -1116,13 +1121,16 @@ function positionTooltip(e){
   tt.style.left=`${Math.max(pad,px)}px`;tt.style.top=`${Math.max(pad,py)}px`;
 }
 // Inner-region guard — tooltip only in center 70% of card (not edges/corners)
-function isInnerRegionOfCard(e, el){
-  if(!el)return true;
-  const rect=el.getBoundingClientRect();
-  const mx=e.touches?e.touches[0].clientX:e.clientX;
-  const my=e.touches?e.touches[0].clientY:e.clientY;
-  const edgeX=rect.width*0.16, edgeY=rect.height*0.16;
-  return mx>rect.left+edgeX&&mx<rect.right-edgeX&&my>rect.top+edgeY&&my<rect.bottom-edgeY;
+function isInnerRegionOfCard(e, el) {
+  if (!el) return true;
+  const rect = el.getBoundingClientRect();
+  const mx = e.touches ? e.touches[0].clientX : e.clientX;
+  const my = e.touches ? e.touches[0].clientY : e.clientY;
+  // 20% margin on all sides: Only the center core of the image triggers the tooltip!
+  const edgeMarginX = rect.width * 0.20;
+  const edgeMarginY = rect.height * 0.20;
+  return mx > rect.left + edgeMarginX && mx < rect.right - edgeMarginX &&
+         my > rect.top + edgeMarginY && my < rect.bottom - edgeMarginY;
 }
 function showTooltipIfInnerCard(e,name,el){if(!isInnerRegionOfCard(e,el)){hideTooltip();return;}showTooltip(e,name);}
 function positionTooltipIfInnerCard(e,el){if(!isInnerRegionOfCard(e,el)){hideTooltip();return;}positionTooltip(e);}
@@ -1978,17 +1986,26 @@ function openBenchFan(e){
   $('checkout-panel').classList.add('panel-blur');
   let aliveBench=playerBench.filter(c=>!c.isDead);
   let n=aliveBench.length;
-  aliveBench.forEach((c,i)=>{
+aliveBench.forEach((c,i)=>{
     let mid=(n-1)/2,offset=i-mid;
+    
+    // Matched downward arch and outward tilt math!
     let angle=offset*10, arcY=(offset*offset*12);
+    
     let wrap=document.createElement('div');
     wrap.className='bench-fan-card-wrap';
+    
+    // NO absolute positioning, CSS vars injected for the hover state to remember!
     wrap.style.cssText = `z-index:${n+i}; --base-rot:${angle}deg; --base-y:${arcY}px; transform: rotate(var(--base-rot)) translateY(var(--base-y));`;
+    
     let card=document.createElement('div');card.className='bench-fan-card';
     let img=document.createElement('img');img.src=getImgUrl(getCardImg(c),getCardName(c));img.onerror=()=>handleImgError(img,getCardName(c));
     card.appendChild(img);wrap.appendChild(card);
-    wrap.onmousemove=(ev)=>{handleTooltipHover(ev,getCardName(c),wrap);};
-    wrap.onmouseleave=()=>{hideTooltip();};
+    
+    // CSS handles the 1.4x scale, JS ONLY handles the tooltip!
+    wrap.onmousemove=(ev)=>{ handleTooltipHover(ev,getCardName(c),wrap); };
+    wrap.onmouseleave=()=>{ hideTooltip(); };
+    
     if(uiState==='AWAITING_BENCH' && pendingAction?.pos){
       let swapPos=pendingAction.pos;
       if(!getCardAllPos(c).includes(swapPos)){
@@ -2000,7 +2017,6 @@ function openBenchFan(e){
     wrap.onclick=(ev)=>{ev.stopPropagation();onBenchFanCardClick(i,ev);};
     stage.appendChild(wrap);
   });
-}
 function closeBenchFan(){
   playerBenchOpen=false;$('bench-fan-overlay').classList.remove('open');$('checkout-panel').classList.remove('panel-blur');
   if(uiState==='AWAITING_BENCH'){uiState='IDLE';pendingAction=null;logMsg2('sys','System','Swap cancelled.');}
@@ -2038,7 +2054,7 @@ function renderFanned(team,isEnemy){
   return team.map((c,i)=>{
     let mid=(n-1)/2,offset=i-mid;
     
-    // ENEMY arches UP (concave), PLAYER arches DOWN (convex)
+    // ENEMY arches UP (concave/negative), PLAYER arches DOWN (convex/positive)
     let arcY = isEnemy ? -(offset * offset * 12) : (offset * offset * 12); 
     let rot = isEnemy ? (-offset * 8) : (offset * 8); 
     
@@ -2061,6 +2077,7 @@ function renderFanned(team,isEnemy){
     if(shutdownCards[ck])badges+=`<div class="card-status-badge badge-shutdown">🚫 SHUTDOWN</div>`;
     if(statBuffs[ck])badges+=`<div class="card-status-badge badge-buffed">⬆ BUFFED</div>`;
 
+    // INJECTED --base-rot and --base-y so the CSS Hover Scale pushes correctly
     return`<div class="${wrapClass}" id="wrap-${isEnemy?'enemy':'player'}-${i}"
       style="--base-rot: ${rot}deg; --base-y: ${arcY}px; transform: rotate(var(--base-rot)) translateY(var(--base-y)); transform-origin: bottom center;"
       onclick="onCardClick('${isEnemy?'enemy':'player'}',${i},event)"
@@ -2392,6 +2409,7 @@ function generateEnemyAI(){
 // ==================== CONFIRM MOVES ====================
 async function confirmMovesPhase(){
   $('checkout-panel').style.display='none';isAnimating=true;
+  document.querySelectorAll('.undo-btn').forEach(btn => btn.style.display = 'none');
   logMsg2('sys','System',`--- Turn ${turnCount} ---`);
   recheckAllSynergies();
   let eStaged=generateEnemyAI();
