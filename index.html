@@ -1964,7 +1964,6 @@ function renderBenchStacks(){
 
 function openBenchFan(e){
   if(e)e.stopPropagation();
-  // Cancel any unsaved selected action if clicking bench
   if(uiState==='IDLE'||uiState==='AWAITING_TARGET'){
     hideActionPanels();
     if(uiState==='AWAITING_TARGET'){
@@ -1979,32 +1978,17 @@ function openBenchFan(e){
   $('checkout-panel').classList.add('panel-blur');
   let aliveBench=playerBench.filter(c=>!c.isDead);
   let n=aliveBench.length;
-  
   aliveBench.forEach((c,i)=>{
     let mid=(n-1)/2,offset=i-mid;
-    
-    // Matched downward arch and outward tilt math!
     let angle=offset*10, arcY=(offset*offset*12);
-    
     let wrap=document.createElement('div');
     wrap.className='bench-fan-card-wrap';
-    
-    // No absolute positioning; relies on Flexbox & CSS Vars
     wrap.style.cssText = `z-index:${n+i}; --base-rot:${angle}deg; --base-y:${arcY}px; transform: rotate(var(--base-rot)) translateY(var(--base-y));`;
-    
     let card=document.createElement('div');card.className='bench-fan-card';
     let img=document.createElement('img');img.src=getImgUrl(getCardImg(c),getCardName(c));img.onerror=()=>handleImgError(img,getCardName(c));
     card.appendChild(img);wrap.appendChild(card);
-    
-    // Clean JS: Only handles the tooltip, CSS handles the animation!
-    wrap.onmousemove=(ev)=>{
-      handleTooltipHover(ev,getCardName(c),wrap);
-    };
-    wrap.onmouseleave=()=>{
-      hideTooltip();
-    };
-    
-    // Mark ineligible for position if in AWAITING_BENCH (swap)
+    wrap.onmousemove=(ev)=>{handleTooltipHover(ev,getCardName(c),wrap);};
+    wrap.onmouseleave=()=>{hideTooltip();};
     if(uiState==='AWAITING_BENCH' && pendingAction?.pos){
       let swapPos=pendingAction.pos;
       if(!getCardAllPos(c).includes(swapPos)){
@@ -2028,7 +2012,9 @@ function onBenchFanCardClick(idx,e){
     let aliveBench=playerBench.filter(c=>!c.isDead);
     let incomingCard=aliveBench[idx];if(!incomingCard){closeBenchFan();return;}
     let swapPos=pendingAction?.pos;
-    if(swapPos&&!getCardAllPos(incomingCard).includes(swapPos)){logMsg2('sys','System',`${shortName(getCardName(incomingCard))} cannot play ${swapPos}!`);return;}
+    if(swapPos && !getCardAllPos(incomingCard).includes(swapPos)){
+      logMsg2('sys','System',`${shortName(getCardName(incomingCard))} cannot play ${swapPos}!`);return;
+    }
     let realBenchIdx=playerBench.findIndex(c=>getCardName(c)===getCardName(incomingCard));
     stagedActions.push({...pendingAction,targetIdx:realBenchIdx,targetTeam:'bench'});
     uiState='IDLE';closeBenchFan();renderArena();renderCheckout();hideActionPanels();
@@ -2040,6 +2026,61 @@ function showEnemyBenchTooltip(e,cnt){
   tt.style.display='block';tt.style.left=(e.clientX+12)+'px';tt.style.top=(e.clientY-10)+'px';
 }
 function hideEnemyBenchTooltip(){let tt=$('enemy-bench-tooltip');if(tt)tt.style.display='none';}
+
+function renderArena(){
+  renderBenchStacks();
+  $('enemy-active-row').innerHTML=renderFanned(enemyActive,true);
+  $('player-active-row').innerHTML=renderFanned(playerActive,false);
+}
+
+function renderFanned(team,isEnemy){
+  let n=team.length;if(n===0)return'';
+  return team.map((c,i)=>{
+    let mid=(n-1)/2,offset=i-mid;
+    
+    // ENEMY arches UP (concave), PLAYER arches DOWN (convex)
+    let arcY = isEnemy ? -(offset * offset * 12) : (offset * offset * 12); 
+    let rot = isEnemy ? (-offset * 8) : (offset * 8); 
+    
+    let hpMax=getCardHP(c),pct=Math.max(0,(c.currentHp/hpMax)*100);
+    let clr=pct>50?'#40E0A0':pct>20?'#FFD166':'#FF6B6B';
+    let isStaged=!isEnemy&&stagedActions.some(a=>a.actorIdx===i);
+    
+    let validTgt = isEnemy && uiState==='AWAITING_TARGET' && pendingAction && playerActive[pendingAction.actorIdx] 
+        ? getValidTargets(playerActive[pendingAction.actorIdx], enemyActive) : [];
+    let isTgt = validTgt.some(v=>v.i===i);
+    
+    let wrapClass=isEnemy?'enemy-card-wrap':'active-card-wrap';
+    let cardClass=`battle-card ${c.isDead?'dead-card':''} ${isStaged?'staged':''} ${isTgt?'valid-target':''}`;
+    let tooltipName=escapeJS(getCardName(c));
+
+    let badges='';
+    let ck=cardKey(isEnemy?'enemy':'player',i);
+    if(frozenCards[ck])badges+=`<div class="card-status-badge badge-frozen">❄ FROZEN</div>`;
+    if(drainedNextTurn[ck])badges+=`<div class="card-status-badge badge-drained">💤 DRAINED</div>`;
+    if(shutdownCards[ck])badges+=`<div class="card-status-badge badge-shutdown">🚫 SHUTDOWN</div>`;
+    if(statBuffs[ck])badges+=`<div class="card-status-badge badge-buffed">⬆ BUFFED</div>`;
+
+    return`<div class="${wrapClass}" id="wrap-${isEnemy?'enemy':'player'}-${i}"
+      style="--base-rot: ${rot}deg; --base-y: ${arcY}px; transform: rotate(var(--base-rot)) translateY(var(--base-y)); transform-origin: bottom center;"
+      onclick="onCardClick('${isEnemy?'enemy':'player'}',${i},event)"
+      onmousemove="handleTooltipHover(event, '${tooltipName}', this)"
+      onmouseleave="hideTooltip()">
+      
+      ${isEnemy?`<div class="hp-bar-container"><div class="hp-fill" id="hpf-enemy-${i}" style="width:${pct}%;background:${clr};"></div></div>`:''}
+      
+      <div class="${cardClass}" id="card-${isEnemy?'enemy':'player'}-${i}">
+        <img src="${getImgUrl(getCardImg(c),getCardName(c))}" onerror="handleImgError(this,'${tooltipName}')">
+        ${badges}
+      </div>
+      
+      ${isStaged?`<button class="undo-btn" onclick="event.stopPropagation();undoAction(${i})">✕</button>`:''}
+      
+      ${!isEnemy?`<div class="hp-bar-container"><div class="hp-fill" id="hpf-player-${i}" style="width:${pct}%;background:${clr};"></div></div>`:''}
+      <div class="hp-text" id="hpt-${isEnemy?'enemy':'player'}-${i}">${c.currentHp}/${hpMax}</div>
+    </div>`;
+  }).join('');
+}
 
 // ==================== ARENA RENDER ====================
 function renderArena(){renderBenchStacks();$('enemy-active-row').innerHTML=renderFanned(enemyActive,true);$('player-active-row').innerHTML=renderFanned(playerActive,false);}
