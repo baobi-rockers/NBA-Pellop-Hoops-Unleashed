@@ -1964,9 +1964,14 @@ function renderBenchStacks(){
 
 function openBenchFan(e){
   if(e)e.stopPropagation();
+  // Cancel any unsaved selected action if clicking bench
   if(uiState==='IDLE'||uiState==='AWAITING_TARGET'){
     hideActionPanels();
-    if(uiState==='AWAITING_TARGET'){uiState='IDLE';pendingAction=null;setTooltipEnabled(true);renderArena();}
+    if(uiState==='AWAITING_TARGET'){
+      uiState='IDLE';pendingAction=null;
+      setTooltipEnabled(true);
+      renderArena();
+    }
   }
   playerBenchOpen=true;
   let overlay=$('bench-fan-overlay'),stage=$('bench-fan-stage');
@@ -1974,37 +1979,38 @@ function openBenchFan(e){
   $('checkout-panel').classList.add('panel-blur');
   let aliveBench=playerBench.filter(c=>!c.isDead);
   let n=aliveBench.length;
+  
   aliveBench.forEach((c,i)=>{
     let mid=(n-1)/2,offset=i-mid;
-    let angle=offset*18,arcY=-(Math.abs(offset)*Math.abs(offset)*8),tx=offset*160;
-    let wrap=document.createElement('div');wrap.className='bench-fan-card-wrap';
-    wrap.style.transform=`translateX(${tx}px) rotate(${angle}deg) translateY(${arcY}px)`;
-    wrap.style.zIndex=n+i;wrap.style.bottom='60px';wrap.style.position='absolute';
+    
+    // Matched downward arch and outward tilt math!
+    let angle=offset*10, arcY=(offset*offset*12);
+    
+    let wrap=document.createElement('div');
+    wrap.className='bench-fan-card-wrap';
+    
+    // No absolute positioning; relies on Flexbox & CSS Vars
+    wrap.style.cssText = `z-index:${n+i}; --base-rot:${angle}deg; --base-y:${arcY}px; transform: rotate(var(--base-rot)) translateY(var(--base-y));`;
+    
     let card=document.createElement('div');card.className='bench-fan-card';
     let img=document.createElement('img');img.src=getImgUrl(getCardImg(c),getCardName(c));img.onerror=()=>handleImgError(img,getCardName(c));
     card.appendChild(img);wrap.appendChild(card);
-    wrap.addEventListener('mouseenter',()=>{
-      wrap.style.transform=`translateX(${tx}px) rotate(${angle}deg) translateY(${arcY-40}px) scale(1.18)`;
-      wrap.style.zIndex=300;wrap.style.filter='brightness(1.25) drop-shadow(0 -12px 24px rgba(64,224,160,0.6))';
-    });
-    wrap.addEventListener('mouseleave',()=>{
-      wrap.style.transform=`translateX(${tx}px) rotate(${angle}deg) translateY(${arcY}px)`;
-      wrap.style.zIndex=n+i;wrap.style.filter='';
-    });
-    wrap.onmouseenter=(ev)=>{
-      wrap.style.transform=`translateX(${tx}px) rotate(${angle}deg) translateY(${arcY-40}px) scale(1.18)`;
-      wrap.style.zIndex=300;wrap.style.filter='brightness(1.25) drop-shadow(0 -12px 24px rgba(64,224,160,0.6))';
-      showTooltipIfInnerCard(ev,getCardName(c),wrap);
+    
+    // Clean JS: Only handles the tooltip, CSS handles the animation!
+    wrap.onmousemove=(ev)=>{
+      handleTooltipHover(ev,getCardName(c),wrap);
     };
     wrap.onmouseleave=()=>{
-      wrap.style.transform=`translateX(${tx}px) rotate(${angle}deg) translateY(${arcY}px)`;
-      wrap.style.zIndex=n+i;wrap.style.filter='';hideTooltip();
+      hideTooltip();
     };
-    wrap.onmousemove=(ev)=>positionTooltip(ev);
-    if(uiState==='AWAITING_BENCH'&&pendingAction?.pos){
-      if(!getCardAllPos(c).includes(pendingAction.pos)){
-        wrap.classList.add('ineligible');wrap.style.opacity='0.5';
-        wrap.onmouseenter=null;wrap.onmouseleave=null;wrap.onmousemove=null;
+    
+    // Mark ineligible for position if in AWAITING_BENCH (swap)
+    if(uiState==='AWAITING_BENCH' && pendingAction?.pos){
+      let swapPos=pendingAction.pos;
+      if(!getCardAllPos(c).includes(swapPos)){
+        wrap.classList.add('ineligible');
+        wrap.style.opacity='0.5';
+        wrap.onmousemove=null;wrap.onmouseleave=null;
       }
     }
     wrap.onclick=(ev)=>{ev.stopPropagation();onBenchFanCardClick(i,ev);};
@@ -2041,33 +2047,46 @@ function renderFanned(team,isEnemy){
   let n=team.length;if(n===0)return'';
   return team.map((c,i)=>{
     let mid=(n-1)/2,offset=i-mid;
-    let arcY=isEnemy?-(offset*offset*14):(offset*offset*14);
-    let rot=isEnemy?(offset*8):(-offset*8);
+    
+    // ENEMY arches UP (concave/negative), PLAYER arches DOWN (convex/positive)
+    let arcY = isEnemy ? -(offset * offset * 12) : (offset * offset * 12); 
+    let rot = isEnemy ? (-offset * 8) : (offset * 8); 
+    
     let hpMax=getCardHP(c),pct=Math.max(0,(c.currentHp/hpMax)*100);
     let clr=pct>50?'#40E0A0':pct>20?'#FFD166':'#FF6B6B';
     let isStaged=!isEnemy&&stagedActions.some(a=>a.actorIdx===i);
-    let isTgt=isEnemy&&uiState==='AWAITING_TARGET'&&pendingAction!=null&&getValidTargets(playerActive[pendingAction.actorIdx],enemyActive).some(v=>v.i===i);
-    let isAssistTgt=isEnemy&&uiState==='AWAITING_ASSIST_TARGET';
+    
+    // Safe target check
+    let validTgt = isEnemy && uiState==='AWAITING_TARGET' && pendingAction && playerActive[pendingAction.actorIdx] 
+        ? getValidTargets(playerActive[pendingAction.actorIdx], enemyActive) : [];
+    let isTgt = validTgt.some(v=>v.i===i);
+    
     let wrapClass=isEnemy?'enemy-card-wrap':'active-card-wrap';
-    let cardClass=`battle-card ${c.isDead?'dead-card':''} ${isStaged?'staged':''} ${(isTgt||isAssistTgt)?'valid-target':''}`;
+    let cardClass=`battle-card ${c.isDead?'dead-card':''} ${isStaged?'staged':''} ${isTgt?'valid-target':''}`;
     let tooltipName=escapeJS(getCardName(c));
-    let badges='',ck=cardKey(isEnemy?'enemy':'player',i);
+
+    let badges='';
+    let ck=cardKey(isEnemy?'enemy':'player',i);
     if(frozenCards[ck])badges+=`<div class="card-status-badge badge-frozen">❄ FROZEN</div>`;
     if(drainedNextTurn[ck])badges+=`<div class="card-status-badge badge-drained">💤 DRAINED</div>`;
     if(shutdownCards[ck])badges+=`<div class="card-status-badge badge-shutdown">🚫 SHUTDOWN</div>`;
     if(statBuffs[ck])badges+=`<div class="card-status-badge badge-buffed">⬆ BUFFED</div>`;
+
     return`<div class="${wrapClass}" id="wrap-${isEnemy?'enemy':'player'}-${i}"
-      style="transform:rotate(${rot}deg) translateY(${arcY}px);margin:0 8px;transform-origin:bottom center;"
+      style="--base-rot: ${rot}deg; --base-y: ${arcY}px; transform: rotate(var(--base-rot)) translateY(var(--base-y)); transform-origin: bottom center;"
       onclick="onCardClick('${isEnemy?'enemy':'player'}',${i},event)"
-      onmouseenter="showTooltipIfInnerCard(event,'${tooltipName}',this)"
-      onmouseleave="hideTooltip()"
-      onmousemove="positionTooltipIfInnerCard(event,this)">
+      onmousemove="handleTooltipHover(event, '${tooltipName}', this)"
+      onmouseleave="hideTooltip()">
+      
       ${isEnemy?`<div class="hp-bar-container"><div class="hp-fill" id="hpf-enemy-${i}" style="width:${pct}%;background:${clr};"></div></div>`:''}
+      
       <div class="${cardClass}" id="card-${isEnemy?'enemy':'player'}-${i}">
         <img src="${getImgUrl(getCardImg(c),getCardName(c))}" onerror="handleImgError(this,'${tooltipName}')">
         ${badges}
-        ${isStaged?`<button class="undo-btn" onclick="event.stopPropagation();undoAction(${i})">✕</button>`:''}
       </div>
+      
+      ${isStaged?`<button class="undo-btn" onclick="event.stopPropagation();undoAction(${i})">✕</button>`:''}
+      
       ${!isEnemy?`<div class="hp-bar-container"><div class="hp-fill" id="hpf-player-${i}" style="width:${pct}%;background:${clr};"></div></div>`:''}
       <div class="hp-text" id="hpt-${isEnemy?'enemy':'player'}-${i}">${c.currentHp}/${hpMax}</div>
     </div>`;
