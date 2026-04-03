@@ -1746,11 +1746,21 @@ function getEffectiveDMG(c) {
 }
 
 function canPlayerSelectSkill(sk) {
-  if (!sk || !sk.Logic_Engine) return false;
-  let json = sk.Logic_Engine;
-  let canSelect = sk.S_Can_Select === true || sk.S_Can_Select === 'True' || sk.S_Can_Select === 'TRUE';
-  let isReactive = json.timing === 'REACTIVE' || sk.S_Reactive === true;
-  return canSelect && !isReactive;
+  if (!sk) return false;
+  let json = sk.Logic_Engine || {};
+  
+  // If your Excel explicitly marks it as false, hide it
+  if (sk.S_Can_Select === false || sk.S_Can_Select === 'False' || sk.S_Can_Select === 'FALSE') {
+      return false;
+  }
+  
+  // Hide reactive/defensive skills from the manual attack menu
+  if (json.timing === 'REACTIVE' || sk.S_Reactive === true || sk.S_Reactive === 'True' || sk.S_Reactive === 'TRUE') {
+      return false;
+  }
+
+  // Otherwise, default to showing the skill!
+  return true; 
 }
 
 // ==================== ACTION SELECTION SYSTEM ====================
