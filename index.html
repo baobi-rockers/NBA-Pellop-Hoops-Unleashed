@@ -1653,6 +1653,14 @@ function onCardClick(team, idx, e) {
   }
 }
 
+  function getEffectiveDMG(c) {
+    if (!c) return 0;
+    let base = getCardDMG(c);
+    let ck = c._instanceId;
+    if (statBuffs[ck]) base += statBuffs[ck].dmgBonus || 0;
+    return base;
+}
+
 function showActionPanels(c, idx) {
   let name = shortName(getCardName(c));
   $('action-card-name').textContent = name;
@@ -1929,7 +1937,36 @@ function getValidTargets(atkC,tgtTeam){
 }
 
 // ==================== ACTION SELECTION ====================
-async function selectAction(actorIdx, type, skillIdx) {
+async function promptAssistPositionChoice(sk, execTeam) {
+    let formula = sk.Logic_Engine?.dmg_formula || '';
+    let parsed = parseAssistFormula(formula);
+    if (!parsed || parsed.positions.length <= 1) return null;
+
+    let team = execTeam === 'player' ? playerActive : enemyActive;
+    // Filter by ALL valid positions, not just one
+    let valids = team.map((c, i) => ({ c, i })).filter(x =>
+        x.c && !x.c.isDead && parsed.positions.includes(x.c.battleRole) && x.c !== (team === playerActive ? playerActive[stagedActions.find(a => a.actorIdx !== undefined)?.actorIdx] : null)
+    );
+
+    if (valids.length === 0) return null;
+    if (valids.length === 1) return valids[0].i;
+
+    let multDesc = parsed.multiplier ? `${parsed.multiplier}x ` : '';
+    let promptText = `${sk.Name} — pick which position's teammate bases the damage (${parsed.positions.join(' or ')}):`;
+
+    return new Promise(resolve => {
+        $('assist-prompt-text').textContent = promptText;
+        $('assist-options').innerHTML = valids.map(v =>
+            `<button class="game-btn game-btn-purple" style="width:100%;text-align:left;" onclick="resolveAssistModal(${v.i})">
+                [${v.c.battleRole}] ${shortName(getCardName(v.c))} — Basic: ${getCardDMG(v.c)}
+            </button>`
+        ).join('');
+        window.resolveAssistModal = (tIdx) => { $('assist-modal').style.display = 'none'; resolve(tIdx); };
+        window.cancelAssist = () => { $('assist-modal').style.display = 'none'; resolve(null); };
+        $('assist-modal').style.display = 'flex';
+    });
+}
+  async function selectAction(actorIdx, type, skillIdx) {
   hideActionPanels();
   let c = playerActive[actorIdx];
   let priority = 1;
@@ -2923,6 +2960,37 @@ function getForcedTarget(attackerCard, defRoster){
   }
   return null;
 }
+
+  // === MISSING FUNCTION FIXES ===
+function getEffectiveDMG(c) {
+    if (!c) return 0;
+    let base = getCardDMG(c);
+    let ck = c._instanceId;
+    if (statBuffs[ck]) base += statBuffs[ck].dmgBonus || 0;
+    return base;
+}
+
+async function promptAssistPositionChoice(sk, execTeam) {
+    let formula = sk.Logic_Engine?.dmg_formula || '';
+    let parsed = parseAssistFormula(formula);
+    if (!parsed || parsed.positions.length <= 1) return null;
+    let team = execTeam === 'player' ? playerActive : enemyActive;
+    let valids = team.map((c, i) => ({ c, i })).filter(x =>
+        x.c && !x.c.isDead && parsed.positions.includes(x.c.battleRole)
+    );
+    if (valids.length === 0) return null;
+    if (valids.length === 1) return valids[0].i;
+    return new Promise(resolve => {
+        $('assist-prompt-text').textContent = `${sk.Name} — pick teammate (${parsed.positions.join(' or ')}):`;
+        $('assist-options').innerHTML = valids.map(v =>
+            `<button class="game-btn game-btn-purple" style="width:100%;text-align:left;" onclick="resolveAssistModal(${v.i})">[${v.c.battleRole}] ${shortName(getCardName(v.c))} — Basic: ${getCardDMG(v.c)}</button>`
+        ).join('');
+        window.resolveAssistModal = (tIdx) => { $('assist-modal').style.display = 'none'; resolve(tIdx); };
+        window.cancelAssist = () => { $('assist-modal').style.display = 'none'; resolve(null); };
+        $('assist-modal').style.display = 'flex';
+    });
+}
+// === END FIXES ===
 
 // ==================== NEW LOGIC-READY CARDS DB ====================
 const CARDS = [
