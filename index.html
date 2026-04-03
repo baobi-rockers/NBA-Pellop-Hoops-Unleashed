@@ -1046,12 +1046,20 @@ function playAttackSound(){
 }
 function stopBgMusic(){if(bgMusic){bgMusic.pause();bgMusic.currentTime=0;bgMusicStarted=false;}}
 
+// ==================== CARD HELPERS (compatible with your current format) ====================
 function getCardName(c){return c?.UI_Frontend_Data?.Name||"Unknown";}
 function getCardImg(c){return c?.UI_Frontend_Data?.Image_File||"";}
-function getCardHP(c){return c?.UI_Frontend_Data?.Stats?.HP||0;}
-function getCardDMG(c){return c?.UI_Frontend_Data?.Stats?.Base_DMG||0;}
-function getCardSPD(c){return c?.UI_Frontend_Data?.Stats?.Speed||0;}
-function getCardAllPos(c){const p=c?.UI_Frontend_Data?.Positions;if(!p)return[];let arr=[p.Primary];if(p.Secondary)arr.push(p.Secondary);if(p.Third)arr.push(p.Third);return arr.filter(Boolean);}
+function getCardHP(c){return c?.UI_Frontend_Data?.Stats?.HP||2200;}
+function getCardDMG(c){return c?.UI_Frontend_Data?.Stats?.Base_DMG||800;}
+function getCardSPD(c){return c?.UI_Frontend_Data?.Stats?.Speed||7;}
+function getCardAllPos(c){
+  const p = c?.UI_Frontend_Data?.Positions || {};
+  let arr = [];
+  if (p.Primary) arr.push(p.Primary);
+  if (p.Secondary) arr.push(p.Secondary);
+  if (p.Third) arr.push(p.Third);
+  return arr.filter(Boolean);
+}
 function getCardPos(c){const p=c?.UI_Frontend_Data?.Positions;return p?p.Primary+(p.Secondary?'/'+p.Secondary:''):"N/A";}
 function escapeJS(s){return s?s.toString().replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/`/g,"\\`"):"";}
 function shortName(n){return n?n.replace(/ \(.+?\)$/,''):"Unknown";}
@@ -1364,9 +1372,6 @@ function renderSetupBench(){
 // (your existing utils, tooltip, drag & drop, catalogue, draft, setup, render functions remain unchanged)
 
 
-// ==================== BATTLE ENGINE - FULLY DATA-DRIVEN v3 (Fixed) ====================
-// Improved assist prompts, reactive defense popups, ability/passive system, special skill handling
-
 // ==================== GLOBAL STATE ====================
 let activeAuras = [];
 let pendingBlocks = [];
@@ -1377,7 +1382,7 @@ let drainedNextTurn = {};
 let invulnerable = {};
 let stolenSkills = {};
 let statBuffs = {};
-let abilityState = {}; // per-card state for stacking, one-time triggers, etc.
+let abilityState = {};
 let playerActive = [];
 let playerBench = [];
 let enemyActive = [];
@@ -1390,6 +1395,8 @@ let uiState = 'IDLE';
 let pendingAction = null;
 let stagedActions = [];
 let pendingReactiveAction = null;
+
+function cardKey(team, idx){ return `${team}-${idx}`; }
 
 // ==================== CARD HELPERS (compatible with your current format) ====================
 function getCardName(c) { return c?.UI_Frontend_Data?.Name || "Unknown"; }
@@ -1407,7 +1414,7 @@ function getCardAllPos(c) {
 }
 
 // ==================== START BATTLE ====================
-function startBattle() {
+function startBattle(){
   playerActive = buildPlayerActiveWithRoles();
   playerBench = benchRoster.filter(c => !playerActive.some(ac => getCardName(ac) === getCardName(c)))
     .map(c => {
@@ -1423,14 +1430,12 @@ function startBattle() {
 
   playerScore = 0; enemyScore = 0; turnCount = 1; stagedActions = []; uiState = 'IDLE';
 
-  // Initialize skill uses and abilities
   [...playerActive, ...playerBench, ...enemyActive, ...enemyBench].forEach(c => {
-    if (!c) return;
+    if(!c) return;
     initCardSkillUses(c);
     initCardAbility(c);
   });
 
-  // Clear battle state
   frozenCards = {}; shutdownCards = {}; disabledSkills = {}; drainedNextTurn = {};
   invulnerable = {}; stolenSkills = {}; statBuffs = {}; activeAuras = []; pendingBlocks = [];
 
@@ -1444,18 +1449,40 @@ function startBattle() {
   renderArena();
 }
 
-function initCardSkillUses(card) {
-  if (!card.Skills) return;
+function initCardSkillUses(card){
+  if(!card.Skills) return;
   card.Skills.forEach(sk => {
     let json = sk.Logic_Engine || {};
     sk._usesLeft = json.max_uses !== undefined ? json.max_uses : 999;
   });
 }
 
-function initCardAbility(card) {
+function initCardAbility(card){
   let key = getCardName(card);
-  abilityState[key] = { stackCount: 0, usedOnce: false, synergyActive: false };
-  applyPassiveAbility(card, card.Ability?.Logic_Engine || {}, getTeamForCard(card));
+  abilityState[key] = {stackCount:0, usedOnce:false, synergyActive:false};
+  applyPassiveAbility(card, card.Ability?.Logic_Engine||{}, getTeamForCard(card));
+}
+
+function getTeamForCard(card){
+  return playerActive.includes(card) || playerBench.includes(card) ? playerActive : enemyActive;
+}
+
+function applyPassiveAbility(card, json, team){
+  if(!json || !json.trigger) return;
+  let trigger = (json.trigger||"").toUpperCase();
+  if(trigger === "TEAMMATE_SYNERGY" || trigger === "ON_TEAM_SYNERGY"){
+    let condition = (json.condition || json.synergy_condition || "").toLowerCase();
+    let hasSynergy = team.some(t => t && t !== card && 
+      (getCardName(t).toLowerCase().includes(condition) || 
+       (t.UI_Frontend_Data?.Team||"").toLowerCase().includes(condition)));
+    if(hasSynergy) abilityState[getCardName(card)].synergyActive = true;
+  }
+  if(trigger === "ALWAYS"){
+    if((json.effects||"").includes("SKILLS_UNBLOCKABLE")) card._skillsUnblockable = true;
+    if((json.effects||"").includes("SKILLS_UNCONTESTABLE")) card._skillsUncontestable = true;
+    if((json.effects||"").includes("IMMUNE_TO_FREEZE")) card._immuneFreeze = true;
+    if((json.effects||"").includes("IMMUNE_TO_STEAL")) card._immuneSteal = true;
+  }
 }
 
 // ==================== PASSIVE / ABILITY SYSTEM ====================
