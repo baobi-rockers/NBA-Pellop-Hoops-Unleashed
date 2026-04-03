@@ -480,6 +480,60 @@
       border: 1px solid rgba(255,255,255,0.15);
     }
 
+    /* ===== BUFF ANIMATION OVERLAY ===== */
+    .buff-notification {
+      position: fixed;
+      top: 50%; left: 50%; transform: translate(-50%, -50%);
+      z-index: 9500; pointer-events: none;
+      background: rgba(10,15,26,0.95);
+      border: 2px solid rgba(255,209,102,0.6);
+      border-radius: 16px; padding: 20px 32px;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.8);
+      backdrop-filter: blur(12px);
+      animation: buffSlideIn 2.5s cubic-bezier(0.25,0.46,0.45,0.94) forwards;
+    }
+    @keyframes buffSlideIn {
+      0% { opacity: 0; transform: translate(-50%, -80%) scale(0.7); }
+      15% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
+      25% { transform: translate(-50%, -50%) scale(1); }
+      85% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      100% { opacity: 0; transform: translate(-50%, -20%) scale(0.8); }
+    }
+    .buff-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.4rem; font-weight: 900;
+      color: var(--gold-light);
+      text-align: center;
+      margin-bottom: 12px;
+      letter-spacing: 2px;
+      text-shadow: 0 0 12px rgba(255,209,102,0.6);
+    }
+    .buff-player {
+      text-align: center;
+      font-size: 0.95rem;
+      color: rgba(255,255,255,0.8);
+      margin-bottom: 14px;
+    }
+    .buff-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .buff-stat-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.1rem;
+      color: white;
+    }
+    .buff-arrow {
+      color: #40E0A0;
+      font-size: 1.3rem;
+      font-weight: bold;
+    }
+
     /* ===== ACTION PANELS ===== */
     .action-panels-wrapper {
       position: fixed; bottom: 0; left: 0; right: 0;
@@ -981,6 +1035,9 @@
 </div>
 
 <script>
+// ==================== CARD DATA INJECTION POINT ====================
+// Your CARDS constant goes here - I've removed it to keep the response focused on the fixes
+
 // ==================== UTILS ====================
 function $(id){return document.getElementById(id);}
 const GITHUB_RAW_BASE=`https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/`;
@@ -1029,6 +1086,33 @@ function showScreen(id){
   if(id!=='battle-screen') stopBgMusic();
 }
 function delay(ms){return new Promise(r=>setTimeout(r,ms));}
+
+// ==================== BUFF NOTIFICATION ANIMATION ====================
+async function showBuffNotification(playerName, skillName, oldStats, newStats) {
+  let overlay = document.createElement('div');
+  overlay.className = 'buff-notification';
+  
+  let statsHtml = '';
+  if (oldStats.hp !== newStats.hp) {
+      statsHtml += `<div class="buff-stat-row"><span>HP: ${oldStats.hp}</span><span class="buff-arrow">→</span><span>${newStats.hp}</span></div>`;
+  }
+  if (oldStats.dmg !== newStats.dmg) {
+      statsHtml += `<div class="buff-stat-row"><span>DMG: ${oldStats.dmg}</span><span class="buff-arrow">→</span><span>${newStats.dmg}</span></div>`;
+  }
+  if (oldStats.spd !== newStats.spd) {
+      statsHtml += `<div class="buff-stat-row"><span>SPD: ${oldStats.spd}</span><span class="buff-arrow">→</span><span>${newStats.spd}</span></div>`;
+  }
+  
+  overlay.innerHTML = `
+      <div class="buff-title">⬆ STAT BUFF ⬆</div>
+      <div class="buff-player">${playerName} used ${skillName}</div>
+      <div class="buff-stats">${statsHtml}</div>
+  `;
+  
+  document.body.appendChild(overlay);
+  await delay(2500);
+  overlay.remove();
+}
 
 // ==================== BATTLE LOG UI ===========================
 let battleLogOpen=false;
@@ -1320,7 +1404,7 @@ function renderSetupBench(){
   });
 }
 
-  // ==================== GLOBAL STATE ====================
+// ==================== GLOBAL STATE ====================
 let activeAuras = [];
 let pendingBlocks = [];
 let frozenCards = {};
@@ -1426,7 +1510,7 @@ function startBattle() {
           if (c.Skills) {
               for (let sk of c.Skills) {
                   let json = sk.Logic_Engine || {};
-                  sk._usesLeft = json.max_uses !== undefined ? json.max_uses : 1;
+                  sk._usesLeft = json.max_uses !== undefined ? json.max_uses : 99;
               }
           }
       }
@@ -1439,7 +1523,7 @@ function startBattle() {
   initAllAbilities(playerBench);
   initAllAbilities(enemyBench);
   
-  // Clear all state
+// Clear all state
   frozenCards = {}; shutdownCards = {}; disabledSkills = {}; drainedNextTurn = {};
   invulnerable = {}; stolenSkills = {}; statBuffs = {}; activeAuras = []; pendingBlocks = [];
   
