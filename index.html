@@ -142,41 +142,26 @@
       display: flex; flex-direction: column; align-items: center; justify-content: center;
       min-height: 100vh; text-align: center; gap: 32px; padding: 20px; position: relative;
     }
-    .home-logo-wrap {
-      position: relative; display: inline-block; cursor: default;
-    }
+    .home-logo-wrap { position: relative; display: inline-block; cursor: default; }
     .home-logo-glow {
       position: absolute; inset: -40px;
       background: radial-gradient(ellipse at center, rgba(232,98,26,0.7) 0%, rgba(45,106,79,0.4) 40%, transparent 70%);
       border-radius: 50%; filter: blur(20px);
-      animation: pulseFlame 2.8s ease-in-out infinite;
-      pointer-events: none; z-index: 0;
+      animation: pulseFlame 2.8s ease-in-out infinite; pointer-events: none; z-index: 0;
     }
     .home-logo-glow-2 {
       position: absolute; inset: -20px;
       background: radial-gradient(ellipse at center, rgba(255,180,50,0.5) 0%, rgba(232,98,26,0.3) 50%, transparent 70%);
       border-radius: 50%; filter: blur(12px);
-      animation: pulseFlame2 2.1s ease-in-out infinite;
-      pointer-events: none; z-index: 0;
+      animation: pulseFlame2 2.1s ease-in-out infinite; pointer-events: none; z-index: 0;
     }
-    @keyframes pulseFlame {
-      0%   { opacity: 0.6; transform: scale(0.92); }
-      50%  { opacity: 1;   transform: scale(1.08); }
-      100% { opacity: 0.6; transform: scale(0.92); }
-    }
-    @keyframes pulseFlame2 {
-      0%   { opacity: 0.4; transform: scale(1.0) translateY(0); }
-      50%  { opacity: 0.9; transform: scale(1.05) translateY(-8px); }
-      100% { opacity: 0.4; transform: scale(1.0) translateY(0); }
-    }
+    @keyframes pulseFlame { 0% { opacity: 0.6; transform: scale(0.92); } 50% { opacity: 1; transform: scale(1.08); } 100% { opacity: 0.6; transform: scale(0.92); } }
+    @keyframes pulseFlame2 { 0% { opacity: 0.4; transform: scale(1.0) translateY(0); } 50% { opacity: 0.9; transform: scale(1.05) translateY(-8px); } 100% { opacity: 0.4; transform: scale(1.0) translateY(0); } }
     .home-big-logo { width: min(500px, 85vw); position: relative; z-index: 1; filter: drop-shadow(0 4px 20px rgba(232,98,26,0.5)); }
     .home-btn-row { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
 
     /* ===== CATALOGUE ===== */
-    .card-grid {
-      display: grid; grid-template-columns: repeat(5, 1fr);
-      gap: 12px; padding: 14px 18px; align-items: start;
-    }
+    .card-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; padding: 14px 18px; align-items: start; }
     .compact-card {
       position: relative; width: 100%; padding-bottom: 140%;
       background: white; border-radius: 10px; overflow: hidden;
@@ -189,14 +174,7 @@
     .card-img-sm { position: absolute; inset: 0; background: #1a1a2e; pointer-events: none; }
     .card-img-sm img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* Expanded row (catalogue) - in-grid, half-width */
-    .expanded-row { display: none; }
-    .expanded-card-container { height: 280px; width: 200px; flex-shrink: 0; margin-right: 16px; border-radius: 10px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
-    .expanded-front { width: 100%; height: 100%; background: #1a1a2e; }
-    .expanded-front img { width: 100%; height: 100%; object-fit: cover; }
-    @keyframes fairySpin { 0%{transform:rotateY(1080deg) scale(0.5);opacity:0;} 15%{opacity:1;} 70%{transform:rotateY(0deg) scale(1.04);} 100%{transform:rotateY(0deg) scale(1);opacity:1;} }
-    .expanded-scroll-wrapper { flex: 1; overflow-y: auto; max-height: 310px; padding-right: 4px; }
-    .expanded-content { color: var(--text); }
+    /* Expanded Content Classes */
     .ec-header { border-bottom: 2px solid var(--border); padding-bottom: 6px; margin-bottom: 8px; }
     .ec-title { font-size: 1.15rem; font-weight: 800; line-height: 1.1; }
     .ec-team { color: var(--accent); font-weight: 700; font-size: 0.65rem; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
@@ -206,7 +184,6 @@
     .ec-ability-block { background: rgba(45,106,79,0.06); border-left: 3px solid var(--green); padding: 6px 8px; margin-bottom: 8px; border-radius: 0 6px 6px 0; }
     .ec-ability-name { font-weight: 800; color: var(--green); font-size: 0.82rem; }
     .ec-ability-desc { font-size: 0.65rem; color: var(--text-light); line-height: 1.35; margin-top: 2px; }
-    .ec-skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
     .ec-skill-wrap { background: var(--surface-2); border: 1px solid var(--border); padding: 7px 8px; border-radius: 8px; }
     .ec-skill-header { display: flex; justify-content: space-between; align-items: flex-start; font-weight: 800; font-size: 0.75rem; margin-bottom: 3px; gap: 4px; }
     .ec-skill-name { flex: 1; color: var(--text); }
@@ -216,23 +193,9 @@
     /* ===== DRAFT ===== */
     .draft-layout { display: flex; min-height: calc(100vh - 90px); }
     .draft-main { flex: 1; overflow-y: auto; min-width: 0; }
-    .draft-sidebar {
-      width: 200px; flex-shrink: 0; background: var(--surface);
-      border-left: 2px solid var(--border); display: flex; flex-direction: column;
-      padding: 14px 10px; gap: 8px; position: sticky; top: 90px;
-      height: calc(100vh - 90px); overflow-y: auto;
-    }
-    .draft-count-display {
-      font-family: 'Orbitron', sans-serif; font-size: 2.2rem; font-weight: 900;
-      text-align: center; color: var(--accent);
-      text-shadow: 2px 2px 0 rgba(0,0,0,0.08); letter-spacing: 2px; margin-bottom: 6px;
-    }
-    .slot-card {
-      background: var(--surface-2); border-radius: 8px; border: 1.5px dashed var(--border-heavy);
-      padding: 5px 6px; min-height: 48px; text-align: center; position: relative;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      transition: all 0.2s;
-    }
+    .draft-sidebar { width: 200px; flex-shrink: 0; background: var(--surface); border-left: 2px solid var(--border); display: flex; flex-direction: column; padding: 14px 10px; gap: 8px; position: sticky; top: 90px; height: calc(100vh - 90px); overflow-y: auto; }
+    .draft-count-display { font-family: 'Orbitron', sans-serif; font-size: 2.2rem; font-weight: 900; text-align: center; color: var(--accent); text-shadow: 2px 2px 0 rgba(0,0,0,0.08); letter-spacing: 2px; margin-bottom: 6px; }
+    .slot-card { background: var(--surface-2); border-radius: 8px; border: 1.5px dashed var(--border-heavy); padding: 5px 6px; min-height: 48px; text-align: center; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.2s; }
     .slot-card.filled { border-style: solid; background: white; }
     .slot-pos { font-weight: 900; font-size: 0.9rem; letter-spacing: 1px; pointer-events: none; }
     .slot-name { font-weight: 600; font-size: 0.6rem; color: var(--text); white-space: normal; line-height: 1.2; pointer-events: none; word-wrap: break-word; width: 100%; margin-top: 2px; }
@@ -243,62 +206,28 @@
     .slot-PF.filled { border-color: var(--pos-pf); } .slot-PF .slot-pos { color: var(--pos-pf); }
     .slot-C.filled  { border-color: var(--pos-c);  } .slot-C  .slot-pos { color: var(--pos-c); }
     .slot-6TH.filled{ border-color: var(--pos-6th);} .slot-6TH .slot-pos { color: var(--pos-6th); }
-    .remove-slot, .setup-remove {
-      position: absolute; top: -9px; right: -9px;
-      width: 22px; height: 22px; border-radius: 50%; z-index: 100;
-      background: linear-gradient(180deg, #D84040 0%, #982020 100%);
-      color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      font-size: 0.7rem; font-weight: bold; border: none;
-      box-shadow: 0 2px 0 #601010, 0 2px 5px rgba(180,40,40,0.5);
-      transition: transform 0.12s;
-    }
+    .remove-slot, .setup-remove { position: absolute; top: -9px; right: -9px; width: 22px; height: 22px; border-radius: 50%; z-index: 100; background: linear-gradient(180deg, #D84040 0%, #982020 100%); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; border: none; box-shadow: 0 2px 0 #601010, 0 2px 5px rgba(180,40,40,0.5); transition: transform 0.12s; }
     .remove-slot:hover, .setup-remove:hover { transform: scale(0.88); }
 
     /* Draft side panel */
     #draft-grid-wrapper { display: flex; align-items: flex-start; min-height: 100%; flex-direction: row-reverse; }
     #draft-cards-col { flex: 1; min-width: 0; }
-    #draft-side-panel {
-      width: 0; overflow: hidden; transition: width 0.35s cubic-bezier(0.4,0,0.2,1);
-      flex-shrink: 0; background: var(--surface); border-right: 2px solid var(--border);
-      position: sticky; top: 90px; max-height: calc(100vh - 90px); overflow-y: auto;
-    }
+    #draft-side-panel { width: 0; overflow: hidden; transition: width 0.35s cubic-bezier(0.4,0,0.2,1); flex-shrink: 0; background: var(--surface); border-right: 2px solid var(--border); position: sticky; top: 90px; max-height: calc(100vh - 90px); overflow-y: auto; }
     #draft-side-panel.open { width: 380px; }
     .side-panel-inner { padding: 18px 16px; width: 380px; }
-    .side-panel-card-img {
-      width: 100%; aspect-ratio: 5/7; border-radius: 12px; overflow: hidden;
-      border: 2px solid var(--border); background: #1a1a2e; margin-bottom: 14px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-    }
+    .side-panel-card-img { width: 100%; aspect-ratio: 5/7; border-radius: 12px; overflow: hidden; border: 2px solid var(--border); background: #1a1a2e; margin-bottom: 14px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
     .side-panel-card-img img { width: 100%; height: 100%; object-fit: cover; }
     @keyframes panelCardIn { 0%{transform:rotateY(720deg) scale(0.4);opacity:0;} 15%{opacity:1;} 70%{transform:rotateY(0deg) scale(1.03);} 100%{transform:rotateY(0deg) scale(1);opacity:1;} }
     .side-panel-card-img.animating { animation: panelCardIn 1.4s cubic-bezier(0.08,0.95,0.2,1) forwards; perspective: 1200px; transform-style: preserve-3d; }
-    .side-panel-close {
-      position: absolute; top: 10px; left: 10px; width: 28px; height: 28px; border-radius: 50%;
-      background: linear-gradient(180deg, #D84040 0%, #982020 100%); color: white; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.85rem; font-weight: bold; z-index: 10;
-      box-shadow: 0 3px 0 #601010; border: none; transition: transform 0.12s;
-    }
+    .side-panel-close { position: absolute; top: 10px; left: 10px; width: 28px; height: 28px; border-radius: 50%; background: linear-gradient(180deg, #D84040 0%, #982020 100%); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; font-weight: bold; z-index: 10; box-shadow: 0 3px 0 #601010; border: none; transition: transform 0.12s; }
     .side-panel-close:hover { transform: scale(0.85); }
     .side-panel-relative { position: relative; }
 
     /* ===== SETUP SCREEN ===== */
     #setup-screen { background: var(--bg); }
-    .setup-header-bar {
-      background: var(--surface); padding: 10px 20px;
-      border-bottom: 2px solid var(--border);
-      display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;
-    }
-    .setup-slots-row {
-      display: flex; justify-content: center; gap: 10px; padding: 14px 20px 6px;
-      flex-wrap: nowrap; overflow-x: auto;
-    }
-    .setup-slot-card {
-      width: 240px; height: 336px; flex-shrink: 0;
-      background: var(--surface); border-radius: 10px; border: 2px dashed var(--border-heavy);
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      position: relative; overflow: visible; transition: all 0.2s;
-    }
+    .setup-header-bar { background: var(--surface); padding: 10px 20px; border-bottom: 2px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+    .setup-slots-row { display: flex; justify-content: center; gap: 10px; padding: 14px 20px 6px; flex-wrap: nowrap; overflow-x: auto; }
+    .setup-slot-card { width: 240px; height: 336px; flex-shrink: 0; background: var(--surface); border-radius: 10px; border: 2px dashed var(--border-heavy); display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: visible; transition: all 0.2s; }
     .setup-slot-card.filled { border-style: solid; border-width: 2px; }
     .setup-slot-card.drag-over { box-shadow: 0 0 18px rgba(232,98,26,0.4); transform: scale(1.03); border-color: var(--accent); }
     .setup-slot-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
@@ -309,106 +238,41 @@
     .setup-slot-SF.filled { border-color: var(--pos-sf); } .setup-slot-SF .setup-slot-pos { color: var(--pos-sf); }
     .setup-slot-PF.filled { border-color: var(--pos-pf); } .setup-slot-PF .setup-slot-pos { color: var(--pos-pf); }
     .setup-slot-C.filled  { border-color: var(--pos-c);  } .setup-slot-C .setup-slot-pos  { color: var(--pos-c); }
-    .setup-counter {
-      font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 2.2rem;
-      color: var(--green); letter-spacing: 2px;
-    }
-    .setup-action-bar {
-      display: flex; align-items: center; justify-content: center;
-      padding: 10px 20px; background: var(--surface); border-bottom: 1px solid var(--border); gap: 16px;
-    }
+    .setup-counter { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 2.2rem; color: var(--green); letter-spacing: 2px; }
+    .setup-action-bar { display: flex; align-items: center; justify-content: center; padding: 10px 20px; background: var(--surface); border-bottom: 1px solid var(--border); gap: 16px; }
     .bench-label { font-weight: 800; color: var(--accent); padding: 10px 20px 4px; }
-    .bench-scroll-row {
-      padding: 10px 20px; display: flex; flex-direction: row; overflow-x: auto;
-      gap: 12px; flex-wrap: nowrap; scroll-snap-type: x mandatory;
-    }
+    .bench-scroll-row { padding: 10px 20px; display: flex; flex-direction: row; overflow-x: auto; gap: 12px; flex-wrap: nowrap; scroll-snap-type: x mandatory; }
     .bench-scroll-row::-webkit-scrollbar { height: 5px; }
     .bench-scroll-row::-webkit-scrollbar-track { background: var(--border); border-radius: 3px; }
     .bench-scroll-row::-webkit-scrollbar-thumb { background: #7ab49a; border-radius: 3px; }
-    .bench-card-item {
-      width: 240px; height: 336px; flex-shrink: 0; scroll-snap-align: start;
-      background: #1a1a2e; border-radius: 10px; overflow: hidden; cursor: grab;
-      border: 2px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      position: relative; transition: transform 0.2s, box-shadow 0.2s;
-    }
+    .bench-card-item { width: 240px; height: 336px; flex-shrink: 0; scroll-snap-align: start; background: #1a1a2e; border-radius: 10px; overflow: hidden; cursor: grab; border: 2px solid var(--border); box-shadow: 0 4px 12px rgba(0,0,0,0.15); position: relative; transition: transform 0.2s, box-shadow 0.2s; }
     .bench-card-item:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(232,98,26,0.25); border-color: var(--accent); }
     .bench-card-item img { width: 100%; height: 100%; object-fit: cover; }
 
     /* ===== BATTLE SCREEN ===== */
     #battle-screen { background: var(--battle-bg); color: white; overflow: hidden; }
-    .battle-app-header {
-      background: rgba(10,15,26,0.97);
-      border-bottom: 1px solid rgba(255,255,255,0.1);
-      padding: 6px 16px; display: flex; align-items: center; justify-content: space-between;
-      position: fixed; top: 0; left: 0; right: 0; z-index: 200; backdrop-filter: blur(10px);
-    }
+    .battle-app-header { background: rgba(10,15,26,0.97); border-bottom: 1px solid rgba(255,255,255,0.1); padding: 6px 16px; display: flex; align-items: center; justify-content: space-between; position: fixed; top: 0; left: 0; right: 0; z-index: 200; backdrop-filter: blur(10px); }
     .battle-logo-img { height: 34px; width: auto; object-fit: contain; }
-
-    .arena-container {
-      display: flex; height: 100vh; width: 100%; overflow: hidden;
-      position: relative; padding-top: 44px;
-      transition: padding-right 0.4s cubic-bezier(0.4,0,0.2,1);
-    }
+    .arena-container { display: flex; height: 100vh; width: 100%; overflow: hidden; position: relative; padding-top: 44px; transition: padding-right 0.4s cubic-bezier(0.4,0,0.2,1); }
     .arena-container.log-open { padding-right: var(--log-width); }
-
-    .court-area {
-      flex: 1; display: flex; flex-direction: column;
-      background: url('https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/battle_backdrop.png') center/cover no-repeat,
-                  radial-gradient(ellipse at center, #0d1b2a 0%, #050a12 100%);
-      padding: 10px 20px 8px; justify-content: space-between;
-      overflow: hidden; position: relative;
-      transition: all 0.4s cubic-bezier(0.4,0,0.2,1);
-    }
+    .court-area { flex: 1; display: flex; flex-direction: column; background: url('https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/battle_backdrop.png') center/cover no-repeat, radial-gradient(ellipse at center, #0d1b2a 0%, #050a12 100%); padding: 10px 20px 8px; justify-content: space-between; overflow: hidden; position: relative; transition: all 0.4s cubic-bezier(0.4,0,0.2,1); }
 
     /* Scoreboard */
-    .floating-scoreboard {
-      position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
-      background: rgba(10,15,26,0.88); border: 1.5px solid rgba(255,255,255,0.15);
-      padding: 5px 24px; border-radius: 12px;
-      display: flex; flex-direction: column; align-items: center;
-      z-index: 50; box-shadow: 0 6px 20px rgba(0,0,0,0.7); backdrop-filter: blur(8px);
-      transition: left 0.4s, transform 0.4s;
-    }
-    .score-board {
-      display: flex; gap: 16px; font-family: 'Orbitron', sans-serif;
-      font-size: 2.5rem; line-height: 1; font-weight: 900;
-    }
+    .floating-scoreboard { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); background: rgba(10,15,26,0.88); border: 1.5px solid rgba(255,255,255,0.15); padding: 5px 24px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; z-index: 50; box-shadow: 0 6px 20px rgba(0,0,0,0.7); backdrop-filter: blur(8px); transition: left 0.4s, transform 0.4s; }
+    .score-board { display: flex; gap: 16px; font-family: 'Orbitron', sans-serif; font-size: 2.5rem; line-height: 1; font-weight: 900; }
     #turn-indicator { font-weight: 700; color: rgba(255,255,255,0.5); font-size: 0.68rem; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1px; }
 
     /* Fan rows */
-    .active-fan-wrapper {
-      display: flex; justify-content: center; align-items: flex-end;
-      position: relative; width: 100%; height: 270px; margin-bottom: 120px;
-    }
-    .enemy-fan-wrapper {
-      display: flex; justify-content: center; align-items: flex-start;
-      position: relative; width: 100%; height: 290px; margin-top: 50px;
-    }
+    .active-fan-wrapper { display: flex; justify-content: center; align-items: flex-end; position: relative; width: 100%; height: 270px; margin-bottom: 120px; }
+    .enemy-fan-wrapper { display: flex; justify-content: center; align-items: flex-start; position: relative; width: 100%; height: 290px; margin-top: 50px; }
 
     /* ===== ACTIVE & ENEMY CARD WRAPPERS (OVERLAPPING & PUSH EFFECT) ===== */
-    .active-card-wrap, .enemy-card-wrap {
-      transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1);
-      cursor: pointer; position: relative; display: inline-block;
-      margin: 0 -20px; /* OVERLAP: Tucks the cards tightly together */
-    }
-    .active-card-wrap:hover, .enemy-card-wrap:hover {
-      transform: rotate(var(--base-rot)) translateY(var(--base-y)) scale(1.4) !important;
-      margin: 0 35px !important; /* PUSH SIBLINGS ASIDE to make room for 1.4x scale */
-      z-index: 100 !important;
-    }
-    .active-card-wrap:hover {
-      filter: drop-shadow(0 20px 30px rgba(64,224,160,0.5));
-    }
-    .enemy-card-wrap:hover {
-      filter: drop-shadow(0 -10px 30px rgba(255,107,107,0.7));
-    }
+    .active-card-wrap, .enemy-card-wrap { transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1); cursor: pointer; position: relative; display: inline-block; margin: 0 -20px; }
+    .active-card-wrap:hover, .enemy-card-wrap:hover { transform: rotate(var(--base-rot)) translateY(var(--base-y)) scale(1.4) !important; margin: 0 35px !important; z-index: 100 !important; }
+    .active-card-wrap:hover { filter: drop-shadow(0 20px 30px rgba(64,224,160,0.5)); }
+    .enemy-card-wrap:hover { filter: drop-shadow(0 -10px 30px rgba(255,107,107,0.7)); }
 
-    .battle-card {
-      width: 165px; height: 231px; border-radius: 10px;
-      border: 2px solid rgba(255,255,255,0.2); overflow: hidden;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.7); position: relative;
-      background: #0f1320; transition: border 0.2s, box-shadow 0.2s;
-    }
+    .battle-card { width: 165px; height: 231px; border-radius: 10px; border: 2px solid rgba(255,255,255,0.2); overflow: hidden; box-shadow: 0 8px 20px rgba(0,0,0,0.7); position: relative; background: #0f1320; transition: border 0.2s, box-shadow 0.2s; }
     .battle-card img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
     .battle-card.face-down { background: url('https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/goat-tier-back.png') center/cover; }
     .battle-card.face-down img { display: none; }
@@ -426,155 +290,34 @@
     .bench-stack-container { position: absolute; left: 14px; width: 120px; z-index: 150; pointer-events: none; }
     .bench-stack-container.player-bench-stack { bottom: calc(130px + 128px); height: 180px; }
     .bench-stack-container.enemy-bench-stack  { top: calc(50px + 130px); height: 180px; }
-    .bench-stack-card {
-      position: absolute; width: 120px; height: 168px; border-radius: 8px;
-      border: 1.5px solid rgba(255,255,255,0.2); background: #0f1320; cursor: pointer;
-      box-shadow: -3px 3px 10px rgba(0,0,0,0.7); pointer-events: auto; overflow: hidden;
-    }
+    .bench-stack-card { position: absolute; width: 120px; height: 168px; border-radius: 8px; border: 1.5px solid rgba(255,255,255,0.2); background: #0f1320; cursor: pointer; box-shadow: -3px 3px 10px rgba(0,0,0,0.7); pointer-events: auto; overflow: hidden; }
     .bench-stack-card img { width: 100%; height: 100%; object-fit: cover; }
     .bench-stack-card.face-down { background: url('https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/goat-tier-back.png') center/cover; }
     .bench-stack-card.face-down img { display: none; }
     .bench-stack-card:hover { border-color: rgba(255,255,255,0.6); box-shadow: 0 0 14px rgba(255,255,255,0.3); }
 
     /* Bench fan overlay */
-    .bench-fan-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.75);
-      backdrop-filter: blur(12px); z-index: 140; display: none;
-      flex-direction: column; align-items: center; justify-content: center;
-    }
+    .bench-fan-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); backdrop-filter: blur(12px); z-index: 140; display: none; flex-direction: column; align-items: center; justify-content: center; }
     .bench-fan-overlay.open { display: flex; }
-    .bench-fan-stage {
-      position: relative; width: 100%; height: 340px;
-      display: flex; align-items: flex-end; justify-content: center;
-    }
-    .bench-fan-card-wrap {
-      position: relative; cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1);
-      transform-origin: bottom center;
-      margin: 0 -20px;
-    }
-    .bench-fan-card-wrap:hover {
-      transform: rotate(var(--base-rot)) translateY(var(--base-y)) scale(1.4) !important;
-      margin: 0 35px !important; z-index: 300 !important;
-      filter: brightness(1.25) drop-shadow(0 -12px 24px rgba(64,224,160,0.6));
-    }
+    .bench-fan-stage { position: relative; width: 100%; height: 340px; display: flex; align-items: flex-end; justify-content: center; }
+    .bench-fan-card-wrap { position: relative; cursor: pointer; transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1); transform-origin: bottom center; margin: 0 -20px; }
+    .bench-fan-card-wrap:hover { transform: rotate(var(--base-rot)) translateY(var(--base-y)) scale(1.4) !important; margin: 0 35px !important; z-index: 300 !important; filter: brightness(1.25) drop-shadow(0 -12px 24px rgba(64,224,160,0.6)); }
     .bench-fan-card { width: 150px; height: 210px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.25); overflow: hidden; background: #0f1320; box-shadow: 0 16px 36px rgba(0,0,0,0.9); }
     .bench-fan-card img { width: 100%; height: 100%; object-fit: cover; }
     .bench-fan-card-wrap.ineligible { pointer-events: none !important; cursor: not-allowed; }
     .bench-fan-card-wrap.ineligible .bench-fan-card { filter: grayscale(100%) brightness(0.5); border-color: rgba(255,255,255,0.08); }
-    .bench-fan-close {
-      position: absolute; top: -50px; right: 20px;
-      background: linear-gradient(180deg, #D84040 0%, #982020 100%);
-      color: white; cursor: pointer; border: none;
-      width: 42px; height: 42px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 1.1rem; font-weight: bold; z-index: 210;
-      box-shadow: 0 4px 0 #601010, 0 4px 16px rgba(180,40,40,0.6);
-      transition: transform 0.12s;
-    }
+    .bench-fan-close { position: absolute; top: -50px; right: 20px; background: linear-gradient(180deg, #D84040 0%, #982020 100%); color: white; cursor: pointer; border: none; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; font-weight: bold; z-index: 210; box-shadow: 0 4px 0 #601010, 0 4px 16px rgba(180,40,40,0.6); transition: transform 0.12s; }
     .bench-fan-close:hover { transform: scale(0.88); }
-    .bench-fan-label {
-      color: rgba(255,255,255,0.7); font-size: 0.78rem; font-weight: 700;
-      letter-spacing: 1px; text-transform: uppercase; margin-top: 16px;
-      background: rgba(10,15,26,0.7); padding: 6px 18px; border-radius: 20px;
-      border: 1px solid rgba(255,255,255,0.15);
-    }
-
-    /* ===== BUFF ANIMATION OVERLAY ===== */
-    .buff-notification {
-      position: fixed;
-      top: 50%; left: 50%; transform: translate(-50%, -50%);
-      z-index: 9500; pointer-events: none;
-      background: rgba(10,15,26,0.95);
-      border: 2px solid rgba(255,209,102,0.6);
-      border-radius: 16px; padding: 20px 32px;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.8);
-      backdrop-filter: blur(12px);
-      animation: buffSlideIn 2.5s cubic-bezier(0.25,0.46,0.45,0.94) forwards;
-    }
-    @keyframes buffSlideIn {
-      0% { opacity: 0; transform: translate(-50%, -80%) scale(0.7); }
-      15% { opacity: 1; transform: translate(-50%, -50%) scale(1.05); }
-      25% { transform: translate(-50%, -50%) scale(1); }
-      85% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-      100% { opacity: 0; transform: translate(-50%, -20%) scale(0.8); }
-    }
-    .buff-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 1.4rem; font-weight: 900;
-      color: var(--gold-light);
-      text-align: center;
-      margin-bottom: 12px;
-      letter-spacing: 2px;
-      text-shadow: 0 0 12px rgba(255,209,102,0.6);
-    }
-    .buff-player {
-      text-align: center;
-      font-size: 0.95rem;
-      color: rgba(255,255,255,0.8);
-      margin-bottom: 14px;
-    }
-    .buff-stats {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .buff-stat-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      font-family: 'Orbitron', sans-serif;
-      font-size: 1.1rem;
-      color: white;
-    }
-    .buff-arrow {
-      color: #40E0A0;
-      font-size: 1.3rem;
-      font-weight: bold;
-    }
+    .bench-fan-label { color: rgba(255,255,255,0.7); font-size: 0.78rem; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; margin-top: 16px; background: rgba(10,15,26,0.7); padding: 6px 18px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.15); }
 
     /* ===== ACTION PANELS ===== */
-    .action-panels-wrapper {
-      position: fixed; bottom: 0; left: 0; right: 0;
-      display: none; z-index: 200;
-      flex-direction: column; align-items: center;
-      padding-bottom: 8px; pointer-events: none;
-      transition: right 0.4s cubic-bezier(0.4,0,0.2,1);
-      background: linear-gradient(0deg, rgba(8,12,22,0.95) 0%, rgba(8,12,22,0.0) 100%);
-    }
+    .action-panels-wrapper { position: fixed; bottom: 0; left: 0; right: 0; display: none; z-index: 200; flex-direction: column; align-items: center; padding-bottom: 8px; pointer-events: none; transition: right 0.4s cubic-bezier(0.4,0,0.2,1); background: linear-gradient(0deg, rgba(8,12,22,0.95) 0%, rgba(8,12,22,0.0) 100%); }
     .action-panels-wrapper.visible { display: flex; pointer-events: all; }
-    .arena-container.log-open ~ .action-panels-wrapper,
-    .log-open .action-panels-wrapper { right: var(--log-width); }
-
-    .action-card-name {
-      font-family: 'Orbitron', sans-serif; font-size: 0.82rem; letter-spacing: 1px;
-      color: var(--gold-light); margin-bottom: 6px; font-weight: 700;
-      background: rgba(10,15,26,0.85); padding: 4px 14px; border-radius: 8px;
-      border: 1px solid rgba(255,255,255,0.1);
-    }
-    .action-btns-row {
-      display: flex; flex-wrap: wrap; gap: 8px;
-      justify-content: center; align-items: center;
-      padding: 8px 16px; background: rgba(10,15,26,0.88);
-      border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 12px; backdrop-filter: blur(12px);
-      max-width: 90vw;
-    }
-    .action-btn {
-      padding: 9px 16px; font-size: 0.82rem;
-      font-weight: 700; font-family: 'Inter', sans-serif;
-      border-radius: var(--btn-radius); border: none; cursor: pointer;
-      position: relative; overflow: hidden;
-      transition: transform 0.12s, filter 0.12s;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.4); letter-spacing: 0.5px;
-      white-space: nowrap; text-transform: uppercase;
-    }
-    .action-btn::before {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(0,0,0,0.08) 100%);
-      pointer-events: none;
-    }
+    .arena-container.log-open ~ .action-panels-wrapper, .log-open .action-panels-wrapper { right: var(--log-width); }
+    .action-card-name { font-family: 'Orbitron', sans-serif; font-size: 0.82rem; letter-spacing: 1px; color: var(--gold-light); margin-bottom: 6px; font-weight: 700; background: rgba(10,15,26,0.85); padding: 4px 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); }
+    .action-btns-row { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; align-items: center; padding: 8px 16px; background: rgba(10,15,26,0.88); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; backdrop-filter: blur(12px); max-width: 90vw; }
+    .action-btn { padding: 9px 16px; font-size: 0.82rem; font-weight: 700; font-family: 'Inter', sans-serif; border-radius: var(--btn-radius); border: none; cursor: pointer; position: relative; overflow: hidden; transition: transform 0.12s, filter 0.12s; text-shadow: 0 1px 2px rgba(0,0,0,0.4); letter-spacing: 0.5px; white-space: nowrap; text-transform: uppercase; }
+    .action-btn::before { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(255,255,255,0.18) 0%, rgba(0,0,0,0.08) 100%); pointer-events: none; }
     .action-btn:hover { transform: scale(0.97); filter: brightness(1.1); }
     .action-btn:active { transform: scale(0.93); }
     .action-btn-skill { background: linear-gradient(180deg, #7A9E7E 0%, #3D6B54 100%); color: #F5F0E8; box-shadow: 0 3px 0 #1E3828; }
@@ -584,52 +327,21 @@
     .action-btn-dmg { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 0.5px; color: rgba(255,255,255,0.9); font-weight: 400; }
 
     /* Checkout panel */
-    .checkout-panel {
-      position: absolute; bottom: 310px; left: 50%; transform: translateX(-50%);
-      background: rgba(10,15,26,0.9); border: 2px solid rgba(64,224,160,0.4);
-      border-radius: 12px; padding: 10px 18px; width: 290px; z-index: 80;
-      box-shadow: 0 8px 24px rgba(64,224,160,0.1);
-      display: none; flex-direction: column; gap: 7px; backdrop-filter: blur(8px);
-      transition: left 0.4s, transform 0.4s;
-    }
+    .checkout-panel { position: absolute; bottom: 310px; left: 50%; transform: translateX(-50%); background: rgba(10,15,26,0.9); border: 2px solid rgba(64,224,160,0.4); border-radius: 12px; padding: 10px 18px; width: 290px; z-index: 80; box-shadow: 0 8px 24px rgba(64,224,160,0.1); display: none; flex-direction: column; gap: 7px; backdrop-filter: blur(8px); transition: left 0.4s, transform 0.4s; }
     .checkout-panel.panel-blur { filter: blur(3px); }
 
     /* ===== BATTLE LOG PANEL ===== */
-    .battle-log-panel {
-      position: fixed; top: 44px; right: 0; bottom: 0;
-      width: var(--log-width); background: rgba(8,12,22,0.97);
-      border-left: 1px solid rgba(255,255,255,0.12);
-      display: flex; flex-direction: column; z-index: 180;
-      transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
-      backdrop-filter: blur(12px);
-    }
+    .battle-log-panel { position: fixed; top: 44px; right: 0; bottom: 0; width: var(--log-width); background: rgba(8,12,22,0.97); border-left: 1px solid rgba(255,255,255,0.12); display: flex; flex-direction: column; z-index: 180; transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.4,0,0.2,1); backdrop-filter: blur(12px); }
     .battle-log-panel.open { transform: translateX(0); }
-    .battle-log-header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.1);
-      background: rgba(10,15,26,0.9); flex-shrink: 0;
-    }
+    .battle-log-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; border-bottom: 1px solid rgba(255,255,255,0.1); background: rgba(10,15,26,0.9); flex-shrink: 0; }
     .battle-log-title { font-family: 'Orbitron', sans-serif; font-size: 0.72rem; font-weight: 700; color: rgba(255,255,255,0.7); letter-spacing: 1px; text-transform: uppercase; }
-    .log-toggle-btn {
-      background: linear-gradient(180deg, #3A3A5A 0%, #1A1A3A 100%); color: rgba(255,255,255,0.8); border: none; cursor: pointer;
-      width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-      font-size: 0.75rem; box-shadow: 0 2px 0 rgba(0,0,0,0.5); transition: transform 0.12s;
-    }
+    .log-toggle-btn { background: linear-gradient(180deg, #3A3A5A 0%, #1A1A3A 100%); color: rgba(255,255,255,0.8); border: none; cursor: pointer; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; box-shadow: 0 2px 0 rgba(0,0,0,0.5); transition: transform 0.12s; }
     .log-toggle-btn:hover { transform: scale(0.88); }
-    .log-open-tab {
-      position: fixed; right: 0; top: 50%; transform: translateY(-50%);
-      background: rgba(10,15,26,0.92); border: 1px solid rgba(255,255,255,0.15); border-right: none;
-      padding: 12px 8px; border-radius: 8px 0 0 8px; cursor: pointer; z-index: 181;
-      display: flex; flex-direction: column; align-items: center; gap: 4px;
-      transition: right 0.4s, background 0.15s; backdrop-filter: blur(8px);
-    }
+    .log-open-tab { position: fixed; right: 0; top: 50%; transform: translateY(-50%); background: rgba(10,15,26,0.92); border: 1px solid rgba(255,255,255,0.15); border-right: none; padding: 12px 8px; border-radius: 8px 0 0 8px; cursor: pointer; z-index: 181; display: flex; flex-direction: column; align-items: center; gap: 4px; transition: right 0.4s, background 0.15s; backdrop-filter: blur(8px); }
     .log-open-tab.panel-open { right: var(--log-width); }
     .log-open-tab:hover { background: rgba(30,40,60,0.95); }
     .log-tab-text { font-size: 0.55rem; letter-spacing: 1px; color: rgba(255,255,255,0.5); text-transform: uppercase; writing-mode: vertical-rl; text-orientation: mixed; }
-    .retro-log-container {
-      flex: 1; overflow-y: auto; padding: 10px 12px;
-      font-family: 'Inter', sans-serif; font-size: 0.78rem;
-    }
+    .retro-log-container { flex: 1; overflow-y: auto; padding: 10px 12px; font-family: 'Inter', sans-serif; font-size: 0.78rem; }
     .retro-log-container::-webkit-scrollbar { width: 3px; }
     .retro-log-container::-webkit-scrollbar-track { background: transparent; }
     .retro-log-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
@@ -645,93 +357,41 @@
     .log-who-block { color: #A0D0FF; }
 
     /* Enemy bench tooltip */
-    .enemy-bench-tooltip {
-      position: fixed; background: rgba(10,15,26,0.95); border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 8px; padding: 8px 12px; z-index: 9999; font-size: 0.78rem;
-      color: rgba(255,255,255,0.7); pointer-events: none; white-space: nowrap;
-      box-shadow: 0 6px 16px rgba(0,0,0,0.7); display: none;
-    }
+    .enemy-bench-tooltip { position: fixed; background: rgba(10,15,26,0.95); border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; padding: 8px 12px; z-index: 9999; font-size: 0.78rem; color: rgba(255,255,255,0.7); pointer-events: none; white-space: nowrap; box-shadow: 0 6px 16px rgba(0,0,0,0.7); display: none; }
 
-    /* ===== COIN FLIP ANIMATION ===== */
-    .coin-flip-overlay {
-      position: fixed; inset: 0; z-index: 9000;
-      display: flex; align-items: center; justify-content: center; pointer-events: none;
-    }
+    /* ===== COIN FLIP / BUFF ANIMATION OVERLAY ===== */
+    .coin-flip-overlay { position: fixed; inset: 0; z-index: 9000; display: flex; align-items: center; justify-content: center; pointer-events: none; }
     .coin-flip-container { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-    .coin-flip-label {
-      font-family: 'Orbitron', sans-serif; font-size: 0.85rem; color: #80CFFF;
-      letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 0 10px rgba(128,207,255,0.8);
-    }
+    .coin-flip-label { font-family: 'Orbitron', sans-serif; font-size: 0.85rem; color: #80CFFF; letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 0 10px rgba(128,207,255,0.8); }
     .coin-flip-main { display: flex; align-items: center; gap: 24px; }
     .coin-wrap { perspective: 600px; }
-    .coin {
-      width: 90px; height: 90px; border-radius: 50%;
-      position: relative; transform-style: preserve-3d;
-      animation: coinSpin 0.6s linear infinite;
-    }
+    .coin { width: 90px; height: 90px; border-radius: 50%; position: relative; transform-style: preserve-3d; animation: coinSpin 0.6s linear infinite; }
     .coin.result-heads { animation: coinLandHeads 0.8s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
     .coin.result-tails { animation: coinLandTails 0.8s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
-    .coin-face {
-      position: absolute; inset: 0; border-radius: 50%; backface-visibility: hidden;
-      display: flex; align-items: center; justify-content: center;
-      font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1.1rem;
-    }
-    .coin-heads {
-      background: radial-gradient(circle at 35% 30%, #FFE066, #C89010);
-      color: #5A3A00; border: 3px solid #E0A020;
-      box-shadow: inset 0 3px 8px rgba(255,255,255,0.4), inset 0 -3px 8px rgba(0,0,0,0.3);
-    }
-    .coin-tails {
-      background: radial-gradient(circle at 35% 30%, #C0C0C0, #707070);
-      color: #303030; border: 3px solid #A0A0A0;
-      transform: rotateY(180deg);
-      box-shadow: inset 0 3px 8px rgba(255,255,255,0.3), inset 0 -3px 8px rgba(0,0,0,0.3);
-    }
+    .coin-face { position: absolute; inset: 0; border-radius: 50%; backface-visibility: hidden; display: flex; align-items: center; justify-content: center; font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1.1rem; }
+    .coin-heads { background: radial-gradient(circle at 35% 30%, #FFE066, #C89010); color: #5A3A00; border: 3px solid #E0A020; box-shadow: inset 0 3px 8px rgba(255,255,255,0.4), inset 0 -3px 8px rgba(0,0,0,0.3); }
+    .coin-tails { background: radial-gradient(circle at 35% 30%, #C0C0C0, #707070); color: #303030; border: 3px solid #A0A0A0; transform: rotateY(180deg); box-shadow: inset 0 3px 8px rgba(255,255,255,0.3), inset 0 -3px 8px rgba(0,0,0,0.3); }
     @keyframes coinSpin { 0%{transform:rotateY(0deg);} 100%{transform:rotateY(360deg);} }
     @keyframes coinLandHeads { 0%{transform:rotateY(720deg);} 100%{transform:rotateY(0deg);} }
     @keyframes coinLandTails { 0%{transform:rotateY(540deg);} 100%{transform:rotateY(180deg);} }
-    .coin-info-bar {
-      background: rgba(10,15,26,0.92); border: 1px solid rgba(255,255,255,0.2);
-      padding: 10px 18px; border-radius: 10px; text-align: left;
-      min-width: 220px; max-width: 260px;
-    }
+    .coin-info-bar { background: rgba(10,15,26,0.92); border: 1px solid rgba(255,255,255,0.2); padding: 10px 18px; border-radius: 10px; text-align: left; min-width: 220px; max-width: 260px; }
     .coin-info-player { font-weight: 700; color: var(--gold-light); font-size: 0.82rem; }
     .coin-info-move { color: rgba(255,255,255,0.7); font-size: 0.72rem; margin-top: 2px; }
-    .coin-result-text {
-      font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1.2rem;
-      text-align: center; margin-top: 4px; text-shadow: 0 0 16px currentColor;
-    }
+    .coin-result-text { font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1.2rem; text-align: center; margin-top: 4px; text-shadow: 0 0 16px currentColor; }
     .coin-result-text.hit { color: #40E0A0; }
     .coin-result-text.miss { color: #FF6B6B; }
 
     /* Modals */
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.82);
-      backdrop-filter: blur(10px); z-index: 9000;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .modal-box {
-      background: rgba(16,22,42,0.98); border: 1.5px solid rgba(255,255,255,0.15);
-      border-radius: 16px; padding: 24px; width: 420px; max-width: 92vw;
-      box-shadow: 0 24px 60px rgba(0,0,0,0.9); text-align: center;
-    }
-    .modal-title {
-      font-family: 'Orbitron', sans-serif; font-size: 1.4rem; letter-spacing: 2px;
-      color: var(--gold-light); margin-bottom: 14px; font-weight: 900;
-    }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.82); backdrop-filter: blur(10px); z-index: 9000; display: flex; align-items: center; justify-content: center; }
+    .modal-box { background: rgba(16,22,42,0.98); border: 1.5px solid rgba(255,255,255,0.15); border-radius: 16px; padding: 24px; width: 420px; max-width: 92vw; box-shadow: 0 24px 60px rgba(0,0,0,0.9); text-align: center; }
+    .modal-title { font-family: 'Orbitron', sans-serif; font-size: 1.4rem; letter-spacing: 2px; color: var(--gold-light); margin-bottom: 14px; font-weight: 900; }
 
     /* Animations */
     @keyframes shake { 0%,100%{transform:translateX(0);} 20%,60%{transform:translateX(-10px) rotate(-4deg);} 40%,80%{transform:translateX(10px) rotate(4deg);} }
     .anim-shake { animation: shake 0.4s; border-color: #FF5252 !important; box-shadow: inset 0 0 28px rgba(255,82,82,0.7); }
     @keyframes waftUp { 0%{transform:var(--base-t,translateY(0)) translateY(0) scale(1);} 50%{transform:var(--base-t,translateY(0)) translateY(-55px) scale(1.1);} 100%{transform:var(--base-t,translateY(0)) translateY(0) scale(1);} }
     .doing-attack { animation: waftUp 0.65s ease-in-out forwards; }
-    .dmg-popup {
-      position: absolute; top: 25%; left: 50%; transform: translate(-50%,-50%);
-      font-family: 'Orbitron', sans-serif; font-size: 2.5rem;
-      color: var(--gold-light); text-shadow: 0 3px 0 var(--red), 0 0 16px rgba(255,82,82,0.8);
-      z-index: 200; pointer-events: none;
-      animation: popUp 0.9s forwards; opacity: 0; white-space: nowrap;
-    }
+    .dmg-popup { position: absolute; top: 25%; left: 50%; transform: translate(-50%,-50%); font-family: 'Orbitron', sans-serif; font-size: 2.5rem; color: var(--gold-light); text-shadow: 0 3px 0 var(--red), 0 0 16px rgba(255,82,82,0.8); z-index: 200; pointer-events: none; animation: popUp 0.9s forwards; opacity: 0; white-space: nowrap; }
     @keyframes popUp { 0%{opacity:0;transform:translate(-50%,15px) scale(0.5);} 15%{opacity:1;transform:translate(-50%,-18px) scale(1.3);} 80%{opacity:1;transform:translate(-50%,-35px) scale(1);} 100%{opacity:0;transform:translate(-50%,-55px) scale(0.8);} }
     @keyframes shakeInvalid { 0%,100%{transform:translateX(0);} 25%{transform:translateX(-7px);} 75%{transform:translateX(7px);} }
     .shake-invalid { animation: shakeInvalid 0.35s ease; border-color: #FF5252 !important; }
@@ -740,23 +400,11 @@
     #drag-ghost { position: fixed; top: -9999px; left: -9999px; pointer-events: none; z-index: 99999; border-radius: 8px; overflow: hidden; box-shadow: 0 18px 36px rgba(0,0,0,0.7); transform: rotate(3deg) scale(1.05); }
     #drag-ghost img { width: 110px; height: 154px; object-fit: cover; display: block; }
 
-    .undo-btn {
-      position: absolute; top: -9px; right: -9px; width: 22px; height: 22px; border-radius: 50%;
-      background: linear-gradient(180deg, #D84040 0%, #982020 100%);
-      color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
-      font-size: 0.7rem; font-weight: bold; z-index: 100; border: none;
-      box-shadow: 0 2px 0 #601010, 0 2px 5px rgba(180,40,40,0.5);
-      transition: transform 0.12s;
-    }
+    .undo-btn { position: absolute; top: -9px; right: -9px; width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(180deg, #D84040 0%, #982020 100%); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: bold; z-index: 100; border: none; box-shadow: 0 2px 0 #601010, 0 2px 5px rgba(180,40,40,0.5); transition: transform 0.12s; }
     .undo-btn:hover { transform: scale(0.88); }
 
     /* Status badge on card */
-    .card-status-badge {
-      position: absolute; top: 4px; left: 4px; z-index: 10;
-      background: rgba(0,0,0,0.7); border-radius: 4px;
-      padding: 2px 5px; font-size: 0.58rem; font-weight: 700;
-      border: 1px solid rgba(255,255,255,0.2); pointer-events: none;
-    }
+    .card-status-badge { position: absolute; top: 4px; left: 4px; z-index: 10; background: rgba(0,0,0,0.7); border-radius: 4px; padding: 2px 5px; font-size: 0.58rem; font-weight: 700; border: 1px solid rgba(255,255,255,0.2); pointer-events: none; }
     .badge-frozen { color: #80CFFF; border-color: rgba(128,207,255,0.5); }
     .badge-drained { color: #FF8C42; border-color: rgba(255,140,66,0.5); }
     .badge-buffed { color: #FFD166; border-color: rgba(255,209,102,0.5); }
@@ -923,7 +571,6 @@
 
   <div class="arena-container" id="arena-container">
     <div class="court-area" id="court-area-bg" onclick="handleCourtClick(event)">
-
       <div class="floating-scoreboard">
         <div id="turn-indicator">STAGING PHASE</div>
         <div class="score-board">
@@ -1034,16 +681,12 @@
   </div>
 </div>
 
-<script>
-// ==================== CARD DATA INJECTION POINT ====================
-// Your CARDS constant goes here - I've removed it to keep the response focused on the fixes
-
+  <script>
 // ==================== UTILS ====================
 function $(id){return document.getElementById(id);}
 const GITHUB_RAW_BASE=`https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/`;
 const BACK_IMG=`${GITHUB_RAW_BASE}goat-tier-back.png`;
 
-// Audio
 let bgMusic=null, bgMusicStarted=false;
 function initBattleAudio(){
   if(bgMusicStarted) return;
@@ -1087,50 +730,19 @@ function showScreen(id){
 }
 function delay(ms){return new Promise(r=>setTimeout(r,ms));}
 
-// ==================== BUFF NOTIFICATION ANIMATION ====================
-async function showBuffNotification(playerName, skillName, oldStats, newStats) {
-  let overlay = document.createElement('div');
-  overlay.className = 'buff-notification';
-  
-  let statsHtml = '';
-  if (oldStats.hp !== newStats.hp) {
-      statsHtml += `<div class="buff-stat-row"><span>HP: ${oldStats.hp}</span><span class="buff-arrow">→</span><span>${newStats.hp}</span></div>`;
-  }
-  if (oldStats.dmg !== newStats.dmg) {
-      statsHtml += `<div class="buff-stat-row"><span>DMG: ${oldStats.dmg}</span><span class="buff-arrow">→</span><span>${newStats.dmg}</span></div>`;
-  }
-  if (oldStats.spd !== newStats.spd) {
-      statsHtml += `<div class="buff-stat-row"><span>SPD: ${oldStats.spd}</span><span class="buff-arrow">→</span><span>${newStats.spd}</span></div>`;
-  }
-  
-  overlay.innerHTML = `
-      <div class="buff-title">⬆ STAT BUFF ⬆</div>
-      <div class="buff-player">${playerName} used ${skillName}</div>
-      <div class="buff-stats">${statsHtml}</div>
-  `;
-  
-  document.body.appendChild(overlay);
-  await delay(2500);
-  overlay.remove();
-}
-
 // ==================== BATTLE LOG UI ===========================
 let battleLogOpen=false;
 function toggleBattleLog(){
   battleLogOpen=!battleLogOpen;
-  let panel=$('battle-log-panel');
-  let tab=$('log-open-tab');
-  let arena=$('arena-container');
-  let actionPanel=$('action-panels-wrapper');
+  let panel=$('battle-log-panel'); let tab=$('log-open-tab');
+  let arena=$('arena-container'); let actionPanel=$('action-panels-wrapper');
   if(battleLogOpen){
-    panel.classList.add('open');
-    tab.classList.add('panel-open');
+    panel.classList.add('open'); tab.classList.add('panel-open');
     arena.classList.add('log-open');
     if(actionPanel) actionPanel.style.right='var(--log-width)';
     let log=$('battle-log');if(log)log.scrollTop=log.scrollHeight;
   }else{
-    panel.classList.remove('open');
-    tab.classList.remove('panel-open');
+    panel.classList.remove('open'); tab.classList.remove('panel-open');
     arena.classList.remove('log-open');
     if(actionPanel) actionPanel.style.right='0';
   }
@@ -1149,7 +761,22 @@ function showTooltip(e,name){
   if(!_tooltipEnabled)return;
   const tt=$('tooltip');if(!tt)return;
   const c=typeof CARDS!=='undefined'?CARDS.find(x=>getCardName(x)===name):null;if(!c)return;
-  let sHtml=(c.Skills||[]).map(s=>`<div style="margin-top:4px;"><span style="color:white;font-weight:600;">${s.Name}</span> <span style="color:#FF8C8C;font-weight:300;">(${s.Display_DMG})</span><div style="color:rgba(255,255,255,0.4);font-size:0.6rem;">${s.Description_UI}</div></div>`).join('');
+  let skillsArr = c.Skills;
+  if (!skillsArr || !Array.isArray(skillsArr)) {
+      skillsArr = [];
+      for (let i = 1; i <= 4; i++) {
+          let sCol = c[`S${i} JSON`] || c[`S${i}_JSON`];
+          if (sCol) {
+              try {
+                  let parsed = typeof sCol === 'string' ? JSON.parse(sCol) : sCol;
+                  skillsArr.push({ Name: parsed.Name || c[`Skill ${i} Name`] || `Skill ${i}`, Nature: c[`Skill ${i} Nature`], Logic_Engine: parsed, Display_DMG: parsed.Display_DMG || c[`Skill ${i} DMG Raw`] || '0', Description_UI: c[`Skill ${i} Description`] });
+              } catch(e) {}
+          }
+      }
+      c.Skills = skillsArr;
+  }
+
+  let sHtml=(skillsArr||[]).map(s=>`<div style="margin-top:4px;"><span style="color:white;font-weight:600;">${s.Name}</span> <span style="color:#FF8C8C;font-weight:300;">(${s.Display_DMG || s.Logic_Engine?.Damage_Value || '0'})</span><div style="color:rgba(255,255,255,0.4);font-size:0.6rem;">${s.Description_UI || ''}</div></div>`).join('');
   tt.innerHTML=`<div class="tt-name">${shortName(name)}</div><div style="color:white;font-weight:600;margin-bottom:2px;">${c.Ability?.Name||'No Ability'}</div><div style="color:rgba(255,255,255,0.4);font-size:0.6rem;margin-bottom:4px;">${c.Ability?.Description_UI||''}</div>${sHtml}`;
   tt.classList.add('visible');positionTooltip(e);
 }
@@ -1255,7 +882,20 @@ function toggleExpand(name,mode){
 }
 function openCatLeftPanel(card){
   let n=getCardName(card),t=card.UI_Frontend_Data?.Team||'',hp=getCardHP(card),dmg=getCardDMG(card),spd=getCardSPD(card),p=getCardPos(card);
-  let skills=(card.Skills||[]).map(s=>`<div class="ec-skill-wrap" style="margin-bottom:4px; padding: 4px 6px;"><div class="ec-skill-header" style="margin-bottom:0;"><span class="ec-skill-name" style="font-size:0.75rem;">${s.Name}</span><span class="ec-skill-dmg" style="font-size:0.65rem;">${s.Display_DMG}</span></div><div class="ec-skill-desc" style="font-size:0.6rem; line-height:1.1;">${s.Description_UI}</div></div>`).join('');
+  let skillsArr = card.Skills || [];
+  if (skillsArr.length === 0) {
+      for (let i = 1; i <= 4; i++) {
+          let sCol = card[`S${i} JSON`] || card[`S${i}_JSON`];
+          if (sCol) {
+              try {
+                  let parsed = typeof sCol === 'string' ? JSON.parse(sCol) : sCol;
+                  skillsArr.push({ Name: parsed.Name || card[`Skill ${i} Name`] || `Skill ${i}`, Nature: card[`Skill ${i} Nature`], Logic_Engine: parsed, Display_DMG: parsed.Display_DMG || card[`Skill ${i} DMG Raw`] || '0', Description_UI: card[`Skill ${i} Description`] });
+              } catch(e) {}
+          }
+      }
+  }
+
+  let skills=(skillsArr||[]).map(s=>`<div class="ec-skill-wrap" style="margin-bottom:4px; padding: 4px 6px;"><div class="ec-skill-header" style="margin-bottom:0;"><span class="ec-skill-name" style="font-size:0.75rem;">${s.Name}</span><span class="ec-skill-dmg" style="font-size:0.65rem;">${s.Display_DMG || s.Logic_Engine?.Damage_Value || '0'}</span></div><div class="ec-skill-desc" style="font-size:0.6rem; line-height:1.1;">${s.Description_UI || ''}</div></div>`).join('');
   let imgEl=$('cat-left-img-el'),imgWrap=$('cat-left-img-wrap');
   imgEl.src=getImgUrl(getCardImg(card),n);imgEl.onerror=()=>handleImgError(imgEl,n);
   imgWrap.classList.remove('animating');void imgWrap.offsetWidth;imgWrap.classList.add('animating');
@@ -1273,12 +913,22 @@ let currentDraftPanelCard=null;
 function openDraftPanel(name){
   let card=CARDS.find(c=>getCardName(c)===name);if(!card)return;
   currentDraftPanelCard=name;
-  let panel=$('draft-side-panel');
-  let imgEl=$('draft-panel-img-el');
-  let imgWrap=$('draft-panel-img');
-  let contentEl=$('draft-panel-content');
+  let panel=$('draft-side-panel'); let imgEl=$('draft-panel-img-el'); let imgWrap=$('draft-panel-img'); let contentEl=$('draft-panel-content');
   let n=getCardName(card),t=card.UI_Frontend_Data?.Team||'',hp=getCardHP(card),dmg=getCardDMG(card),spd=getCardSPD(card),p=getCardPos(card);
-  let skills=(card.Skills||[]).map(s=>`<div class="ec-skill-wrap" style="margin-bottom:8px;"><div class="ec-skill-header"><span class="ec-skill-name">${s.Name}</span><span class="ec-skill-dmg">${s.Display_DMG}</span></div><div class="ec-skill-desc">${s.Description_UI}</div></div>`).join('');
+  let skillsArr = card.Skills || [];
+  if (skillsArr.length === 0) {
+      for (let i = 1; i <= 4; i++) {
+          let sCol = card[`S${i} JSON`] || card[`S${i}_JSON`];
+          if (sCol) {
+              try {
+                  let parsed = typeof sCol === 'string' ? JSON.parse(sCol) : sCol;
+                  skillsArr.push({ Name: parsed.Name || card[`Skill ${i} Name`] || `Skill ${i}`, Nature: card[`Skill ${i} Nature`], Logic_Engine: parsed, Display_DMG: parsed.Display_DMG || card[`Skill ${i} DMG Raw`] || '0', Description_UI: card[`Skill ${i} Description`] });
+              } catch(e) {}
+          }
+      }
+  }
+
+  let skills=(skillsArr||[]).map(s=>`<div class="ec-skill-wrap" style="margin-bottom:8px;"><div class="ec-skill-header"><span class="ec-skill-name">${s.Name}</span><span class="ec-skill-dmg">${s.Display_DMG || s.Logic_Engine?.Damage_Value || '0'}</span></div><div class="ec-skill-desc">${s.Description_UI || ''}</div></div>`).join('');
   imgEl.src=getImgUrl(getCardImg(card),n);
   imgEl.onerror=()=>handleImgError(imgEl,n);
   imgWrap.classList.remove('animating');void imgWrap.offsetWidth;imgWrap.classList.add('animating');
@@ -1404,7 +1054,7 @@ function renderSetupBench(){
   });
 }
 
-// ==================== GLOBAL STATE ====================
+    // ==================== GLOBAL STATE ====================
 let activeAuras = [];
 let pendingBlocks = [];
 let frozenCards = {};
@@ -1507,11 +1157,23 @@ function startBattle() {
   [playerActive, enemyActive, playerBench, enemyBench].forEach(team => {
       for (let c of team) {
           if (!c) continue;
-          if (c.Skills) {
-              for (let sk of c.Skills) {
-                  let json = sk.Logic_Engine || {};
-                  sk._usesLeft = json.max_uses !== undefined ? json.max_uses : 99;
+          let skillsArr = c.Skills;
+          if (!skillsArr || !Array.isArray(skillsArr)) {
+              skillsArr = [];
+              for (let i = 1; i <= 4; i++) {
+                  let sCol = c[`S${i} JSON`] || c[`S${i}_JSON`];
+                  if (sCol) {
+                      try {
+                          let parsed = typeof sCol === 'string' ? JSON.parse(sCol) : sCol;
+                          skillsArr.push({ Name: parsed.Name || c[`Skill ${i} Name`] || `Skill ${i}`, Nature: c[`Skill ${i} Nature`], Logic_Engine: parsed, Display_DMG: parsed.Display_DMG || c[`Skill ${i} DMG Raw`] || '0', Description_UI: c[`Skill ${i} Description`] });
+                      } catch(e) {}
+                  }
               }
+              c.Skills = skillsArr;
+          }
+          for (let sk of c.Skills) {
+              let json = typeof sk.Logic_Engine === 'string' ? JSON.parse(sk.Logic_Engine||'{}') : (sk.Logic_Engine || {});
+              sk._usesLeft = json.max_uses !== undefined ? json.max_uses : (json.Max_Uses !== undefined ? json.Max_Uses : 1);
           }
       }
   });
@@ -1523,7 +1185,7 @@ function startBattle() {
   initAllAbilities(playerBench);
   initAllAbilities(enemyBench);
   
-// Clear all state
+  // Clear all state
   frozenCards = {}; shutdownCards = {}; disabledSkills = {}; drainedNextTurn = {};
   invulnerable = {}; stolenSkills = {}; statBuffs = {}; activeAuras = []; pendingBlocks = [];
   
@@ -1536,7 +1198,7 @@ function startBattle() {
   renderArena();
 }
 
-// ==================== RENDERING: BENCH & ARENA ====================
+// ==================== RENDERING ====================
 let playerBenchOpen = false;
 
 function renderBenchStacks() {
@@ -1796,7 +1458,6 @@ function showActionPanels(c, idx) {
     $('action-card-name').textContent = name;
     let btns = [];
     
-    // Core Buttons
     if (playerBench.filter(x => !x.isDead).length > 0) {
         btns.push(`<button class="action-btn action-btn-swap" onclick="selectAction(${idx},'swap',0)">SWAP</button>`);
     }
@@ -1804,10 +1465,7 @@ function showActionPanels(c, idx) {
     btns.push(`<div style="width:1px;height:30px;background:rgba(255,255,255,0.15);margin:0 4px;"></div>`);
     btns.push(`<button class="action-btn action-btn-basic" onclick="selectAction(${idx},'basic',0)">BASIC ATTACK<br><span class="action-btn-dmg">(${getEffectiveDMG(c)})</span></button>`);
     
-    // --- BULLETPROOF SKILL LOADER ---
     let skillsArr = c.Skills;
-    
-    // Fallback 1: If Excel didn't group them into a 'Skills' array, build it dynamically
     if (!skillsArr || !Array.isArray(skillsArr)) {
         skillsArr = [];
         for (let i = 1; i <= 4; i++) {
@@ -1815,62 +1473,46 @@ function showActionPanels(c, idx) {
             if (sCol) {
                 try {
                     let parsed = typeof sCol === 'string' ? JSON.parse(sCol) : sCol;
-                    skillsArr.push({ Name: parsed.Name || `Skill ${i}`, Logic_Engine: parsed, Display_DMG: parsed.Display_DMG || '0' });
+                    skillsArr.push({ Name: parsed.Name || c[`Skill ${i} Name`] || `Skill ${i}`, Nature: c[`Skill ${i} Nature`], Logic_Engine: parsed, Display_DMG: parsed.Display_DMG || c[`Skill ${i} DMG Raw`] || '0', Description_UI: c[`Skill ${i} Description`] });
                 } catch(e) {}
             }
         }
-        c.Skills = skillsArr; // Cache it so selectAction can find it later
+        c.Skills = skillsArr;
     }
 
-    // Render Skills
     skillsArr.forEach((sk, sIdx) => {
         if (!sk) return;
+        let json = typeof sk.Logic_Engine === 'string' ? JSON.parse(sk.Logic_Engine||'{}') : (sk.Logic_Engine || {});
         
-        // Fallback 2: Safely parse Logic Engine in case it's a raw string
-        let json = {};
-        if (typeof sk.Logic_Engine === 'string') {
-            try { json = JSON.parse(sk.Logic_Engine); } catch(e) {}
-        } else if (sk.Logic_Engine) {
-            json = sk.Logic_Engine;
-        }
-        
-        // Fallback 3: Initialize uses if startBattle missed it
         if (sk._usesLeft === undefined) {
-            sk._usesLeft = json.max_uses !== undefined ? json.max_uses : 1;
+            sk._usesLeft = json.max_uses !== undefined ? json.max_uses : (json.Max_Uses !== undefined ? json.Max_Uses : 1);
         }
         
-        // Visibility Check
+        let nature = (sk.Nature || '').toUpperCase();
         if (sk.S_Can_Select === false || sk.S_Can_Select === 'False' || json.S_Can_Select === false) return;
         if (json.timing === 'REACTIVE' || sk.S_Reactive === true || sk.S_Reactive === 'True') return;
+        if (nature.includes('DEFENSIVE') || nature.includes('REACTIVE')) return;
         
-        // Uses Check
         if (sk._usesLeft <= 0) return;
         
-        // Fallback 4: Safely get name and DMG (prevents fatal .toUpperCase() crash)
         let skName = sk.Name || json.Name || `Skill ${sIdx + 1}`;
-        let dmgStr = sk.Display_DMG || json.Display_DMG || '0';
+        let dmgStr = sk.Display_DMG || json.Display_DMG || json.Damage_Value || '0';
         
         btns.push(`<button class="action-btn action-btn-skill" onclick="selectAction(${idx},'skill',${sIdx})">${String(skName).toUpperCase()}<br><span class="action-btn-dmg">(${dmgStr})</span></button>`);
     });
     
-    // Render Stolen Skills
     let ck = cardKey('player', idx);
     if (stolenSkills[ck]) {
         stolenSkills[ck].forEach((ssk, ssIdx) => {
             let skName = ssk.Name || 'Stolen Skill';
-            btns.push(`<button class="action-btn action-btn-skill" style="border:1px solid rgba(200,160,80,0.4);" onclick="selectAction(${idx},'stolen-skill',${ssIdx})">[STOLEN] ${String(skName).toUpperCase()}<br><span class="action-btn-dmg">(${ssk.Display_DMG || '0'})</span></button>`);
+            let dmgStr = ssk.Display_DMG || ssk.Logic_Engine?.Damage_Value || '0';
+            btns.push(`<button class="action-btn action-btn-skill" style="border:1px solid rgba(200,160,80,0.4);" onclick="selectAction(${idx},'stolen-skill',${ssIdx})">[STOLEN] ${String(skName).toUpperCase()}<br><span class="action-btn-dmg">(${dmgStr})</span></button>`);
         });
     }
     
-    // Inject and show
     $('action-btns-row').innerHTML = btns.join('');
     let w = $('action-panels-wrapper');
     if (w) w.classList.add('visible');
-}
-  
-  $('action-btns-row').innerHTML = btns.join('');
-  let w = $('action-panels-wrapper');
-  if (w) w.classList.add('visible');
 }
 
 function getEffectiveDMG(c) {
@@ -1882,19 +1524,13 @@ function getEffectiveDMG(c) {
 
 function canPlayerSelectSkill(sk) {
   if (!sk) return false;
-  let json = sk.Logic_Engine || {};
+  let json = typeof sk.Logic_Engine === 'string' ? JSON.parse(sk.Logic_Engine||'{}') : (sk.Logic_Engine || {});
+  let nature = (sk.Nature || '').toUpperCase();
   
-  // If your Excel explicitly marks it as false, hide it
-  if (sk.S_Can_Select === false || sk.S_Can_Select === 'False' || sk.S_Can_Select === 'FALSE') {
-      return false;
-  }
-  
-  // Hide reactive/defensive skills from the manual attack menu
-  if (json.timing === 'REACTIVE' || sk.S_Reactive === true || sk.S_Reactive === 'True' || sk.S_Reactive === 'TRUE') {
-      return false;
-  }
+  if (sk.S_Can_Select === false || sk.S_Can_Select === 'False' || sk.S_Can_Select === 'FALSE' || json.S_Can_Select === false) return false;
+  if (json.timing === 'REACTIVE' || sk.S_Reactive === true || sk.S_Reactive === 'True' || sk.S_Reactive === 'TRUE') return false;
+  if (nature.includes('DEFENSIVE') || nature.includes('REACTIVE')) return false;
 
-  // Otherwise, default to showing the skill!
   return true; 
 }
 
@@ -1908,11 +1544,20 @@ async function selectAction(actorIdx, type, skillIdx) {
   if (type === 'skill' || type === 'stolen-skill') {
       let sk = type === 'stolen-skill' ? (stolenSkills[cardKey('player', actorIdx)] || [])[skillIdx] : c.Skills[skillIdx];
       if (!sk) return;
-      let json = sk.Logic_Engine || {};
-      priority = json.priority || 1;
+      let json = typeof sk.Logic_Engine === 'string' ? JSON.parse(sk.Logic_Engine||'{}') : (sk.Logic_Engine || {});
+      priority = json.priority || json.Priority || 1;
       
-      // ✅ Handle ASSIST Skills
-      if (json.execution === 'DEAL_ASSIST_DMG' || json.skill_class === 'ASSIST') {
+      let isBuff = false;
+      let nature = (sk.Nature || '').toLowerCase();
+      let dmgStr = String(sk.Display_DMG || json.Damage_Value || '').toLowerCase();
+      if (json.execution === 'STAT_BUFF' || json.execution === 'INVULNERABLE_THIS_TURN' || json.timing === 'BUFF') isBuff = true;
+      if (dmgStr.includes('buff') || dmgStr.includes('effect')) isBuff = true;
+      if (nature.includes('special') && dmgStr.includes('n/a')) isBuff = true;
+
+      let isTeamTarget = json.target_scope === 'ALL_ENEMIES' || (sk.Description_UI && sk.Description_UI.toLowerCase().includes('all opponents'));
+
+      // ASSIST Skills
+      if (json.execution === 'DEAL_ASSIST_DMG' || json.skill_class === 'ASSIST' || nature.includes('assist')) {
           let parsed = parseAssistFormula(json.dmg_formula || '');
           if (parsed && parsed.positions && parsed.positions.length >= 1) {
               let result = await promptForAssistTeammate(c, sk, 'player');
@@ -1924,16 +1569,15 @@ async function selectAction(actorIdx, type, skillIdx) {
           }
       }
       
-      // ✅ Handle FREE_ACTION skills (Buffs, Auras, Status)
-      if (json.timing === 'FREE_ACTION' || json.timing === 'BUFF') {
-          // Explicitly handle target-requiring Free Actions
-          if (json.execution === 'FREEZE') {
+      // FREE_ACTION skills (Buffs, Auras, Status)
+      if (json.timing === 'FREE_ACTION' || json.timing === 'BUFF' || isBuff || isTeamTarget) {
+          if (json.execution === 'FREEZE' || (nature.includes('dribble') && dmgStr.includes('freeze'))) {
               let target = await promptFreezeTarget(enemyActive);
               if (target === null) { logMsg2('sys', 'System', 'Freeze cancelled.'); return; }
               pushFreeAction(actorIdx, type, skillIdx, priority, c, target, 'enemy', assistTeammateIdx);
               return;
           }
-          if (json.execution === 'STEAL_SKILL') {
+          if (json.execution === 'STEAL_SKILL' || dmgStr.includes('steal skill')) {
               let result = await promptStealSkill('player');
               if (result === null) { logMsg2('sys', 'System', 'Steal cancelled.'); return; }
               executeStealSkill(actorIdx, 'player', result.cardIdx, result.skillIdx);
@@ -1941,16 +1585,15 @@ async function selectAction(actorIdx, type, skillIdx) {
               renderArena(); renderCheckout();
               return;
           }
-          if (json.execution === 'HEAL') {
+          if (json.execution === 'HEAL' || dmgStr.includes('heal')) {
               let result = await promptHealTarget('player');
               if (result === null) { logMsg2('sys', 'System', 'Heal cancelled.'); return; }
               pushFreeAction(actorIdx, type, skillIdx, priority, c, result, 'player-self', assistTeammateIdx);
               return;
           }
           
-          // Pure non-targeting buffs (Stat Buffs, Auras, Invulnerability)
-          if (!json.target || json.target === 'SELF' || ['AURA_JUMP_MISS', 'AURA_CLOSE_MISS', 'AURA_ANY_MISS', 'STAT_BUFF', 'INVULNERABLE_THIS_TURN'].includes(json.execution)) {
-              pushFreeAction(actorIdx, type, skillIdx, priority, c, null, null, assistTeammateIdx);
+          if (!json.target || json.target === 'SELF' || ['AURA_JUMP_MISS', 'AURA_CLOSE_MISS', 'AURA_ANY_MISS', 'STAT_BUFF', 'INVULNERABLE_THIS_TURN'].includes(json.execution) || isBuff || isTeamTarget) {
+              pushFreeAction(actorIdx, type, skillIdx, priority, c, null, isTeamTarget ? 'enemy_team' : null, assistTeammateIdx);
               return;
           }
       }
@@ -2006,7 +1649,7 @@ function renderCheckout() {
       $('staged-list').innerHTML = stagedActions.map(a => {
           let ac = playerActive[a.actorIdx];
           let skName = a.actionType === 'pass' ? 'Pass' : a.actionType === 'swap' ? `Swap → ${shortName(getCardName(playerBench[a.targetIdx]))}` : a.actionType === 'skill' ? (ac.Skills[a.skillIdx]?.Name || 'Skill') : 'Basic Attack';
-          let tgt = a.targetTeam === 'enemy' ? ` → ${shortName(getCardName(enemyActive[a.targetIdx]))}` : ' ';
+          let tgt = a.targetTeam === 'enemy' ? ` → ${shortName(getCardName(enemyActive[a.targetIdx]))}` : (a.targetTeam === 'enemy_team' ? ' → ALL OPPONENTS' : ' ');
           return `<div>▶ [${ac.battleRole}] ${shortName(getCardName(ac))}: ${skName}${tgt}</div>`;
       }).join('');
       $('confirm-moves-btn').disabled = false;
@@ -2055,7 +1698,7 @@ function executeStealSkill(actorIdx, execTeam, enemyCardIdx, enemySkillIdx) {
   if (!ec) return;
   let sk = ec.Skills[enemySkillIdx];
   if (!sk) return;
-  let stolenSk = { ...sk, _usesLeft: sk._usesLeft || sk.Logic_Engine?.max_uses || 1, _stolenFrom: getCardName(ec) };
+  let stolenSk = { ...sk, _usesLeft: sk._usesLeft || (typeof sk.Logic_Engine === 'string' ? JSON.parse(sk.Logic_Engine).max_uses : sk.Logic_Engine?.max_uses) || 1, _stolenFrom: getCardName(ec) };
   let ck = cardKey(execTeam, actorIdx);
   if (!stolenSkills[ck]) stolenSkills[ck] = [];
   stolenSkills[ck].push(stolenSk);
@@ -2078,7 +1721,8 @@ async function promptHealTarget(execTeam) {
 }
 
 async function promptForAssistTeammate(actorCard, sk, execTeam) {
-  let formula = sk.Logic_Engine?.dmg_formula || '';
+  let json = typeof sk.Logic_Engine === 'string' ? JSON.parse(sk.Logic_Engine||'{}') : (sk.Logic_Engine||{});
+  let formula = json.dmg_formula || '';
   let parsed = parseAssistFormula(formula);
   if (!parsed || parsed.positions.length === 0) return { teammateIdx: null };
   let team = execTeam === 'player' ? playerActive : enemyActive;
@@ -2106,13 +1750,13 @@ async function checkAndPromptReactive(action) {
   let defRoster = action.execTeam === 'player' ? enemyActive : playerActive;
   let atkCard = action.c || (action.execTeam === 'player' ? playerActive[action.actorIdx] : enemyActive[action.actorIdx]);
   let sk = action.actionType === 'skill' ? atkCard.Skills[action.skillIdx] : null;
-  let json = sk?.Logic_Engine || {};
+  let json = typeof (sk?.Logic_Engine) === 'string' ? JSON.parse(sk.Logic_Engine||'{}') : (sk?.Logic_Engine || {});
   let nature = sk ? (sk.Nature || '').toLowerCase() : 'basic';
   
   let isJ = nature.includes('jump shot');
   let isC = nature.includes('close shot');
   let isA = sk && (nature.includes('assist') || json.skill_class === 'ASSIST');
-  let isDmg = action.actionType === 'basic' || (sk && !String(sk.Display_DMG || '').toUpperCase().includes('N/A'));
+  let isDmg = action.actionType === 'basic' || (sk && !String(sk.Display_DMG || json.Damage_Value || '').toUpperCase().includes('N/A'));
   
   if (atkCard && atkCard._immuneDefSkills) return false;
   
@@ -2120,17 +1764,14 @@ async function checkAndPromptReactive(action) {
   let atkUncontestable = sk && (json.modifiers?.includes('Unblockable_Uncontestable') || atkCard._skillsUncontestable === true);
   let assistUninterceptable = sk && isA && atkCard._assistUninterceptable;
   
-  if (action.screenGuaranteed) {
-      atkUnblockable = true;
-      atkUncontestable = true;
-  }
+  if (action.screenGuaranteed) { atkUnblockable = true; atkUncontestable = true; }
   
   let valids = [];
   for (let [i, c] of defRoster.entries()) {
       if (c.isDead) continue;
       for (let [si, rsk] of (c.Skills || []).entries()) {
-          let rjson = rsk.Logic_Engine || {};
-          if (rjson.timing !== 'REACTIVE') continue;
+          let rjson = typeof rsk.Logic_Engine === 'string' ? JSON.parse(rsk.Logic_Engine||'{}') : (rsk.Logic_Engine || {});
+          if (rjson.timing !== 'REACTIVE' && !String(rsk.Nature).toUpperCase().includes('DEFENSIVE')) continue;
           
           let v = false;
           if (['BLOCK_FULL', 'BLOCK_PARTIAL', 'REDIRECT_HALF'].includes(rjson.execution)) {
@@ -2145,7 +1786,7 @@ async function checkAndPromptReactive(action) {
               if (isDmg) v = true;
           }
           
-          let u = rsk._usesLeft !== undefined ? rsk._usesLeft : (rjson.max_uses || 1);
+          let u = rsk._usesLeft !== undefined ? rsk._usesLeft : (rjson.max_uses || rjson.Max_Uses || 1);
           if (v && u > 0) valids.push({ cIdx: i, sIdx: si, rsk, c });
       }
   }
@@ -2154,7 +1795,7 @@ async function checkAndPromptReactive(action) {
   
   if (action.execTeam === 'enemy') {
       return new Promise(resolve => {
-          let dStr = sk ? `${sk.Name} (${sk.Display_DMG})` : `Basic Attack (${getCardDMG(atkCard)})`;
+          let dStr = sk ? `${sk.Name} (${sk.Display_DMG || json.Damage_Value})` : `Basic Attack (${getCardDMG(atkCard)})`;
           let tgtCard = action.targetIdx != null ? playerActive[action.targetIdx] : null;
           $('reactive-desc').innerHTML = `<b>${shortName(getCardName(atkCard))}</b> (Opp.) is using <b>${dStr}</b>${tgtCard ? ` on <b>${shortName(getCardName(tgtCard))}</b>` : ''}. Use a reactive defense?`;
           $('reactive-options').innerHTML = valids.map(v => `<button class="game-btn game-btn-purple" style="width:100%;text-align:left;" onclick="resolveJIT(${v.cIdx},${v.sIdx})">[${v.c.battleRole}] ${shortName(getCardName(v.c))}: ${v.rsk.Name}</button>`).join('');
@@ -2175,7 +1816,7 @@ async function checkAndPromptReactive(action) {
 async function applyJITReactive(cIdx, sIdx, defTeam, incAction, allValids) {
   let roster = defTeam === 'player' ? playerActive : enemyActive;
   let c = roster[cIdx], sk = c.Skills[sIdx];
-  let json = sk.Logic_Engine || {};
+  let json = typeof sk.Logic_Engine === 'string' ? JSON.parse(sk.Logic_Engine||'{}') : (sk.Logic_Engine || {});
   if (sk._usesLeft !== undefined) sk._usesLeft--;
   
   let who = defTeam === 'player' ? shortName(getCardName(c)) : `${shortName(getCardName(c))} (Opp.)`;
@@ -2186,25 +1827,13 @@ async function applyJITReactive(cIdx, sIdx, defTeam, incAction, allValids) {
           uiState = 'AWAITING_REACTIVE_TARGET';
           logMsg2('sys', 'System', 'Click enemy card to intercept!');
           return new Promise(resolve => {
-              pendingReactiveAction = {
-                  resolveReac: (tgtIdx) => {
-                      incAction._stolenTargetIdx = tgtIdx;
-                      uiState = 'IDLE';
-                      resolve();
-                  }
-              };
+              pendingReactiveAction = { resolveReac: (tgtIdx) => { incAction._stolenTargetIdx = tgtIdx; uiState = 'IDLE'; resolve(); } };
           });
       } else {
           incAction._stolenTargetIdx = incAction.actorIdx;
       }
   } else {
-      let blockData = {
-          playerCardIdx: cIdx,
-          skillIdx: sIdx,
-          sk,
-          blockType: json.execution === 'BLOCK_PARTIAL' ? 'partial' : json.execution === 'REDIRECT_HALF' ? 'redirect' : 'full',
-          defTeam
-      };
+      let blockData = { playerCardIdx: cIdx, skillIdx: sIdx, sk, blockType: json.execution === 'BLOCK_PARTIAL' ? 'partial' : json.execution === 'REDIRECT_HALF' ? 'redirect' : 'full', defTeam };
       pendingBlocks.push(blockData);
       await checkAndPromptNullify(json.execution, defTeam, cIdx, sIdx, incAction);
   }
@@ -2217,9 +1846,9 @@ async function checkAndPromptNullify(blockedCat, defTeam, blockedCardIdx, blocke
   for (let [i, c] of atkRoster.entries()) {
       if (c.isDead) continue;
       for (let [si, sk] of (c.Skills || []).entries()) {
-          let json = sk.Logic_Engine || {};
+          let json = typeof sk.Logic_Engine === 'string' ? JSON.parse(sk.Logic_Engine||'{}') : (sk.Logic_Engine || {});
           if (!json.modifiers?.includes('Nullify_Defensive_Skill')) continue;
-          let u = sk._usesLeft !== undefined ? sk._usesLeft : (json.max_uses || 1);
+          let u = sk._usesLeft !== undefined ? sk._usesLeft : (json.max_uses || json.Max_Uses || 1);
           if (u > 0) nullifiers.push({ cIdx: i, sIdx: si, sk, c });
       }
   }
@@ -2256,9 +1885,9 @@ async function checkAllyReactiveSupport(action) {
   for (let [i, c] of allies.entries()) {
       if (c.isDead || i === action.actorIdx) continue;
       for (let [si, sk] of (c.Skills || []).entries()) {
-          let json = sk.Logic_Engine || {};
+          let json = typeof sk.Logic_Engine === 'string' ? JSON.parse(sk.Logic_Engine||'{}') : (sk.Logic_Engine || {});
           if (json.execution === 'INTERCEPT_ASSIST' && json.modifiers?.includes('Screen_Guarantee')) {
-              let u = sk._usesLeft !== undefined ? sk._usesLeft : (json.max_uses || 1);
+              let u = sk._usesLeft !== undefined ? sk._usesLeft : (json.max_uses || json.Max_Uses || 1);
               if (u > 0) valids.push({ cIdx: i, sIdx: si, sk, c });
           }
       }
@@ -2270,17 +1899,8 @@ async function checkAllyReactiveSupport(action) {
           document.querySelector('#reactive-modal .modal-title').textContent = "ALLY SUPPORT";
           $('reactive-desc').innerHTML = `<b>${shortName(getCardName(action.c))}</b> is attacking. Use an ally's Screen Guarantee to ensure it hits?`;
           $('reactive-options').innerHTML = valids.map(v => `<button class="game-btn game-btn-green" style="width:100%;text-align:left;" onclick="resolveAllySupport(${v.cIdx},${v.sIdx})">[${v.c.battleRole}] ${shortName(getCardName(v.c))}: ${v.sk.Name}</button>`).join('');
-          window.resolveAllySupport = (cIdx, sIdx) => {
-              $('reactive-modal').style.display = 'none';
-              document.querySelector('#reactive-modal .modal-title').textContent = "INCOMING ATTACK";
-              applyAllySupport(cIdx, sIdx, action, valids);
-              resolve(true);
-          };
-          window.skipReactive = () => {
-              $('reactive-modal').style.display = 'none';
-              document.querySelector('#reactive-modal .modal-title').textContent = "INCOMING ATTACK";
-              resolve(false);
-          };
+          window.resolveAllySupport = (cIdx, sIdx) => { $('reactive-modal').style.display = 'none'; document.querySelector('#reactive-modal .modal-title').textContent = "INCOMING ATTACK"; applyAllySupport(cIdx, sIdx, action, valids); resolve(true); };
+          window.skipReactive = () => { $('reactive-modal').style.display = 'none'; document.querySelector('#reactive-modal .modal-title').textContent = "INCOMING ATTACK"; resolve(false); };
           $('reactive-modal').style.display = 'flex';
       });
   } else {
@@ -2295,8 +1915,7 @@ async function checkAllyReactiveSupport(action) {
 
 function applyAllySupport(cIdx, sIdx, action, valids) {
   let team = action.execTeam === 'player' ? playerActive : enemyActive;
-  let c = team[cIdx];
-  let sk = c.Skills[sIdx];
+  let c = team[cIdx], sk = c.Skills[sIdx];
   if (sk._usesLeft !== undefined) sk._usesLeft--;
   action.screenGuaranteed = true;
   logMsg2(action.execTeam === 'player' ? 'atk' : 'def', action.execTeam === 'player' ? 'You' : 'Bot', `${shortName(getCardName(c))} sets a SCREEN GUARANTEE for ${shortName(getCardName(action.c))}!`);
@@ -2309,29 +1928,19 @@ function applyAuraEffectsToAction(action, execTeam) {
   let sk = action.actionType === 'skill' ? attacker.Skills[action.skillIdx] : null;
   if (!sk) return { blocked: false };
   
-  let json = sk.Logic_Engine || {};
+  let json = typeof sk.Logic_Engine === 'string' ? JSON.parse(sk.Logic_Engine||'{}') : (sk.Logic_Engine || {});
   let nature = (sk.Nature || '').toLowerCase();
   
   for (let aura of activeAuras) {
       if (aura.sourceTeam === execTeam) continue;
-      
       let auraImmuneFlip = attacker?._immuneCoinflip === true || action.screenGuaranteed === true;
-      
       if (aura.type === 'all-skills-disabled') return { blocked: true, reason: `${sk.Name} was globally disabled!` };
-      if (aura.type === 'jumpshot-miss-chance' && nature.includes('jump shot') && !auraImmuneFlip && Math.random() < 0.5) {
-          return { blocked: true, reason: `${sk.Name} MISSED (50% chance)!` };
-      }
-      if (aura.type === 'closeshot-miss-chance' && nature.includes('close shot') && !auraImmuneFlip && Math.random() < 0.5) {
-          return { blocked: true, reason: `${sk.Name} MISSED (50% chance)!` };
-      }
-      if (aura.type === 'any-miss' && !auraImmuneFlip && Math.random() < 0.5) {
-          return { blocked: true, reason: `${sk.Name} MISSED (50% chance)!` };
-      }
+      if (aura.type === 'jumpshot-miss-chance' && nature.includes('jump shot') && !auraImmuneFlip && Math.random() < 0.5) return { blocked: true, reason: `${sk.Name} MISSED (50% chance)!` };
+      if (aura.type === 'closeshot-miss-chance' && nature.includes('close shot') && !auraImmuneFlip && Math.random() < 0.5) return { blocked: true, reason: `${sk.Name} MISSED (50% chance)!` };
+      if (aura.type === 'any-miss' && !auraImmuneFlip && Math.random() < 0.5) return { blocked: true, reason: `${sk.Name} MISSED (50% chance)!` };
       if (aura.type === 'intercept-all-assists') {
           let assistUnint = attacker?._assistUninterceptable;
-          if (!assistUnint && (nature.includes('assist') || json.skill_class === 'ASSIST')) {
-              return { blocked: true, reason: `${sk.Name} intercepted by defensive aura!` };
-          }
+          if (!assistUnint && (nature.includes('assist') || json.skill_class === 'ASSIST')) return { blocked: true, reason: `${sk.Name} intercepted by defensive aura!` };
       }
   }
   return { blocked: false };
@@ -2360,25 +1969,25 @@ function applySynergyAbilities(c, team) {
   let abl = c.Ability;
   if (!abl) return;
   
-  let json;
-  try {
-      json = typeof abl.Logic_JSON === 'string' ? JSON.parse(abl.Logic_JSON) : (abl.Logic_JSON || {});
-  } catch (e) { return; }
+  let json = {};
+  try { json = typeof abl.Logic_Engine === 'string' ? JSON.parse(abl.Logic_Engine) : (abl.Logic_Engine || abl.Logic_JSON || {}); } catch (e) {}
   
-  let trigger = json.trigger || '';
-  let effects = json.effects || '';
+  let trigger = json.trigger || json.Trigger || abl.Ability_Trigger || '';
+  let effects = json.effects || json.Effect || abl.Ability_Effects || '';
   let key = getCardName(c);
+  let type = json.Type || json.type || '';
   
-  // TEAMMATE_SYNERGY
-  if (trigger === 'TEAMMATE_SYNERGY') {
-      let condition = (json.condition || '').toLowerCase();
+  let isSynergy = trigger === 'TEAMMATE_SYNERGY' || type.includes('Synergy_State') || abl.Ability_Type === 'CONDITIONAL_PASSIVE';
+  
+  if (isSynergy) {
+      let desc = abl.Description_UI || effects || '';
       let hasSynergy = false;
       let myTeam = team.filter(t => t && !t.isDead && t !== c);
       
       for (let t of myTeam) {
           let tName = getCardName(t).toLowerCase();
           let sName = shortName(getCardName(t)).toLowerCase();
-          if (condition && (tName.includes(condition) || sName.includes(condition) || (t.UI_Frontend_Data?.Team||'').toLowerCase().includes(condition))) {
+          if (desc.toLowerCase().includes(sName) || desc.toLowerCase().includes(tName.split(' ')[0]) || desc.toLowerCase().includes(tName.split(' ')[1]) || desc.toLowerCase().includes(t.UI_Frontend_Data?.Team?.toLowerCase() || 'impossible_string')) {
               hasSynergy = true; break;
           }
       }
@@ -2387,34 +1996,32 @@ function applySynergyAbilities(c, team) {
           if (!abilityState[key]) abilityState[key] = {};
           abilityState[key].synergiesApplied = true;
           
-          if (json.boosts) {
-              for (let boost of json.boosts) {
-                  let [stat, value] = boost.split(':');
-                  let val = parseInt(value);
-                  if (stat === 'HP') {
-                      c.UI_Frontend_Data.Stats.HP = (c.UI_Frontend_Data.Stats.HP || 2200) + val;
-                      c.currentHp = (c.currentHp || getCardHP(c)) + val;
-                  } else if (stat === 'SPD') {
-                      c.UI_Frontend_Data.Stats.Speed = (c.UI_Frontend_Data.Stats.Speed || 7) + val;
-                  } else if (stat === 'basic_dmg' || stat === 'DMG') {
-                      c.UI_Frontend_Data.Stats.Base_DMG = (c.UI_Frontend_Data.Stats.Base_DMG || 700) + val;
-                  }
-              }
+          let hpMatch = desc.match(/(\d+)\s*HP/i);
+          let spdMatch = desc.match(/(\d+)\s*SPD/i);
+          let dmgMatch = desc.match(/(\d+)\s*DMG/i);
+          
+          if (hpMatch) {
+              let val = parseInt(hpMatch[1]);
+              c.UI_Frontend_Data.Stats.HP = (c.UI_Frontend_Data.Stats.HP || 2200) + val;
+              c.currentHp = (c.currentHp || getCardHP(c)) + val;
           }
+          if (spdMatch) c.UI_Frontend_Data.Stats.Speed = (c.UI_Frontend_Data.Stats.Speed || 7) + parseInt(spdMatch[1]);
+          if (dmgMatch) c.UI_Frontend_Data.Stats.Base_DMG = (c.UI_Frontend_Data.Stats.Base_DMG || 700) + parseInt(dmgMatch[1]);
       }
   }
   
-  // ALWAYS
-  if (trigger === 'ALWAYS') {
-      if (effects.includes('IMMUNE_DEFENSIVE_SKILLS')) c._immuneDefSkills = true;
-      if (effects.includes('SKILLS_UNBLOCKABLE')) c._skillsUnblockable = true;
-      if (effects.includes('SKILLS_UNCONTESTABLE')) c._skillsUncontestable = true;
-      if (effects.includes('IMMUNE_TO_STEAL')) c._immuneSteal = true;
-      if (effects.includes('IMMUNE_COINFLIP_SKILLS')) c._immuneCoinflip = true;
-      if (effects.includes('IMMUNE_TO_FREEZE')) c._immuneFreeze = true;
-      if (effects.includes('ASSIST_UNINTERCEPTABLE')) c._assistUninterceptable = true;
-      if (effects.includes('FORCED_TARGET_ON_SELF')) c._forcedTarget = true;
-      if (effects.includes('HALVE_BASIC_ATK_MISS_CHANCE')) c._halveBasic = true;
+  let isAlways = trigger === 'ALWAYS' || type.includes('Passive') || abl.Ability_Type === 'PASSIVE';
+  if (isAlways) {
+      let desc = (abl.Description_UI || effects || '').toLowerCase();
+      if (effects.includes('IMMUNE_DEFENSIVE_SKILLS') || desc.includes('immune') || desc.includes('unaffected by any defensive')) c._immuneDefSkills = true;
+      if (effects.includes('SKILLS_UNBLOCKABLE') || desc.includes('cannot be blocked')) c._skillsUnblockable = true;
+      if (effects.includes('SKILLS_UNCONTESTABLE') || desc.includes('cannot be contested')) c._skillsUncontestable = true;
+      if (effects.includes('IMMUNE_TO_STEAL') || desc.includes('steal the ball')) c._immuneSteal = true;
+      if (effects.includes('IMMUNE_COINFLIP_SKILLS') || desc.includes('coin flip')) c._immuneCoinflip = true;
+      if (effects.includes('IMMUNE_TO_FREEZE') || desc.includes('freeze')) c._immuneFreeze = true;
+      if (effects.includes('ASSIST_UNINTERCEPTABLE') || desc.includes('intercept his assist')) c._assistUninterceptable = true;
+      if (effects.includes('FORCED_TARGET_ON_SELF') || desc.includes('focus only on')) c._forcedTarget = true;
+      if (effects.includes('HALVE_BASIC_ATK_MISS_CHANCE') || desc.includes('chance to miss')) c._halveBasic = true;
   }
 }
 
@@ -2437,8 +2044,8 @@ function generateEnemyAI() {
           let assistTeammateIdx = null;
           
           if (isSk) {
-              let json = c.Skills[cSi].Logic_Engine || {};
-              prio = json.priority || 1;
+              let json = typeof c.Skills[cSi].Logic_Engine === 'string' ? JSON.parse(c.Skills[cSi].Logic_Engine) : (c.Skills[cSi].Logic_Engine || {});
+              prio = json.priority || json.Priority || 1;
               if (json.execution === 'DEAL_ASSIST_DMG') {
                   let parsed = parseAssistFormula(json.dmg_formula || '');
                   if (parsed) {
@@ -2447,8 +2054,7 @@ function generateEnemyAI() {
                       else isSk = false;
                   }
               }
-              // Skip interactive free actions for Bot
-              if (['FREEZE', 'STEAL_SKILL', 'STEAL_CANCEL'].includes(json.execution)) isSk = false;
+              if (['FREEZE', 'STEAL_SKILL', 'STEAL_CANCEL', 'HEAL', 'STAT_BUFF'].includes(json.execution)) isSk = false;
           }
           
           acts.push({
@@ -2498,120 +2104,23 @@ async function confirmMovesPhase() {
       if (drainedNextTurn[ack]) { logMsg2('sys', 'System', `${shortName(getCardName(actC))} is drained, skipping.`); continue; }
       if (shutdownCards[ack]) { logMsg2('sys', 'System', `${shortName(getCardName(actC))} is shutdown, skipping.`); continue; }
       
-      // Ally screen guarantee support
       if (act.actionType !== 'pass' && act.actionType !== 'swap') {
           let sk = act.actionType === 'skill' ? actC.Skills[act.skillIdx] : null;
-          let isDmg = act.actionType === 'basic' || (sk && !String(sk.Display_DMG || '').toUpperCase().includes('N/A'));
+          let isDmg = act.actionType === 'basic' || (sk && !String(sk.Display_DMG || sk.Logic_Engine?.Damage_Value || '').toUpperCase().includes('N/A'));
           if (isDmg) { await checkAllyReactiveSupport(act); }
       }
       
       let aRes = applyAuraEffectsToAction(act, act.execTeam);
       if (aRes.blocked) {
-          logMsg2(act.execTeam === 'player' ? 'def' : 'atk', act.execTeam === 'player' ? 'You' : 'Bot', `Blocked: ${aRes.reason}`);
-          let tgtCard = act.targetIdx != null ? (act.execTeam === 'player' ? enemyActive : playerActive)[act.targetIdx] : null;
-          await onSkillFailure(actC, act.actorIdx, tgtCard, act.targetIdx, act.execTeam);
-          continue;
-      }
-      
-      if (act.actionType !== 'pass' && act.actionType !== 'swap') {
-          if (act.targetTeam === 'enemy' || act.execTeam === 'enemy') {
-              await checkAndPromptReactive(act);
-          }
-      }
-      
-      if (act._stolenTargetIdx != null) { logMsg2('sys', 'System', 'Action intercepted!'); continue; }
-      
-      await executeAction(act);
-  }
-  
-  await handleDeadReplacements('player', playerActive, playerBench);
-  await handleDeadReplacements('enemy', enemyActive, enemyBench);
-  
-  tickDownAuras();
-  tickDownDrains();
-  Object.keys(frozenCards).forEach(k => delete frozenCards[k]);
-  Object.keys(shutdownCards).forEach(k => {
-      shutdownCards[k]--;
-      if (shutdownCards[k] <= 0) delete shutdownCards[k];
-  });
-  
-  stagedActions = [];
-  uiState = 'IDLE';
-  setTooltipEnabled(true);
-  turnCount++;
-  
-  if (playerScore >= 8 || enemyScore >= 8) {
-      let won = playerScore >= 8;
-      $('endgame-title').textContent = won ? 'YOU WIN! 🏆' : 'YOU LOSE 😢';
-      $('endgame-title').style.color = won ? '#40E0A0' : '#FF6B6B';
-      $('endgame-desc').textContent = won ? `Congratulations! You knocked out 8 opponents first!` : `Opponent knocked out 8 of your players. Better luck next time!`;
-      $('endgame-modal').style.display = 'flex';
-      isAnimating = false;
-      return;
-  }
-  
-  isAnimating = false;
-  $('turn-indicator').textContent = `TURN ${turnCount}`;
-  renderArena();
-  renderBenchStacks();
-}
+          logMsg2(act.execTeam === 'player' ? 'def' : 'atk', act.execTeam === 'player' ? 'You'
 
-// ==================== CORE ACTION EXECUTION ====================
-async function executeAction(a) {
-  let isP = a.execTeam === 'player';
-  let atks = isP ? playerActive : enemyActive;
-  let defs = isP ? enemyActive : playerActive;
-  let atkC = atks[a.actorIdx];
-  if (!atkC || atkC.isDead) return;
-  
-  let whoLabel = isP ? 'You' : 'Bot';
-  
-  if (a.actionType === 'pass') { logMsg2('sys', whoLabel, `${shortName(getCardName(atkC))} passes turn.`); return; }
-  
-  if (a.actionType === 'swap') {
-      let bArr = isP ? playerBench : enemyBench;
-      if (a.targetIdx == null || !bArr[a.targetIdx]) return;
-      let incoming = bArr[a.targetIdx], outgoing = atkC;
-      incoming.battleRole = outgoing.battleRole;
-      if (!incoming.currentHp) incoming.currentHp = getCardHP(incoming);
-      atks[a.actorIdx] = incoming;
-      bArr[a.targetIdx] = outgoing;
-      logMsg2('sys', whoLabel, `Swap: ${shortName(getCardName(outgoing))} out → ${shortName(getCardName(incoming))} in`);
-      renderArena(); renderBenchStacks(); await delay(700);
-      return;
-  }
-  
-  let sk = a.actionType === 'skill' ? atkC.Skills[a.skillIdx] : (a.actionType === 'stolen-skill' ? (stolenSkills[cardKey(a.execTeam, a.actorIdx)] || [])[a.skillIdx] : null);
-  let json = sk?.Logic_Engine || {};
-  
-  // FREE_ACTION EXECUTION
-  if (json.timing === 'FREE_ACTION' || json.timing === 'BUFF') {
-      if (['AURA_JUMP_MISS', 'AURA_CLOSE_MISS', 'AURA_ANY_MISS'].includes(json.execution)) {
-          let dur = parseInt((sk.Description_UI || '').match(/(\d+)\s*turn/)?.[1] || '2');
-          let aType = json.execution === 'AURA_JUMP_MISS' ? 'jumpshot-miss-chance' : json.execution === 'AURA_CLOSE_MISS' ? 'closeshot-miss-chance' : 'any-miss';
+      let aType = json.execution === 'AURA_JUMP_MISS' ? 'jumpshot-miss-chance' : json.execution === 'AURA_CLOSE_MISS' ? 'closeshot-miss-chance' : 'any-miss';
           activeAuras.push({ type: aType, sourceTeam: a.execTeam, turnsLeft: dur });
           logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} activates ${sk.Name} — ${aType} for ${dur} turns`);
           if (sk._usesLeft !== undefined) sk._usesLeft--; return;
       }
       
-      if (json.execution === 'INVULNERABLE_THIS_TURN') {
-          let ck = cardKey(a.execTeam, a.actorIdx);
-          invulnerable[ck] = true;
-          statBuffs[ck] = { dmgBonus: 300, spdBonus: 2, turnsLeft: 3 };
-          logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} is now invulnerable this turn and buffed for 3 turns!`);
-          if (sk._usesLeft !== undefined) sk._usesLeft--; return;
-      }
-      
-      if (json.execution === 'STAT_BUFF') {
-          let ck = cardKey(a.execTeam, a.actorIdx);
-          let dur = parseInt((sk.Description_UI || '').match(/(\d+)\s*turn/)?.[1] || '3');
-          let dmgBonus = parseInt((sk.Description_UI || '').match(/(\d+)\s*DMG/)?.[1] || '450');
-          statBuffs[ck] = { dmgBonus, turnsLeft: dur };
-          logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} activates ${sk.Name} — +${dmgBonus} DMG for ${dur} turns`);
-          if (sk._usesLeft !== undefined) sk._usesLeft--; return;
-      }
-      
-      if (json.execution === 'FREEZE') {
+      if (json.execution === 'FREEZE' || (nature.includes('dribble') && dmgStr.includes('freeze'))) {
           let tIdx = a.targetIdx;
           if (tIdx == null) return;
           let frozenC = a.targetTeam === 'enemy' ? enemyActive[tIdx] : playerActive[tIdx];
@@ -2624,7 +2133,7 @@ async function executeAction(a) {
           if (sk._usesLeft !== undefined) sk._usesLeft--; renderArena(); return;
       }
       
-      if (json.execution === 'STEAL_CANCEL' || json.execution?.includes('STEAL_CANCEL')) {
+      if (json.execution === 'STEAL_CANCEL' || json.execution?.includes('STEAL_CANCEL') || dmgStr.includes('steal')) {
           let stealTarget = a.targetIdx != null ? defs[a.targetIdx] : defs.find(c => c && !c.isDead);
           if (stealTarget && stealTarget._immuneSteal) {
               logMsg2('sys', 'System', `${shortName(getCardName(stealTarget))} ABILITY — Immune to steal!`);
@@ -2637,7 +2146,7 @@ async function executeAction(a) {
                   logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} nullifies the defensive skill too!`);
               }
               logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} steals the ball — ${shortName(getCardName(stealTarget))}'s action cancelled!`);
-              let stealDmg = parseInt(sk.Display_DMG || '0') || 0;
+              let stealDmg = parseInt(sk.Display_DMG || json.Damage_Value || '0') || 0;
               if (stealDmg > 0) {
                   await playCombatAnimation(`${isP ? 'player' : 'enemy'}-${a.actorIdx}`, `${isP ? 'enemy' : 'player'}-${cancelIdx}`, stealDmg, stealTarget, a.execTeam, cancelIdx, true);
                   if (stealTarget.currentHp <= 0) handleKO(stealTarget, isP ? 'enemy' : 'player', cancelIdx);
@@ -2646,51 +2155,17 @@ async function executeAction(a) {
           if (sk._usesLeft !== undefined) sk._usesLeft--; renderArena(); return;
       }
       
-      if (json.execution === 'GRANT_EXTRA_MOVE') {
-          let team2 = a.execTeam === 'player' ? playerActive : enemyActive;
-          let valids2 = team2.map((c2, i2) => ({ c2, i2 })).filter(x => !x.c2.isDead && x.c2 !== atkC);
-          if (valids2.length > 0) {
-              let chosen = valids2[Math.floor(Math.random() * valids2.length)];
-              let extraDmg = getCardDMG(chosen.c2);
-              let defTeam2 = a.execTeam === 'player' ? enemyActive : playerActive;
-              let validT2 = getValidTargets(chosen.c2, defTeam2);
-              if (validT2.length > 0) {
-                  let tgt2 = validT2[Math.floor(Math.random() * validT2.length)];
-                  logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} grants ${shortName(getCardName(chosen.c2))} an extra move! (${extraDmg} DMG)`);
-                  let finalDmg2 = await playCombatAnimation(`${isP ? 'player' : 'enemy'}-${chosen.i2}`, `${isP ? 'enemy' : 'player'}-${tgt2.i}`, extraDmg, tgt2.c, a.execTeam, tgt2.i, false);
-                  if (finalDmg2 === 0 && extraDmg > 0) await onSkillFailure(chosen.c2, chosen.i2, tgt2.c, tgt2.i, a.execTeam);
-                  else if (tgt2.c.currentHp <= 0) handleKO(tgt2.c, isP ? 'enemy' : 'player', tgt2.i);
-              }
-          }
-          if (sk._usesLeft !== undefined) sk._usesLeft--; renderArena(); return;
-      }
-      
-      if (json.execution === 'HEAL') {
+      if (json.execution === 'HEAL' || dmgStr.includes('heal')) {
           if (a.targetIdx == null) return;
           let tc = (a.execTeam === 'player' ? playerActive : enemyActive)[a.targetIdx];
           if (!tc) return;
-          tc.currentHp = Math.min(getCardHP(tc), tc.currentHp + 300);
-          logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} heals ${shortName(getCardName(tc))} for 300 HP!`);
-          if (sk._usesLeft !== undefined) sk._usesLeft--; renderArena(); return;
-      }
-      
-      if (json.execution === 'SHUTDOWN_TARGET') {
-          let tIdx = a.targetIdx;
-          if (tIdx == null) return;
-          let tC = defs[tIdx];
-          shutdownCards[cardKey(a.execTeam === 'player' ? 'enemy' : 'player', tIdx)] = 2;
-          let raw = parseInt(sk.Display_DMG || '0');
-          if (raw > 0) {
-              logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} shuts down ${shortName(getCardName(tC))} for 2 turns (${raw} DMG)!`);
-              await playCombatAnimation(`${isP ? 'player' : 'enemy'}-${a.actorIdx}`, `${isP ? 'enemy' : 'player'}-${tIdx}`, raw, tC, a.execTeam, tIdx, true);
-              if (tC.currentHp <= 0) handleKO(tC, isP ? 'enemy' : 'player', tIdx);
-          } else {
-              logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} shuts down ${shortName(getCardName(tC))} for 2 turns!`);
-          }
+          let healAmt = parseInt(json.Damage_Value || 300);
+          tc.currentHp = Math.min(getCardHP(tc), tc.currentHp + healAmt);
+          logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} heals ${shortName(getCardName(tc))} for ${healAmt} HP!`);
           if (sk._usesLeft !== undefined) sk._usesLeft--; renderArena(); return;
       }
   }
-  
+
   // DAMAGE CALCULATION
   let defC = defs[a.targetIdx];
   if (!defC || defC.isDead) {
@@ -2712,7 +2187,7 @@ async function executeAction(a) {
   let dmgRaw = 0;
   
   if (sk) {
-      if (json.coin_flip === true) {
+      if (json.coin_flip === true || json.Coin_Flip === true) {
           let autoHit = atkC._immuneCoinflip === true || a.screenGuaranteed === true;
           let flip = autoHit ? true : (Math.random() < 0.5);
           let who = a.execTeam === 'player' ? shortName(getCardName(atkC)) : `${shortName(getCardName(atkC))} (Opp.)`;
@@ -2723,11 +2198,11 @@ async function executeAction(a) {
               await animateCoinFlip(who, sk.Name, flip);
           }
           if (!flip) {
-              let ablJson;
-              try { ablJson = typeof atkC.Ability?.Logic_JSON === 'string' ? JSON.parse(atkC.Ability.Logic_JSON) : atkC.Ability?.Logic_JSON; } catch (e) {}
+              let ablJson = {};
+              try { ablJson = typeof atkC.Ability?.Logic_JSON === 'string' ? JSON.parse(atkC.Ability.Logic_JSON) : (atkC.Ability?.Logic_JSON||{}); } catch (e) {}
               if (ablJson?.effects?.includes('HEAT_UP_DMG_BUFF')) {
                   let ck2 = cardKey(a.execTeam, a.actorIdx);
-                  if (!statBuffs[ck2]) statBuffs[ck2] = { dmgBonus: 0, turnsLeft: 1 };
+                  if (!statBuffs[ck2]) statBuffs[ck2] = { dmgBonus: 0, spdBonus: 0, turnsLeft: 1 };
                   statBuffs[ck2].dmgBonus += 100; statBuffs[ck2].turnsLeft = 1;
                   logMsg2('sys', 'System', `T-MAC ABILITY — Missed but heat up! +100 DMG next turn.`);
               }
@@ -2737,13 +2212,13 @@ async function executeAction(a) {
           }
       }
       
-      if (json.execution === 'DEAL_ASSIST_DMG') {
+      if (json.execution === 'DEAL_ASSIST_DMG' || json.skill_class === 'ASSIST') {
           dmgRaw = executeAssistDmg(json.dmg_formula, a.execTeam, a.assistTeammateIdx);
       } else if (json.execution === 'DUAL_USE') {
           let dm = json.dmg_formula?.match(/DUAL:(\d+)(?:\/)?(\d+)?/);
           if (dm) dmgRaw = parseInt(dm[a.dualUseMode === 'defensive' ? (dm[2] ? 2 : 1) : 1]);
       } else {
-          dmgRaw = parseInt(sk.Display_DMG || '0') || 0;
+          dmgRaw = parseInt(sk.Display_DMG || json.Damage_Value || '0') || 0;
       }
   } else {
       dmgRaw = getCardDMG(atkC);
@@ -2772,6 +2247,25 @@ async function executeAction(a) {
       defC = blockerC; dIdx = b.playerCardIdx;
       dmgRaw = Math.floor(dmgRaw * 0.5);
   }
+
+  // Handle Team Scope Damage (ALL_ENEMIES)
+  let isTeamTarget = json.target_scope === 'ALL_ENEMIES' || (sk && sk.Description_UI && sk.Description_UI.toLowerCase().includes('all opponents'));
+  if (isTeamTarget) {
+      logMsg2(isP ? 'atk' : 'def', whoLabel, `[${atkC.battleRole}] ${shortName(getCardName(atkC))} uses ${mName} on ALL OPPONENTS — ${dmgRaw} DMG each`);
+      
+      let targets = a.execTeam === 'player' ? enemyActive : playerActive;
+      for (let i = 0; i < targets.length; i++) {
+          let tC = targets[i];
+          if (!tC || tC.isDead) continue;
+          let fDmg = isUnblockable ? dmgRaw : applyPendingBlocks(dmgRaw, a.execTeam === 'player' ? 'enemy' : 'player', i);
+          let actDmg = await playCombatAnimation(`${isP ? 'player' : 'enemy'}-${a.actorIdx}`, `${isP ? 'enemy' : 'player'}-${i}`, fDmg, tC, a.execTeam, i, isUnblockable || isUncontestable);
+          if (actDmg > 0 && sk) onSkillHit(atkC, sk, a.execTeam, a.actorIdx);
+          checkHPRecoverAbility(tC);
+          if (tC.currentHp <= 0) handleKO(tC, isP ? 'enemy' : 'player', i);
+      }
+      if (sk && sk._usesLeft !== undefined) sk._usesLeft--;
+      return;
+  }
   
   logMsg2(isP ? 'atk' : 'def', whoLabel, `[${atkC.battleRole}] ${shortName(getCardName(atkC))} uses ${mName} on [${defC.battleRole}] ${shortName(getCardName(defC))} — ${dmgRaw} DMG`);
   if (dmgRaw === 0 && json.execution !== 'DEAL_FLAT_DMG') {
@@ -2795,44 +2289,6 @@ async function executeAction(a) {
       drainedNextTurn[cardKey(a.execTeam, a.actorIdx)] = true;
       logMsg2('sys', 'System', `${shortName(getCardName(atkC))} is drained next turn!`);
   }
-}
-
-// ==================== COIN FLIP ====================
-async function animateCoinFlip(playerName, skillName, result) {
-  return new Promise(resolve => {
-      let overlay = $('coin-flip-overlay');
-      overlay.style.display = 'flex';
-      overlay.innerHTML = `
-          <div class="coin-flip-container">
-              <div class="coin-flip-label">— COIN FLIP —</div>
-              <div class="coin-flip-main">
-                  <div class="coin-wrap">
-                      <div class="coin" id="anim-coin">
-                          <div class="coin-face coin-heads">H</div>
-                          <div class="coin-face coin-tails">T</div>
-                      </div>
-                  </div>
-                  <div class="coin-info-bar">
-                      <div class="coin-info-player">${playerName}</div>
-                      <div class="coin-info-move">${skillName}</div>
-                      <div class="coin-result-text" id="coin-result-txt" style="display:none;"></div>
-                  </div>
-              </div>
-          </div>`;
-      setTimeout(() => {
-          let coin = document.getElementById('anim-coin');
-          if (coin) coin.className = result ? 'coin result-heads' : 'coin result-tails';
-          setTimeout(() => {
-              let rt = document.getElementById('coin-result-txt');
-              if (rt) {
-                  rt.style.display = 'block';
-                  rt.className = result ? 'coin-result-text hit' : 'coin-result-text miss';
-                  rt.textContent = result ? 'HEADS — HIT!' : 'TAILS — MISS!';
-              }
-              setTimeout(() => { overlay.style.display = 'none'; overlay.innerHTML = ''; resolve(); }, 1500);
-          }, 900);
-      }, 1200);
-  });
 }
 
 // ==================== TARGETING & ASSIST FORMULA ====================
@@ -2923,8 +2379,8 @@ function applyPendingBlocks(dmg, tgtTeam, defIdx) {
 async function onSkillFailure(atkCard, atkIdx, defCard, defIdx, execTeam) {
   if (!atkCard || !defCard || defCard.isDead) return;
   
-  let ablJson;
-  try { ablJson = typeof atkCard.Ability?.Logic_JSON === 'string' ? JSON.parse(atkCard.Ability.Logic_JSON) : atkCard.Ability?.Logic_JSON; } catch (e) {}
+  let ablJson = {};
+  try { ablJson = typeof atkCard.Ability?.Logic_JSON === 'string' ? JSON.parse(atkCard.Ability.Logic_JSON) : (atkCard.Ability?.Logic_JSON||{}); } catch (e) {}
   
   if (ablJson?.effects?.includes('AUTO_REBOUND_PUTBACK')) {
       let putbackDmg = getCardDMG(atkCard);
@@ -2939,8 +2395,8 @@ async function onSkillFailure(atkCard, atkIdx, defCard, defIdx, execTeam) {
   let team = execTeam === 'player' ? playerActive : enemyActive;
   for (let [i, c] of team.entries()) {
       if (c.isDead || i === atkIdx) continue;
-      let cAblJson;
-      try { cAblJson = typeof c.Ability?.Logic_JSON === 'string' ? JSON.parse(c.Ability.Logic_JSON) : c.Ability?.Logic_JSON; } catch (e) {}
+      let cAblJson = {};
+      try { cAblJson = typeof c.Ability?.Logic_JSON === 'string' ? JSON.parse(c.Ability.Logic_JSON) : (c.Ability?.Logic_JSON||{}); } catch (e) {}
       
       if (cAblJson?.effects?.includes('LEBRON_PUTBACK')) {
           if (['SF', 'PF'].includes(atkCard.battleRole) || getCardName(atkCard).includes('LeBron')) {
@@ -2952,9 +2408,13 @@ async function onSkillFailure(atkCard, atkIdx, defCard, defIdx, execTeam) {
           }
       }
       
-      let sk = (c.Skills || []).find(s => s.Logic_Engine?.modifiers?.includes('Reactionary_Putback_Dmg'));
+      let sk = (c.Skills || []).find(s => {
+          let j = typeof s.Logic_Engine === 'string' ? JSON.parse(s.Logic_Engine||'{}') : (s.Logic_Engine||{});
+          return j.modifiers?.includes('Reactionary_Putback_Dmg');
+      });
       if (sk && (sk._usesLeft === undefined || sk._usesLeft > 0)) {
-          let putbackDmg = parseInt(sk.Display_DMG || '800');
+          let j = typeof sk.Logic_Engine === 'string' ? JSON.parse(sk.Logic_Engine||'{}') : (sk.Logic_Engine||{});
+          let putbackDmg = parseInt(sk.Display_DMG || j.Damage_Value || '800');
           if (sk._usesLeft !== undefined) sk._usesLeft--;
           logMsg2(execTeam === 'player' ? 'atk' : 'def', execTeam === 'player' ? 'You' : 'Bot', `💥 ${shortName(getCardName(c))} grabs the offensive board and PUTS IT BACK!`);
           await playCombatAnimation(`${execTeam === 'player' ? 'player' : 'enemy'}-${i}`, `${execTeam === 'player' ? 'enemy' : 'player'}-${defIdx}`, putbackDmg, defCard, execTeam, defIdx, true);
@@ -2984,8 +2444,8 @@ function checkSurviveAbility(card, teamStr, idx) {
   if (!abilityState[key]) abilityState[key] = {};
   if (abilityState[key].surviveUsed) return false;
   
-  let ablJson;
-  try { ablJson = typeof card.Ability?.Logic_JSON === 'string' ? JSON.parse(card.Ability.Logic_JSON) : card.Ability?.Logic_JSON; } catch (e) { return false; }
+  let ablJson = {};
+  try { ablJson = typeof card.Ability?.Logic_JSON === 'string' ? JSON.parse(card.Ability.Logic_JSON) : (card.Ability?.Logic_JSON||{}); } catch (e) { return false; }
   
   if (ablJson?.effects?.includes('SURVIVE_AT_1HP') || ablJson?.effects?.includes('HEAL_ON_DEATH')) {
       abilityState[key].surviveUsed = true;
@@ -3003,8 +2463,8 @@ function checkHPRecoverAbility(card) {
   if (!abilityState[key]) abilityState[key] = {};
   if (abilityState[key].healUsed) return;
   
-  let ablJson;
-  try { ablJson = typeof card.Ability?.Logic_JSON === 'string' ? JSON.parse(card.Ability.Logic_JSON) : card.Ability?.Logic_JSON; } catch (e) { return; }
+  let ablJson = {};
+  try { ablJson = typeof card.Ability?.Logic_JSON === 'string' ? JSON.parse(card.Ability.Logic_JSON) : (card.Ability?.Logic_JSON||{}); } catch (e) { return; }
   
   if (!ablJson?.effects?.includes('ONE_TIME_HP_RECOVER')) return;
   
@@ -3023,8 +2483,8 @@ function onSkillHit(card, sk, execTeam, actorIdx) {
   let name = getCardName(card);
   if (!abilityState[name]) abilityState[name] = { stackCount: 0 };
   
-  let ablJson;
-  try { ablJson = typeof card.Ability?.Logic_JSON === 'string' ? JSON.parse(card.Ability.Logic_JSON) : card.Ability?.Logic_JSON; } catch (e) { return; }
+  let ablJson = {};
+  try { ablJson = typeof card.Ability?.Logic_JSON === 'string' ? JSON.parse(card.Ability.Logic_JSON) : (card.Ability?.Logic_JSON||{}); } catch (e) { return; }
   
   if (ablJson?.trigger === 'ON_SKILL_HIT' && ablJson?.effects?.includes('STACKING_DMG_BUFF')) {
       let stackOn = ablJson.stack_on || '';
@@ -3033,7 +2493,7 @@ function onSkillHit(card, sk, execTeam, actorIdx) {
           let buffMatch = ablJson.buff?.match(/basic_dmg:\+(\d+)/);
           let bonus = buffMatch ? parseInt(buffMatch[1]) * abilityState[name].stackCount : 400 * abilityState[name].stackCount;
           let ck = cardKey(execTeam, actorIdx);
-          if (!statBuffs[ck]) statBuffs[ck] = { dmgBonus: 0, turnsLeft: 999 };
+          if (!statBuffs[ck]) statBuffs[ck] = { dmgBonus: 0, spdBonus: 0, turnsLeft: 999 };
           statBuffs[ck].dmgBonus = bonus;
           logMsg2('sys', 'System', `🔥 ${shortName(name)} ABILITY — Hit! +${bonus} DMG total`);
       }
@@ -3041,8 +2501,8 @@ function onSkillHit(card, sk, execTeam, actorIdx) {
 }
 
 function getConditionalBonusDmg(card, targetCard) {
-  let ablJson;
-  try { ablJson = typeof card.Ability?.Logic_JSON === 'string' ? JSON.parse(card.Ability.Logic_JSON) : card.Ability?.Logic_JSON; } catch (e) { return 0; }
+  let ablJson = {};
+  try { ablJson = typeof card.Ability?.Logic_JSON === 'string' ? JSON.parse(card.Ability.Logic_JSON) : (card.Ability?.Logic_JSON||{}); } catch (e) { return 0; }
   
   if (ablJson?.effects?.includes('CONDITIONAL_BONUS_DMG_VS_TEAM')) {
       let tTeam = (targetCard?.UI_Frontend_Data?.Team || '').toLowerCase();
@@ -3057,8 +2517,8 @@ function getConditionalBonusDmg(card, targetCard) {
 
 function checkPreventKO(card, team) {
   if (!card) return false;
-  let ablJson;
-  try { ablJson = typeof card.Ability?.Logic_JSON === 'string' ? JSON.parse(card.Ability.Logic_JSON) : card.Ability?.Logic_JSON; } catch (e) { return false; }
+  let ablJson = {};
+  try { ablJson = typeof card.Ability?.Logic_JSON === 'string' ? JSON.parse(card.Ability.Logic_JSON) : (card.Ability?.Logic_JSON||{}); } catch (e) { return false; }
   
   if (ablJson?.effects?.includes('PREVENT_KO_UNTIL_LAST')) {
       if (team.filter(c => c && !c.isDead && c !== card).length > 0) {
