@@ -190,9 +190,7 @@
     .card-img-sm img { width: 100%; height: 100%; object-fit: cover; }
 
     /* Expanded row (catalogue) - in-grid, half-width */
-    .expanded-row {
-      display: none; /* hidden in split layout, left panel handles it */
-    }
+    .expanded-row { display: none; }
     .expanded-card-container { height: 280px; width: 200px; flex-shrink: 0; margin-right: 16px; border-radius: 10px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
     .expanded-front { width: 100%; height: 100%; background: #1a1a2e; }
     .expanded-front img { width: 100%; height: 100%; object-fit: cover; }
@@ -214,15 +212,6 @@
     .ec-skill-name { flex: 1; color: var(--text); }
     .ec-skill-dmg { color: var(--red); background: rgba(214,40,40,0.08); padding: 1px 5px; border-radius: 4px; font-size: 0.68rem; white-space: nowrap; }
     .ec-skill-desc { font-size: 0.62rem; color: var(--text-light); line-height: 1.3; }
-    .expanded-close-btn {
-      position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%;
-      background: linear-gradient(180deg, #D84040 0%, #982020 100%); color: white; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.85rem; font-weight: bold; z-index: 50;
-      box-shadow: 0 3px 0 #601010, 0 2px 8px rgba(180,40,40,0.5);
-      transition: transform 0.12s; border: none;
-    }
-    .expanded-close-btn:hover { transform: scale(0.88); }
 
     /* ===== DRAFT ===== */
     .draft-layout { display: flex; min-height: calc(100vh - 90px); }
@@ -386,7 +375,7 @@
     }
     #turn-indicator { font-weight: 700; color: rgba(255,255,255,0.5); font-size: 0.68rem; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 1px; }
 
-    /* Fan rows - more convex/concave as in pic 2 */
+    /* Fan rows */
     .active-fan-wrapper {
       display: flex; justify-content: center; align-items: flex-end;
       position: relative; width: 100%; height: 270px; margin-bottom: 120px;
@@ -402,7 +391,6 @@
       cursor: pointer; position: relative; display: inline-block;
       margin: 0 -20px; /* OVERLAP: Tucks the cards tightly together */
     }
-    /* Hover applies to ALL cards in the battle page now! */
     .active-card-wrap:hover, .enemy-card-wrap:hover {
       transform: rotate(var(--base-rot)) translateY(var(--base-y)) scale(1.4) !important;
       margin: 0 35px !important; /* PUSH SIBLINGS ASIDE to make room for 1.4x scale */
@@ -459,21 +447,17 @@
       position: relative; width: 100%; height: 340px;
       display: flex; align-items: flex-end; justify-content: center;
     }
-
     .bench-fan-card-wrap {
-      position: relative; /* Must be relative to push siblings! */
-      cursor: pointer;
+      position: relative; cursor: pointer;
       transition: all 0.3s cubic-bezier(0.2,0.8,0.2,1);
       transform-origin: bottom center;
-      margin: 0 -20px; /* OVERLAP */
+      margin: 0 -20px;
     }
     .bench-fan-card-wrap:hover {
       transform: rotate(var(--base-rot)) translateY(var(--base-y)) scale(1.4) !important;
-      margin: 0 35px !important; /* PUSH ASIDE */
-      z-index: 300 !important;
+      margin: 0 35px !important; z-index: 300 !important;
       filter: brightness(1.25) drop-shadow(0 -12px 24px rgba(64,224,160,0.6));
     }
-
     .bench-fan-card { width: 150px; height: 210px; border-radius: 12px; border: 2px solid rgba(255,255,255,0.25); overflow: hidden; background: #0f1320; box-shadow: 0 16px 36px rgba(0,0,0,0.9); }
     .bench-fan-card img { width: 100%; height: 100%; object-fit: cover; }
     .bench-fan-card-wrap.ineligible { pointer-events: none !important; cursor: not-allowed; }
@@ -496,13 +480,12 @@
       border: 1px solid rgba(255,255,255,0.15);
     }
 
-    /* ===== ACTION PANELS - horizontal line below player cards ===== */
+    /* ===== ACTION PANELS ===== */
     .action-panels-wrapper {
       position: fixed; bottom: 0; left: 0; right: 0;
       display: none; z-index: 200;
       flex-direction: column; align-items: center;
-      padding-bottom: 8px;
-      pointer-events: none;
+      padding-bottom: 8px; pointer-events: none;
       transition: right 0.4s cubic-bezier(0.4,0,0.2,1);
       background: linear-gradient(0deg, rgba(8,12,22,0.95) 0%, rgba(8,12,22,0.0) 100%);
     }
@@ -519,11 +502,9 @@
     .action-btns-row {
       display: flex; flex-wrap: wrap; gap: 8px;
       justify-content: center; align-items: center;
-      padding: 8px 16px;
-      background: rgba(10,15,26,0.88);
+      padding: 8px 16px; background: rgba(10,15,26,0.88);
       border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 12px;
-      backdrop-filter: blur(12px);
+      border-radius: 12px; backdrop-filter: blur(12px);
       max-width: 90vw;
     }
     .action-btn {
@@ -546,11 +527,7 @@
     .action-btn-basic { background: linear-gradient(180deg, #E8621A 0%, #B04010 100%); color: #FFF8F0; box-shadow: 0 3px 0 #6A2808; }
     .action-btn-swap { background: linear-gradient(180deg, #C8A870 0%, #8B6B3A 100%); color: #1A1008; box-shadow: 0 3px 0 #4A3010; }
     .action-btn-pass { background: linear-gradient(180deg, rgba(200,185,160,0.25) 0%, rgba(160,145,120,0.15) 100%); color: rgba(240,230,210,0.9); box-shadow: 0 2px 0 rgba(0,0,0,0.5); border: 1px solid rgba(200,180,150,0.3); }
-    .action-btn-dmg {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 1rem; letter-spacing: 0.5px;
-      color: rgba(255,255,255,0.9); font-weight: 400;
-    }
+    .action-btn-dmg { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 0.5px; color: rgba(255,255,255,0.9); font-weight: 400; }
 
     /* Checkout panel */
     .checkout-panel {
@@ -558,22 +535,18 @@
       background: rgba(10,15,26,0.9); border: 2px solid rgba(64,224,160,0.4);
       border-radius: 12px; padding: 10px 18px; width: 290px; z-index: 80;
       box-shadow: 0 8px 24px rgba(64,224,160,0.1);
-      display: none; flex-direction: column; gap: 7px;
-      backdrop-filter: blur(8px);
+      display: none; flex-direction: column; gap: 7px; backdrop-filter: blur(8px);
       transition: left 0.4s, transform 0.4s;
     }
     .checkout-panel.panel-blur { filter: blur(3px); }
 
-    /* ===== BATTLE LOG PANEL (right side) ===== */
+    /* ===== BATTLE LOG PANEL ===== */
     .battle-log-panel {
       position: fixed; top: 44px; right: 0; bottom: 0;
-      width: var(--log-width);
-      background: rgba(8,12,22,0.97);
+      width: var(--log-width); background: rgba(8,12,22,0.97);
       border-left: 1px solid rgba(255,255,255,0.12);
-      display: flex; flex-direction: column;
-      z-index: 180;
-      transform: translateX(100%);
-      transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
+      display: flex; flex-direction: column; z-index: 180;
+      transform: translateX(100%); transition: transform 0.4s cubic-bezier(0.4,0,0.2,1);
       backdrop-filter: blur(12px);
     }
     .battle-log-panel.open { transform: translateX(0); }
@@ -584,26 +557,17 @@
     }
     .battle-log-title { font-family: 'Orbitron', sans-serif; font-size: 0.72rem; font-weight: 700; color: rgba(255,255,255,0.7); letter-spacing: 1px; text-transform: uppercase; }
     .log-toggle-btn {
-      background: linear-gradient(180deg, #3A3A5A 0%, #1A1A3A 100%);
-      color: rgba(255,255,255,0.8); border: none; cursor: pointer;
-      width: 28px; height: 28px; border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.75rem; box-shadow: 0 2px 0 rgba(0,0,0,0.5);
-      transition: transform 0.12s;
+      background: linear-gradient(180deg, #3A3A5A 0%, #1A1A3A 100%); color: rgba(255,255,255,0.8); border: none; cursor: pointer;
+      width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+      font-size: 0.75rem; box-shadow: 0 2px 0 rgba(0,0,0,0.5); transition: transform 0.12s;
     }
     .log-toggle-btn:hover { transform: scale(0.88); }
-    /* Tab on the left side of panel to open it */
     .log-open-tab {
-      position: fixed; right: 0; top: 50%;
-      transform: translateY(-50%);
-      background: rgba(10,15,26,0.92);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-right: none;
-      padding: 12px 8px; border-radius: 8px 0 0 8px;
-      cursor: pointer; z-index: 181;
+      position: fixed; right: 0; top: 50%; transform: translateY(-50%);
+      background: rgba(10,15,26,0.92); border: 1px solid rgba(255,255,255,0.15); border-right: none;
+      padding: 12px 8px; border-radius: 8px 0 0 8px; cursor: pointer; z-index: 181;
       display: flex; flex-direction: column; align-items: center; gap: 4px;
-      transition: right 0.4s, background 0.15s;
-      backdrop-filter: blur(8px);
+      transition: right 0.4s, background 0.15s; backdrop-filter: blur(8px);
     }
     .log-open-tab.panel-open { right: var(--log-width); }
     .log-open-tab:hover { background: rgba(30,40,60,0.95); }
@@ -637,20 +601,15 @@
     /* ===== COIN FLIP ANIMATION ===== */
     .coin-flip-overlay {
       position: fixed; inset: 0; z-index: 9000;
-      display: flex; align-items: center; justify-content: center;
-      pointer-events: none;
+      display: flex; align-items: center; justify-content: center; pointer-events: none;
     }
-    .coin-flip-container {
-      display: flex; flex-direction: column; align-items: center; gap: 10px;
-    }
+    .coin-flip-container { display: flex; flex-direction: column; align-items: center; gap: 10px; }
     .coin-flip-label {
       font-family: 'Orbitron', sans-serif; font-size: 0.85rem; color: #80CFFF;
       letter-spacing: 2px; text-transform: uppercase; text-shadow: 0 0 10px rgba(128,207,255,0.8);
     }
     .coin-flip-main { display: flex; align-items: center; gap: 24px; }
-    .coin-wrap {
-      perspective: 600px;
-    }
+    .coin-wrap { perspective: 600px; }
     .coin {
       width: 90px; height: 90px; border-radius: 50%;
       position: relative; transform-style: preserve-3d;
@@ -659,8 +618,7 @@
     .coin.result-heads { animation: coinLandHeads 0.8s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
     .coin.result-tails { animation: coinLandTails 0.8s cubic-bezier(0.25,0.46,0.45,0.94) forwards; }
     .coin-face {
-      position: absolute; inset: 0; border-radius: 50%;
-      backface-visibility: hidden;
+      position: absolute; inset: 0; border-radius: 50%; backface-visibility: hidden;
       display: flex; align-items: center; justify-content: center;
       font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1.1rem;
     }
@@ -687,8 +645,7 @@
     .coin-info-move { color: rgba(255,255,255,0.7); font-size: 0.72rem; margin-top: 2px; }
     .coin-result-text {
       font-family: 'Orbitron', sans-serif; font-weight: 900; font-size: 1.2rem;
-      text-align: center; margin-top: 4px;
-      text-shadow: 0 0 16px currentColor;
+      text-align: center; margin-top: 4px; text-shadow: 0 0 16px currentColor;
     }
     .coin-result-text.hit { color: #40E0A0; }
     .coin-result-text.miss { color: #FF6B6B; }
@@ -1046,7 +1003,7 @@ function playAttackSound(){
 }
 function stopBgMusic(){if(bgMusic){bgMusic.pause();bgMusic.currentTime=0;bgMusicStarted=false;}}
 
-// ==================== CARD HELPERS (compatible with your current format) ====================
+// ==================== CARD HELPERS ====================
 function getCardName(c){return c?.UI_Frontend_Data?.Name||"Unknown";}
 function getCardImg(c){return c?.UI_Frontend_Data?.Image_File||"";}
 function getCardHP(c){return c?.UI_Frontend_Data?.Stats?.HP||2200;}
@@ -1073,7 +1030,7 @@ function showScreen(id){
 }
 function delay(ms){return new Promise(r=>setTimeout(r,ms));}
 
-// ==================== BATTLE LOG ===========================
+// ==================== BATTLE LOG UI ===========================
 let battleLogOpen=false;
 function toggleBattleLog(){
   battleLogOpen=!battleLogOpen;
@@ -1093,6 +1050,12 @@ function toggleBattleLog(){
     arena.classList.remove('log-open');
     if(actionPanel) actionPanel.style.right='0';
   }
+}
+function logMsg2(type, who, detail) {
+    let l = $('battle-log');
+    let whoClass = type === 'atk' ? 'log-who-you' : type === 'def' ? 'log-who-bot' : type === 'coin' ? 'log-who-coin' : type === 'hp' ? 'log-who-hp' : type === 'ko' ? 'log-who-ko' : type === 'block' ? 'log-who-block' : 'log-who-sys';
+    l.innerHTML += `<div class="log-entry"><span class="log-who ${whoClass}">${who}</span><span class="log-detail">${detail}</span></div>`;
+    if (battleLogOpen) l.scrollTop = l.scrollHeight;
 }
 
 // ==================== TOOLTIP ====================
@@ -1114,13 +1077,11 @@ function positionTooltip(e){
   if(px+tw>window.innerWidth-pad)px=x-tw-15;if(py+th>window.innerHeight-pad)py=y-th-15;
   tt.style.left=`${Math.max(pad,px)}px`;tt.style.top=`${Math.max(pad,py)}px`;
 }
-
 function isInnerRegionOfCard(e, el) {
   if (!el) return true;
   const rect = el.getBoundingClientRect();
   const mx = e.touches ? e.touches[0].clientX : e.clientX;
   const my = e.touches ? e.touches[0].clientY : e.clientY;
-  // 15% safe zone in the center!
   const edgeMarginX = rect.width * 0.15;
   const edgeMarginY = rect.height * 0.15;
   return mx > rect.left + edgeMarginX && mx < rect.right - edgeMarginX &&
@@ -1130,14 +1091,7 @@ function handleTooltipHover(e, name, el) {
   if(isInnerRegionOfCard(e, el)) {
     if (!$('tooltip').classList.contains('visible')) showTooltip(e, name);
     positionTooltip(e);
-  } else {
-    hideTooltip();
-  }
-}
-function showTooltipIfInnerCard(e, name, el) { handleTooltipHover(e, name, el); }
-function positionTooltipIfInnerCard(e, el) {
-  if(!isInnerRegionOfCard(e, el)) { hideTooltip(); return; }
-  positionTooltip(e);
+  } else { hideTooltip(); }
 }
 
 // ==================== PHYSICS DRAG ====================
@@ -1229,7 +1183,6 @@ function openCatLeftPanel(card){
     ${skills}`;
   $('cat-left-panel').classList.add('open');
 }
-function closeExpanded(mode){if(mode==='cat'){expandedCardCat=null;filterCat();}}
 
 // ==================== DRAFT SIDE PANEL ====================
 let currentDraftPanelCard=null;
@@ -1367,12 +1320,7 @@ function renderSetupBench(){
   });
 }
 
-<script>
-// ==================== UTILS ====================
-// (your existing utils, tooltip, drag & drop, catalogue, draft, setup, render functions remain unchanged)
-
-
-// ==================== GLOBAL STATE ====================
+  // ==================== GLOBAL STATE ====================
 let activeAuras = [];
 let pendingBlocks = [];
 let frozenCards = {};
@@ -1398,2278 +1346,1614 @@ let pendingReactiveAction = null;
 
 function cardKey(team, idx){ return `${team}-${idx}`; }
 
-// ==================== CARD HELPERS (compatible with your current format) ====================
-function getCardName(c) { return c?.UI_Frontend_Data?.Name || "Unknown"; }
-function getCardImg(c) { return c?.UI_Frontend_Data?.Image_File || ""; }
-function getCardHP(c) { return c?.UI_Frontend_Data?.Stats?.HP || 2200; }
-function getCardDMG(c) { return c?.UI_Frontend_Data?.Stats?.Base_DMG || 800; }
-function getCardSPD(c) { return c?.UI_Frontend_Data?.Stats?.Speed || 7; }
-function getCardAllPos(c) {
-  const p = c?.UI_Frontend_Data?.Positions || {};
-  let arr = [];
-  if (p.Primary) arr.push(p.Primary);
-  if (p.Secondary) arr.push(p.Secondary);
-  if (p.Third) arr.push(p.Third);
-  return arr.filter(Boolean);
+// ==================== BATTLE INITIALIZATION ====================
+function buildEnemyRoster() {
+  const NEED = ['PG', 'SG', 'SF', 'PF', 'C'];
+  let draft = { PG: [], SG: [], SF: [], PF: [], C: [] };
+  let pool = [...CARDS].sort(() => Math.random() - 0.5);
+  
+  for (let c of pool) {
+      let ps = getCardAllPos(c);
+      for (let po of ps) {
+          if (NEED.includes(po) && draft[po].length < 2) {
+              if (!NEED.some(x => draft[x].some(y => getCardName(y) === getCardName(c)))) {
+                  draft[po].push(c);
+                  break;
+              }
+          }
+      }
+      if (NEED.every(x => draft[x].length >= 2)) break;
+  }
+  
+  let st = [], be = [];
+  NEED.forEach(po => {
+      if (draft[po][0]) {
+          let c = JSON.parse(JSON.stringify(draft[po][0]));
+          c.currentHp = getCardHP(c);
+          c.isDead = false;
+          c.battleRole = po;
+          st.push(c);
+      }
+      if (draft[po][1]) {
+          let c = JSON.parse(JSON.stringify(draft[po][1]));
+          c.currentHp = getCardHP(c);
+          c.isDead = false;
+          c.battleRole = po;
+          be.push(c);
+      }
+  });
+  return { st, be };
 }
 
-// ==================== START BATTLE ====================
-function startBattle(){
+function buildPlayerActiveWithRoles() {
+  let res = [];
+  POSITIONS.forEach(po => {
+      if (activeLineup[po]) {
+          let c = JSON.parse(JSON.stringify(activeLineup[po]));
+          c.currentHp = getCardHP(c);
+          c.isDead = false;
+          c.battleRole = po;
+          res.push(c);
+      }
+  });
+  return res;
+}
+
+function startBattle() {
   playerActive = buildPlayerActiveWithRoles();
-  playerBench = benchRoster.filter(c => !playerActive.some(ac => getCardName(ac) === getCardName(c)))
-    .map(c => {
+  playerBench = benchRoster.filter(c => !playerActive.some(ac => getCardName(ac) === getCardName(c)));
+  playerBench = playerBench.map(c => {
       let cc = JSON.parse(JSON.stringify(c));
       cc.currentHp = getCardHP(cc);
       cc.isDead = false;
       return cc;
-    });
-
+  });
+  
   let eR = buildEnemyRoster();
   enemyActive = eR.st;
   enemyBench = eR.be;
-
-  playerScore = 0; enemyScore = 0; turnCount = 1; stagedActions = []; uiState = 'IDLE';
-
-  [...playerActive, ...playerBench, ...enemyActive, ...enemyBench].forEach(c => {
-    if(!c) return;
-    initCardSkillUses(c);
-    initCardAbility(c);
+  
+  playerScore = 0;
+  enemyScore = 0;
+  turnCount = 1;
+  stagedActions = [];
+  uiState = 'IDLE';
+  
+  // Initialize uses for all skills
+  [playerActive, enemyActive, playerBench, enemyBench].forEach(team => {
+      for (let c of team) {
+          if (!c) continue;
+          if (c.Skills) {
+              for (let sk of c.Skills) {
+                  let json = sk.Logic_Engine || {};
+                  sk._usesLeft = json.max_uses !== undefined ? json.max_uses : 1;
+              }
+          }
+      }
   });
-
+  
+  // Initialize all abilities
+  abilityState = {};
+  initAllAbilities(playerActive);
+  initAllAbilities(enemyActive);
+  initAllAbilities(playerBench);
+  initAllAbilities(enemyBench);
+  
+  // Clear all state
   frozenCards = {}; shutdownCards = {}; disabledSkills = {}; drainedNextTurn = {};
   invulnerable = {}; stolenSkills = {}; statBuffs = {}; activeAuras = []; pendingBlocks = [];
-
+  
   $('battle-log').innerHTML = `<div class="log-entry"><span class="log-who log-who-sys">System</span><span class="log-detail">Match initiated. First to 8 KOs wins.</span></div>`;
   $('score-player').textContent = '0';
   $('score-enemy').textContent = '0';
   $('checkout-panel').style.display = 'none';
-
   showScreen('battle-screen');
   initBattleAudio();
   renderArena();
 }
 
-function initCardSkillUses(card){
-  if(!card.Skills) return;
-  card.Skills.forEach(sk => {
-    let json = sk.Logic_Engine || {};
-    sk._usesLeft = json.max_uses !== undefined ? json.max_uses : 999;
-  });
-}
-
-function initCardAbility(card){
-  let key = getCardName(card);
-  abilityState[key] = {stackCount:0, usedOnce:false, synergyActive:false};
-  applyPassiveAbility(card, card.Ability?.Logic_Engine||{}, getTeamForCard(card));
-}
-
-function getTeamForCard(card){
-  return playerActive.includes(card) || playerBench.includes(card) ? playerActive : enemyActive;
-}
-
-function applyPassiveAbility(card, json, team){
-  if(!json || !json.trigger) return;
-  let trigger = (json.trigger||"").toUpperCase();
-  if(trigger === "TEAMMATE_SYNERGY" || trigger === "ON_TEAM_SYNERGY"){
-    let condition = (json.condition || json.synergy_condition || "").toLowerCase();
-    let hasSynergy = team.some(t => t && t !== card && 
-      (getCardName(t).toLowerCase().includes(condition) || 
-       (t.UI_Frontend_Data?.Team||"").toLowerCase().includes(condition)));
-    if(hasSynergy) abilityState[getCardName(card)].synergyActive = true;
-  }
-  if(trigger === "ALWAYS"){
-    if((json.effects||"").includes("SKILLS_UNBLOCKABLE")) card._skillsUnblockable = true;
-    if((json.effects||"").includes("SKILLS_UNCONTESTABLE")) card._skillsUncontestable = true;
-    if((json.effects||"").includes("IMMUNE_TO_FREEZE")) card._immuneFreeze = true;
-    if((json.effects||"").includes("IMMUNE_TO_STEAL")) card._immuneSteal = true;
-  }
-}
-
-// ==================== PASSIVE / ABILITY SYSTEM ====================
-function getTeamForCard(card) {
-  return playerActive.includes(card) || playerBench.includes(card) ? playerActive : enemyActive;
-}
-
-function applyPassiveAbility(card, json, team) {
-  if (!json || !json.trigger) return;
-  let trigger = (json.trigger || '').toUpperCase();
-  let effects = (json.effects || '').toUpperCase();
-
-  if (trigger === 'TEAMMATE_SYNERGY' || trigger === 'ON_TEAM_SYNERGY') {
-    let condition = (json.condition || json.synergy_condition || '').toLowerCase();
-    let hasSynergy = team.some(t => t && t !== card && 
-      (getCardName(t).toLowerCase().includes(condition) || 
-       (t.UI_Frontend_Data?.Team || '').toLowerCase().includes(condition)));
-    if (hasSynergy) {
-      abilityState[getCardName(card)].synergyActive = true;
-      // Apply any immediate boosts here if needed
-    }
-  }
-
-  // ALWAYS passives (e.g. immune flags)
-  if (trigger === 'ALWAYS') {
-    if (effects.includes('SKILLS_UNBLOCKABLE')) card._skillsUnblockable = true;
-    if (effects.includes('SKILLS_UNCONTESTABLE')) card._skillsUncontestable = true;
-    if (effects.includes('IMMUNE_TO_FREEZE')) card._immuneFreeze = true;
-    if (effects.includes('IMMUNE_TO_STEAL')) card._immuneSteal = true;
-    if (effects.includes('FORCED_TARGET_ON_SELF')) card._forcedTarget = true;
-  }
-}
-
-// ==================== ASSIST PROMPT (Fixed - now works for any combo) ====================
-async function promptForAssistTeammate(actorCard, sk, execTeam) {
-  let json = sk.Logic_Engine || {};
-  let formula = json.dmg_formula || json.Execution || "";
-  let parsed = parseAssistFormula(formula);
-  if (!parsed || parsed.positions.length === 0) return { teammateIdx: null };
-
-  let team = execTeam === 'player' ? playerActive : enemyActive;
-  let valids = team.map((c, i) => ({c, i}))
-    .filter(x => x.c && !x.c.isDead && x.c !== actorCard && 
-                 parsed.positions.some(pos => getCardAllPos(x.c).includes(pos)));
-
-  if (valids.length === 0) return { teammateIdx: null };
-  if (valids.length === 1) return { teammateIdx: valids[0].i };
-
-  return new Promise(resolve => {
-    $('assist-prompt-text').textContent = `Choose teammate for ${sk.Name} (${parsed.positions.join(' or ')} basic attack DMG):`;
-    $('assist-options').innerHTML = valids.map(v => `
-      <button class="game-btn game-btn-purple" style="width:100%;text-align:left;" onclick="resolveAssistModal(${v.i})">
-        [${v.c.battleRole}] ${shortName(getCardName(v.c))} — Basic DMG: ${getCardDMG(v.c)}
-      </button>`).join('');
-    window.resolveAssistModal = (idx) => { $('assist-modal').style.display = 'none'; resolve({ teammateIdx: idx }); };
-    window.cancelAssist = () => { $('assist-modal').style.display = 'none'; resolve(null); };
-    $('assist-modal').style.display = 'flex';
-  });
-}
-
-function parseAssistFormula(formula) {
-  if (!formula) return { positions: [] };
-  let posMatch = formula.match(/\[([^\]]+)\]/) || formula.match(/(PG|SG|SF|PF|C)/gi);
-  let positions = posMatch ? (Array.isArray(posMatch) ? posMatch[1]?.split(',').map(p=>p.trim()) || [] : [posMatch[0]]) : [];
-  return { positions: positions.filter(Boolean) };
-}
-
-// ==================== REACTIVE DEFENSE (Fixed - now triggers popups) ====================
-async function checkAndPromptReactive(act) {
-  let isPlayerAttack = act.execTeam === 'player';
-  let defTeam = isPlayerAttack ? enemyActive : playerActive;
-  let atkCard = act.c || (isPlayerAttack ? playerActive[act.actorIdx] : enemyActive[act.actorIdx]);
-  let sk = act.actionType === 'skill' ? atkCard.Skills[act.skillIdx] : null;
-  let json = sk?.Logic_Engine || {};
-  let nature = (sk?.Nature || '').toLowerCase();
-
-  let isDamaging = act.actionType === 'basic' || (sk && parseInt(sk.Display_DMG || '0') > 0);
-  let isJump = nature.includes('jump');
-  let isClose = nature.includes('close');
-  let isAssist = nature.includes('assist') || json.execution?.includes('ASSIST');
-
-  // Skip if attacker has immunity
-  if (atkCard._skillsUnblockable || atkCard._skillsUncontestable) return;
-
-  let valids = [];
-  for (let [i, c] of defTeam.entries()) {
-    if (c.isDead) continue;
-    for (let [si, rsk] of (c.Skills || []).entries()) {
-      let rjson = rsk.Logic_Engine || {};
-      if (rjson.timing !== 'REACTIVE' && !rjson.execution?.toUpperCase().includes('BLOCK') && 
-          !rjson.execution?.toUpperCase().includes('CONTEST') && !rjson.execution?.toUpperCase().includes('INTERCEPT')) continue;
-
-      let canReact = false;
-      if (rjson.execution?.includes('BLOCK') && isDamaging) canReact = true;
-      if (rjson.execution?.includes('CONTEST') && (isJump || isClose)) canReact = true;
-      if (rjson.execution?.includes('INTERCEPT') && isAssist) canReact = true;
-
-      let usesLeft = rsk._usesLeft !== undefined ? rsk._usesLeft : 999;
-      if (canReact && usesLeft > 0) valids.push({cIdx: i, sIdx: si, rsk, c});
-    }
-  }
-
-  if (valids.length === 0) return;
-
-  // Show popup for player defense
-  if (isPlayerAttack) {
-    return new Promise(resolve => {
-      let desc = sk ? `${sk.Name} (${sk.Display_DMG})` : `Basic Attack`;
-      $('reactive-desc').innerHTML = `<b>${shortName(getCardName(atkCard))}</b> is using <b>${desc}</b> on your team.<br>Use a defensive skill?`;
-      $('reactive-options').innerHTML = valids.map(v => `
-        <button class="game-btn game-btn-purple" style="width:100%;text-align:left;" onclick="resolveReactive(${v.cIdx},${v.sIdx})">
-          [${v.c.battleRole}] ${shortName(getCardName(v.c))}: ${v.rsk.Name}
-        </button>`).join('');
-      window.resolveReactive = async (cIdx, sIdx) => {
-        $('reactive-modal').style.display = 'none';
-        await applyReactiveDefense(cIdx, sIdx, defTeam, act);
-        resolve(true);
-      };
-      window.skipReactive = () => { $('reactive-modal').style.display = 'none'; resolve(false); };
-      $('reactive-modal').style.display = 'flex';
-    });
-  }
-  // Bot defense (simple random)
-  else if (Math.random() < 0.45 && valids.length > 0) {
-    let chosen = valids[Math.floor(Math.random() * valids.length)];
-    await applyReactiveDefense(chosen.cIdx, chosen.sIdx, defTeam, act);
-  }
-}
-
-async function applyReactiveDefense(cIdx, sIdx, defTeam, incAction) {
-  let c = defTeam[cIdx];
-  let rsk = c.Skills[sIdx];
-  let rjson = rsk.Logic_Engine || {};
-  if (rsk._usesLeft !== undefined) rsk._usesLeft--;
-
-  logMsg2('block', 'Defense', `${shortName(getCardName(c))} uses ${rsk.Name}!`);
-
-  if (rjson.execution?.includes('BLOCK')) {
-    pendingBlocks.push({ blockType: 'full', playerCardIdx: cIdx });
-  } else if (rjson.execution?.includes('INTERCEPT')) {
-    incAction._intercepted = true;
-  }
-}
-
-// ==================== SELECT ACTION (Fixed - now handles buffs & special skills correctly) ====================
-async function selectAction(actorIdx, type, skillIdx) {
-  hideActionPanels();
-  let c = playerActive[actorIdx];
-  let sk = type === 'skill' ? c.Skills[skillIdx] : null;
-  let json = sk?.Logic_Engine || {};
-
-  let priority = json.priority || 1;
-  let isFreeAction = json.timing === 'FREE_ACTION' || json.timing === 'BUFF' || json.execution?.includes('BUFF');
-
-  // Special case: Skills that do NOT need a target (buffs, auras, self-buffs like Luka Revenge Season)
-  if (isFreeAction || json.execution?.includes('STAT_BUFF') || json.execution?.includes('AURA') || 
-      json.effects?.includes('BUFF') || !json.target) {
-    
-    // Check synergy requirement (e.g. Shai needs OKC teammate)
-    if (json.synergy_required && !abilityState[getCardName(c)].synergyActive) {
-      logMsg2('sys', 'System', `Cannot use ${sk.Name} — missing required teammate!`);
-      return;
-    }
-
-    stagedActions.push({
-      actorIdx, actionType: type, skillIdx, priority,
-      speed: getCardSPD(c), pos: c.battleRole,
-      targetIdx: null, targetTeam: null, execTeam: 'player',
-      isFreeAction: true
-    });
-    renderArena(); renderCheckout();
-    return;
-  }
-
-  // Assist skills
-  if (json.execution?.includes('ASSIST') || sk?.Name.toLowerCase().includes('assist')) {
-    let result = await promptForAssistTeammate(c, sk, 'player');
-    if (result === null) return;
-    pendingAction = { actorIdx, actionType: type, skillIdx, priority, speed: getCardSPD(c), pos: c.battleRole, assistTeammateIdx: result.teammateIdx };
-    uiState = 'AWAITING_TARGET';
-    setTooltipEnabled(false);
-    renderArena();
-    return;
-  }
-
-  // Normal targeting skills
-  pendingAction = { actorIdx, actionType: type, skillIdx, priority, speed: getCardSPD(c), pos: c.battleRole };
-  uiState = 'AWAITING_TARGET';
-  setTooltipEnabled(false);
-  logMsg2('sys', 'System', `Select target for ${shortName(getCardName(c))}.`);
-  renderArena();
-}
-
-// ==================== CONFIRM MOVES PHASE (uses improved middleware) ====================
-async function confirmMovesPhase() {
-  // ... (same as before, but now calls the improved checkAndPromptReactive and executeAction)
-  // I kept the structure you had, just made sure it uses the new functions above.
-  // Full version is long, but the key calls are now using the fixed logic.
-}
-
-// ==================== EXECUTE ACTION (Improved) ====================
-async function executeAction(a) {
-  // Full implementation would be here with better JSON reading.
-  // For brevity, the main fixes are in selectAction, promptForAssistTeammate, checkAndPromptReactive, and applyPassiveAbility.
-  // The rest of your previous executeAction can stay, but the above functions now feed it correct data.
-}
-
-// ==================== Keep your existing renderArena, renderBenchStacks, buildEnemyRoster, etc. ====================
-// They are already good.
-
-console.log("✅ Fixed battle engine v3 loaded - Assist, Reactive, and Ability support improved.");
-// ==================== ABILITY / PASSIVE SYSTEM ====================
-function initAllAbilities(roster) {
-    roster.forEach(c => {
-        if (!c) return;
-        let key = getCardName(c);
-        abilityState[key] = { surviveUsed: false, healUsed: false, stackCount: 0 };
-
-        let abl = c.Ability || {};
-        let json = typeof abl.Ability_JSON === 'string' ? JSON.parse(abl.Ability_JSON || '{}') : (abl.Ability_JSON || {});
-        applyPassiveAbility(c, json, roster);
-    });
-}
-
-function applyPassiveAbility(card, json, team) {
-    if (!json.trigger) return;
-
-    let trigger = json.trigger.toUpperCase();
-    let effects = (json.effects || '').toUpperCase();
-
-    if (trigger === 'TEAMMATE_SYNERGY') {
-        let condition = (json.condition || '').toLowerCase();
-        let hasSynergy = team.some(t => t && t !== card && 
-            (getCardName(t).toLowerCase().includes(condition) || shortName(getCardName(t)).toLowerCase().includes(condition)));
-        
-        if (hasSynergy) {
-            (json.boosts || []).forEach(boost => {
-                let [stat, val] = boost.split(':');
-                val = parseInt(val);
-                if (stat === 'HP') {
-                    card.currentHp = (card.currentHp || getCardHP(card)) + val;
-                } else if (stat === 'SPD') {
-                    card.UI_Frontend_Data.Stats.Speed = (card.UI_Frontend_Data.Stats.Speed || 0) + val;
-                } else if (stat === 'basic_dmg' || stat === 'DMG') {
-                    card.UI_Frontend_Data.Stats.Base_DMG = (card.UI_Frontend_Data.Stats.Base_DMG || 0) + val;
-                }
-            });
-        }
-    }
-
-    if (trigger === 'ALWAYS') {
-        if (effects.includes('IMMUNE_DEFENSIVE_SKILLS')) card._immuneDefSkills = true;
-        if (effects.includes('SKILLS_UNBLOCKABLE')) card._skillsUnblockable = true;
-        if (effects.includes('SKILLS_UNCONTESTABLE')) card._skillsUncontestable = true;
-        if (effects.includes('IMMUNE_TO_STEAL')) card._immuneSteal = true;
-        if (effects.includes('IMMUNE_COINFLIP_SKILLS')) card._immuneCoinflip = true;
-        if (effects.includes('IMMUNE_TO_FREEZE')) card._immuneFreeze = true;
-        if (effects.includes('ASSIST_UNINTERCEPTABLE')) card._assistUninterceptable = true;
-        if (effects.includes('FORCED_TARGET_ON_SELF')) card._forcedTarget = true;
-    }
-}
-
-// ==================== MIDDLEWARE RESOLUTION LOOP (Core) ====================
-async function confirmMovesPhase() {
-    $('checkout-panel').style.display = 'none';
-    document.querySelectorAll('.undo-btn').forEach(b => b.style.display = 'none');
-    isAnimating = true;
-    logMsg2('sys', 'System', `--- Turn ${turnCount} ---`);
-
-    let enemyStaged = generateEnemyAI();
-    let masterQueue = [
-        ...stagedActions.map(a => ({...a, execTeam: 'player', card: playerActive[a.actorIdx]})),
-        ...enemyStaged.map(a => ({...a, execTeam: 'enemy', card: enemyActive[a.actorIdx]}))
-    ];
-
-    // Priority + Speed sorting
-    masterQueue.sort((a, b) => {
-        if (a.priority !== b.priority) return b.priority - a.priority;
-        if (a.speed !== b.speed) return b.speed - a.speed;
-        return Math.random() - 0.5;
-    });
-
-    for (let act of masterQueue) {
-        if (playerScore >= 8 || enemyScore >= 8) break;
-
-        let card = act.card;
-        if (!card || card.isDead) continue;
-
-        let ck = cardKey(act.execTeam, act.actorIdx || 0);
-        if (drainedNextTurn[ck] || shutdownCards[ck]) continue;
-
-        // Middleware steps:
-        // 1. Apply passives / auras
-        let auraResult = applyAuraEffectsToAction(act);
-        if (auraResult.blocked) {
-            logMsg2('def', act.execTeam === 'player' ? 'You' : 'Bot', auraResult.reason);
-            await onSkillFailure(card, act.actorIdx, null, null, act.execTeam);
-            continue;
-        }
-
-        // 2. Reactive checks (blocks, intercepts, contests)
-        if (act.actionType !== 'pass' && act.actionType !== 'swap') {
-            await checkAndPromptReactive(act);
-        }
-
-        // 3. Execute the action
-        await executeAction(act);
-    }
-
-    await handleDeadReplacements('player', playerActive, playerBench);
-    await handleDeadReplacements('enemy', enemyActive, enemyBench);
-
-    // Cleanup
-    tickDownEffects();
-    stagedActions = [];
-    uiState = 'IDLE';
-    turnCount++;
-
-    if (playerScore >= 8 || enemyScore >= 8) {
-        let won = playerScore >= 8;
-        $('endgame-title').textContent = won ? 'YOU WIN! 🏆' : 'YOU LOSE 😢';
-        $('endgame-desc').textContent = won ? 'You knocked out 8 opponents first!' : 'Opponent knocked out 8 of your players.';
-        $('endgame-modal').style.display = 'flex';
-    }
-
-    isAnimating = false;
-    renderArena();
-    renderBenchStacks();
-}
-
-function tickDownEffects() {
-    activeAuras = activeAuras.filter(a => --a.turnsLeft > 0);
-    Object.keys(statBuffs).forEach(k => {
-        if (--statBuffs[k].turnsLeft <= 0) delete statBuffs[k];
-    });
-    Object.keys(drainedNextTurn).forEach(k => delete drainedNextTurn[k]);
-    Object.keys(shutdownCards).forEach(k => {
-        if (--shutdownCards[k] <= 0) delete shutdownCards[k];
-    });
-}
-
-// ==================== REACTIVE + PROMPTS (using your existing modals) ====================
-async function checkAndPromptReactive(act) { /* your improved version using Logic_JSON */ }
-// ... (the rest of reactive, nullify, assist, freeze, heal, steal functions remain or are lightly adapted)
-
-// ==================== EXECUTE ACTION (Middleware Final Step) ====================
-async function executeAction(act) { /* fully data-driven using S1_JSON / S2_JSON */ }
-
-// (Full implementation of the above functions + helper functions like getValidTargets, parseAssistFormula, 
-// onSkillHit, onSkillFailure, handleKO, etc. are included in the complete version I generated.)
-
-// ==================== ROSTER BUILDING ====================
-function buildEnemyRoster() {
-    const NEED = ['PG', 'SG', 'SF', 'PF', 'C'];
-    let draft = { PG: [], SG: [], SF: [], PF: [], C: [] };
-    let pool = [...CARDS].sort(() => Math.random() - 0.5);
-    
-    for (let c of pool) {
-        let ps = getCardAllPos(c);
-        for (let po of ps) {
-            if (NEED.includes(po) && draft[po].length < 2) {
-                if (!NEED.some(x => draft[x].some(y => getCardName(y) === getCardName(c)))) {
-                    draft[po].push(c);
-                    break;
-                }
-            }
-        }
-        if (NEED.every(x => draft[x].length >= 2)) break;
-    }
-    
-    let st = [], be = [];
-    NEED.forEach(po => {
-        if (draft[po][0]) {
-            let c = JSON.parse(JSON.stringify(draft[po][0]));
-            c.currentHp = getCardHP(c);
-            c.isDead = false;
-            c.battleRole = po;
-            st.push(c);
-        }
-        if (draft[po][1]) {
-            let c = JSON.parse(JSON.stringify(draft[po][1]));
-            c.currentHp = getCardHP(c);
-            c.isDead = false;
-            c.battleRole = po;
-            be.push(c);
-        }
-    });
-    return { st, be };
-}
-
-function buildPlayerActiveWithRoles() {
-    let res = [];
-    POSITIONS.forEach(po => {
-        if (activeLineup[po]) {
-            let c = JSON.parse(JSON.stringify(activeLineup[po]));
-            c.currentHp = getCardHP(c);
-            c.isDead = false;
-            c.battleRole = po;
-            res.push(c);
-        }
-    });
-    return res;
-}
-
-function startBattle() {
-    playerActive = buildPlayerActiveWithRoles();
-    playerBench = benchRoster.filter(c => !playerActive.some(ac => getCardName(ac) === getCardName(c)));
-    playerBench = playerBench.map(c => {
-        let cc = JSON.parse(JSON.stringify(c));
-        cc.currentHp = getCardHP(cc);
-        cc.isDead = false;
-        return cc;
-    });
-    
-    let eR = buildEnemyRoster();
-    enemyActive = eR.st;
-    enemyBench = eR.be;
-    
-    playerScore = 0;
-    enemyScore = 0;
-    turnCount = 1;
-    stagedActions = [];
-    uiState = 'IDLE';
-    
-    // Initialize uses for all skills
-    [playerActive, enemyActive, playerBench, enemyBench].forEach(team => {
-        for (let c of team) {
-            if (!c) continue;
-            initCardSkillUses(c);
-        }
-    });
-    
-    // Initialize all abilities
-    abilityState = {};
-    initAllAbilities(playerActive);
-    initAllAbilities(enemyActive);
-    initAllAbilities(playerBench);
-    initAllAbilities(enemyBench);
-    
-    // Clear all state
-    frozenCards = {};
-    shutdownCards = {};
-    disabledSkills = {};
-    drainedNextTurn = {};
-    invulnerable = {};
-    stolenSkills = {};
-    statBuffs = {};
-    activeAuras = [];
-    pendingBlocks = [];
-    
-    $('battle-log').innerHTML = `<div class="log-entry"><span class="log-who log-who-sys">System</span><span class="log-detail">Match initiated. First to 8 KOs wins.</span></div>`;
-    $('score-player').textContent = '0';
-    $('score-enemy').textContent = '0';
-    $('checkout-panel').style.display = 'none';
-    showScreen('battle-screen');
-    initBattleAudio();
-    renderArena();
-}
-
-function initCardSkillUses(card) {
-    if (!card.Skills) return;
-    for (let sk of card.Skills) {
-        let json = sk.Logic_Engine || {};
-        sk._usesLeft = json.max_uses || 1;
-    }
-}
-
-// ==================== BENCH STACKS + FAN OVERLAY ====================
+// ==================== RENDERING: BENCH & ARENA ====================
 let playerBenchOpen = false;
 
 function renderBenchStacks() {
-    let eBench = $('enemy-bench-stack');
-    eBench.innerHTML = enemyBench.filter(c => !c.isDead).map((c, i) => {
-        let off = i * 5;
-        return `<div class="bench-stack-card face-down" style="top:${off}px;left:${off}px;z-index:${i};" 
-            onmouseenter="showEnemyBenchTooltip(event,${enemyBench.filter(x => !x.isDead).length})" 
-            onmouseleave="hideEnemyBenchTooltip()"></div>`;
-    }).join('');
-    
-    let pBench = $('player-bench-stack');
-    pBench.innerHTML = '';
-    let aliveBench = playerBench.filter(c => !c.isDead);
-    aliveBench.forEach((c, i) => {
-        let div = document.createElement('div');
-        div.className = 'bench-stack-card';
-        let img = document.createElement('img');
-        img.src = getImgUrl(getCardImg(c), getCardName(c));
-        img.onerror = () => handleImgError(img, getCardName(c));
-        div.appendChild(img);
-        div.dataset.benchIdx = i;
-        div.style.top = (i * 5) + 'px';
-        div.style.left = (i * 5) + 'px';
-        div.style.zIndex = i;
-        div.onmouseenter = (e) => { if (!playerBenchOpen) showTooltip(e, getCardName(c)); };
-        div.onmouseleave = () => hideTooltip();
-        div.onmousemove = (e) => positionTooltip(e);
-        div.onclick = (e) => { e.stopPropagation(); openBenchFan(e); };
-        pBench.appendChild(div);
-    });
-    pBench.style.pointerEvents = 'auto';
+  let eBench = $('enemy-bench-stack');
+  eBench.innerHTML = enemyBench.filter(c => !c.isDead).map((c, i) => {
+      let off = i * 5;
+      return `<div class="bench-stack-card face-down" style="top:${off}px;left:${off}px;z-index:${i};" 
+          onmouseenter="showEnemyBenchTooltip(event,${enemyBench.filter(x => !x.isDead).length})" 
+          onmouseleave="hideEnemyBenchTooltip()"></div>`;
+  }).join('');
+  
+  let pBench = $('player-bench-stack');
+  pBench.innerHTML = '';
+  let aliveBench = playerBench.filter(c => !c.isDead);
+  aliveBench.forEach((c, i) => {
+      let div = document.createElement('div');
+      div.className = 'bench-stack-card';
+      let img = document.createElement('img');
+      img.src = getImgUrl(getCardImg(c), getCardName(c));
+      img.onerror = () => handleImgError(img, getCardName(c));
+      div.appendChild(img);
+      div.dataset.benchIdx = i;
+      div.style.top = (i * 5) + 'px';
+      div.style.left = (i * 5) + 'px';
+      div.style.zIndex = i;
+      div.onmouseenter = (e) => { if (!playerBenchOpen) showTooltip(e, getCardName(c)); };
+      div.onmouseleave = () => hideTooltip();
+      div.onmousemove = (e) => positionTooltip(e);
+      div.onclick = (e) => { e.stopPropagation(); openBenchFan(e); };
+      pBench.appendChild(div);
+  });
+  pBench.style.pointerEvents = 'auto';
 }
 
 function openBenchFan(e) {
-    if (e) e.stopPropagation();
-    if (uiState === 'IDLE' || uiState === 'AWAITING_TARGET') {
-        hideActionPanels();
-        if (uiState === 'AWAITING_TARGET') {
-            uiState = 'IDLE';
-            pendingAction = null;
-            setTooltipEnabled(true);
-            renderArena();
-        }
-    }
-    playerBenchOpen = true;
-    let overlay = $('bench-fan-overlay'), stage = $('bench-fan-stage');
-    overlay.classList.add('open');
-    stage.innerHTML = '';
-    $('checkout-panel').classList.add('panel-blur');
-    
-    let aliveBench = playerBench.filter(c => !c.isDead);
-    let n = aliveBench.length;
-    aliveBench.forEach((c, i) => {
-        let mid = (n - 1) / 2, offset = i - mid;
-        let angle = offset * 10, arcY = (offset * offset * 12);
-        let wrap = document.createElement('div');
-        wrap.className = 'bench-fan-card-wrap';
-        wrap.style.cssText = `z-index:${n + i}; --base-rot:${angle}deg; --base-y:${arcY}px; transform: rotate(var(--base-rot)) translateY(var(--base-y));`;
-        let card = document.createElement('div');
-        card.className = 'bench-fan-card';
-        let img = document.createElement('img');
-        img.src = getImgUrl(getCardImg(c), getCardName(c));
-        img.onerror = () => handleImgError(img, getCardName(c));
-        card.appendChild(img);
-        wrap.appendChild(card);
-        wrap.onmousemove = (ev) => { handleTooltipHover(ev, getCardName(c), wrap); };
-        wrap.onmouseleave = () => { hideTooltip(); };
-        
-        if (uiState === 'AWAITING_BENCH' && pendingAction?.pos) {
-            let swapPos = pendingAction.pos;
-            if (!getCardAllPos(c).includes(swapPos)) {
-                wrap.classList.add('ineligible');
-                wrap.style.opacity = '0.5';
-                wrap.onmousemove = null;
-                wrap.onmouseleave = null;
-            }
-        }
-        wrap.onclick = (ev) => { ev.stopPropagation(); onBenchFanCardClick(i, ev); };
-        stage.appendChild(wrap);
-    });
+  if (e) e.stopPropagation();
+  if (uiState === 'IDLE' || uiState === 'AWAITING_TARGET') {
+      hideActionPanels();
+      if (uiState === 'AWAITING_TARGET') {
+          uiState = 'IDLE';
+          pendingAction = null;
+          setTooltipEnabled(true);
+          renderArena();
+      }
+  }
+  playerBenchOpen = true;
+  let overlay = $('bench-fan-overlay'), stage = $('bench-fan-stage');
+  overlay.classList.add('open');
+  stage.innerHTML = '';
+  $('checkout-panel').classList.add('panel-blur');
+  
+  let aliveBench = playerBench.filter(c => !c.isDead);
+  let n = aliveBench.length;
+  aliveBench.forEach((c, i) => {
+      let mid = (n - 1) / 2, offset = i - mid;
+      let angle = offset * 10, arcY = (offset * offset * 12);
+      let wrap = document.createElement('div');
+      wrap.className = 'bench-fan-card-wrap';
+      wrap.style.cssText = `z-index:${n + i}; --base-rot:${angle}deg; --base-y:${arcY}px; transform: rotate(var(--base-rot)) translateY(var(--base-y));`;
+      let card = document.createElement('div');
+      card.className = 'bench-fan-card';
+      let img = document.createElement('img');
+      img.src = getImgUrl(getCardImg(c), getCardName(c));
+      img.onerror = () => handleImgError(img, getCardName(c));
+      card.appendChild(img);
+      wrap.appendChild(card);
+      wrap.onmousemove = (ev) => { handleTooltipHover(ev, getCardName(c), wrap); };
+      wrap.onmouseleave = () => { hideTooltip(); };
+      
+      if (uiState === 'AWAITING_BENCH' && pendingAction?.pos) {
+          let swapPos = pendingAction.pos;
+          if (!getCardAllPos(c).includes(swapPos)) {
+              wrap.classList.add('ineligible');
+              wrap.style.opacity = '0.5';
+              wrap.onmousemove = null;
+              wrap.onmouseleave = null;
+          }
+      }
+      wrap.onclick = (ev) => { ev.stopPropagation(); onBenchFanCardClick(i, ev); };
+      stage.appendChild(wrap);
+  });
 }
 
 function closeBenchFan() {
-    playerBenchOpen = false;
-    $('bench-fan-overlay').classList.remove('open');
-    $('checkout-panel').classList.remove('panel-blur');
-    if (uiState === 'AWAITING_BENCH') {
-        uiState = 'IDLE';
-        pendingAction = null;
-        logMsg2('sys', 'System', 'Swap cancelled.');
-    }
+  playerBenchOpen = false;
+  $('bench-fan-overlay').classList.remove('open');
+  $('checkout-panel').classList.remove('panel-blur');
+  if (uiState === 'AWAITING_BENCH') {
+      uiState = 'IDLE';
+      pendingAction = null;
+      logMsg2('sys', 'System', 'Swap cancelled.');
+  }
 }
 
 function handleBenchOverlayClick(e) {
-    if (e.target === e.currentTarget || e.target.id === 'bench-fan-stage' || e.target.id === 'bench-fan-label') closeBenchFan();
+  if (e.target === e.currentTarget || e.target.id === 'bench-fan-stage' || e.target.id === 'bench-fan-label') closeBenchFan();
 }
 
 function onBenchFanCardClick(idx, e) {
-    e.stopPropagation();
-    if (uiState === 'AWAITING_BENCH') {
-        let aliveBench = playerBench.filter(c => !c.isDead);
-        let incomingCard = aliveBench[idx];
-        if (!incomingCard) { closeBenchFan(); return; }
-        let swapPos = pendingAction?.pos;
-        if (swapPos && !getCardAllPos(incomingCard).includes(swapPos)) {
-            logMsg2('sys', 'System', `${shortName(getCardName(incomingCard))} cannot play ${swapPos}!`);
-            return;
-        }
-        let realBenchIdx = playerBench.findIndex(c => getCardName(c) === getCardName(incomingCard));
-        stagedActions.push({ ...pendingAction, targetIdx: realBenchIdx, targetTeam: 'bench' });
-        uiState = 'IDLE';
-        closeBenchFan();
-        renderArena();
-        renderCheckout();
-        hideActionPanels();
-    } else {
-        closeBenchFan();
-    }
+  e.stopPropagation();
+  if (uiState === 'AWAITING_BENCH') {
+      let aliveBench = playerBench.filter(c => !c.isDead);
+      let incomingCard = aliveBench[idx];
+      if (!incomingCard) { closeBenchFan(); return; }
+      let swapPos = pendingAction?.pos;
+      if (swapPos && !getCardAllPos(incomingCard).includes(swapPos)) {
+          logMsg2('sys', 'System', `${shortName(getCardName(incomingCard))} cannot play ${swapPos}!`);
+          return;
+      }
+      let realBenchIdx = playerBench.findIndex(c => getCardName(c) === getCardName(incomingCard));
+      stagedActions.push({ ...pendingAction, targetIdx: realBenchIdx, targetTeam: 'bench' });
+      uiState = 'IDLE';
+      closeBenchFan();
+      renderArena();
+      renderCheckout();
+      hideActionPanels();
+  } else {
+      closeBenchFan();
+  }
 }
 
 function showEnemyBenchTooltip(e, cnt) {
-    let tt = $('enemy-bench-tooltip');
-    tt.innerHTML = `<b style="color:#FF6B6B;">Opponent's Bench</b><br><span>${cnt} card(s) remaining</span>`;
-    tt.style.display = 'block';
-    tt.style.left = (e.clientX + 12) + 'px';
-    tt.style.top = (e.clientY - 10) + 'px';
+  let tt = $('enemy-bench-tooltip');
+  tt.innerHTML = `<b style="color:#FF6B6B;">Opponent's Bench</b><br><span>${cnt} card(s) remaining</span>`;
+  tt.style.display = 'block';
+  tt.style.left = (e.clientX + 12) + 'px';
+  tt.style.top = (e.clientY - 10) + 'px';
 }
 
 function hideEnemyBenchTooltip() {
-    let tt = $('enemy-bench-tooltip');
-    if (tt) tt.style.display = 'none';
+  let tt = $('enemy-bench-tooltip');
+  if (tt) tt.style.display = 'none';
 }
 
-// ==================== ARENA RENDER ====================
 function renderArena() {
-    renderBenchStacks();
-    $('enemy-active-row').innerHTML = renderFanned(enemyActive, true);
-    $('player-active-row').innerHTML = renderFanned(playerActive, false);
+  renderBenchStacks();
+  $('enemy-active-row').innerHTML = renderFanned(enemyActive, true);
+  $('player-active-row').innerHTML = renderFanned(playerActive, false);
 }
 
 function renderFanned(team, isEnemy) {
-    let n = team.length;
-    if (n === 0) return '';
-    
-    return team.map((c, i) => {
-        let mid = (n - 1) / 2, offset = i - mid;
-        let arcY = isEnemy ? -(offset * offset * 12) : (offset * offset * 12);
-        let rot = isEnemy ? (-offset * 8) : (offset * 8);
-        let hpMax = getCardHP(c), pct = Math.max(0, (c.currentHp / hpMax) * 100);
-        let clr = pct > 50 ? '#40E0A0' : pct > 20 ? '#FFD166' : '#FF6B6B';
-        let isStaged = !isEnemy && stagedActions.some(a => a.actorIdx === i);
-        let validTgt = isEnemy && uiState === 'AWAITING_TARGET' && pendingAction && playerActive[pendingAction.actorIdx]
-            ? getValidTargets(playerActive[pendingAction.actorIdx], enemyActive) : [];
-        let isTgt = validTgt.some(v => v.i === i);
-        let wrapClass = isEnemy ? 'enemy-card-wrap' : 'active-card-wrap';
-        let cardClass = `battle-card ${c.isDead ? 'dead-card' : ''} ${isStaged ? 'staged' : ''} ${isTgt ? 'valid-target' : ''}`;
-        let tooltipName = escapeJS(getCardName(c));
-        
-        let badges = '';
-        let ck = cardKey(isEnemy ? 'enemy' : 'player', i);
-        if (frozenCards[ck]) badges += `<div class="card-status-badge badge-frozen">❄ FROZEN</div>`;
-        if (drainedNextTurn[ck]) badges += `<div class="card-status-badge badge-drained">💤 DRAINED</div>`;
-        if (shutdownCards[ck]) badges += `<div class="card-status-badge badge-shutdown">🚫 SHUTDOWN</div>`;
-        if (statBuffs[ck]) badges += `<div class="card-status-badge badge-buffed">⬆ BUFFED</div>`;
-        
-        return `<div class="${wrapClass}" id="wrap-${isEnemy ? 'enemy' : 'player'}-${i}"
-            style="--base-rot: ${rot}deg; --base-y: ${arcY}px; transform: rotate(var(--base-rot)) translateY(var(--base-y)); transform-origin: ${isEnemy ? 'top center' : 'bottom center'};"
-            onclick="onCardClick('${isEnemy ? 'enemy' : 'player'}',${i},event)"
-            onmousemove="handleTooltipHover(event, '${tooltipName}', this)"
-            onmouseleave="hideTooltip()">
-            ${isEnemy ? `<div class="hp-bar-container"><div class="hp-fill" id="hpf-enemy-${i}" style="width:${pct}%;background:${clr};"></div></div>` : ''}
-            <div class="${cardClass}" id="card-${isEnemy ? 'enemy' : 'player'}-${i}">
-                <img src="${getImgUrl(getCardImg(c), getCardName(c))}" onerror="handleImgError(this,'${tooltipName}')">
-                ${badges}
-            </div>
-            ${isStaged ? `<button class="undo-btn" onclick="event.stopPropagation();undoAction(${i})">✕</button>` : ''}
-            ${!isEnemy ? `<div class="hp-bar-container"><div class="hp-fill" id="hpf-player-${i}" style="width:${pct}%;background:${clr};"></div></div>` : ''}
-            <div class="hp-text" id="hpt-${isEnemy ? 'enemy' : 'player'}-${i}">${c.currentHp}/${hpMax}</div>
-        </div>`;
-    }).join('');
+  let n = team.length;
+  if (n === 0) return '';
+  
+  return team.map((c, i) => {
+      let mid = (n - 1) / 2, offset = i - mid;
+      let arcY = isEnemy ? -(offset * offset * 12) : (offset * offset * 12);
+      let rot = isEnemy ? (-offset * 8) : (offset * 8);
+      let hpMax = getCardHP(c), pct = Math.max(0, (c.currentHp / hpMax) * 100);
+      let clr = pct > 50 ? '#40E0A0' : pct > 20 ? '#FFD166' : '#FF6B6B';
+      let isStaged = !isEnemy && stagedActions.some(a => a.actorIdx === i);
+      let validTgt = isEnemy && uiState === 'AWAITING_TARGET' && pendingAction && playerActive[pendingAction.actorIdx]
+          ? getValidTargets(playerActive[pendingAction.actorIdx], enemyActive) : [];
+      let isTgt = validTgt.some(v => v.i === i);
+      let wrapClass = isEnemy ? 'enemy-card-wrap' : 'active-card-wrap';
+      let cardClass = `battle-card ${c.isDead ? 'dead-card' : ''} ${isStaged ? 'staged' : ''} ${isTgt ? 'valid-target' : ''}`;
+      let tooltipName = escapeJS(getCardName(c));
+      
+      let badges = '';
+      let ck = cardKey(isEnemy ? 'enemy' : 'player', i);
+      if (frozenCards[ck]) badges += `<div class="card-status-badge badge-frozen">❄ FROZEN</div>`;
+      if (drainedNextTurn[ck]) badges += `<div class="card-status-badge badge-drained">💤 DRAINED</div>`;
+      if (shutdownCards[ck]) badges += `<div class="card-status-badge badge-shutdown">🚫 SHUTDOWN</div>`;
+      if (statBuffs[ck]) badges += `<div class="card-status-badge badge-buffed">⬆ BUFFED</div>`;
+      
+      return `<div class="${wrapClass}" id="wrap-${isEnemy ? 'enemy' : 'player'}-${i}"
+          style="--base-rot: ${rot}deg; --base-y: ${arcY}px; transform: rotate(var(--base-rot)) translateY(var(--base-y)); transform-origin: ${isEnemy ? 'top center' : 'bottom center'};"
+          onclick="onCardClick('${isEnemy ? 'enemy' : 'player'}',${i},event)"
+          onmousemove="handleTooltipHover(event, '${tooltipName}', this)"
+          onmouseleave="hideTooltip()">
+          ${isEnemy ? `<div class="hp-bar-container"><div class="hp-fill" id="hpf-enemy-${i}" style="width:${pct}%;background:${clr};"></div></div>` : ''}
+          <div class="${cardClass}" id="card-${isEnemy ? 'enemy' : 'player'}-${i}">
+              <img src="${getImgUrl(getCardImg(c), getCardName(c))}" onerror="handleImgError(this,'${tooltipName}')">
+              ${badges}
+          </div>
+          ${isStaged ? `<button class="undo-btn" onclick="event.stopPropagation();undoAction(${i})">✕</button>` : ''}
+          ${!isEnemy ? `<div class="hp-bar-container"><div class="hp-fill" id="hpf-player-${i}" style="width:${pct}%;background:${clr};"></div></div>` : ''}
+          <div class="hp-text" id="hpt-${isEnemy ? 'enemy' : 'player'}-${i}">${c.currentHp}/${hpMax}</div>
+      </div>`;
+  }).join('');
 }
 
-// ==================== BATTLE LOG ====================
-function logMsg2(type, who, detail) {
-    let l = $('battle-log');
-    let whoClass = type === 'atk' ? 'log-who-you' : type === 'def' ? 'log-who-bot' : type === 'coin' ? 'log-who-coin' : type === 'hp' ? 'log-who-hp' : type === 'ko' ? 'log-who-ko' : type === 'block' ? 'log-who-block' : 'log-who-sys';
-    l.innerHTML += `<div class="log-entry"><span class="log-who ${whoClass}">${who}</span><span class="log-detail">${detail}</span></div>`;
-    if (battleLogOpen) l.scrollTop = l.scrollHeight;
-}
-
-// ==================== INTERACTION ====================
+// ==================== BATTLE INTERACTION ====================
 function handleCourtClick(e) {
-    if (e.target.closest('.action-panels-wrapper') || e.target.closest('.active-card-wrap') || e.target.closest('.enemy-card-wrap') || e.target.closest('.bench-stack-container')) return;
-    if (uiState === 'AWAITING_TARGET' || uiState === 'AWAITING_REACTIVE_TARGET') {
-        uiState = 'IDLE';
-        pendingAction = null;
-        logMsg2('sys', 'System', 'Targeting cancelled.');
-        setTooltipEnabled(true);
-        renderArena();
-    }
-    hideActionPanels();
+  if (e.target.closest('.action-panels-wrapper') || e.target.closest('.active-card-wrap') || e.target.closest('.enemy-card-wrap') || e.target.closest('.bench-stack-container')) return;
+  if (uiState === 'AWAITING_TARGET' || uiState === 'AWAITING_REACTIVE_TARGET') {
+      uiState = 'IDLE';
+      pendingAction = null;
+      logMsg2('sys', 'System', 'Targeting cancelled.');
+      setTooltipEnabled(true);
+      renderArena();
+  }
+  hideActionPanels();
 }
 
 function hideActionPanels() {
-    let w = $('action-panels-wrapper');
-    if (w) w.classList.remove('visible');
+  let w = $('action-panels-wrapper');
+  if (w) w.classList.remove('visible');
 }
 
 function onCardClick(team, idx, e) {
-    e.stopPropagation();
-    if (isAnimating) return;
-    hideTooltip();
-    if (playerBenchOpen) { closeBenchFan(); return; }
-    
-    if (uiState === 'AWAITING_TARGET') {
-        if (team === 'enemy' && !enemyActive[idx].isDead) {
-            if (getValidTargets(playerActive[pendingAction.actorIdx], enemyActive).some(v => v.i === idx)) {
-                stagedActions.push({ ...pendingAction, targetIdx: idx, targetTeam: 'enemy' });
-                uiState = 'IDLE';
-                setTooltipEnabled(true);
-                renderArena();
-                renderCheckout();
-                hideActionPanels();
-            } else logMsg2('sys', 'System', 'Invalid target — check lane match.');
-        }
-        return;
-    }
-    
-    if (uiState === 'AWAITING_REACTIVE_TARGET') {
-        if (team === 'enemy' && !enemyActive[idx].isDead && pendingReactiveAction) {
-            pendingReactiveAction.resolveReac(idx);
-            uiState = 'IDLE';
-            pendingReactiveAction = null;
-            renderArena();
-        }
-        return;
-    }
-    
-    if (team === 'player' && uiState === 'IDLE') {
-        let c = playerActive[idx];
-        if (c.isDead) return;
-        let ck = cardKey('player', idx);
-        if (shutdownCards[ck]) {
-            logMsg2('sys', 'System', `${shortName(getCardName(c))} is shutdown and cannot act.`);
-            return;
-        }
-        if (drainedNextTurn[ck]) {
-            logMsg2('sys', 'System', `${shortName(getCardName(c))} is drained and cannot act this turn.`);
-            return;
-        }
-        if (stagedActions.some(a => a.actorIdx === idx)) {
-            logMsg2('sys', 'System', 'Card already staged.');
-            return;
-        }
-        if (stagedActions.length >= Math.min(2, playerActive.filter(x => !x.isDead).length)) {
-            logMsg2('sys', 'System', 'Maximum moves staged.');
-            return;
-        }
-        showActionPanels(c, idx);
-    }
+  e.stopPropagation();
+  if (isAnimating) return;
+  hideTooltip();
+  if (playerBenchOpen) { closeBenchFan(); return; }
+  
+  if (uiState === 'AWAITING_TARGET') {
+      if (team === 'enemy' && !enemyActive[idx].isDead) {
+          if (getValidTargets(playerActive[pendingAction.actorIdx], enemyActive).some(v => v.i === idx)) {
+              stagedActions.push({ ...pendingAction, targetIdx: idx, targetTeam: 'enemy' });
+              uiState = 'IDLE';
+              setTooltipEnabled(true);
+              renderArena();
+              renderCheckout();
+              hideActionPanels();
+          } else logMsg2('sys', 'System', 'Invalid target — check lane match.');
+      }
+      return;
+  }
+  
+  if (uiState === 'AWAITING_REACTIVE_TARGET') {
+      if (team === 'enemy' && !enemyActive[idx].isDead && pendingReactiveAction) {
+          pendingReactiveAction.resolveReac(idx);
+          uiState = 'IDLE';
+          pendingReactiveAction = null;
+          renderArena();
+      }
+      return;
+  }
+  
+  if (team === 'player' && uiState === 'IDLE') {
+      let c = playerActive[idx];
+      if (c.isDead) return;
+      let ck = cardKey('player', idx);
+      if (shutdownCards[ck]) {
+          logMsg2('sys', 'System', `${shortName(getCardName(c))} is shutdown and cannot act.`);
+          return;
+      }
+      if (drainedNextTurn[ck]) {
+          logMsg2('sys', 'System', `${shortName(getCardName(c))} is drained and cannot act this turn.`);
+          return;
+      }
+      if (stagedActions.some(a => a.actorIdx === idx)) {
+          logMsg2('sys', 'System', 'Card already staged.');
+          return;
+      }
+      if (stagedActions.length >= Math.min(2, playerActive.filter(x => !x.isDead).length)) {
+          logMsg2('sys', 'System', 'Maximum moves staged.');
+          return;
+      }
+      showActionPanels(c, idx);
+  }
 }
 
 function showActionPanels(c, idx) {
-    let name = shortName(getCardName(c));
-    $('action-card-name').textContent = name;
-    let btns = [];
-    
-    if (playerBench.filter(x => !x.isDead).length > 0) {
-        btns.push(`<button class="action-btn action-btn-swap" onclick="selectAction(${idx},'swap',0)">SWAP</button>`);
-    }
-    btns.push(`<button class="action-btn action-btn-pass" onclick="selectAction(${idx},'pass',0)">PASS</button>`);
-    btns.push(`<div style="width:1px;height:30px;background:rgba(255,255,255,0.15);margin:0 4px;"></div>`);
-    btns.push(`<button class="action-btn action-btn-basic" onclick="selectAction(${idx},'basic',0)">BASIC ATTACK<br><span class="action-btn-dmg">(${getEffectiveDMG(c)})</span></button>`);
-    
-    (c.Skills || []).forEach((sk, sIdx) => {
-        if (!canPlayerSelectSkill(sk)) return;
-        let usesLeft = sk._usesLeft !== undefined ? sk._usesLeft : (sk.Logic_Engine?.max_uses || 1);
-        if (usesLeft <= 0) return;
-        btns.push(`<button class="action-btn action-btn-skill" onclick="selectAction(${idx},'skill',${sIdx})">${sk.Name.toUpperCase()}<br><span class="action-btn-dmg">(${sk.Display_DMG})</span></button>`);
-    });
-    
-    let ck = cardKey('player', idx);
-    if (stolenSkills[ck]) {
-        stolenSkills[ck].forEach((ssk, ssIdx) => {
-            btns.push(`<button class="action-btn action-btn-skill" style="border:1px solid rgba(200,160,80,0.4);" onclick="selectAction(${idx},'stolen-skill',${ssIdx})">[STOLEN] ${ssk.Name.toUpperCase()}<br><span class="action-btn-dmg">(${ssk.Display_DMG})</span></button>`);
-        });
-    }
-    
-    $('action-btns-row').innerHTML = btns.join('');
-    let w = $('action-panels-wrapper');
-    if (w) w.classList.add('visible');
+  let name = shortName(getCardName(c));
+  $('action-card-name').textContent = name;
+  let btns = [];
+  
+  if (playerBench.filter(x => !x.isDead).length > 0) {
+      btns.push(`<button class="action-btn action-btn-swap" onclick="selectAction(${idx},'swap',0)">SWAP</button>`);
+  }
+  btns.push(`<button class="action-btn action-btn-pass" onclick="selectAction(${idx},'pass',0)">PASS</button>`);
+  btns.push(`<div style="width:1px;height:30px;background:rgba(255,255,255,0.15);margin:0 4px;"></div>`);
+  btns.push(`<button class="action-btn action-btn-basic" onclick="selectAction(${idx},'basic',0)">BASIC ATTACK<br><span class="action-btn-dmg">(${getEffectiveDMG(c)})</span></button>`);
+  
+  (c.Skills || []).forEach((sk, sIdx) => {
+      if (!canPlayerSelectSkill(sk)) return;
+      let usesLeft = sk._usesLeft !== undefined ? sk._usesLeft : (sk.Logic_Engine?.max_uses || 1);
+      if (usesLeft <= 0) return;
+      btns.push(`<button class="action-btn action-btn-skill" onclick="selectAction(${idx},'skill',${sIdx})">${sk.Name.toUpperCase()}<br><span class="action-btn-dmg">(${sk.Display_DMG})</span></button>`);
+  });
+  
+  let ck = cardKey('player', idx);
+  if (stolenSkills[ck]) {
+      stolenSkills[ck].forEach((ssk, ssIdx) => {
+          btns.push(`<button class="action-btn action-btn-skill" style="border:1px solid rgba(200,160,80,0.4);" onclick="selectAction(${idx},'stolen-skill',${ssIdx})">[STOLEN] ${ssk.Name.toUpperCase()}<br><span class="action-btn-dmg">(${ssk.Display_DMG})</span></button>`);
+      });
+  }
+  
+  $('action-btns-row').innerHTML = btns.join('');
+  let w = $('action-panels-wrapper');
+  if (w) w.classList.add('visible');
 }
 
 function getEffectiveDMG(c) {
-    let base = getCardDMG(c);
-    let ck = cardKey('player', playerActive.indexOf(c));
-    if (ck && statBuffs[ck]) base += statBuffs[ck].dmgBonus || 0;
-    return base;
+  let base = getCardDMG(c);
+  let ck = cardKey('player', playerActive.indexOf(c));
+  if (ck && statBuffs[ck]) base += statBuffs[ck].dmgBonus || 0;
+  return base;
 }
 
-// ==================== SKILL CLASSIFICATION (DATA-DRIVEN) ====================
 function canPlayerSelectSkill(sk) {
-    if (!sk || !sk.Logic_Engine) return false;
-    let json = sk.Logic_Engine;
-    // Can select if: Can Select is True (in original columns) OR timing is STANDARD/FREE_ACTION and not REACTIVE
-    let canSelect = sk.S_Can_Select === true || sk.S_Can_Select === 'True';
-    let isReactive = json.timing === 'REACTIVE' || sk.S_Reactive === true;
-    return canSelect && !isReactive;
+  if (!sk || !sk.Logic_Engine) return false;
+  let json = sk.Logic_Engine;
+  let canSelect = sk.S_Can_Select === true || sk.S_Can_Select === 'True' || sk.S_Can_Select === 'TRUE';
+  let isReactive = json.timing === 'REACTIVE' || sk.S_Reactive === true;
+  return canSelect && !isReactive;
 }
 
-// ==================== SKILL SELECTION ====================
+// ==================== ACTION SELECTION SYSTEM ====================
 async function selectAction(actorIdx, type, skillIdx) {
-    hideActionPanels();
-    let c = playerActive[actorIdx];
-    let priority = 1;
-    let assistTeammateIdx = null;
-    
-    if (type === 'skill' || type === 'stolen-skill') {
-        let sk = type === 'stolen-skill' ? (stolenSkills[cardKey('player', actorIdx)] || [])[skillIdx] : c.Skills[skillIdx];
-        if (!sk) return;
-        let json = sk.Logic_Engine || {};
-        priority = json.priority || 1;
-        
-        // Handle ASSIST DMG skills - may need to prompt for teammate
-        if (json.execution === 'DEAL_ASSIST_DMG') {
-            let parsed = parseAssistFormula(json.dmg_formula || '');
-            if (parsed && parsed.positions && parsed.positions.length > 1) {
-                let result = await promptForAssistTeammate(c, sk, 'player');
-                if (result === null) {
-                    logMsg2('sys', 'System', 'Action cancelled.');
-                    return;
-                }
-                assistTeammateIdx = result.teammateIdx;
-            }
-        }
-        
-        // Handle FREE_ACTION skills that don't need targets
-        if (json.timing === 'FREE_ACTION') {
-            if (json.execution === 'FREEZE') {
-                let target = await promptFreezeTarget(enemyActive);
-                if (target === null) {
-                    logMsg2('sys', 'System', 'Freeze cancelled.');
-                    return;
-                }
-                stagedActions.push({
-                    actorIdx,
-                    actionType: 'skill',
-                    skillIdx,
-                    priority,
-                    speed: getCardSPD(c),
-                    pos: c.battleRole,
-                    targetIdx: target,
-                    targetTeam: 'enemy',
-                    execTeam: 'player',
-                    assistTeammateIdx,
-                    isFreeAction: true
-                });
-                renderArena();
-                renderCheckout();
-                return;
-            }
-            
-            if (json.execution === 'STEAL_SKILL') {
-                let result = await promptStealSkill('player');
-                if (result === null) {
-                    logMsg2('sys', 'System', 'Steal cancelled.');
-                    return;
-                }
-                executeStealSkill(actorIdx, 'player', result.cardIdx, result.skillIdx);
-                sk._usesLeft = (sk._usesLeft || 1) - 1;
-                renderArena();
-                renderCheckout();
-                return;
-            }
-            
-            // Global auras, stat buffs, etc - no target needed
-            if (['AURA_JUMP_MISS', 'AURA_CLOSE_MISS', 'AURA_ANY_MISS', 'STAT_BUFF', 'INVULNERABLE_THIS_TURN'].includes(json.execution)) {
-                stagedActions.push({
-                    actorIdx,
-                    actionType: 'skill',
-                    skillIdx,
-                    priority,
-                    speed: getCardSPD(c),
-                    pos: c.battleRole,
-                    targetIdx: null,
-                    targetTeam: null,
-                    execTeam: 'player',
-                    isFreeAction: true
-                });
-                renderArena();
-                renderCheckout();
-                return;
-            }
-        }
-        
-        // Handle HEAL skills
-        if (json.execution === 'HEAL') {
-            let result = await promptHealTarget('player');
-            if (result === null) {
-                logMsg2('sys', 'System', 'Heal cancelled.');
-                return;
-            }
-            stagedActions.push({
-                actorIdx,
-                actionType: 'skill',
-                skillIdx,
-                priority,
-                speed: getCardSPD(c),
-                pos: c.battleRole,
-                targetIdx: result,
-                targetTeam: 'player-self',
-                execTeam: 'player',
-                isFreeAction: false
-            });
-            renderArena();
-            renderCheckout();
-            return;
-        }
-    }
-    
-    pendingAction = {
-        actorIdx,
-        actionType: type,
-        skillIdx,
-        priority,
-        speed: getCardSPD(c),
-        pos: c.battleRole,
-        assistTeammateIdx
-    };
-    
-    if (type === 'pass') {
-        stagedActions.push({ ...pendingAction, targetIdx: null, targetTeam: null, execTeam: 'player' });
-        renderArena();
-        renderCheckout();
-    } else if (type === 'swap') {
-        if (playerBench.filter(x => !x.isDead).length === 0) {
-            logMsg2('sys', 'System', 'No bench cards available!');
-            return;
-        }
-        uiState = 'AWAITING_BENCH';
-        logMsg2('sys', 'System', 'Click a bench card to swap in.');
-        openBenchFan(null);
-    } else {
-        if (getValidTargets(c, enemyActive).length === 0) {
-            logMsg2('sys', 'System', `${shortName(getCardName(c))} has no valid targets!`);
-            return;
-        }
-        uiState = 'AWAITING_TARGET';
-        setTooltipEnabled(false);
-        logMsg2('sys', 'System', `Select target for ${shortName(getCardName(c))}.`);
-        renderArena();
-    }
+  hideActionPanels();
+  let c = playerActive[actorIdx];
+  let priority = 1;
+  let assistTeammateIdx = null;
+  
+  if (type === 'skill' || type === 'stolen-skill') {
+      let sk = type === 'stolen-skill' ? (stolenSkills[cardKey('player', actorIdx)] || [])[skillIdx] : c.Skills[skillIdx];
+      if (!sk) return;
+      let json = sk.Logic_Engine || {};
+      priority = json.priority || 1;
+      
+      // ✅ Handle ASSIST Skills
+      if (json.execution === 'DEAL_ASSIST_DMG' || json.skill_class === 'ASSIST') {
+          let parsed = parseAssistFormula(json.dmg_formula || '');
+          if (parsed && parsed.positions && parsed.positions.length >= 1) {
+              let result = await promptForAssistTeammate(c, sk, 'player');
+              if (result === null) {
+                  logMsg2('sys', 'System', 'Action cancelled.');
+                  return;
+              }
+              assistTeammateIdx = result.teammateIdx;
+          }
+      }
+      
+      // ✅ Handle FREE_ACTION skills (Buffs, Auras, Status)
+      if (json.timing === 'FREE_ACTION' || json.timing === 'BUFF') {
+          // Explicitly handle target-requiring Free Actions
+          if (json.execution === 'FREEZE') {
+              let target = await promptFreezeTarget(enemyActive);
+              if (target === null) { logMsg2('sys', 'System', 'Freeze cancelled.'); return; }
+              pushFreeAction(actorIdx, type, skillIdx, priority, c, target, 'enemy', assistTeammateIdx);
+              return;
+          }
+          if (json.execution === 'STEAL_SKILL') {
+              let result = await promptStealSkill('player');
+              if (result === null) { logMsg2('sys', 'System', 'Steal cancelled.'); return; }
+              executeStealSkill(actorIdx, 'player', result.cardIdx, result.skillIdx);
+              sk._usesLeft = (sk._usesLeft || 1) - 1;
+              renderArena(); renderCheckout();
+              return;
+          }
+          if (json.execution === 'HEAL') {
+              let result = await promptHealTarget('player');
+              if (result === null) { logMsg2('sys', 'System', 'Heal cancelled.'); return; }
+              pushFreeAction(actorIdx, type, skillIdx, priority, c, result, 'player-self', assistTeammateIdx);
+              return;
+          }
+          
+          // Pure non-targeting buffs (Stat Buffs, Auras, Invulnerability)
+          if (!json.target || json.target === 'SELF' || ['AURA_JUMP_MISS', 'AURA_CLOSE_MISS', 'AURA_ANY_MISS', 'STAT_BUFF', 'INVULNERABLE_THIS_TURN'].includes(json.execution)) {
+              pushFreeAction(actorIdx, type, skillIdx, priority, c, null, null, assistTeammateIdx);
+              return;
+          }
+      }
+  }
+  
+  pendingAction = {
+      actorIdx, actionType: type, skillIdx, priority,
+      speed: getCardSPD(c), pos: c.battleRole, assistTeammateIdx
+  };
+  
+  if (type === 'pass') {
+      stagedActions.push({ ...pendingAction, targetIdx: null, targetTeam: null, execTeam: 'player' });
+      renderArena(); renderCheckout();
+  } else if (type === 'swap') {
+      if (playerBench.filter(x => !x.isDead).length === 0) {
+          logMsg2('sys', 'System', 'No bench cards available!'); return;
+      }
+      uiState = 'AWAITING_BENCH';
+      logMsg2('sys', 'System', 'Click a bench card to swap in.');
+      openBenchFan(null);
+  } else {
+      if (getValidTargets(c, enemyActive).length === 0) {
+          logMsg2('sys', 'System', `${shortName(getCardName(c))} has no valid targets!`); return;
+      }
+      uiState = 'AWAITING_TARGET';
+      setTooltipEnabled(false);
+      logMsg2('sys', 'System', `Select target for ${shortName(getCardName(c))}.`);
+      renderArena();
+  }
 }
 
-// ==================== PROMPTS ====================
-async function promptFreezeTarget(enemies) {
-    return new Promise(resolve => {
-        let valids = enemies.map((c, i) => ({ c, i })).filter(x => !x.c.isDead);
-        $('freeze-options').innerHTML = valids.map(v => `
-            <button class="game-btn game-btn-cyan" style="width:100%;text-align:left;" onclick="resolveFreezeModal(${v.i})">
-                [${v.c.battleRole}] ${shortName(getCardName(v.c))} — HP: ${v.c.currentHp}/${getCardHP(v.c)}
-            </button>`).join('');
-        window.resolveFreezeModal = (tIdx) => { $('freeze-modal').style.display = 'none'; resolve(tIdx); };
-        window.cancelFreeze = () => { $('freeze-modal').style.display = 'none'; resolve(null); };
-        $('freeze-modal').style.display = 'flex';
-    });
-}
-
-async function promptStealSkill(execTeam) {
-    return new Promise(resolve => {
-        let enemies = execTeam === 'player' ? enemyActive : playerActive;
-        let opts = [];
-        enemies.forEach((ec, ei) => {
-            if (ec.isDead) return;
-            (ec.Skills || []).forEach((sk, si) => {
-                if ((sk._usesLeft === undefined ? 1 : sk._usesLeft) > 0) {
-                    opts.push({ cardIdx: ei, skillIdx: si, cardName: shortName(getCardName(ec)), sk });
-                }
-            });
-        });
-        $('steal-skill-options').innerHTML = opts.map((o, i) => `
-            <button class="game-btn game-btn-purple" style="width:100%;text-align:left;" onclick="resolveStealSkillModal(${i})">
-                ${o.cardName}: <b>${o.sk.Name}</b> (${o.sk.Display_DMG})
-            </button>`).join('');
-        window.resolveStealSkillModal = (i) => { $('steal-skill-modal').style.display = 'none'; resolve(opts[i]); };
-        window.cancelStealSkill = () => { $('steal-skill-modal').style.display = 'none'; resolve(null); };
-        $('steal-skill-modal').style.display = 'flex';
-    });
-}
-
-function executeStealSkill(actorIdx, execTeam, enemyCardIdx, enemySkillIdx) {
-    let enemies = execTeam === 'player' ? enemyActive : playerActive;
-    let ec = enemies[enemyCardIdx];
-    if (!ec) return;
-    let sk = ec.Skills[enemySkillIdx];
-    if (!sk) return;
-    let stolenSk = { ...sk, _usesLeft: sk._usesLeft || sk.Logic_Engine?.max_uses || 1, _stolenFrom: getCardName(ec) };
-    let ck = cardKey(execTeam, actorIdx);
-    if (!stolenSkills[ck]) stolenSkills[ck] = [];
-    stolenSkills[ck].push(stolenSk);
-    logMsg2(execTeam === 'player' ? 'atk' : 'def', execTeam === 'player' ? 'You' : 'Bot', `Stole skill: ${sk.Name} from ${shortName(getCardName(ec))}!`);
-}
-
-async function promptHealTarget(execTeam) {
-    return new Promise(resolve => {
-        let team = execTeam === 'player' ? playerActive : enemyActive;
-        let valids = team.map((c, i) => ({ c, i })).filter(x => !x.c.isDead && x.c.currentHp < getCardHP(x.c));
-        if (valids.length === 0) {
-            valids = team.map((c, i) => ({ c, i })).filter(x => !x.c.isDead);
-        }
-        $('heal-options').innerHTML = valids.map(v => `
-            <button class="game-btn game-btn-green" style="width:100%;text-align:left;" onclick="resolveHealModal(${v.i})">
-                [${v.c.battleRole}] ${shortName(getCardName(v.c))} — HP: ${v.c.currentHp}/${getCardHP(v.c)}
-            </button>`).join('');
-        window.resolveHealModal = (tIdx) => { $('heal-modal').style.display = 'none'; resolve(tIdx); };
-        window.cancelHeal = () => { $('heal-modal').style.display = 'none'; resolve(null); };
-        $('heal-modal').style.display = 'flex';
-    });
-}
-
-async function promptForAssistTeammate(actorCard, sk, execTeam) {
-    let formula = sk.Logic_Engine?.dmg_formula || '';
-    let parsed = parseAssistFormula(formula);
-    if (!parsed || parsed.positions.length === 0) return { teammateIdx: null };
-    let team = execTeam === 'player' ? playerActive : enemyActive;
-    let valids = team.map((c, i) => ({ c, i })).filter(x => x.c && !x.c.isDead && parsed.positions.includes(x.c.battleRole) && x.c !== actorCard);
-    if (valids.length === 0) return { teammateIdx: null };
-    if (valids.length === 1) return { teammateIdx: valids[0].i };
-    
-    let multiplierDesc = parsed.multiplier ? `${parsed.multiplier}x ` : '';
-    let promptText = `${sk.Name} deals ${multiplierDesc}a teammate's basic attack DMG (${parsed.positions.join(' or ')}). Choose the teammate:`;
-    return new Promise(resolve => {
-        $('assist-prompt-text').textContent = promptText;
-        $('assist-options').innerHTML = valids.map(v => `
-            <button class="game-btn game-btn-purple" style="width:100%;text-align:left;" onclick="resolveAssistModal(${v.i})">
-                [${v.c.battleRole}] ${shortName(getCardName(v.c))} — Basic: ${getCardDMG(v.c)}
-            </button>`).join('');
-        window.resolveAssistModal = (tIdx) => { $('assist-modal').style.display = 'none'; resolve({ teammateIdx: tIdx }); };
-        window.cancelAssist = () => { $('assist-modal').style.display = 'none'; resolve(null); };
-        $('assist-modal').style.display = 'flex';
-    });
+function pushFreeAction(actorIdx, actionType, skillIdx, priority, c, targetIdx, targetTeam, assistTeammateIdx) {
+  stagedActions.push({
+      actorIdx, actionType, skillIdx, priority,
+      speed: getCardSPD(c), pos: c.battleRole,
+      targetIdx, targetTeam, execTeam: 'player', assistTeammateIdx, isFreeAction: true
+  });
+  renderArena(); renderCheckout();
 }
 
 function undoAction(idx) {
-    stagedActions = stagedActions.filter(a => a.actorIdx !== idx);
-    uiState = 'IDLE';
-    renderArena();
-    renderCheckout();
+  stagedActions = stagedActions.filter(a => a.actorIdx !== idx);
+  uiState = 'IDLE';
+  renderArena(); renderCheckout();
 }
 
 function renderCheckout() {
-    let max = Math.min(2, playerActive.filter(x => !x.isDead).length);
-    let p = $('checkout-panel');
-    $('staged-count').textContent = `${stagedActions.length}/${max}`;
-    if (stagedActions.length > 0) {
-        p.style.display = 'flex';
-        $('staged-list').innerHTML = stagedActions.map(a => {
-            let ac = playerActive[a.actorIdx];
-            let skName = a.actionType === 'pass' ? 'Pass' : a.actionType === 'swap' ? `Swap → ${shortName(getCardName(playerBench[a.targetIdx]))}` : a.actionType === 'skill' ? (ac.Skills[a.skillIdx]?.Name || 'Skill') : 'Basic Attack';
-            let tgt = a.targetTeam === 'enemy' ? ` → ${shortName(getCardName(enemyActive[a.targetIdx]))}` : ' ';
-            return `<div>▶ [${ac.battleRole}] ${shortName(getCardName(ac))}: ${skName}${tgt}</div>`;
-        }).join('');
-        $('confirm-moves-btn').disabled = false;
-    } else p.style.display = 'none';
+  let max = Math.min(2, playerActive.filter(x => !x.isDead).length);
+  let p = $('checkout-panel');
+  $('staged-count').textContent = `${stagedActions.length}/${max}`;
+  if (stagedActions.length > 0) {
+      p.style.display = 'flex';
+      $('staged-list').innerHTML = stagedActions.map(a => {
+          let ac = playerActive[a.actorIdx];
+          let skName = a.actionType === 'pass' ? 'Pass' : a.actionType === 'swap' ? `Swap → ${shortName(getCardName(playerBench[a.targetIdx]))}` : a.actionType === 'skill' ? (ac.Skills[a.skillIdx]?.Name || 'Skill') : 'Basic Attack';
+          let tgt = a.targetTeam === 'enemy' ? ` → ${shortName(getCardName(enemyActive[a.targetIdx]))}` : ' ';
+          return `<div>▶ [${ac.battleRole}] ${shortName(getCardName(ac))}: ${skName}${tgt}</div>`;
+      }).join('');
+      $('confirm-moves-btn').disabled = false;
+  } else p.style.display = 'none';
 }
 
-// ==================== CONFIRM + EXECUTION ====================
-async function confirmMovesPhase() {
-    $('checkout-panel').style.display = 'none';
-    document.querySelectorAll('.undo-btn').forEach(btn => btn.style.display = 'none');
-    isAnimating = true;
-    logMsg2('sys', 'System', `--- Turn ${turnCount} ---`);
-    
-    let eStaged = generateEnemyAI();
-    let master = [
-        ...stagedActions.map(a => ({ ...a, execTeam: 'player', c: playerActive[a.actorIdx] })),
-        ...eStaged.map(a => ({ ...a, execTeam: 'enemy', c: enemyActive[a.actorIdx] }))
-    ];
-    
-    // Sort by priority, speed, and position
-    const PH = { 'PG': 5, 'SG': 4, 'SF': 3, 'PF': 2, 'C': 1 };
-    master.sort((a, b) => {
-        if (a.priority !== b.priority) return b.priority - a.priority;
-        let a6 = a.pos === "6TH", b6 = b.pos === "6TH";
-        if (a6 && !b6) return 1;
-        if (!a6 && b6) return -1;
-        if (a.speed !== b.speed) return b.speed - a.speed;
-        let ap = PH[(a.pos || '').split('/')[0]] || 0, bp = PH[(b.pos || '').split('/')[0]] || 0;
-        if (ap !== bp) return bp - ap;
-        return Math.random() > 0.5 ? 1 : -1;
-    });
-    
-    // Execute actions
-    for (let act of master) {
-        if (playerScore >= 8 || enemyScore >= 8) break;
-        let actC = act.execTeam === 'player' ? playerActive[act.actorIdx] : enemyActive[act.actorIdx];
-        if (!actC || actC.isDead) continue;
-        
-        let ack = cardKey(act.execTeam, act.actorIdx);
-        if (drainedNextTurn[ack]) {
-            logMsg2('sys', 'System', `${shortName(getCardName(actC))} is drained, skipping.`);
-            continue;
-        }
-        if (shutdownCards[ack]) {
-            logMsg2('sys', 'System', `${shortName(getCardName(actC))} is shutdown, skipping.`);
-            continue;
-        }
-        
-        // Check for ally screen guarantee support BEFORE auras or blocks
-        if (act.actionType !== 'pass' && act.actionType !== 'swap') {
-            let sk = act.actionType === 'skill' ? actC.Skills[act.skillIdx] : null;
-            let isDmg = act.actionType === 'basic' || (sk && !String(sk.Display_DMG || '').toUpperCase().includes('N/A'));
-            if (isDmg) {
-                await checkAllyReactiveSupport(act);
-            }
-        }
-        
-        // Apply aura effects
-        let aRes = applyAuraEffectsToAction(act, act.execTeam);
-        if (aRes.blocked) {
-            logMsg2(act.execTeam === 'player' ? 'def' : 'atk', act.execTeam === 'player' ? 'You' : 'Bot', `Blocked: ${aRes.reason}`);
-            let tgtCard = act.targetIdx != null ? (act.execTeam === 'player' ? enemyActive : playerActive)[act.targetIdx] : null;
-            await onSkillFailure(actC, act.actorIdx, tgtCard, act.targetIdx, act.execTeam);
-            continue;
-        }
-        
-        // Check reactive responses (blocks, contests, intercepts)
-        if (act.actionType !== 'pass' && act.actionType !== 'swap') {
-            if (act.targetTeam === 'enemy' || act.execTeam === 'enemy') {
-                await checkAndPromptReactive(act);
-            }
-        }
-        
-        if (act._stolenTargetIdx != null) {
-            logMsg2('sys', 'System', 'Action intercepted!');
-            continue;
-        }
-        
-        await executeAction(act);
-    }
-    
-    // Replace dead cards
-    await handleDeadReplacements('player', playerActive, playerBench);
-    await handleDeadReplacements('enemy', enemyActive, enemyBench);
-    
-    // Tick down effects
-    tickDownAuras();
-    tickDownDrains();
-    Object.keys(frozenCards).forEach(k => delete frozenCards[k]);
-    Object.keys(shutdownCards).forEach(k => {
-        shutdownCards[k]--;
-        if (shutdownCards[k] <= 0) delete shutdownCards[k];
-    });
-    
-    stagedActions = [];
-    uiState = 'IDLE';
-    setTooltipEnabled(true);
-    turnCount++;
-    
-    if (playerScore >= 8 || enemyScore >= 8) {
-        let won = playerScore >= 8;
-        $('endgame-title').textContent = won ? 'YOU WIN! 🏆' : 'YOU LOSE 😢';
-        $('endgame-title').style.color = won ? '#40E0A0' : '#FF6B6B';
-        $('endgame-desc').textContent = won ? `Congratulations! You knocked out 8 opponents first!` : `Opponent knocked out 8 of your players. Better luck next time!`;
-        $('endgame-modal').style.display = 'flex';
-        isAnimating = false;
-        return;
-    }
-    
-    isAnimating = false;
-    $('turn-indicator').textContent = `TURN ${turnCount}`;
-    renderArena();
-    renderBenchStacks();
+// ==================== MODAL PROMPTS ====================
+async function promptFreezeTarget(enemies) {
+  return new Promise(resolve => {
+      let valids = enemies.map((c, i) => ({ c, i })).filter(x => !x.c.isDead);
+      $('freeze-options').innerHTML = valids.map(v => `
+          <button class="game-btn game-btn-cyan" style="width:100%;text-align:left;" onclick="resolveFreezeModal(${v.i})">
+              [${v.c.battleRole}] ${shortName(getCardName(v.c))} — HP: ${v.c.currentHp}/${getCardHP(v.c)}
+          </button>`).join('');
+      window.resolveFreezeModal = (tIdx) => { $('freeze-modal').style.display = 'none'; resolve(tIdx); };
+      window.cancelFreeze = () => { $('freeze-modal').style.display = 'none'; resolve(null); };
+      $('freeze-modal').style.display = 'flex';
+  });
 }
 
-// ==================== ABILITY SYSTEM (DATA-DRIVEN) ====================
-function initAllAbilities(roster) {
-    for (let c of roster) {
-        if (!c) continue;
-        let key = getCardName(c);
-        abilityState[key] = {
-            surviveUsed: false,
-            healUsed: false,
-            stackCount: 0
-        };
-        applySynergyAbilities(c, roster);
-    }
+async function promptStealSkill(execTeam) {
+  return new Promise(resolve => {
+      let enemies = execTeam === 'player' ? enemyActive : playerActive;
+      let opts = [];
+      enemies.forEach((ec, ei) => {
+          if (ec.isDead) return;
+          (ec.Skills || []).forEach((sk, si) => {
+              if ((sk._usesLeft === undefined ? 1 : sk._usesLeft) > 0) {
+                  opts.push({ cardIdx: ei, skillIdx: si, cardName: shortName(getCardName(ec)), sk });
+              }
+          });
+      });
+      $('steal-skill-options').innerHTML = opts.map((o, i) => `
+          <button class="game-btn game-btn-purple" style="width:100%;text-align:left;" onclick="resolveStealSkillModal(${i})">
+              ${o.cardName}: <b>${o.sk.Name}</b> (${o.sk.Display_DMG})
+          </button>`).join('');
+      window.resolveStealSkillModal = (i) => { $('steal-skill-modal').style.display = 'none'; resolve(opts[i]); };
+      window.cancelStealSkill = () => { $('steal-skill-modal').style.display = 'none'; resolve(null); };
+      $('steal-skill-modal').style.display = 'flex';
+  });
 }
 
-function applySynergyAbilities(c, team) {
-    let abl = c.Ability;
-    if (!abl) return;
-    
-    let json;
-    try {
-        json = typeof abl.Logic_JSON === 'string' ? JSON.parse(abl.Logic_JSON) : abl.Logic_JSON;
-    } catch (e) {
-        return;
-    }
-    
-    let trigger = json.trigger || '';
-    let effects = json.effects || '';
-    let key = getCardName(c);
-    
-    // TEAMMATE_SYNERGY - check if condition is met
-    if (trigger === 'TEAMMATE_SYNERGY') {
-        let condition = json.condition || '';
-        let hasSynergy = false;
-        let myTeam = team.filter(t => t && !t.isDead && t !== c);
-        
-        for (let t of myTeam) {
-            let tName = getCardName(t).toLowerCase();
-            let sName = shortName(getCardName(t)).toLowerCase();
-            if (condition.toLowerCase().includes(tName) || condition.toLowerCase().includes(sName)) {
-                hasSynergy = true;
-                break;
-            }
-        }
-        
-        if (hasSynergy && !abilityState[key]?.synergiesApplied) {
-            if (!abilityState[key]) abilityState[key] = {};
-            abilityState[key].synergiesApplied = true;
-            
-            // Apply boosts
-            if (json.boosts) {
-                for (let boost of json.boosts) {
-                    let [stat, value] = boost.split(':');
-                    let val = parseInt(value);
-                    if (stat === 'HP') {
-                        c.UI_Frontend_Data.Stats.HP = (c.UI_Frontend_Data.Stats.HP || 2200) + val;
-                        c.currentHp = (c.currentHp || getCardHP(c)) + val;
-                    } else if (stat === 'SPD') {
-                        c.UI_Frontend_Data.Stats.Speed = (c.UI_Frontend_Data.Stats.Speed || 7) + val;
-                    } else if (stat === 'basic_dmg') {
-                        c.UI_Frontend_Data.Stats.Base_DMG = (c.UI_Frontend_Data.Stats.Base_DMG || 700) + val;
-                    }
-                }
-            }
-        }
-    }
-    
-    // ALWAYS triggers - set flags
-    if (trigger === 'ALWAYS') {
-        if (effects.includes('IMMUNE_DEFENSIVE_SKILLS')) c._immuneDefSkills = true;
-        if (effects.includes('SKILLS_UNBLOCKABLE')) c._skillsUnblockable = true;
-        if (effects.includes('SKILLS_UNCONTESTABLE')) c._skillsUncontestable = true;
-        if (effects.includes('IMMUNE_TO_STEAL')) c._immuneSteal = true;
-        if (effects.includes('IMMUNE_COINFLIP_SKILLS')) c._immuneCoinflip = true;
-        if (effects.includes('IMMUNE_TO_FREEZE')) c._immuneFreeze = true;
-        if (effects.includes('ASSIST_UNINTERCEPTABLE')) c._assistUninterceptable = true;
-        if (effects.includes('FORCED_TARGET_ON_SELF')) c._forcedTarget = true;
-        if (effects.includes('HALVE_BASIC_ATK_MISS_CHANCE')) c._halveBasic = true;
-    }
+function executeStealSkill(actorIdx, execTeam, enemyCardIdx, enemySkillIdx) {
+  let enemies = execTeam === 'player' ? enemyActive : playerActive;
+  let ec = enemies[enemyCardIdx];
+  if (!ec) return;
+  let sk = ec.Skills[enemySkillIdx];
+  if (!sk) return;
+  let stolenSk = { ...sk, _usesLeft: sk._usesLeft || sk.Logic_Engine?.max_uses || 1, _stolenFrom: getCardName(ec) };
+  let ck = cardKey(execTeam, actorIdx);
+  if (!stolenSkills[ck]) stolenSkills[ck] = [];
+  stolenSkills[ck].push(stolenSk);
+  logMsg2(execTeam === 'player' ? 'atk' : 'def', execTeam === 'player' ? 'You' : 'Bot', `Stole skill: ${sk.Name} from ${shortName(getCardName(ec))}!`);
 }
 
-// ==================== AURA EFFECTS ====================
-function applyAuraEffectsToAction(action, execTeam) {
-    let attackers = execTeam === 'player' ? playerActive : enemyActive;
-    let attacker = attackers[action.actorIdx];
-    let sk = action.actionType === 'skill' ? attacker.Skills[action.skillIdx] : null;
-    if (!sk) return { blocked: false };
-    
-    let json = sk.Logic_Engine || {};
-    let nature = (sk.Nature || '').toLowerCase();
-    
-    for (let aura of activeAuras) {
-        if (aura.sourceTeam === execTeam) continue;
-        
-        let auraImmuneFlip = attacker?._immuneCoinflip === true || action.screenGuaranteed === true;
-        
-        if (aura.type === 'all-skills-disabled') return { blocked: true, reason: `${sk.Name} was globally disabled!` };
-        if (aura.type === 'jumpshot-miss-chance' && nature.includes('jump shot') && !auraImmuneFlip && Math.random() < 0.5) {
-            return { blocked: true, reason: `${sk.Name} MISSED (50% chance)!` };
-        }
-        if (aura.type === 'closeshot-miss-chance' && nature.includes('close shot') && !auraImmuneFlip && Math.random() < 0.5) {
-            return { blocked: true, reason: `${sk.Name} MISSED (50% chance)!` };
-        }
-        if (aura.type === 'any-miss' && !auraImmuneFlip && Math.random() < 0.5) {
-            return { blocked: true, reason: `${sk.Name} MISSED (50% chance)!` };
-        }
-        if (aura.type === 'intercept-all-assists') {
-            let assistUnint = attacker?._assistUninterceptable;
-            if (!assistUnint && (nature.includes('assist') || json.skill_class === 'ASSIST')) {
-                return { blocked: true, reason: `${sk.Name} intercepted by defensive aura!` };
-            }
-        }
-    }
-    
-    return { blocked: false };
+async function promptHealTarget(execTeam) {
+  return new Promise(resolve => {
+      let team = execTeam === 'player' ? playerActive : enemyActive;
+      let valids = team.map((c, i) => ({ c, i })).filter(x => !x.c.isDead && x.c.currentHp < getCardHP(x.c));
+      if (valids.length === 0) valids = team.map((c, i) => ({ c, i })).filter(x => !x.c.isDead);
+      $('heal-options').innerHTML = valids.map(v => `
+          <button class="game-btn game-btn-green" style="width:100%;text-align:left;" onclick="resolveHealModal(${v.i})">
+              [${v.c.battleRole}] ${shortName(getCardName(v.c))} — HP: ${v.c.currentHp}/${getCardHP(v.c)}
+          </button>`).join('');
+      window.resolveHealModal = (tIdx) => { $('heal-modal').style.display = 'none'; resolve(tIdx); };
+      window.cancelHeal = () => { $('heal-modal').style.display = 'none'; resolve(null); };
+      $('heal-modal').style.display = 'flex';
+  });
 }
 
-function tickDownAuras() {
-    activeAuras = activeAuras.map(a => ({ ...a, turnsLeft: a.turnsLeft - 1 })).filter(a => a.turnsLeft > 0);
-    Object.keys(statBuffs).forEach(k => {
-        statBuffs[k].turnsLeft--;
-        if (statBuffs[k].turnsLeft <= 0) delete statBuffs[k];
-    });
+async function promptForAssistTeammate(actorCard, sk, execTeam) {
+  let formula = sk.Logic_Engine?.dmg_formula || '';
+  let parsed = parseAssistFormula(formula);
+  if (!parsed || parsed.positions.length === 0) return { teammateIdx: null };
+  let team = execTeam === 'player' ? playerActive : enemyActive;
+  let valids = team.map((c, i) => ({ c, i })).filter(x => x.c && !x.c.isDead && parsed.positions.includes(x.c.battleRole) && x.c !== actorCard);
+  
+  if (valids.length === 0) return { teammateIdx: null };
+  if (valids.length === 1 || execTeam === 'enemy') return { teammateIdx: valids[0].i };
+  
+  let multiplierDesc = parsed.multiplier ? `${parsed.multiplier}x ` : '';
+  let promptText = `${sk.Name} uses ${multiplierDesc}a teammate's base DMG (${parsed.positions.join(' or ')}). Choose teammate:`;
+  return new Promise(resolve => {
+      $('assist-prompt-text').textContent = promptText;
+      $('assist-options').innerHTML = valids.map(v => `
+          <button class="game-btn game-btn-purple" style="width:100%;text-align:left;" onclick="resolveAssistModal(${v.i})">
+              [${v.c.battleRole}] ${shortName(getCardName(v.c))} — Base DMG: ${getCardDMG(v.c)}
+          </button>`).join('');
+      window.resolveAssistModal = (tIdx) => { $('assist-modal').style.display = 'none'; resolve({ teammateIdx: tIdx }); };
+      window.cancelAssist = () => { $('assist-modal').style.display = 'none'; resolve(null); };
+      $('assist-modal').style.display = 'flex';
+  });
 }
 
-function tickDownDrains() {
-    Object.keys(drainedNextTurn).forEach(k => delete drainedNextTurn[k]);
-}
-
-// ==================== REACTIVE SKILLS ====================
-async function checkAllyReactiveSupport(action) {
-    let allies = action.execTeam === 'player' ? playerActive : enemyActive;
-    let valids = [];
-    for (let [i, c] of allies.entries()) {
-        if (c.isDead || i === action.actorIdx) continue;
-        for (let [si, sk] of (c.Skills || []).entries()) {
-            let json = sk.Logic_Engine || {};
-            if (json.execution === 'INTERCEPT_ASSIST' && json.modifiers?.includes('Screen_Guarantee')) {
-                let u = sk._usesLeft !== undefined ? sk._usesLeft : (json.max_uses || 1);
-                if (u > 0) valids.push({ cIdx: i, sIdx: si, sk, c });
-            }
-        }
-    }
-    if (valids.length === 0) return false;
-    
-    if (action.execTeam === 'player') {
-        return new Promise(resolve => {
-            document.querySelector('#reactive-modal .modal-title').textContent = "ALLY SUPPORT";
-            $('reactive-desc').innerHTML = `<b>${shortName(getCardName(action.c))}</b> is attacking. Use an ally's Screen Guarantee to ensure it hits?`;
-            $('reactive-options').innerHTML = valids.map(v => `<button class="game-btn game-btn-green" style="width:100%;text-align:left;" onclick="resolveAllySupport(${v.cIdx},${v.sIdx})">[${v.c.battleRole}] ${shortName(getCardName(v.c))}: ${v.sk.Name}</button>`).join('');
-            window.resolveAllySupport = (cIdx, sIdx) => {
-                $('reactive-modal').style.display = 'none';
-                document.querySelector('#reactive-modal .modal-title').textContent = "INCOMING ATTACK";
-                applyAllySupport(cIdx, sIdx, action, valids);
-                resolve(true);
-            };
-            window.skipReactive = () => {
-                $('reactive-modal').style.display = 'none';
-                document.querySelector('#reactive-modal .modal-title').textContent = "INCOMING ATTACK";
-                resolve(false);
-            };
-            $('reactive-modal').style.display = 'flex';
-        });
-    } else {
-        if (Math.random() < 0.3) {
-            let p = valids[Math.floor(Math.random() * valids.length)];
-            applyAllySupport(p.cIdx, p.sIdx, action, valids);
-            return true;
-        }
-        return false;
-    }
-}
-
-function applyAllySupport(cIdx, sIdx, action, valids) {
-    let team = action.execTeam === 'player' ? playerActive : enemyActive;
-    let c = team[cIdx];
-    let sk = c.Skills[sIdx];
-    if (sk._usesLeft !== undefined) sk._usesLeft--;
-    action.screenGuaranteed = true;
-    logMsg2(action.execTeam === 'player' ? 'atk' : 'def', action.execTeam === 'player' ? 'You' : 'Bot', `${shortName(getCardName(c))} sets a SCREEN GUARANTEE for ${shortName(getCardName(action.c))}!`);
-}
-
-let pendingReactiveAction = null;
-
+// ==================== REACTIVE DEFENSE SYSTEM ====================
 async function checkAndPromptReactive(action) {
-    let defRoster = action.execTeam === 'player' ? enemyActive : playerActive;
-    let atkCard = action.c;
-    let sk = action.actionType === 'skill' ? action.c.Skills[action.skillIdx] : null;
-    let json = sk?.Logic_Engine || {};
-    let nature = sk ? (sk.Nature || '').toLowerCase() : 'basic';
-    let isJ = nature.includes('jump shot');
-    let isC = nature.includes('close shot');
-    let isA = sk && (nature.includes('assist') || json.skill_class === 'ASSIST');
-    let isDmg = action.actionType === 'basic' || (sk && !String(sk.Display_DMG || '').toUpperCase().includes('N/A'));
-    
-    if (atkCard && atkCard._immuneDefSkills) return false;
-    
-    let atkUnblockable = sk && (json.modifiers?.includes('Unblockable') || atkCard._skillsUnblockable === true);
-    let atkUncontestable = sk && (json.modifiers?.includes('Unblockable_Uncontestable') || atkCard._skillsUncontestable === true);
-    let assistUninterceptable = sk && isA && atkCard._assistUninterceptable;
-    
-    if (action.screenGuaranteed) {
-        atkUnblockable = true;
-        atkUncontestable = true;
-    }
-    
-    let valids = [];
-    for (let [i, c] of defRoster.entries()) {
-        if (c.isDead) continue;
-        for (let [si, rsk] of (c.Skills || []).entries()) {
-            let rjson = rsk.Logic_Engine || {};
-            if (rjson.timing !== 'REACTIVE') continue;
-            
-            let v = false;
-            if (['BLOCK_FULL', 'BLOCK_PARTIAL', 'REDIRECT_HALF'].includes(rjson.execution)) {
-                if (isDmg && !atkUnblockable) v = true;
-            } else if (rjson.execution === 'CONTEST_JUMP') {
-                if (isJ && !atkUnblockable && !atkUncontestable) v = true;
-            } else if (rjson.execution === 'CONTEST_CLOSE') {
-                if (isC && !atkUnblockable && !atkUncontestable) v = true;
-            } else if (rjson.execution === 'INTERCEPT_ASSIST') {
-                if (isA && !assistUninterceptable) v = true;
-            } else if (rjson.execution === 'GRANT_EXTRA_MOVE' || rjson.execution === 'DUAL_USE') {
-                if (isDmg) v = true;
-            }
-            
-            let u = rsk._usesLeft !== undefined ? rsk._usesLeft : (rjson.max_uses || 1);
-            if (v && u > 0) valids.push({ cIdx: i, sIdx: si, rsk, c });
-        }
-    }
-    
-    if (valids.length === 0) return false;
-    
-    if (action.execTeam === 'enemy') {
-        return new Promise(resolve => {
-            let dStr = sk ? `${sk.Name} (${sk.Display_DMG})` : `Basic Attack (${getCardDMG(action.c)})`;
-            let tgtCard = action.targetIdx != null ? (action.execTeam === 'enemy' ? playerActive[action.targetIdx] : enemyActive[action.targetIdx]) : null;
-            $('reactive-desc').innerHTML = `<b>${shortName(getCardName(action.c))}</b> (Opp.) is using <b>${dStr}</b>${tgtCard ? ` on <b>${shortName(getCardName(tgtCard))}</b>` : ''}. Use a reactive skill?`;
-            $('reactive-options').innerHTML = valids.map(v => `<button class="game-btn game-btn-purple" style="width:100%;text-align:left;" onclick="resolveJIT(${v.cIdx},${v.sIdx})">[${v.c.battleRole}] ${shortName(getCardName(v.c))}: ${v.rsk.Name}</button>`).join('');
-            window.resolveJIT = async (cIdx, sIdx) => { $('reactive-modal').style.display = 'none'; await applyJITReactive(cIdx, sIdx, 'player', action, valids); resolve(true); };
-            window.skipReactive = () => { $('reactive-modal').style.display = 'none'; resolve(false); };
-            $('reactive-modal').style.display = 'flex';
-        });
-    } else {
-        if (Math.random() < 0.4) {
-            let p = valids[Math.floor(Math.random() * valids.length)];
-            await applyJITReactive(p.cIdx, p.sIdx, 'enemy', action, valids);
-        }
-        return false;
-    }
+  let defRoster = action.execTeam === 'player' ? enemyActive : playerActive;
+  let atkCard = action.c || (action.execTeam === 'player' ? playerActive[action.actorIdx] : enemyActive[action.actorIdx]);
+  let sk = action.actionType === 'skill' ? atkCard.Skills[action.skillIdx] : null;
+  let json = sk?.Logic_Engine || {};
+  let nature = sk ? (sk.Nature || '').toLowerCase() : 'basic';
+  
+  let isJ = nature.includes('jump shot');
+  let isC = nature.includes('close shot');
+  let isA = sk && (nature.includes('assist') || json.skill_class === 'ASSIST');
+  let isDmg = action.actionType === 'basic' || (sk && !String(sk.Display_DMG || '').toUpperCase().includes('N/A'));
+  
+  if (atkCard && atkCard._immuneDefSkills) return false;
+  
+  let atkUnblockable = sk && (json.modifiers?.includes('Unblockable') || atkCard._skillsUnblockable === true);
+  let atkUncontestable = sk && (json.modifiers?.includes('Unblockable_Uncontestable') || atkCard._skillsUncontestable === true);
+  let assistUninterceptable = sk && isA && atkCard._assistUninterceptable;
+  
+  if (action.screenGuaranteed) {
+      atkUnblockable = true;
+      atkUncontestable = true;
+  }
+  
+  let valids = [];
+  for (let [i, c] of defRoster.entries()) {
+      if (c.isDead) continue;
+      for (let [si, rsk] of (c.Skills || []).entries()) {
+          let rjson = rsk.Logic_Engine || {};
+          if (rjson.timing !== 'REACTIVE') continue;
+          
+          let v = false;
+          if (['BLOCK_FULL', 'BLOCK_PARTIAL', 'REDIRECT_HALF'].includes(rjson.execution)) {
+              if (isDmg && !atkUnblockable) v = true;
+          } else if (rjson.execution === 'CONTEST_JUMP') {
+              if (isJ && !atkUnblockable && !atkUncontestable) v = true;
+          } else if (rjson.execution === 'CONTEST_CLOSE') {
+              if (isC && !atkUnblockable && !atkUncontestable) v = true;
+          } else if (rjson.execution === 'INTERCEPT_ASSIST') {
+              if (isA && !assistUninterceptable) v = true;
+          } else if (rjson.execution === 'GRANT_EXTRA_MOVE' || rjson.execution === 'DUAL_USE') {
+              if (isDmg) v = true;
+          }
+          
+          let u = rsk._usesLeft !== undefined ? rsk._usesLeft : (rjson.max_uses || 1);
+          if (v && u > 0) valids.push({ cIdx: i, sIdx: si, rsk, c });
+      }
+  }
+  
+  if (valids.length === 0) return false;
+  
+  if (action.execTeam === 'enemy') {
+      return new Promise(resolve => {
+          let dStr = sk ? `${sk.Name} (${sk.Display_DMG})` : `Basic Attack (${getCardDMG(atkCard)})`;
+          let tgtCard = action.targetIdx != null ? playerActive[action.targetIdx] : null;
+          $('reactive-desc').innerHTML = `<b>${shortName(getCardName(atkCard))}</b> (Opp.) is using <b>${dStr}</b>${tgtCard ? ` on <b>${shortName(getCardName(tgtCard))}</b>` : ''}. Use a reactive defense?`;
+          $('reactive-options').innerHTML = valids.map(v => `<button class="game-btn game-btn-purple" style="width:100%;text-align:left;" onclick="resolveJIT(${v.cIdx},${v.sIdx})">[${v.c.battleRole}] ${shortName(getCardName(v.c))}: ${v.rsk.Name}</button>`).join('');
+          
+          window.resolveJIT = async (cIdx, sIdx) => { $('reactive-modal').style.display = 'none'; await applyJITReactive(cIdx, sIdx, 'player', action, valids); resolve(true); };
+          window.skipReactive = () => { $('reactive-modal').style.display = 'none'; resolve(false); };
+          $('reactive-modal').style.display = 'flex';
+      });
+  } else {
+      if (Math.random() < 0.4) {
+          let p = valids[Math.floor(Math.random() * valids.length)];
+          await applyJITReactive(p.cIdx, p.sIdx, 'enemy', action, valids);
+      }
+      return false;
+  }
 }
 
 async function applyJITReactive(cIdx, sIdx, defTeam, incAction, allValids) {
-    let roster = defTeam === 'player' ? playerActive : enemyActive;
-    let c = roster[cIdx], sk = c.Skills[sIdx];
-    let json = sk.Logic_Engine || {};
-    if (sk._usesLeft !== undefined) sk._usesLeft--;
-    
-    let who = defTeam === 'player' ? shortName(getCardName(c)) : `${shortName(getCardName(c))} (Opp.)`;
-    logMsg2(defTeam === 'player' ? 'atk' : 'block', defTeam === 'player' ? 'You' : 'Bot', `${who} reacts: ${sk.Name}!`);
-    
-    if (json.execution === 'INTERCEPT_ASSIST') {
-        if (defTeam === 'player') {
-            uiState = 'AWAITING_REACTIVE_TARGET';
-            logMsg2('sys', 'System', 'Click enemy card to intercept!');
-            return new Promise(resolve => {
-                pendingReactiveAction = {
-                    resolveReac: (tgtIdx) => {
-                        incAction._stolenTargetIdx = tgtIdx;
-                        uiState = 'IDLE';
-                        resolve();
-                    }
-                };
-            });
-        } else {
-            incAction._stolenTargetIdx = incAction.actorIdx;
-        }
-    } else {
-        let blockData = {
-            playerCardIdx: cIdx,
-            skillIdx: sIdx,
-            sk,
-            blockType: json.execution === 'BLOCK_PARTIAL' ? 'partial' : json.execution === 'REDIRECT_HALF' ? 'redirect' : 'full',
-            defTeam
-        };
-        pendingBlocks.push(blockData);
-        await checkAndPromptNullify(json.execution, defTeam, cIdx, sIdx, incAction);
-    }
+  let roster = defTeam === 'player' ? playerActive : enemyActive;
+  let c = roster[cIdx], sk = c.Skills[sIdx];
+  let json = sk.Logic_Engine || {};
+  if (sk._usesLeft !== undefined) sk._usesLeft--;
+  
+  let who = defTeam === 'player' ? shortName(getCardName(c)) : `${shortName(getCardName(c))} (Opp.)`;
+  logMsg2(defTeam === 'player' ? 'atk' : 'block', defTeam === 'player' ? 'You' : 'Bot', `${who} reacts: ${sk.Name}!`);
+  
+  if (json.execution === 'INTERCEPT_ASSIST') {
+      if (defTeam === 'player') {
+          uiState = 'AWAITING_REACTIVE_TARGET';
+          logMsg2('sys', 'System', 'Click enemy card to intercept!');
+          return new Promise(resolve => {
+              pendingReactiveAction = {
+                  resolveReac: (tgtIdx) => {
+                      incAction._stolenTargetIdx = tgtIdx;
+                      uiState = 'IDLE';
+                      resolve();
+                  }
+              };
+          });
+      } else {
+          incAction._stolenTargetIdx = incAction.actorIdx;
+      }
+  } else {
+      let blockData = {
+          playerCardIdx: cIdx,
+          skillIdx: sIdx,
+          sk,
+          blockType: json.execution === 'BLOCK_PARTIAL' ? 'partial' : json.execution === 'REDIRECT_HALF' ? 'redirect' : 'full',
+          defTeam
+      };
+      pendingBlocks.push(blockData);
+      await checkAndPromptNullify(json.execution, defTeam, cIdx, sIdx, incAction);
+  }
 }
 
 async function checkAndPromptNullify(blockedCat, defTeam, blockedCardIdx, blockedSkillIdx, incAction) {
-    let attackTeam = defTeam === 'player' ? 'enemy' : 'player';
-    let atkRoster = attackTeam === 'player' ? playerActive : enemyActive;
-    let nullifiers = [];
-    for (let [i, c] of atkRoster.entries()) {
-        if (c.isDead) continue;
-        for (let [si, sk] of (c.Skills || []).entries()) {
-            let json = sk.Logic_Engine || {};
-            if (!json.modifiers?.includes('Nullify_Defensive_Skill')) continue;
-            let u = sk._usesLeft !== undefined ? sk._usesLeft : (json.max_uses || 1);
-            if (u > 0) nullifiers.push({ cIdx: i, sIdx: si, sk, c });
-        }
-    }
-    if (nullifiers.length === 0) return;
-    
-    if (attackTeam === 'player') {
-        return new Promise(resolve => {
-            let blockedSkName = defTeam === 'player' ? playerActive[blockedCardIdx]?.Skills[blockedSkillIdx]?.Name : 'Bot skill';
-            $('nullify-desc').innerHTML = `Opponent used <b>${blockedSkName}</b> defensively. Use a nullify skill to cancel it?`;
-            $('nullify-options').innerHTML = nullifiers.map(v => `<button class="game-btn game-btn-gold" style="width:100%;text-align:left;" onclick="resolveNullify(${v.cIdx},${v.sIdx})">[${v.c.battleRole}] ${shortName(getCardName(v.c))}: ${v.sk.Name}</button>`).join('');
-            window.resolveNullify = async (ci, si) => { $('nullify-modal').style.display = 'none'; applyNullify(ci, si, 'player', incAction); resolve(); };
-            window.skipNullify = () => { $('nullify-modal').style.display = 'none'; resolve(); };
-            $('nullify-modal').style.display = 'flex';
-        });
-    } else {
-        if (Math.random() < 0.35 && nullifiers.length > 0) {
-            let p = nullifiers[0];
-            applyNullify(p.cIdx, p.sIdx, 'enemy', incAction);
-        }
-    }
+  let attackTeam = defTeam === 'player' ? 'enemy' : 'player';
+  let atkRoster = attackTeam === 'player' ? playerActive : enemyActive;
+  let nullifiers = [];
+  for (let [i, c] of atkRoster.entries()) {
+      if (c.isDead) continue;
+      for (let [si, sk] of (c.Skills || []).entries()) {
+          let json = sk.Logic_Engine || {};
+          if (!json.modifiers?.includes('Nullify_Defensive_Skill')) continue;
+          let u = sk._usesLeft !== undefined ? sk._usesLeft : (json.max_uses || 1);
+          if (u > 0) nullifiers.push({ cIdx: i, sIdx: si, sk, c });
+      }
+  }
+  if (nullifiers.length === 0) return;
+  
+  if (attackTeam === 'player') {
+      return new Promise(resolve => {
+          let blockedSkName = defTeam === 'player' ? playerActive[blockedCardIdx]?.Skills[blockedSkillIdx]?.Name : 'Bot skill';
+          $('nullify-desc').innerHTML = `Opponent used <b>${blockedSkName}</b> defensively. Use a nullify skill to cancel it?`;
+          $('nullify-options').innerHTML = nullifiers.map(v => `<button class="game-btn game-btn-gold" style="width:100%;text-align:left;" onclick="resolveNullify(${v.cIdx},${v.sIdx})">[${v.c.battleRole}] ${shortName(getCardName(v.c))}: ${v.sk.Name}</button>`).join('');
+          window.resolveNullify = async (ci, si) => { $('nullify-modal').style.display = 'none'; applyNullify(ci, si, 'player', incAction); resolve(); };
+          window.skipNullify = () => { $('nullify-modal').style.display = 'none'; resolve(); };
+          $('nullify-modal').style.display = 'flex';
+      });
+  } else {
+      if (Math.random() < 0.35 && nullifiers.length > 0) {
+          let p = nullifiers[0];
+          applyNullify(p.cIdx, p.sIdx, 'enemy', incAction);
+      }
+  }
 }
 
 function applyNullify(actorIdx, skillIdx, execTeam, incAction) {
-    let roster = execTeam === 'player' ? playerActive : enemyActive;
-    let c = roster[actorIdx], sk = c.Skills[skillIdx];
-    if (sk._usesLeft !== undefined) sk._usesLeft--;
-    if (pendingBlocks.length > 0) pendingBlocks.pop();
-    logMsg2(execTeam === 'player' ? 'atk' : 'def', execTeam === 'player' ? 'You' : 'Bot', `${shortName(getCardName(c))} nullifies the defensive skill!`);
+  let roster = execTeam === 'player' ? playerActive : enemyActive;
+  let c = roster[actorIdx], sk = c.Skills[skillIdx];
+  if (sk._usesLeft !== undefined) sk._usesLeft--;
+  if (pendingBlocks.length > 0) pendingBlocks.pop();
+  logMsg2(execTeam === 'player' ? 'atk' : 'def', execTeam === 'player' ? 'You' : 'Bot', `${shortName(getCardName(c))} nullifies the defensive skill!`);
 }
 
-// ==================== AI ====================
+async function checkAllyReactiveSupport(action) {
+  let allies = action.execTeam === 'player' ? playerActive : enemyActive;
+  let valids = [];
+  for (let [i, c] of allies.entries()) {
+      if (c.isDead || i === action.actorIdx) continue;
+      for (let [si, sk] of (c.Skills || []).entries()) {
+          let json = sk.Logic_Engine || {};
+          if (json.execution === 'INTERCEPT_ASSIST' && json.modifiers?.includes('Screen_Guarantee')) {
+              let u = sk._usesLeft !== undefined ? sk._usesLeft : (json.max_uses || 1);
+              if (u > 0) valids.push({ cIdx: i, sIdx: si, sk, c });
+          }
+      }
+  }
+  if (valids.length === 0) return false;
+  
+  if (action.execTeam === 'player') {
+      return new Promise(resolve => {
+          document.querySelector('#reactive-modal .modal-title').textContent = "ALLY SUPPORT";
+          $('reactive-desc').innerHTML = `<b>${shortName(getCardName(action.c))}</b> is attacking. Use an ally's Screen Guarantee to ensure it hits?`;
+          $('reactive-options').innerHTML = valids.map(v => `<button class="game-btn game-btn-green" style="width:100%;text-align:left;" onclick="resolveAllySupport(${v.cIdx},${v.sIdx})">[${v.c.battleRole}] ${shortName(getCardName(v.c))}: ${v.sk.Name}</button>`).join('');
+          window.resolveAllySupport = (cIdx, sIdx) => {
+              $('reactive-modal').style.display = 'none';
+              document.querySelector('#reactive-modal .modal-title').textContent = "INCOMING ATTACK";
+              applyAllySupport(cIdx, sIdx, action, valids);
+              resolve(true);
+          };
+          window.skipReactive = () => {
+              $('reactive-modal').style.display = 'none';
+              document.querySelector('#reactive-modal .modal-title').textContent = "INCOMING ATTACK";
+              resolve(false);
+          };
+          $('reactive-modal').style.display = 'flex';
+      });
+  } else {
+      if (Math.random() < 0.3) {
+          let p = valids[Math.floor(Math.random() * valids.length)];
+          applyAllySupport(p.cIdx, p.sIdx, action, valids);
+          return true;
+      }
+      return false;
+  }
+}
+
+function applyAllySupport(cIdx, sIdx, action, valids) {
+  let team = action.execTeam === 'player' ? playerActive : enemyActive;
+  let c = team[cIdx];
+  let sk = c.Skills[sIdx];
+  if (sk._usesLeft !== undefined) sk._usesLeft--;
+  action.screenGuaranteed = true;
+  logMsg2(action.execTeam === 'player' ? 'atk' : 'def', action.execTeam === 'player' ? 'You' : 'Bot', `${shortName(getCardName(c))} sets a SCREEN GUARANTEE for ${shortName(getCardName(action.c))}!`);
+}
+
+// ==================== AURA SYSTEM ====================
+function applyAuraEffectsToAction(action, execTeam) {
+  let attackers = execTeam === 'player' ? playerActive : enemyActive;
+  let attacker = attackers[action.actorIdx];
+  let sk = action.actionType === 'skill' ? attacker.Skills[action.skillIdx] : null;
+  if (!sk) return { blocked: false };
+  
+  let json = sk.Logic_Engine || {};
+  let nature = (sk.Nature || '').toLowerCase();
+  
+  for (let aura of activeAuras) {
+      if (aura.sourceTeam === execTeam) continue;
+      
+      let auraImmuneFlip = attacker?._immuneCoinflip === true || action.screenGuaranteed === true;
+      
+      if (aura.type === 'all-skills-disabled') return { blocked: true, reason: `${sk.Name} was globally disabled!` };
+      if (aura.type === 'jumpshot-miss-chance' && nature.includes('jump shot') && !auraImmuneFlip && Math.random() < 0.5) {
+          return { blocked: true, reason: `${sk.Name} MISSED (50% chance)!` };
+      }
+      if (aura.type === 'closeshot-miss-chance' && nature.includes('close shot') && !auraImmuneFlip && Math.random() < 0.5) {
+          return { blocked: true, reason: `${sk.Name} MISSED (50% chance)!` };
+      }
+      if (aura.type === 'any-miss' && !auraImmuneFlip && Math.random() < 0.5) {
+          return { blocked: true, reason: `${sk.Name} MISSED (50% chance)!` };
+      }
+      if (aura.type === 'intercept-all-assists') {
+          let assistUnint = attacker?._assistUninterceptable;
+          if (!assistUnint && (nature.includes('assist') || json.skill_class === 'ASSIST')) {
+              return { blocked: true, reason: `${sk.Name} intercepted by defensive aura!` };
+          }
+      }
+  }
+  return { blocked: false };
+}
+
+function tickDownAuras() {
+  activeAuras = activeAuras.map(a => ({ ...a, turnsLeft: a.turnsLeft - 1 })).filter(a => a.turnsLeft > 0);
+  Object.keys(statBuffs).forEach(k => {
+      statBuffs[k].turnsLeft--;
+      if (statBuffs[k].turnsLeft <= 0) delete statBuffs[k];
+  });
+}
+function tickDownDrains() { Object.keys(drainedNextTurn).forEach(k => delete drainedNextTurn[k]); }
+
+// ==================== ABILITY (SYNERGY/PASSIVE) SYSTEM ====================
+function initAllAbilities(roster) {
+  for (let c of roster) {
+      if (!c) continue;
+      let key = getCardName(c);
+      abilityState[key] = { surviveUsed: false, healUsed: false, stackCount: 0 };
+      applySynergyAbilities(c, roster);
+  }
+}
+
+function applySynergyAbilities(c, team) {
+  let abl = c.Ability;
+  if (!abl) return;
+  
+  let json;
+  try {
+      json = typeof abl.Logic_JSON === 'string' ? JSON.parse(abl.Logic_JSON) : (abl.Logic_JSON || {});
+  } catch (e) { return; }
+  
+  let trigger = json.trigger || '';
+  let effects = json.effects || '';
+  let key = getCardName(c);
+  
+  // TEAMMATE_SYNERGY
+  if (trigger === 'TEAMMATE_SYNERGY') {
+      let condition = (json.condition || '').toLowerCase();
+      let hasSynergy = false;
+      let myTeam = team.filter(t => t && !t.isDead && t !== c);
+      
+      for (let t of myTeam) {
+          let tName = getCardName(t).toLowerCase();
+          let sName = shortName(getCardName(t)).toLowerCase();
+          if (condition && (tName.includes(condition) || sName.includes(condition) || (t.UI_Frontend_Data?.Team||'').toLowerCase().includes(condition))) {
+              hasSynergy = true; break;
+          }
+      }
+      
+      if (hasSynergy && !abilityState[key]?.synergiesApplied) {
+          if (!abilityState[key]) abilityState[key] = {};
+          abilityState[key].synergiesApplied = true;
+          
+          if (json.boosts) {
+              for (let boost of json.boosts) {
+                  let [stat, value] = boost.split(':');
+                  let val = parseInt(value);
+                  if (stat === 'HP') {
+                      c.UI_Frontend_Data.Stats.HP = (c.UI_Frontend_Data.Stats.HP || 2200) + val;
+                      c.currentHp = (c.currentHp || getCardHP(c)) + val;
+                  } else if (stat === 'SPD') {
+                      c.UI_Frontend_Data.Stats.Speed = (c.UI_Frontend_Data.Stats.Speed || 7) + val;
+                  } else if (stat === 'basic_dmg' || stat === 'DMG') {
+                      c.UI_Frontend_Data.Stats.Base_DMG = (c.UI_Frontend_Data.Stats.Base_DMG || 700) + val;
+                  }
+              }
+          }
+      }
+  }
+  
+  // ALWAYS
+  if (trigger === 'ALWAYS') {
+      if (effects.includes('IMMUNE_DEFENSIVE_SKILLS')) c._immuneDefSkills = true;
+      if (effects.includes('SKILLS_UNBLOCKABLE')) c._skillsUnblockable = true;
+      if (effects.includes('SKILLS_UNCONTESTABLE')) c._skillsUncontestable = true;
+      if (effects.includes('IMMUNE_TO_STEAL')) c._immuneSteal = true;
+      if (effects.includes('IMMUNE_COINFLIP_SKILLS')) c._immuneCoinflip = true;
+      if (effects.includes('IMMUNE_TO_FREEZE')) c._immuneFreeze = true;
+      if (effects.includes('ASSIST_UNINTERCEPTABLE')) c._assistUninterceptable = true;
+      if (effects.includes('FORCED_TARGET_ON_SELF')) c._forcedTarget = true;
+      if (effects.includes('HALVE_BASIC_ATK_MISS_CHANCE')) c._halveBasic = true;
+  }
+}
+
+// ==================== ENEMY AI GENERATOR ====================
 function generateEnemyAI() {
-    let acts = [];
-    let alive = enemyActive.map((c, i) => ({ c, i })).filter(x => !x.c.isDead);
-    for (let i = 0; i < Math.min(2, alive.length); i++) {
-        let act = alive[i], c = act.c;
-        let ck = cardKey('enemy', act.i);
-        if (frozenCards[ck] || drainedNextTurn[ck] || shutdownCards[ck]) continue;
-        
-        let vT = getValidTargets(c, playerActive);
-        if (vT.length > 0) {
-            let t = vT[Math.floor(Math.random() * vT.length)];
-            let oSk = (c.Skills || []).map((sk, si) => ({ sk, si })).filter(x => canPlayerSelectSkill(x.sk) && (x.sk._usesLeft === undefined || x.sk._usesLeft > 0) && !String(x.sk.Display_DMG || '').toUpperCase().includes('N/A'));
-            let isSk = Math.random() > 0.4 && oSk.length > 0;
-            let cSi = isSk ? oSk[0].si : 0;
-            let prio = 1;
-            let assistTeammateIdx = null;
-            
-            if (isSk) {
-                let json = c.Skills[cSi].Logic_Engine || {};
-                prio = json.priority || 1;
-                if (json.execution === 'DEAL_ASSIST_DMG') {
-                    let parsed = parseAssistFormula(json.dmg_formula || '');
-                    if (parsed) {
-                        let teammate = enemyActive.find((ec, ei) => ei !== act.i && !ec.isDead && parsed.positions.includes(ec.battleRole));
-                        if (teammate) assistTeammateIdx = enemyActive.indexOf(teammate);
-                        else isSk = false;
-                    }
-                }
-                
-                // Skip free actions that need special handling
-                if (['FREEZE', 'STEAL_SKILL', 'STEAL_CANCEL'].includes(json.execution)) {
-                    isSk = false;
-                }
-            }
-            
-            acts.push({
-                actorIdx: act.i,
-                actionType: isSk ? 'skill' : 'basic',
-                skillIdx: cSi,
-                targetIdx: t.i,
-                targetTeam: 'player',
-                priority: prio,
-                speed: getCardSPD(c),
-                pos: c.battleRole,
-                assistTeammateIdx,
-                execTeam: 'enemy'
-            });
-        } else {
-            acts.push({
-                actorIdx: act.i,
-                actionType: 'pass',
-                skillIdx: 0,
-                targetIdx: null,
-                priority: 1,
-                speed: getCardSPD(c),
-                pos: c.battleRole,
-                execTeam: 'enemy'
-            });
-        }
-    }
-    return acts;
+  let acts = [];
+  let alive = enemyActive.map((c, i) => ({ c, i })).filter(x => !x.c.isDead);
+  for (let i = 0; i < Math.min(2, alive.length); i++) {
+      let act = alive[i], c = act.c;
+      let ck = cardKey('enemy', act.i);
+      if (frozenCards[ck] || drainedNextTurn[ck] || shutdownCards[ck]) continue;
+      
+      let vT = getValidTargets(c, playerActive);
+      if (vT.length > 0) {
+          let t = vT[Math.floor(Math.random() * vT.length)];
+          let oSk = (c.Skills || []).map((sk, si) => ({ sk, si })).filter(x => canPlayerSelectSkill(x.sk) && (x.sk._usesLeft === undefined || x.sk._usesLeft > 0));
+          let isSk = Math.random() > 0.4 && oSk.length > 0;
+          let cSi = isSk ? oSk[0].si : 0;
+          let prio = 1;
+          let assistTeammateIdx = null;
+          
+          if (isSk) {
+              let json = c.Skills[cSi].Logic_Engine || {};
+              prio = json.priority || 1;
+              if (json.execution === 'DEAL_ASSIST_DMG') {
+                  let parsed = parseAssistFormula(json.dmg_formula || '');
+                  if (parsed) {
+                      let teammate = enemyActive.find((ec, ei) => ei !== act.i && !ec.isDead && parsed.positions.includes(ec.battleRole));
+                      if (teammate) assistTeammateIdx = enemyActive.indexOf(teammate);
+                      else isSk = false;
+                  }
+              }
+              // Skip interactive free actions for Bot
+              if (['FREEZE', 'STEAL_SKILL', 'STEAL_CANCEL'].includes(json.execution)) isSk = false;
+          }
+          
+          acts.push({
+              actorIdx: act.i, actionType: isSk ? 'skill' : 'basic', skillIdx: cSi,
+              targetIdx: t.i, targetTeam: 'player', priority: prio, speed: getCardSPD(c),
+              pos: c.battleRole, assistTeammateIdx, execTeam: 'enemy'
+          });
+      } else {
+          acts.push({ actorIdx: act.i, actionType: 'pass', skillIdx: 0, targetIdx: null, priority: 1, speed: getCardSPD(c), pos: c.battleRole, execTeam: 'enemy' });
+      }
+  }
+  return acts;
 }
 
-// ==================== ACTION EXECUTION (MIDDLEWARE LOOP) ====================
+// ==================== COMBAT LOOP & RESOLUTION ====================
+async function confirmMovesPhase() {
+  $('checkout-panel').style.display = 'none';
+  document.querySelectorAll('.undo-btn').forEach(btn => btn.style.display = 'none');
+  isAnimating = true;
+  logMsg2('sys', 'System', `--- Turn ${turnCount} ---`);
+  
+  let eStaged = generateEnemyAI();
+  let master = [
+      ...stagedActions.map(a => ({ ...a, execTeam: 'player', c: playerActive[a.actorIdx] })),
+      ...eStaged.map(a => ({ ...a, execTeam: 'enemy', c: enemyActive[a.actorIdx] }))
+  ];
+  
+  const PH = { 'PG': 5, 'SG': 4, 'SF': 3, 'PF': 2, 'C': 1 };
+  master.sort((a, b) => {
+      if (a.priority !== b.priority) return b.priority - a.priority;
+      let a6 = a.pos === "6TH", b6 = b.pos === "6TH";
+      if (a6 && !b6) return 1;
+      if (!a6 && b6) return -1;
+      if (a.speed !== b.speed) return b.speed - a.speed;
+      let ap = PH[(a.pos || '').split('/')[0]] || 0, bp = PH[(b.pos || '').split('/')[0]] || 0;
+      if (ap !== bp) return bp - ap;
+      return Math.random() > 0.5 ? 1 : -1;
+  });
+  
+  for (let act of master) {
+      if (playerScore >= 8 || enemyScore >= 8) break;
+      let actC = act.execTeam === 'player' ? playerActive[act.actorIdx] : enemyActive[act.actorIdx];
+      if (!actC || actC.isDead) continue;
+      act.c = actC;
+      
+      let ack = cardKey(act.execTeam, act.actorIdx);
+      if (drainedNextTurn[ack]) { logMsg2('sys', 'System', `${shortName(getCardName(actC))} is drained, skipping.`); continue; }
+      if (shutdownCards[ack]) { logMsg2('sys', 'System', `${shortName(getCardName(actC))} is shutdown, skipping.`); continue; }
+      
+      // Ally screen guarantee support
+      if (act.actionType !== 'pass' && act.actionType !== 'swap') {
+          let sk = act.actionType === 'skill' ? actC.Skills[act.skillIdx] : null;
+          let isDmg = act.actionType === 'basic' || (sk && !String(sk.Display_DMG || '').toUpperCase().includes('N/A'));
+          if (isDmg) { await checkAllyReactiveSupport(act); }
+      }
+      
+      let aRes = applyAuraEffectsToAction(act, act.execTeam);
+      if (aRes.blocked) {
+          logMsg2(act.execTeam === 'player' ? 'def' : 'atk', act.execTeam === 'player' ? 'You' : 'Bot', `Blocked: ${aRes.reason}`);
+          let tgtCard = act.targetIdx != null ? (act.execTeam === 'player' ? enemyActive : playerActive)[act.targetIdx] : null;
+          await onSkillFailure(actC, act.actorIdx, tgtCard, act.targetIdx, act.execTeam);
+          continue;
+      }
+      
+      if (act.actionType !== 'pass' && act.actionType !== 'swap') {
+          if (act.targetTeam === 'enemy' || act.execTeam === 'enemy') {
+              await checkAndPromptReactive(act);
+          }
+      }
+      
+      if (act._stolenTargetIdx != null) { logMsg2('sys', 'System', 'Action intercepted!'); continue; }
+      
+      await executeAction(act);
+  }
+  
+  await handleDeadReplacements('player', playerActive, playerBench);
+  await handleDeadReplacements('enemy', enemyActive, enemyBench);
+  
+  tickDownAuras();
+  tickDownDrains();
+  Object.keys(frozenCards).forEach(k => delete frozenCards[k]);
+  Object.keys(shutdownCards).forEach(k => {
+      shutdownCards[k]--;
+      if (shutdownCards[k] <= 0) delete shutdownCards[k];
+  });
+  
+  stagedActions = [];
+  uiState = 'IDLE';
+  setTooltipEnabled(true);
+  turnCount++;
+  
+  if (playerScore >= 8 || enemyScore >= 8) {
+      let won = playerScore >= 8;
+      $('endgame-title').textContent = won ? 'YOU WIN! 🏆' : 'YOU LOSE 😢';
+      $('endgame-title').style.color = won ? '#40E0A0' : '#FF6B6B';
+      $('endgame-desc').textContent = won ? `Congratulations! You knocked out 8 opponents first!` : `Opponent knocked out 8 of your players. Better luck next time!`;
+      $('endgame-modal').style.display = 'flex';
+      isAnimating = false;
+      return;
+  }
+  
+  isAnimating = false;
+  $('turn-indicator').textContent = `TURN ${turnCount}`;
+  renderArena();
+  renderBenchStacks();
+}
+
+// ==================== CORE ACTION EXECUTION ====================
 async function executeAction(a) {
-    let isP = a.execTeam === 'player';
-    let atks = isP ? playerActive : enemyActive;
-    let defs = isP ? enemyActive : playerActive;
-    let atkC = atks[a.actorIdx];
-    if (!atkC || atkC.isDead) return;
-    
-    let whoLabel = isP ? 'You' : 'Bot';
-    
-    // PASS
-    if (a.actionType === 'pass') {
-        logMsg2('sys', whoLabel, `${shortName(getCardName(atkC))} passes turn.`);
-        return;
-    }
-    
-    // SWAP
-    if (a.actionType === 'swap') {
-        let bArr = isP ? playerBench : enemyBench;
-        if (a.targetIdx == null || !bArr[a.targetIdx]) return;
-        let incoming = bArr[a.targetIdx], outgoing = atkC;
-        incoming.battleRole = outgoing.battleRole;
-        if (!incoming.currentHp) incoming.currentHp = getCardHP(incoming);
-        atks[a.actorIdx] = incoming;
-        bArr[a.targetIdx] = outgoing;
-        logMsg2('sys', whoLabel, `Swap: ${shortName(getCardName(outgoing))} out → ${shortName(getCardName(incoming))} in`);
-        renderArena();
-        renderBenchStacks();
-        await delay(700);
-        return;
-    }
-    
-    // Get skill
-    let sk = a.actionType === 'skill' ? atkC.Skills[a.skillIdx] : (a.actionType === 'stolen-skill' ? (stolenSkills[cardKey(a.execTeam, a.actorIdx)] || [])[a.skillIdx] : null);
-    let json = sk?.Logic_Engine || {};
-    
-    // FREE_ACTION non-damaging skills
-    if (json.timing === 'FREE_ACTION') {
-        if (json.execution === 'AURA_JUMP_MISS' || json.execution === 'AURA_CLOSE_MISS' || json.execution === 'AURA_ANY_MISS') {
-            let dur = parseInt((sk.Description_UI || '').match(/(\d+)\s*turn/)?.[1] || '2');
-            let aType = json.execution === 'AURA_JUMP_MISS' ? 'jumpshot-miss-chance' : json.execution === 'AURA_CLOSE_MISS' ? 'closeshot-miss-chance' : 'any-miss';
-            activeAuras.push({ type: aType, sourceTeam: a.execTeam, turnsLeft: dur });
-            logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} activates ${sk.Name} — ${aType} for ${dur} turns`);
-            if (sk._usesLeft !== undefined) sk._usesLeft--;
-            return;
-        }
-        
-        if (json.execution === 'INVULNERABLE_THIS_TURN') {
-            let ck = cardKey(a.execTeam, a.actorIdx);
-            invulnerable[ck] = true;
-            statBuffs[ck] = { dmgBonus: 300, spdBonus: 2, turnsLeft: 3 };
-            logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} is now invulnerable this turn and buffed for 3 turns!`);
-            if (sk._usesLeft !== undefined) sk._usesLeft--;
-            return;
-        }
-        
-        if (json.execution === 'STAT_BUFF') {
-            let ck = cardKey(a.execTeam, a.actorIdx);
-            let dur = parseInt((sk.Description_UI || '').match(/(\d+)\s*turn/)?.[1] || '3');
-            let dmgBonus = parseInt((sk.Description_UI || '').match(/(\d+)\s*DMG/)?.[1] || '450');
-            statBuffs[ck] = { dmgBonus, turnsLeft: dur };
-            logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} activates ${sk.Name} — +${dmgBonus} DMG for ${dur} turns`);
-            if (sk._usesLeft !== undefined) sk._usesLeft--;
-            return;
-        }
-        
-        if (json.execution === 'FREEZE') {
-            let tIdx = a.targetIdx;
-            if (tIdx == null) return;
-            let tTeam = a.targetTeam === 'enemy' ? 'enemy' : 'player';
-            let frozenC = a.targetTeam === 'enemy' ? enemyActive[tIdx] : playerActive[tIdx];
-            if (frozenC && frozenC._immuneFreeze) {
-                logMsg2('sys', 'System', `${shortName(getCardName(frozenC))} ABILITY — Immune to freeze!`);
-                if (sk._usesLeft !== undefined) sk._usesLeft--;
-                return;
-            }
-            frozenCards[cardKey(tTeam, tIdx)] = true;
-            logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} freezes ${shortName(getCardName(frozenC))}!`);
-            if (sk._usesLeft !== undefined) sk._usesLeft--;
-            renderArena();
-            return;
-        }
-        
-        if (json.execution === 'STEAL_CANCEL' || json.execution?.includes('STEAL_CANCEL')) {
-            let tIdx = a.targetIdx;
-            let stealTarget = tIdx != null ? defs[tIdx] : defs.find(c => c && !c.isDead);
-            if (stealTarget && stealTarget._immuneSteal) {
-                logMsg2('sys', 'System', `${shortName(getCardName(stealTarget))} ABILITY — Immune to steal!`);
-                if (sk._usesLeft !== undefined) sk._usesLeft--;
-                return;
-            }
-            if (stealTarget) {
-                let cancelIdx = defs.indexOf(stealTarget);
-                if (json.execution?.includes('NULLIFY_DEFENSE') && pendingBlocks.length > 0) {
-                    pendingBlocks = [];
-                    logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} nullifies the defensive skill too!`);
-                }
-                logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} steals the ball — ${shortName(getCardName(stealTarget))}'s action cancelled!`);
-                let stealDmg = parseInt(sk.Display_DMG || '0') || 0;
-                if (stealDmg > 0 && stealTarget) {
-                    await playCombatAnimation(`${isP ? 'player' : 'enemy'}-${a.actorIdx}`, `${isP ? 'enemy' : 'player'}-${cancelIdx}`, stealDmg, stealTarget, a.execTeam, cancelIdx, true);
-                    if (stealTarget.currentHp <= 0) {
-                        handleKO(stealTarget, isP ? 'enemy' : 'player', cancelIdx);
-                    }
-                }
-            }
-            if (sk._usesLeft !== undefined) sk._usesLeft--;
-            renderArena();
-            return;
-        }
-        
-        if (json.execution === 'GRANT_EXTRA_MOVE') {
-            let team2 = a.execTeam === 'player' ? playerActive : enemyActive;
-            let valids2 = team2.map((c2, i2) => ({ c2, i2 })).filter(x => !x.c2.isDead && x.c2 !== atkC);
-            if (valids2.length > 0) {
-                let chosen = valids2[Math.floor(Math.random() * valids2.length)];
-                let extraDmg = getCardDMG(chosen.c2);
-                let defTeam2 = a.execTeam === 'player' ? enemyActive : playerActive;
-                let validT2 = getValidTargets(chosen.c2, defTeam2);
-                if (validT2.length > 0) {
-                    let tgt2 = validT2[Math.floor(Math.random() * validT2.length)];
-                    logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} grants ${shortName(getCardName(chosen.c2))} an extra move! (${extraDmg} DMG)`);
-                    let finalDmg2 = await playCombatAnimation(`${isP ? 'player' : 'enemy'}-${chosen.i2}`, `${isP ? 'enemy' : 'player'}-${tgt2.i}`, extraDmg, tgt2.c, a.execTeam, tgt2.i, false);
-                    if (finalDmg2 === 0 && extraDmg > 0) {
-                        await onSkillFailure(chosen.c2, chosen.i2, tgt2.c, tgt2.i, a.execTeam);
-                    } else {
-                        if (tgt2.c.currentHp <= 0) {
-                            handleKO(tgt2.c, isP ? 'enemy' : 'player', tgt2.i);
-                        }
-                    }
-                }
-            }
-            if (sk._usesLeft !== undefined) sk._usesLeft--;
-            renderArena();
-            return;
-        }
-        
-        if (json.execution === 'HEAL') {
-            let tIdx = a.targetIdx;
-            if (tIdx == null) return;
-            let team2 = a.execTeam === 'player' ? playerActive : enemyActive;
-            let tc = team2[tIdx];
-            if (!tc) return;
-            let healAmt = 300;
-            tc.currentHp = Math.min(getCardHP(tc), tc.currentHp + healAmt);
-            logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} heals ${shortName(getCardName(tc))} for ${healAmt} HP!`);
-            if (sk._usesLeft !== undefined) sk._usesLeft--;
-            renderArena();
-            return;
-        }
-        
-        if (json.execution === 'SHUTDOWN_TARGET') {
-            let tIdx = a.targetIdx;
-            if (tIdx == null) return;
-            let tC = defs[tIdx];
-            let ck = cardKey(a.execTeam === 'player' ? 'enemy' : 'player', tIdx);
-            shutdownCards[ck] = 2;
-            let raw = parseInt(sk.Display_DMG || '0');
-            if (raw > 0) {
-                logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} shuts down ${shortName(getCardName(tC))} for 2 turns (${raw} DMG)!`);
-                await playCombatAnimation(`${isP ? 'player' : 'enemy'}-${a.actorIdx}`, `${isP ? 'enemy' : 'player'}-${tIdx}`, raw, tC, a.execTeam, tIdx, true);
-                if (tC.currentHp <= 0) {
-                    handleKO(tC, isP ? 'enemy' : 'player', tIdx);
-                }
-            } else {
-                logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} shuts down ${shortName(getCardName(tC))} for 2 turns!`);
-            }
-            if (sk._usesLeft !== undefined) sk._usesLeft--;
-            renderArena();
-            return;
-        }
-    }
-    
-    // DAMAGING SKILLS
-    let defC = defs[a.targetIdx];
-    if (!defC || defC.isDead) {
-        let vt = getValidTargets(atkC, defs);
-        if (vt.length === 0) return;
-        defC = vt[0].c;
-        a.targetIdx = vt[0].i;
-    }
-    let dIdx = a.targetIdx;
-    let defCk = cardKey(a.execTeam === 'player' ? 'enemy' : 'player', dIdx);
-    if (invulnerable[defCk]) {
-        logMsg2('sys', 'System', `${shortName(getCardName(defC))} is invulnerable — attack blocked!`);
-        return;
-    }
-    
-    // Check FORCED_TARGET
-    let forcedT = getForcedTarget(atkC, defs);
-    if (forcedT && forcedT.idx !== dIdx) {
-        defC = forcedT.card;
-        dIdx = forcedT.idx;
-        logMsg2('sys', 'System', `ABILITY: ${shortName(getCardName(forcedT.card))} forces all attacks onto themselves!`);
-    }
-    
-    // Calculate damage
-    let mName = sk ? sk.Name : 'Basic Attack';
-    let dmgRaw = 0;
-    
-    if (sk) {
-        if (json.coin_flip === true) {
-            let autoHit = atkC._immuneCoinflip === true || a.screenGuaranteed === true;
-            let flip = autoHit ? true : (Math.random() < 0.5);
-            let who = a.execTeam === 'player' ? shortName(getCardName(atkC)) : `${shortName(getCardName(atkC))} (Opp.)`;
-            if (autoHit) {
-                logMsg2('coin', 'Coin', `${sk.Name} (${who}): AUTO-HIT (immune to coin flip!)`);
-            } else {
-                logMsg2('coin', 'Coin', `Flip for ${sk.Name} (${who}): ${flip ? 'HEADS — hit!' : 'TAILS — miss!'}`);
-                await animateCoinFlip(who, sk.Name, flip);
-            }
-            if (!flip) {
-                // Check for heat-up ability
-                let ablJson;
-                try {
-                    ablJson = typeof atkC.Ability?.Logic_JSON === 'string' ? JSON.parse(atkC.Ability.Logic_JSON) : atkC.Ability?.Logic_JSON;
-                } catch (e) {}
-                if (ablJson?.effects?.includes('HEAT_UP_DMG_BUFF')) {
-                    let ck2 = cardKey(a.execTeam, a.actorIdx);
-                    if (!statBuffs[ck2]) statBuffs[ck2] = { dmgBonus: 0, turnsLeft: 1 };
-                    statBuffs[ck2].dmgBonus += 100;
-                    statBuffs[ck2].turnsLeft = 1;
-                    logMsg2('sys', 'System', `T-MAC ABILITY — Missed but heat up! +100 DMG next turn.`);
-                }
-                await onSkillFailure(atkC, a.actorIdx, defC, dIdx, a.execTeam);
-                if (sk._usesLeft !== undefined) sk._usesLeft--;
-                return;
-            }
-        }
-        
-        // Calculate DMG
-        if (json.execution === 'DEAL_ASSIST_DMG') {
-            dmgRaw = executeAssistDmg(json.dmg_formula, a.execTeam, a.assistTeammateIdx);
-        } else if (json.execution === 'DUAL_USE') {
-            let dm = json.dmg_formula?.match(/DUAL:(\d+)(?:\/)?(\d+)?/);
-            if (dm) dmgRaw = parseInt(dm[a.dualUseMode === 'defensive' ? (dm[2] ? 2 : 1) : 1]);
-        } else {
-            dmgRaw = parseInt(sk.Display_DMG || '0') || 0;
-        }
-    } else {
-        dmgRaw = getCardDMG(atkC);
-    }
-    
-    let aCk = cardKey(a.execTeam, a.actorIdx);
-    if (statBuffs[aCk] && !sk) dmgRaw += statBuffs[aCk].dmgBonus || 0;
-    if (statBuffs[aCk] && sk && statBuffs[aCk].skillBonus) dmgRaw += statBuffs[aCk].skillBonus || 0;
-    dmgRaw += getConditionalBonusDmg(atkC, defC);
-    if (a.actionType === 'basic' && defC._halveBasic) dmgRaw = Math.floor(dmgRaw / 2);
-    
-    let isUnblockable = json.modifiers?.includes('Unblockable') || atkC._skillsUnblockable === true;
-    let isUncontestable = json.modifiers?.includes('Unblockable_Uncontestable') || atkC._skillsUncontestable === true;
-    
-    if (a.screenGuaranteed) {
-        isUnblockable = true;
-        isUncontestable = true;
-    }
-    
-    // Check Thunder Boy ability
-    if (atkC._immuneDefSkills && pendingBlocks.length > 0) {
-        pendingBlocks = [];
-        logMsg2('sys', 'System', `THUNDER BOY ABILITY — ${shortName(getCardName(atkC))} immune to defensive skills!`);
-    }
-    
-    // Handle redirects
-    let redirIdx = pendingBlocks.findIndex(b => b.blockType === 'redirect');
-    if (redirIdx !== -1) {
-        let b = pendingBlocks.splice(redirIdx, 1)[0];
-        let blockerC = b.defTeam === 'player' ? playerActive[b.playerCardIdx] : enemyActive[b.playerCardIdx];
-        logMsg2('block', 'Block', `${shortName(getCardName(blockerC))} switches in to take the hit!`);
-        defC = blockerC;
-        dIdx = b.playerCardIdx;
-        dmgRaw = Math.floor(dmgRaw * 0.5);
-    }
-    
-    logMsg2(isP ? 'atk' : 'def', whoLabel, `[${atkC.battleRole}] ${shortName(getCardName(atkC))} uses ${mName} on [${defC.battleRole}] ${shortName(getCardName(defC))} — ${dmgRaw} DMG`);
-    if (dmgRaw === 0 && json.execution !== 'DEAL_FLAT_DMG') {
-        logMsg2('sys', 'System', 'Effect activated (no damage).');
-        if (sk && sk._usesLeft !== undefined) sk._usesLeft--;
-        return;
-    }
-    
-    let finalDmg = await playCombatAnimation(`${isP ? 'player' : 'enemy'}-${a.actorIdx}`, `${isP ? 'enemy' : 'player'}-${dIdx}`, dmgRaw, defC, a.execTeam, dIdx, isUnblockable || isUncontestable);
-    
-    if (finalDmg === 0 && dmgRaw > 0) {
-        await onSkillFailure(atkC, a.actorIdx, defC, dIdx, a.execTeam);
-    } else {
-        if (sk && finalDmg > 0) {
-            onSkillHit(atkC, sk, a.execTeam, a.actorIdx);
-        }
-        logMsg2('hp', 'HP', `${shortName(getCardName(defC))}: ${defC.currentHp}/${getCardHP(defC)}`);
-        checkHPRecoverAbility(defC);
-        if (defC.currentHp <= 0) {
-            handleKO(defC, isP ? 'enemy' : 'player', dIdx);
-        }
-    }
-    
-    if (sk && sk._usesLeft !== undefined) sk._usesLeft--;
-    if (sk && json.modifiers?.includes('Self_Drain_Next_Turn')) {
-        drainedNextTurn[cardKey(a.execTeam, a.actorIdx)] = true;
-        logMsg2('sys', 'System', `${shortName(getCardName(atkC))} is drained next turn!`);
-    }
+  let isP = a.execTeam === 'player';
+  let atks = isP ? playerActive : enemyActive;
+  let defs = isP ? enemyActive : playerActive;
+  let atkC = atks[a.actorIdx];
+  if (!atkC || atkC.isDead) return;
+  
+  let whoLabel = isP ? 'You' : 'Bot';
+  
+  if (a.actionType === 'pass') { logMsg2('sys', whoLabel, `${shortName(getCardName(atkC))} passes turn.`); return; }
+  
+  if (a.actionType === 'swap') {
+      let bArr = isP ? playerBench : enemyBench;
+      if (a.targetIdx == null || !bArr[a.targetIdx]) return;
+      let incoming = bArr[a.targetIdx], outgoing = atkC;
+      incoming.battleRole = outgoing.battleRole;
+      if (!incoming.currentHp) incoming.currentHp = getCardHP(incoming);
+      atks[a.actorIdx] = incoming;
+      bArr[a.targetIdx] = outgoing;
+      logMsg2('sys', whoLabel, `Swap: ${shortName(getCardName(outgoing))} out → ${shortName(getCardName(incoming))} in`);
+      renderArena(); renderBenchStacks(); await delay(700);
+      return;
+  }
+  
+  let sk = a.actionType === 'skill' ? atkC.Skills[a.skillIdx] : (a.actionType === 'stolen-skill' ? (stolenSkills[cardKey(a.execTeam, a.actorIdx)] || [])[a.skillIdx] : null);
+  let json = sk?.Logic_Engine || {};
+  
+  // FREE_ACTION EXECUTION
+  if (json.timing === 'FREE_ACTION' || json.timing === 'BUFF') {
+      if (['AURA_JUMP_MISS', 'AURA_CLOSE_MISS', 'AURA_ANY_MISS'].includes(json.execution)) {
+          let dur = parseInt((sk.Description_UI || '').match(/(\d+)\s*turn/)?.[1] || '2');
+          let aType = json.execution === 'AURA_JUMP_MISS' ? 'jumpshot-miss-chance' : json.execution === 'AURA_CLOSE_MISS' ? 'closeshot-miss-chance' : 'any-miss';
+          activeAuras.push({ type: aType, sourceTeam: a.execTeam, turnsLeft: dur });
+          logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} activates ${sk.Name} — ${aType} for ${dur} turns`);
+          if (sk._usesLeft !== undefined) sk._usesLeft--; return;
+      }
+      
+      if (json.execution === 'INVULNERABLE_THIS_TURN') {
+          let ck = cardKey(a.execTeam, a.actorIdx);
+          invulnerable[ck] = true;
+          statBuffs[ck] = { dmgBonus: 300, spdBonus: 2, turnsLeft: 3 };
+          logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} is now invulnerable this turn and buffed for 3 turns!`);
+          if (sk._usesLeft !== undefined) sk._usesLeft--; return;
+      }
+      
+      if (json.execution === 'STAT_BUFF') {
+          let ck = cardKey(a.execTeam, a.actorIdx);
+          let dur = parseInt((sk.Description_UI || '').match(/(\d+)\s*turn/)?.[1] || '3');
+          let dmgBonus = parseInt((sk.Description_UI || '').match(/(\d+)\s*DMG/)?.[1] || '450');
+          statBuffs[ck] = { dmgBonus, turnsLeft: dur };
+          logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} activates ${sk.Name} — +${dmgBonus} DMG for ${dur} turns`);
+          if (sk._usesLeft !== undefined) sk._usesLeft--; return;
+      }
+      
+      if (json.execution === 'FREEZE') {
+          let tIdx = a.targetIdx;
+          if (tIdx == null) return;
+          let frozenC = a.targetTeam === 'enemy' ? enemyActive[tIdx] : playerActive[tIdx];
+          if (frozenC && frozenC._immuneFreeze) {
+              logMsg2('sys', 'System', `${shortName(getCardName(frozenC))} ABILITY — Immune to freeze!`);
+              if (sk._usesLeft !== undefined) sk._usesLeft--; return;
+          }
+          frozenCards[cardKey(a.targetTeam === 'enemy' ? 'enemy' : 'player', tIdx)] = true;
+          logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} freezes ${shortName(getCardName(frozenC))}!`);
+          if (sk._usesLeft !== undefined) sk._usesLeft--; renderArena(); return;
+      }
+      
+      if (json.execution === 'STEAL_CANCEL' || json.execution?.includes('STEAL_CANCEL')) {
+          let stealTarget = a.targetIdx != null ? defs[a.targetIdx] : defs.find(c => c && !c.isDead);
+          if (stealTarget && stealTarget._immuneSteal) {
+              logMsg2('sys', 'System', `${shortName(getCardName(stealTarget))} ABILITY — Immune to steal!`);
+              if (sk._usesLeft !== undefined) sk._usesLeft--; return;
+          }
+          if (stealTarget) {
+              let cancelIdx = defs.indexOf(stealTarget);
+              if (json.execution?.includes('NULLIFY_DEFENSE') && pendingBlocks.length > 0) {
+                  pendingBlocks = [];
+                  logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} nullifies the defensive skill too!`);
+              }
+              logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} steals the ball — ${shortName(getCardName(stealTarget))}'s action cancelled!`);
+              let stealDmg = parseInt(sk.Display_DMG || '0') || 0;
+              if (stealDmg > 0) {
+                  await playCombatAnimation(`${isP ? 'player' : 'enemy'}-${a.actorIdx}`, `${isP ? 'enemy' : 'player'}-${cancelIdx}`, stealDmg, stealTarget, a.execTeam, cancelIdx, true);
+                  if (stealTarget.currentHp <= 0) handleKO(stealTarget, isP ? 'enemy' : 'player', cancelIdx);
+              }
+          }
+          if (sk._usesLeft !== undefined) sk._usesLeft--; renderArena(); return;
+      }
+      
+      if (json.execution === 'GRANT_EXTRA_MOVE') {
+          let team2 = a.execTeam === 'player' ? playerActive : enemyActive;
+          let valids2 = team2.map((c2, i2) => ({ c2, i2 })).filter(x => !x.c2.isDead && x.c2 !== atkC);
+          if (valids2.length > 0) {
+              let chosen = valids2[Math.floor(Math.random() * valids2.length)];
+              let extraDmg = getCardDMG(chosen.c2);
+              let defTeam2 = a.execTeam === 'player' ? enemyActive : playerActive;
+              let validT2 = getValidTargets(chosen.c2, defTeam2);
+              if (validT2.length > 0) {
+                  let tgt2 = validT2[Math.floor(Math.random() * validT2.length)];
+                  logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} grants ${shortName(getCardName(chosen.c2))} an extra move! (${extraDmg} DMG)`);
+                  let finalDmg2 = await playCombatAnimation(`${isP ? 'player' : 'enemy'}-${chosen.i2}`, `${isP ? 'enemy' : 'player'}-${tgt2.i}`, extraDmg, tgt2.c, a.execTeam, tgt2.i, false);
+                  if (finalDmg2 === 0 && extraDmg > 0) await onSkillFailure(chosen.c2, chosen.i2, tgt2.c, tgt2.i, a.execTeam);
+                  else if (tgt2.c.currentHp <= 0) handleKO(tgt2.c, isP ? 'enemy' : 'player', tgt2.i);
+              }
+          }
+          if (sk._usesLeft !== undefined) sk._usesLeft--; renderArena(); return;
+      }
+      
+      if (json.execution === 'HEAL') {
+          if (a.targetIdx == null) return;
+          let tc = (a.execTeam === 'player' ? playerActive : enemyActive)[a.targetIdx];
+          if (!tc) return;
+          tc.currentHp = Math.min(getCardHP(tc), tc.currentHp + 300);
+          logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} heals ${shortName(getCardName(tc))} for 300 HP!`);
+          if (sk._usesLeft !== undefined) sk._usesLeft--; renderArena(); return;
+      }
+      
+      if (json.execution === 'SHUTDOWN_TARGET') {
+          let tIdx = a.targetIdx;
+          if (tIdx == null) return;
+          let tC = defs[tIdx];
+          shutdownCards[cardKey(a.execTeam === 'player' ? 'enemy' : 'player', tIdx)] = 2;
+          let raw = parseInt(sk.Display_DMG || '0');
+          if (raw > 0) {
+              logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} shuts down ${shortName(getCardName(tC))} for 2 turns (${raw} DMG)!`);
+              await playCombatAnimation(`${isP ? 'player' : 'enemy'}-${a.actorIdx}`, `${isP ? 'enemy' : 'player'}-${tIdx}`, raw, tC, a.execTeam, tIdx, true);
+              if (tC.currentHp <= 0) handleKO(tC, isP ? 'enemy' : 'player', tIdx);
+          } else {
+              logMsg2(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} shuts down ${shortName(getCardName(tC))} for 2 turns!`);
+          }
+          if (sk._usesLeft !== undefined) sk._usesLeft--; renderArena(); return;
+      }
+  }
+  
+  // DAMAGE CALCULATION
+  let defC = defs[a.targetIdx];
+  if (!defC || defC.isDead) {
+      let vt = getValidTargets(atkC, defs);
+      if (vt.length === 0) return;
+      defC = vt[0].c; a.targetIdx = vt[0].i;
+  }
+  let dIdx = a.targetIdx;
+  let defCk = cardKey(a.execTeam === 'player' ? 'enemy' : 'player', dIdx);
+  if (invulnerable[defCk]) { logMsg2('sys', 'System', `${shortName(getCardName(defC))} is invulnerable — attack blocked!`); return; }
+  
+  let forcedT = getForcedTarget(atkC, defs);
+  if (forcedT && forcedT.idx !== dIdx) {
+      defC = forcedT.card; dIdx = forcedT.idx;
+      logMsg2('sys', 'System', `ABILITY: ${shortName(getCardName(forcedT.card))} forces all attacks onto themselves!`);
+  }
+  
+  let mName = sk ? sk.Name : 'Basic Attack';
+  let dmgRaw = 0;
+  
+  if (sk) {
+      if (json.coin_flip === true) {
+          let autoHit = atkC._immuneCoinflip === true || a.screenGuaranteed === true;
+          let flip = autoHit ? true : (Math.random() < 0.5);
+          let who = a.execTeam === 'player' ? shortName(getCardName(atkC)) : `${shortName(getCardName(atkC))} (Opp.)`;
+          if (autoHit) {
+              logMsg2('coin', 'Coin', `${sk.Name} (${who}): AUTO-HIT (immune to coin flip!)`);
+          } else {
+              logMsg2('coin', 'Coin', `Flip for ${sk.Name} (${who}): ${flip ? 'HEADS — hit!' : 'TAILS — miss!'}`);
+              await animateCoinFlip(who, sk.Name, flip);
+          }
+          if (!flip) {
+              let ablJson;
+              try { ablJson = typeof atkC.Ability?.Logic_JSON === 'string' ? JSON.parse(atkC.Ability.Logic_JSON) : atkC.Ability?.Logic_JSON; } catch (e) {}
+              if (ablJson?.effects?.includes('HEAT_UP_DMG_BUFF')) {
+                  let ck2 = cardKey(a.execTeam, a.actorIdx);
+                  if (!statBuffs[ck2]) statBuffs[ck2] = { dmgBonus: 0, turnsLeft: 1 };
+                  statBuffs[ck2].dmgBonus += 100; statBuffs[ck2].turnsLeft = 1;
+                  logMsg2('sys', 'System', `T-MAC ABILITY — Missed but heat up! +100 DMG next turn.`);
+              }
+              await onSkillFailure(atkC, a.actorIdx, defC, dIdx, a.execTeam);
+              if (sk._usesLeft !== undefined) sk._usesLeft--;
+              return;
+          }
+      }
+      
+      if (json.execution === 'DEAL_ASSIST_DMG') {
+          dmgRaw = executeAssistDmg(json.dmg_formula, a.execTeam, a.assistTeammateIdx);
+      } else if (json.execution === 'DUAL_USE') {
+          let dm = json.dmg_formula?.match(/DUAL:(\d+)(?:\/)?(\d+)?/);
+          if (dm) dmgRaw = parseInt(dm[a.dualUseMode === 'defensive' ? (dm[2] ? 2 : 1) : 1]);
+      } else {
+          dmgRaw = parseInt(sk.Display_DMG || '0') || 0;
+      }
+  } else {
+      dmgRaw = getCardDMG(atkC);
+  }
+  
+  let aCk = cardKey(a.execTeam, a.actorIdx);
+  if (statBuffs[aCk] && !sk) dmgRaw += statBuffs[aCk].dmgBonus || 0;
+  if (statBuffs[aCk] && sk && statBuffs[aCk].skillBonus) dmgRaw += statBuffs[aCk].skillBonus || 0;
+  dmgRaw += getConditionalBonusDmg(atkC, defC);
+  if (a.actionType === 'basic' && defC._halveBasic) dmgRaw = Math.floor(dmgRaw / 2);
+  
+  let isUnblockable = json.modifiers?.includes('Unblockable') || atkC._skillsUnblockable === true;
+  let isUncontestable = json.modifiers?.includes('Unblockable_Uncontestable') || atkC._skillsUncontestable === true;
+  if (a.screenGuaranteed) { isUnblockable = true; isUncontestable = true; }
+  
+  if (atkC._immuneDefSkills && pendingBlocks.length > 0) {
+      pendingBlocks = [];
+      logMsg2('sys', 'System', `THUNDER BOY ABILITY — ${shortName(getCardName(atkC))} immune to defensive skills!`);
+  }
+  
+  let redirIdx = pendingBlocks.findIndex(b => b.blockType === 'redirect');
+  if (redirIdx !== -1) {
+      let b = pendingBlocks.splice(redirIdx, 1)[0];
+      let blockerC = b.defTeam === 'player' ? playerActive[b.playerCardIdx] : enemyActive[b.playerCardIdx];
+      logMsg2('block', 'Block', `${shortName(getCardName(blockerC))} switches in to take the hit!`);
+      defC = blockerC; dIdx = b.playerCardIdx;
+      dmgRaw = Math.floor(dmgRaw * 0.5);
+  }
+  
+  logMsg2(isP ? 'atk' : 'def', whoLabel, `[${atkC.battleRole}] ${shortName(getCardName(atkC))} uses ${mName} on [${defC.battleRole}] ${shortName(getCardName(defC))} — ${dmgRaw} DMG`);
+  if (dmgRaw === 0 && json.execution !== 'DEAL_FLAT_DMG') {
+      logMsg2('sys', 'System', 'Effect activated (no damage).');
+      if (sk && sk._usesLeft !== undefined) sk._usesLeft--; return;
+  }
+  
+  let finalDmg = await playCombatAnimation(`${isP ? 'player' : 'enemy'}-${a.actorIdx}`, `${isP ? 'enemy' : 'player'}-${dIdx}`, dmgRaw, defC, a.execTeam, dIdx, isUnblockable || isUncontestable);
+  
+  if (finalDmg === 0 && dmgRaw > 0) {
+      await onSkillFailure(atkC, a.actorIdx, defC, dIdx, a.execTeam);
+  } else {
+      if (sk && finalDmg > 0) onSkillHit(atkC, sk, a.execTeam, a.actorIdx);
+      logMsg2('hp', 'HP', `${shortName(getCardName(defC))}: ${defC.currentHp}/${getCardHP(defC)}`);
+      checkHPRecoverAbility(defC);
+      if (defC.currentHp <= 0) handleKO(defC, isP ? 'enemy' : 'player', dIdx);
+  }
+  
+  if (sk && sk._usesLeft !== undefined) sk._usesLeft--;
+  if (sk && json.modifiers?.includes('Self_Drain_Next_Turn')) {
+      drainedNextTurn[cardKey(a.execTeam, a.actorIdx)] = true;
+      logMsg2('sys', 'System', `${shortName(getCardName(atkC))} is drained next turn!`);
+  }
 }
 
-// ==================== COIN FLIP ANIMATION ====================
+// ==================== COIN FLIP ====================
 async function animateCoinFlip(playerName, skillName, result) {
-    return new Promise(resolve => {
-        let overlay = $('coin-flip-overlay');
-        overlay.style.display = 'flex';
-        overlay.innerHTML = `
-            <div class="coin-flip-container">
-                <div class="coin-flip-label">— COIN FLIP —</div>
-                <div class="coin-flip-main">
-                    <div class="coin-wrap">
-                        <div class="coin" id="anim-coin">
-                            <div class="coin-face coin-heads">H</div>
-                            <div class="coin-face coin-tails">T</div>
-                        </div>
-                    </div>
-                    <div class="coin-info-bar">
-                        <div class="coin-info-player">${playerName}</div>
-                        <div class="coin-info-move">${skillName}</div>
-                        <div class="coin-result-text" id="coin-result-txt" style="display:none;"></div>
-                    </div>
-                </div>
-            </div>`;
-        setTimeout(() => {
-            let coin = document.getElementById('anim-coin');
-            if (coin) coin.className = result ? 'coin result-heads' : 'coin result-tails';
-            setTimeout(() => {
-                let rt = document.getElementById('coin-result-txt');
-                if (rt) {
-                    rt.style.display = 'block';
-                    rt.className = result ? 'coin-result-text hit' : 'coin-result-text miss';
-                    rt.textContent = result ? 'HEADS — HIT!' : 'TAILS — MISS!';
-                }
-                setTimeout(() => { overlay.style.display = 'none'; overlay.innerHTML = ''; resolve(); }, 1500);
-            }, 900);
-        }, 1200);
-    });
+  return new Promise(resolve => {
+      let overlay = $('coin-flip-overlay');
+      overlay.style.display = 'flex';
+      overlay.innerHTML = `
+          <div class="coin-flip-container">
+              <div class="coin-flip-label">— COIN FLIP —</div>
+              <div class="coin-flip-main">
+                  <div class="coin-wrap">
+                      <div class="coin" id="anim-coin">
+                          <div class="coin-face coin-heads">H</div>
+                          <div class="coin-face coin-tails">T</div>
+                      </div>
+                  </div>
+                  <div class="coin-info-bar">
+                      <div class="coin-info-player">${playerName}</div>
+                      <div class="coin-info-move">${skillName}</div>
+                      <div class="coin-result-text" id="coin-result-txt" style="display:none;"></div>
+                  </div>
+              </div>
+          </div>`;
+      setTimeout(() => {
+          let coin = document.getElementById('anim-coin');
+          if (coin) coin.className = result ? 'coin result-heads' : 'coin result-tails';
+          setTimeout(() => {
+              let rt = document.getElementById('coin-result-txt');
+              if (rt) {
+                  rt.style.display = 'block';
+                  rt.className = result ? 'coin-result-text hit' : 'coin-result-text miss';
+                  rt.textContent = result ? 'HEADS — HIT!' : 'TAILS — MISS!';
+              }
+              setTimeout(() => { overlay.style.display = 'none'; overlay.innerHTML = ''; resolve(); }, 1500);
+          }, 900);
+      }, 1200);
+  });
 }
 
-// ==================== TARGETING ====================
+// ==================== TARGETING & ASSIST FORMULA ====================
 const TARGET_MATRIX = { "PG": ["PG", "SG"], "SG": ["SG", "SF"], "SF": ["SG", "SF", "PF"], "PF": ["PF", "C"], "C": ["C", "PF"], "6TH": ["PG", "SG", "SF", "PF", "C"] };
 
 function getValidTargets(atkC, tgtTeam) {
-    let role = atkC.battleRole || getCardAllPos(atkC)[0] || 'PG';
-    let validRoles = TARGET_MATRIX[role] || [];
-    return tgtTeam.map((c, i) => ({ c, i })).filter(d => {
-        if (d.c.isDead || shutdownCards[cardKey(d.c === atkC ? 'player' : 'enemy', d.i)]) return false;
-        return validRoles.includes(d.c.battleRole || getCardAllPos(d.c)[0] || 'PG');
-    });
+  let role = atkC.battleRole || getCardAllPos(atkC)[0] || 'PG';
+  let validRoles = TARGET_MATRIX[role] || [];
+  return tgtTeam.map((c, i) => ({ c, i })).filter(d => {
+      if (d.c.isDead || shutdownCards[cardKey(d.c === atkC ? 'player' : 'enemy', d.i)]) return false;
+      return validRoles.includes(d.c.battleRole || getCardAllPos(d.c)[0] || 'PG');
+  });
 }
 
-// ==================== ASSIST DMG ====================
 function parseAssistFormula(formula) {
-    if (!formula) return null;
-    let posMatch = formula.match(/\[([^\]]+)\]/);
-    let positions = posMatch ? posMatch[1].split(',').map(p => p.trim()) : [];
-    let isBaseDmg = formula.includes('TEAMMATE_BASE_DMG');
-    let multMatch = formula.match(/MULT:([\d.]+)/);
-    let addMatch = formula.match(/ADD:([\d]+)/);
-    return { positions, isBaseDmg, multiplier: multMatch ? parseFloat(multMatch[1]) : null, addend: addMatch ? parseInt(addMatch[1]) : null };
+  if (!formula) return null;
+  let posMatch = formula.match(/\[([^\]]+)\]/);
+  let positions = posMatch ? posMatch[1].split(',').map(p => p.trim()) : [];
+  let isBaseDmg = formula.includes('TEAMMATE_BASE_DMG');
+  let multMatch = formula.match(/MULT:([\d.]+)/);
+  let addMatch = formula.match(/ADD:([\d]+)/);
+  return { positions, isBaseDmg, multiplier: multMatch ? parseFloat(multMatch[1]) : null, addend: addMatch ? parseInt(addMatch[1]) : null };
 }
 
 function executeAssistDmg(formula, executingTeam, selectedTeammateIdx) {
-    if (!formula) return 0;
-    const team = executingTeam === 'player' ? playerActive : enemyActive;
-    let parsed = parseAssistFormula(formula);
-    if (!parsed) return 0;
-    let teammate = selectedTeammateIdx != null ? team[selectedTeammateIdx] : null;
-    if (!teammate) {
-        let candidates = team.filter(c => c && !c.isDead && parsed.positions.includes(c.battleRole));
-        teammate = candidates.sort((a, b) => getCardDMG(b) - getCardDMG(a))[0];
-    }
-    if (!teammate) return 0;
-    let baseStat = getCardDMG(teammate);
-    let tIdx = team.indexOf(teammate);
-    let tck = cardKey(executingTeam, tIdx);
-    if (statBuffs[tck]) baseStat += statBuffs[tck].dmgBonus || 0;
-    if (parsed.multiplier != null) return Math.floor(parsed.multiplier * baseStat);
-    if (parsed.addend != null) return baseStat + parsed.addend;
-    return baseStat;
+  if (!formula) return 0;
+  const team = executingTeam === 'player' ? playerActive : enemyActive;
+  let parsed = parseAssistFormula(formula);
+  if (!parsed) return 0;
+  let teammate = selectedTeammateIdx != null ? team[selectedTeammateIdx] : null;
+  if (!teammate) {
+      let candidates = team.filter(c => c && !c.isDead && parsed.positions.includes(c.battleRole));
+      teammate = candidates.sort((a, b) => getCardDMG(b) - getCardDMG(a))[0];
+  }
+  if (!teammate) return 0;
+  let baseStat = getCardDMG(teammate);
+  let tIdx = team.indexOf(teammate);
+  let tck = cardKey(executingTeam, tIdx);
+  if (statBuffs[tck]) baseStat += statBuffs[tck].dmgBonus || 0;
+  if (parsed.multiplier != null) return Math.floor(parsed.multiplier * baseStat);
+  if (parsed.addend != null) return baseStat + parsed.addend;
+  return baseStat;
 }
 
-// ==================== COMBAT ANIMATION ====================
+// ==================== ANIMATIONS & KO ====================
 async function playCombatAnimation(atkId, defId, dmg, targetObj, execTeam, defIdx, isUnblockable) {
-    let aE = document.getElementById(`wrap-${atkId}`), dE = document.getElementById(`wrap-${defId}`);
-    if (aE) aE.classList.add('doing-attack');
-    await delay(360);
-    let finalDmg = isUnblockable ? dmg : applyPendingBlocks(dmg, execTeam === 'player' ? 'enemy' : 'player', defIdx);
-    playAttackSound();
-    if (dE && finalDmg > 0) {
-        dE.querySelector('.battle-card')?.classList.add('anim-shake');
-        let p = document.createElement('div');
-        p.className = 'dmg-popup';
-        p.innerHTML = `-${finalDmg}`;
-        (dE.querySelector('.battle-card') || dE).appendChild(p);
-        setTimeout(() => { dE.querySelector('.battle-card')?.classList.remove('anim-shake'); p.remove(); }, 900);
-    }
-    targetObj.currentHp = Math.max(0, targetObj.currentHp - finalDmg);
-    let hpMax = getCardHP(targetObj), pct = Math.max(0, (targetObj.currentHp / hpMax) * 100);
-    let fill = document.getElementById(`hpf-${defId}`);
-    if (fill) {
-        fill.style.width = pct + '%';
-        fill.style.background = pct > 50 ? '#40E0A0' : pct > 20 ? '#FFD166' : '#FF6B6B';
-    }
-    let hpt = document.getElementById(`hpt-${defId}`);
-    if (hpt) hpt.textContent = `${targetObj.currentHp}/${hpMax}`;
-    await delay(660);
-    if (aE) aE.classList.remove('doing-attack');
-    return finalDmg;
+  let aE = document.getElementById(`wrap-${atkId}`), dE = document.getElementById(`wrap-${defId}`);
+  if (aE) aE.classList.add('doing-attack');
+  await delay(360);
+  let finalDmg = isUnblockable ? dmg : applyPendingBlocks(dmg, execTeam === 'player' ? 'enemy' : 'player', defIdx);
+  playAttackSound();
+  if (dE && finalDmg > 0) {
+      dE.querySelector('.battle-card')?.classList.add('anim-shake');
+      let p = document.createElement('div');
+      p.className = 'dmg-popup';
+      p.innerHTML = `-${finalDmg}`;
+      (dE.querySelector('.battle-card') || dE).appendChild(p);
+      setTimeout(() => { dE.querySelector('.battle-card')?.classList.remove('anim-shake'); p.remove(); }, 900);
+  }
+  targetObj.currentHp = Math.max(0, targetObj.currentHp - finalDmg);
+  let hpMax = getCardHP(targetObj), pct = Math.max(0, (targetObj.currentHp / hpMax) * 100);
+  let fill = document.getElementById(`hpf-${defId}`);
+  if (fill) {
+      fill.style.width = pct + '%';
+      fill.style.background = pct > 50 ? '#40E0A0' : pct > 20 ? '#FFD166' : '#FF6B6B';
+  }
+  let hpt = document.getElementById(`hpt-${defId}`);
+  if (hpt) hpt.textContent = `${targetObj.currentHp}/${hpMax}`;
+  await delay(660);
+  if (aE) aE.classList.remove('doing-attack');
+  return finalDmg;
 }
 
 function applyPendingBlocks(dmg, tgtTeam, defIdx) {
-    if (pendingBlocks.length === 0) return dmg;
-    let b = pendingBlocks.shift();
-    let blocker = b.defTeam === 'player' ? playerActive[b.playerCardIdx] : enemyActive[b.playerCardIdx];
-    let name = shortName(getCardName(blocker));
-    if (b.blockType === 'partial') {
-        let r = Math.max(0, dmg - 800);
-        logMsg2('block', 'Block', `${name} blocks 800 DMG (${r} remaining)`);
-        return r;
-    }
-    logMsg2('block', 'Block', `${name} completely blocked the attack!`);
-    return 0;
+  if (pendingBlocks.length === 0) return dmg;
+  let b = pendingBlocks.shift();
+  let blocker = b.defTeam === 'player' ? playerActive[b.playerCardIdx] : enemyActive[b.playerCardIdx];
+  let name = shortName(getCardName(blocker));
+  if (b.blockType === 'partial') {
+      let r = Math.max(0, dmg - 800);
+      logMsg2('block', 'Block', `${name} blocks 800 DMG (${r} remaining)`);
+      return r;
+  }
+  logMsg2('block', 'Block', `${name} completely blocked the attack!`);
+  return 0;
 }
 
-// ==================== SKILL FAILURE (PUTBACKS) ====================
 async function onSkillFailure(atkCard, atkIdx, defCard, defIdx, execTeam) {
-    if (!atkCard || !defCard || defCard.isDead) return;
-    
-    // 1. Check AUTO_REBOUND_PUTBACK on attacker
-    let ablJson;
-    try {
-        ablJson = typeof atkCard.Ability?.Logic_JSON === 'string' ? JSON.parse(atkCard.Ability.Logic_JSON) : atkCard.Ability?.Logic_JSON;
-    } catch (e) {}
-    
-    if (ablJson?.effects?.includes('AUTO_REBOUND_PUTBACK')) {
-        let putbackDmg = getCardDMG(atkCard);
-        let aCk = cardKey(execTeam, atkIdx);
-        if (statBuffs[aCk]) putbackDmg += statBuffs[aCk].dmgBonus || 0;
-        logMsg2(execTeam === 'player' ? 'atk' : 'def', execTeam === 'player' ? 'You' : 'Bot', `♻️ ${shortName(getCardName(atkCard))} ABILITY — Auto Rebound Putback!`);
-        await playCombatAnimation(`${execTeam === 'player' ? 'player' : 'enemy'}-${atkIdx}`, `${execTeam === 'player' ? 'enemy' : 'player'}-${defIdx}`, putbackDmg, defCard, execTeam, defIdx, true);
-        if (defCard.currentHp <= 0) handleKO(defCard, execTeam === 'player' ? 'enemy' : 'player', defIdx);
-        return;
-    }
-    
-    // 2. Check Allies for PUTBACK_DMG or LEBRON_PUTBACK
-    let team = execTeam === 'player' ? playerActive : enemyActive;
-    for (let [i, c] of team.entries()) {
-        if (c.isDead || i === atkIdx) continue;
-        let cAblJson;
-        try {
-            cAblJson = typeof c.Ability?.Logic_JSON === 'string' ? JSON.parse(c.Ability.Logic_JSON) : c.Ability?.Logic_JSON;
-        } catch (e) {}
-        
-        if (cAblJson?.effects?.includes('LEBRON_PUTBACK')) {
-            if (['SF', 'PF'].includes(atkCard.battleRole) || getCardName(atkCard).includes('LeBron')) {
-                let putbackDmg = getCardDMG(c);
-                logMsg2(execTeam === 'player' ? 'atk' : 'def', execTeam === 'player' ? 'You' : 'Bot', `👑 HEATLEMANIA! ${shortName(getCardName(c))} Putbacks!`);
-                await playCombatAnimation(`${execTeam === 'player' ? 'player' : 'enemy'}-${i}`, `${execTeam === 'player' ? 'enemy' : 'player'}-${defIdx}`, putbackDmg, defCard, execTeam, defIdx, true);
-                if (defCard.currentHp <= 0) handleKO(defCard, execTeam === 'player' ? 'enemy' : 'player', defIdx);
-                return;
-            }
-        }
-        
-        // Check for Reactionary_Putback_Dmg skill
-        let sk = (c.Skills || []).find(s => {
-            let sjson = s.Logic_Engine || {};
-            return sjson.modifiers?.includes('Reactionary_Putback_Dmg');
-        });
-        if (sk && (sk._usesLeft === undefined || sk._usesLeft > 0)) {
-            let putbackDmg = parseInt(sk.Display_DMG || '800');
-            if (sk._usesLeft !== undefined) sk._usesLeft--;
-            logMsg2(execTeam === 'player' ? 'atk' : 'def', execTeam === 'player' ? 'You' : 'Bot', `💥 ${shortName(getCardName(c))} grabs the offensive board and PUTS IT BACK!`);
-            await playCombatAnimation(`${execTeam === 'player' ? 'player' : 'enemy'}-${i}`, `${execTeam === 'player' ? 'enemy' : 'player'}-${defIdx}`, putbackDmg, defCard, execTeam, defIdx, true);
-            if (defCard.currentHp <= 0) handleKO(defCard, execTeam === 'player' ? 'enemy' : 'player', defIdx);
-            return;
-        }
-    }
+  if (!atkCard || !defCard || defCard.isDead) return;
+  
+  let ablJson;
+  try { ablJson = typeof atkCard.Ability?.Logic_JSON === 'string' ? JSON.parse(atkCard.Ability.Logic_JSON) : atkCard.Ability?.Logic_JSON; } catch (e) {}
+  
+  if (ablJson?.effects?.includes('AUTO_REBOUND_PUTBACK')) {
+      let putbackDmg = getCardDMG(atkCard);
+      let aCk = cardKey(execTeam, atkIdx);
+      if (statBuffs[aCk]) putbackDmg += statBuffs[aCk].dmgBonus || 0;
+      logMsg2(execTeam === 'player' ? 'atk' : 'def', execTeam === 'player' ? 'You' : 'Bot', `♻️ ${shortName(getCardName(atkCard))} ABILITY — Auto Rebound Putback!`);
+      await playCombatAnimation(`${execTeam === 'player' ? 'player' : 'enemy'}-${atkIdx}`, `${execTeam === 'player' ? 'enemy' : 'player'}-${defIdx}`, putbackDmg, defCard, execTeam, defIdx, true);
+      if (defCard.currentHp <= 0) handleKO(defCard, execTeam === 'player' ? 'enemy' : 'player', defIdx);
+      return;
+  }
+  
+  let team = execTeam === 'player' ? playerActive : enemyActive;
+  for (let [i, c] of team.entries()) {
+      if (c.isDead || i === atkIdx) continue;
+      let cAblJson;
+      try { cAblJson = typeof c.Ability?.Logic_JSON === 'string' ? JSON.parse(c.Ability.Logic_JSON) : c.Ability?.Logic_JSON; } catch (e) {}
+      
+      if (cAblJson?.effects?.includes('LEBRON_PUTBACK')) {
+          if (['SF', 'PF'].includes(atkCard.battleRole) || getCardName(atkCard).includes('LeBron')) {
+              let putbackDmg = getCardDMG(c);
+              logMsg2(execTeam === 'player' ? 'atk' : 'def', execTeam === 'player' ? 'You' : 'Bot', `👑 HEATLEMANIA! ${shortName(getCardName(c))} Putbacks!`);
+              await playCombatAnimation(`${execTeam === 'player' ? 'player' : 'enemy'}-${i}`, `${execTeam === 'player' ? 'enemy' : 'player'}-${defIdx}`, putbackDmg, defCard, execTeam, defIdx, true);
+              if (defCard.currentHp <= 0) handleKO(defCard, execTeam === 'player' ? 'enemy' : 'player', defIdx);
+              return;
+          }
+      }
+      
+      let sk = (c.Skills || []).find(s => s.Logic_Engine?.modifiers?.includes('Reactionary_Putback_Dmg'));
+      if (sk && (sk._usesLeft === undefined || sk._usesLeft > 0)) {
+          let putbackDmg = parseInt(sk.Display_DMG || '800');
+          if (sk._usesLeft !== undefined) sk._usesLeft--;
+          logMsg2(execTeam === 'player' ? 'atk' : 'def', execTeam === 'player' ? 'You' : 'Bot', `💥 ${shortName(getCardName(c))} grabs the offensive board and PUTS IT BACK!`);
+          await playCombatAnimation(`${execTeam === 'player' ? 'player' : 'enemy'}-${i}`, `${execTeam === 'player' ? 'enemy' : 'player'}-${defIdx}`, putbackDmg, defCard, execTeam, defIdx, true);
+          if (defCard.currentHp <= 0) handleKO(defCard, execTeam === 'player' ? 'enemy' : 'player', defIdx);
+          return;
+      }
+  }
 }
 
-// ==================== KO HANDLING ====================
 function handleKO(defCard, teamStr, dIdx) {
-    let survived = checkSurviveAbility(defCard, teamStr, dIdx);
-    if (!survived) survived = checkPreventKO(defCard, teamStr === 'enemy' ? enemyActive : playerActive);
-    if (!survived) {
-        defCard.isDead = true;
-        if (teamStr === 'enemy') playerScore++; else enemyScore++;
-        $('score-player').textContent = playerScore;
-        $('score-enemy').textContent = enemyScore;
-        let cardEl = document.getElementById(`card-${teamStr}-${dIdx}`);
-        if (cardEl) cardEl.classList.add('dead-card');
-        logMsg2('ko', 'KO', `${shortName(getCardName(defCard))} knocked out!`);
-    }
+  let survived = checkSurviveAbility(defCard, teamStr, dIdx) || checkPreventKO(defCard, teamStr === 'enemy' ? enemyActive : playerActive);
+  if (!survived) {
+      defCard.isDead = true;
+      if (teamStr === 'enemy') playerScore++; else enemyScore++;
+      $('score-player').textContent = playerScore;
+      $('score-enemy').textContent = enemyScore;
+      let cardEl = document.getElementById(`card-${teamStr}-${dIdx}`);
+      if (cardEl) cardEl.classList.add('dead-card');
+      logMsg2('ko', 'KO', `${shortName(getCardName(defCard))} knocked out!`);
+  }
 }
 
-// ==================== ABILITY TRIGGERS ====================
+// ==================== SURVIVE/KO ABILITIES ====================
 function checkSurviveAbility(card, teamStr, idx) {
-    if (!card || card.currentHp > 0) return false;
-    let key = getCardName(card);
-    if (!abilityState[key]) abilityState[key] = {};
-    if (abilityState[key].surviveUsed) return false;
-    
-    let ablJson;
-    try {
-        ablJson = typeof card.Ability?.Logic_JSON === 'string' ? JSON.parse(card.Ability.Logic_JSON) : card.Ability?.Logic_JSON;
-    } catch (e) {
-        return false;
-    }
-    
-    if (ablJson?.effects?.includes('SURVIVE_AT_1HP') || ablJson?.effects?.includes('HEAL_ON_DEATH')) {
-        abilityState[key].surviveUsed = true;
-        if (ablJson.effects.includes('HEAL_ON_DEATH')) {
-            card.currentHp = parseInt(ablJson.heal || '500');
-        } else {
-            card.currentHp = 1;
-        }
-        frozenCards[cardKey(teamStr, idx)] = true; // Temporary untargetable
-        logMsg2('sys', 'System', `${shortName(getCardName(card))} ABILITY TRIGGERS — ${ablJson.effects.includes('HEAL_ON_DEATH') ? 'healed to ' + card.currentHp + ' HP' : 'survives at 1 HP'}! Untargetable this turn.`);
-        return true;
-    }
-    return false;
+  if (!card || card.currentHp > 0) return false;
+  let key = getCardName(card);
+  if (!abilityState[key]) abilityState[key] = {};
+  if (abilityState[key].surviveUsed) return false;
+  
+  let ablJson;
+  try { ablJson = typeof card.Ability?.Logic_JSON === 'string' ? JSON.parse(card.Ability.Logic_JSON) : card.Ability?.Logic_JSON; } catch (e) { return false; }
+  
+  if (ablJson?.effects?.includes('SURVIVE_AT_1HP') || ablJson?.effects?.includes('HEAL_ON_DEATH')) {
+      abilityState[key].surviveUsed = true;
+      card.currentHp = ablJson.effects.includes('HEAL_ON_DEATH') ? parseInt(ablJson.heal || '500') : 1;
+      frozenCards[cardKey(teamStr, idx)] = true;
+      logMsg2('sys', 'System', `${shortName(getCardName(card))} ABILITY TRIGGERS — ${ablJson.effects.includes('HEAL_ON_DEATH') ? 'healed to ' + card.currentHp + ' HP' : 'survives at 1 HP'}! Untargetable this turn.`);
+      return true;
+  }
+  return false;
 }
 
 function checkHPRecoverAbility(card) {
-    if (!card) return;
-    let key = getCardName(card);
-    if (!abilityState[key]) abilityState[key] = {};
-    if (abilityState[key].healUsed) return;
-    
-    let ablJson;
-    try {
-        ablJson = typeof card.Ability?.Logic_JSON === 'string' ? JSON.parse(card.Ability.Logic_JSON) : card.Ability?.Logic_JSON;
-    } catch (e) {
-        return;
-    }
-    
-    if (!ablJson?.effects?.includes('ONE_TIME_HP_RECOVER')) return;
-    
-    let maxHp = getCardHP(card);
-    let threshold = maxHp * 0.3;
-    if (card.currentHp <= threshold && card.currentHp > 0) {
-        abilityState[key].healUsed = true;
-        let healAmt = Math.floor(maxHp * 0.35);
-        card.currentHp = Math.min(maxHp, card.currentHp + healAmt);
-        logMsg2('sys', 'System', `${shortName(getCardName(card))} ABILITY TRIGGERS — recovers ${healAmt} HP! (${card.currentHp}/${maxHp})`);
-        renderArena();
-    }
+  if (!card) return;
+  let key = getCardName(card);
+  if (!abilityState[key]) abilityState[key] = {};
+  if (abilityState[key].healUsed) return;
+  
+  let ablJson;
+  try { ablJson = typeof card.Ability?.Logic_JSON === 'string' ? JSON.parse(card.Ability.Logic_JSON) : card.Ability?.Logic_JSON; } catch (e) { return; }
+  
+  if (!ablJson?.effects?.includes('ONE_TIME_HP_RECOVER')) return;
+  
+  let maxHp = getCardHP(card);
+  if (card.currentHp <= (maxHp * 0.3) && card.currentHp > 0) {
+      abilityState[key].healUsed = true;
+      let healAmt = Math.floor(maxHp * 0.35);
+      card.currentHp = Math.min(maxHp, card.currentHp + healAmt);
+      logMsg2('sys', 'System', `${shortName(getCardName(card))} ABILITY TRIGGERS — recovers ${healAmt} HP! (${card.currentHp}/${maxHp})`);
+      renderArena();
+  }
 }
 
 function onSkillHit(card, sk, execTeam, actorIdx) {
-    if (!card || !sk) return;
-    let name = getCardName(card);
-    if (!abilityState[name]) abilityState[name] = { stackCount: 0 };
-    
-    let ablJson;
-    try {
-        ablJson = typeof card.Ability?.Logic_JSON === 'string' ? JSON.parse(card.Ability.Logic_JSON) : card.Ability?.Logic_JSON;
-    } catch (e) {
-        return;
-    }
-    
-    if (ablJson?.trigger === 'ON_SKILL_HIT' && ablJson?.effects?.includes('STACKING_DMG_BUFF')) {
-        let stackOn = ablJson.stack_on || '';
-        if (sk.Name === stackOn || sk.Name.toLowerCase().includes(stackOn.toLowerCase())) {
-            abilityState[name].stackCount++;
-            let buffMatch = ablJson.buff?.match(/basic_dmg:\+(\d+)/);
-            let bonus = buffMatch ? parseInt(buffMatch[1]) * abilityState[name].stackCount : 400 * abilityState[name].stackCount;
-            let ck = cardKey(execTeam, actorIdx);
-            if (!statBuffs[ck]) statBuffs[ck] = { dmgBonus: 0, turnsLeft: 999 };
-            statBuffs[ck].dmgBonus = bonus;
-            logMsg2('sys', 'System', `🔥 ${shortName(name)} ABILITY — Hit! +${bonus} DMG total`);
-        }
-    }
+  if (!card || !sk) return;
+  let name = getCardName(card);
+  if (!abilityState[name]) abilityState[name] = { stackCount: 0 };
+  
+  let ablJson;
+  try { ablJson = typeof card.Ability?.Logic_JSON === 'string' ? JSON.parse(card.Ability.Logic_JSON) : card.Ability?.Logic_JSON; } catch (e) { return; }
+  
+  if (ablJson?.trigger === 'ON_SKILL_HIT' && ablJson?.effects?.includes('STACKING_DMG_BUFF')) {
+      let stackOn = ablJson.stack_on || '';
+      if (sk.Name === stackOn || sk.Name.toLowerCase().includes(stackOn.toLowerCase())) {
+          abilityState[name].stackCount++;
+          let buffMatch = ablJson.buff?.match(/basic_dmg:\+(\d+)/);
+          let bonus = buffMatch ? parseInt(buffMatch[1]) * abilityState[name].stackCount : 400 * abilityState[name].stackCount;
+          let ck = cardKey(execTeam, actorIdx);
+          if (!statBuffs[ck]) statBuffs[ck] = { dmgBonus: 0, turnsLeft: 999 };
+          statBuffs[ck].dmgBonus = bonus;
+          logMsg2('sys', 'System', `🔥 ${shortName(name)} ABILITY — Hit! +${bonus} DMG total`);
+      }
+  }
 }
 
 function getConditionalBonusDmg(card, targetCard) {
-    let ablJson;
-    try {
-        ablJson = typeof card.Ability?.Logic_JSON === 'string' ? JSON.parse(card.Ability.Logic_JSON) : card.Ability?.Logic_JSON;
-    } catch (e) {
-        return 0;
-    }
-    
-    if (ablJson?.effects?.includes('CONDITIONAL_BONUS_DMG_VS_TEAM')) {
-        let tTeam = (targetCard?.UI_Frontend_Data?.Team || '').toLowerCase();
-        let condition = (ablJson.condition || '').toLowerCase();
-        if (condition && tTeam.includes(condition.split(' ')[0])) return 300;
-    }
-    
-    if (ablJson?.effects?.includes('CONDITIONAL_BONUS_DMG_STAT') && card._conditionalDmgStat) {
-        let atkSpd = getCardSPD(card), defSpd = getCardSPD(targetCard);
-        if (atkSpd > defSpd) return 200;
-    }
-    return 0;
+  let ablJson;
+  try { ablJson = typeof card.Ability?.Logic_JSON === 'string' ? JSON.parse(card.Ability.Logic_JSON) : card.Ability?.Logic_JSON; } catch (e) { return 0; }
+  
+  if (ablJson?.effects?.includes('CONDITIONAL_BONUS_DMG_VS_TEAM')) {
+      let tTeam = (targetCard?.UI_Frontend_Data?.Team || '').toLowerCase();
+      let condition = (ablJson.condition || '').toLowerCase();
+      if (condition && tTeam.includes(condition.split(' ')[0])) return 300;
+  }
+  if (ablJson?.effects?.includes('CONDITIONAL_BONUS_DMG_STAT') && card._conditionalDmgStat) {
+      if (getCardSPD(card) > getCardSPD(targetCard)) return 200;
+  }
+  return 0;
 }
 
 function checkPreventKO(card, team) {
-    if (!card) return false;
-    let ablJson;
-    try {
-        ablJson = typeof card.Ability?.Logic_JSON === 'string' ? JSON.parse(card.Ability.Logic_JSON) : card.Ability?.Logic_JSON;
-    } catch (e) {
-        return false;
-    }
-    
-    if (ablJson?.effects?.includes('PREVENT_KO_UNTIL_LAST')) {
-        let aliveTeammates = team.filter(c => c && !c.isDead && c !== card).length;
-        if (aliveTeammates > 0) {
-            card.currentHp = 1;
-            logMsg2('sys', 'System', `${shortName(getCardName(card))} ABILITY — Cannot drop below 1HP while teammates alive!`);
-            return true;
-        }
-    }
-    return false;
+  if (!card) return false;
+  let ablJson;
+  try { ablJson = typeof card.Ability?.Logic_JSON === 'string' ? JSON.parse(card.Ability.Logic_JSON) : card.Ability?.Logic_JSON; } catch (e) { return false; }
+  
+  if (ablJson?.effects?.includes('PREVENT_KO_UNTIL_LAST')) {
+      if (team.filter(c => c && !c.isDead && c !== card).length > 0) {
+          card.currentHp = 1;
+          logMsg2('sys', 'System', `${shortName(getCardName(card))} ABILITY — Cannot drop below 1HP while teammates alive!`);
+          return true;
+      }
+  }
+  return false;
 }
 
 function getForcedTarget(attackerCard, defRoster) {
-    for (let [i, c] of defRoster.entries()) {
-        if (c && !c.isDead && c._forcedTarget) {
-            return { card: c, idx: i };
-        }
-    }
-    return null;
+  for (let [i, c] of defRoster.entries()) {
+      if (c && !c.isDead && c._forcedTarget) return { card: c, idx: i };
+  }
+  return null;
 }
 
-// ==================== DEAD REPLACEMENTS ====================
 async function handleDeadReplacements(teamStr, activeArr, benchArr) {
-    for (let i = 0; i < activeArr.length; i++) {
-        if (activeArr[i] && activeArr[i].isDead) {
-            let dR = activeArr[i].battleRole || getCardAllPos(activeArr[i])[0] || 'PG';
-            let vB = benchArr.map((c, idx) => ({ c, idx })).filter(b => b.c && !b.c.isDead && getCardAllPos(b.c).includes(dR));
-            if (vB.length > 0) {
-                let r = vB[0];
-                logMsg2('sys', 'System', `${shortName(getCardName(r.c))} enters the game!`);
-                let t = activeArr[i];
-                activeArr[i] = benchArr[r.idx];
-                benchArr[r.idx] = t;
-                activeArr[i].battleRole = dR;
-                if (!activeArr[i].currentHp) activeArr[i].currentHp = getCardHP(activeArr[i]);
-                applySynergyAbilities(activeArr[i], activeArr);
-                renderArena();
-                renderBenchStacks();
-                await delay(500);
-            }
-        }
-    }
+  for (let i = 0; i < activeArr.length; i++) {
+      if (activeArr[i] && activeArr[i].isDead) {
+          let dR = activeArr[i].battleRole || getCardAllPos(activeArr[i])[0] || 'PG';
+          let vB = benchArr.map((c, idx) => ({ c, idx })).filter(b => b.c && !b.c.isDead && getCardAllPos(b.c).includes(dR));
+          if (vB.length > 0) {
+              let r = vB[0];
+              logMsg2('sys', 'System', `${shortName(getCardName(r.c))} enters the game!`);
+              let t = activeArr[i];
+              activeArr[i] = benchArr[r.idx];
+              benchArr[r.idx] = t;
+              activeArr[i].battleRole = dR;
+              if (!activeArr[i].currentHp) activeArr[i].currentHp = getCardHP(activeArr[i]);
+              applySynergyAbilities(activeArr[i], activeArr);
+              renderArena();
+              renderBenchStacks();
+              await delay(500);
+          }
+      }
+  }
 }
-  
+
 // ==================== NEW LOGIC-READY CARDS DB ====================
 const CARDS = [
   {
