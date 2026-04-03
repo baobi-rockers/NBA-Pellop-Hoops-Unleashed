@@ -1708,30 +1708,81 @@ function onCardClick(team, idx, e) {
 }
 
 function showActionPanels(c, idx) {
-  let name = shortName(getCardName(c));
-  $('action-card-name').textContent = name;
-  let btns = [];
-  
-  if (playerBench.filter(x => !x.isDead).length > 0) {
-      btns.push(`<button class="action-btn action-btn-swap" onclick="selectAction(${idx},'swap',0)">SWAP</button>`);
-  }
-  btns.push(`<button class="action-btn action-btn-pass" onclick="selectAction(${idx},'pass',0)">PASS</button>`);
-  btns.push(`<div style="width:1px;height:30px;background:rgba(255,255,255,0.15);margin:0 4px;"></div>`);
-  btns.push(`<button class="action-btn action-btn-basic" onclick="selectAction(${idx},'basic',0)">BASIC ATTACK<br><span class="action-btn-dmg">(${getEffectiveDMG(c)})</span></button>`);
-  
-  (c.Skills || []).forEach((sk, sIdx) => {
-      if (!canPlayerSelectSkill(sk)) return;
-      let usesLeft = sk._usesLeft !== undefined ? sk._usesLeft : (sk.Logic_Engine?.max_uses || 1);
-      if (usesLeft <= 0) return;
-      btns.push(`<button class="action-btn action-btn-skill" onclick="selectAction(${idx},'skill',${sIdx})">${sk.Name.toUpperCase()}<br><span class="action-btn-dmg">(${sk.Display_DMG})</span></button>`);
-  });
-  
-  let ck = cardKey('player', idx);
-  if (stolenSkills[ck]) {
-      stolenSkills[ck].forEach((ssk, ssIdx) => {
-          btns.push(`<button class="action-btn action-btn-skill" style="border:1px solid rgba(200,160,80,0.4);" onclick="selectAction(${idx},'stolen-skill',${ssIdx})">[STOLEN] ${ssk.Name.toUpperCase()}<br><span class="action-btn-dmg">(${ssk.Display_DMG})</span></button>`);
-      });
-  }
+    let name = shortName(getCardName(c));
+    $('action-card-name').textContent = name;
+    let btns = [];
+    
+    // Core Buttons
+    if (playerBench.filter(x => !x.isDead).length > 0) {
+        btns.push(`<button class="action-btn action-btn-swap" onclick="selectAction(${idx},'swap',0)">SWAP</button>`);
+    }
+    btns.push(`<button class="action-btn action-btn-pass" onclick="selectAction(${idx},'pass',0)">PASS</button>`);
+    btns.push(`<div style="width:1px;height:30px;background:rgba(255,255,255,0.15);margin:0 4px;"></div>`);
+    btns.push(`<button class="action-btn action-btn-basic" onclick="selectAction(${idx},'basic',0)">BASIC ATTACK<br><span class="action-btn-dmg">(${getEffectiveDMG(c)})</span></button>`);
+    
+    // --- BULLETPROOF SKILL LOADER ---
+    let skillsArr = c.Skills;
+    
+    // Fallback 1: If Excel didn't group them into a 'Skills' array, build it dynamically
+    if (!skillsArr || !Array.isArray(skillsArr)) {
+        skillsArr = [];
+        for (let i = 1; i <= 4; i++) {
+            let sCol = c[`S${i} JSON`] || c[`S${i}_JSON`];
+            if (sCol) {
+                try {
+                    let parsed = typeof sCol === 'string' ? JSON.parse(sCol) : sCol;
+                    skillsArr.push({ Name: parsed.Name || `Skill ${i}`, Logic_Engine: parsed, Display_DMG: parsed.Display_DMG || '0' });
+                } catch(e) {}
+            }
+        }
+        c.Skills = skillsArr; // Cache it so selectAction can find it later
+    }
+
+    // Render Skills
+    skillsArr.forEach((sk, sIdx) => {
+        if (!sk) return;
+        
+        // Fallback 2: Safely parse Logic Engine in case it's a raw string
+        let json = {};
+        if (typeof sk.Logic_Engine === 'string') {
+            try { json = JSON.parse(sk.Logic_Engine); } catch(e) {}
+        } else if (sk.Logic_Engine) {
+            json = sk.Logic_Engine;
+        }
+        
+        // Fallback 3: Initialize uses if startBattle missed it
+        if (sk._usesLeft === undefined) {
+            sk._usesLeft = json.max_uses !== undefined ? json.max_uses : 1;
+        }
+        
+        // Visibility Check
+        if (sk.S_Can_Select === false || sk.S_Can_Select === 'False' || json.S_Can_Select === false) return;
+        if (json.timing === 'REACTIVE' || sk.S_Reactive === true || sk.S_Reactive === 'True') return;
+        
+        // Uses Check
+        if (sk._usesLeft <= 0) return;
+        
+        // Fallback 4: Safely get name and DMG (prevents fatal .toUpperCase() crash)
+        let skName = sk.Name || json.Name || `Skill ${sIdx + 1}`;
+        let dmgStr = sk.Display_DMG || json.Display_DMG || '0';
+        
+        btns.push(`<button class="action-btn action-btn-skill" onclick="selectAction(${idx},'skill',${sIdx})">${String(skName).toUpperCase()}<br><span class="action-btn-dmg">(${dmgStr})</span></button>`);
+    });
+    
+    // Render Stolen Skills
+    let ck = cardKey('player', idx);
+    if (stolenSkills[ck]) {
+        stolenSkills[ck].forEach((ssk, ssIdx) => {
+            let skName = ssk.Name || 'Stolen Skill';
+            btns.push(`<button class="action-btn action-btn-skill" style="border:1px solid rgba(200,160,80,0.4);" onclick="selectAction(${idx},'stolen-skill',${ssIdx})">[STOLEN] ${String(skName).toUpperCase()}<br><span class="action-btn-dmg">(${ssk.Display_DMG || '0'})</span></button>`);
+        });
+    }
+    
+    // Inject and show
+    $('action-btns-row').innerHTML = btns.join('');
+    let w = $('action-panels-wrapper');
+    if (w) w.classList.add('visible');
+}
   
   $('action-btns-row').innerHTML = btns.join('');
   let w = $('action-panels-wrapper');
