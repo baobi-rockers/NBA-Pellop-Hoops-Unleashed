@@ -616,53 +616,43 @@ function isInnerRegionOfCard(e,el){if(!el)return true;const rect=el.getBoundingC
 function handleTooltipHover(e,name,el){if(isInnerRegionOfCard(e,el)){if(!$('tooltip').classList.contains('visible'))showTooltip(e,name);positionTooltip(e);}else{hideTooltip();}}
 function positionTooltipIfInnerCard(e,el){if(!isInnerRegionOfCard(e,el)){hideTooltip();return;}positionTooltip(e);}
 
-// ==================== DRAG SYSTEM (Cleaned & Fixed) ====================
-// Use HTML5 drag & drop as primary — physDrag only as fallback for better feel
-
-let isDragging = false;
-let draggedName = '';
-
-function initCardDrag(cardEl, cardName, imgSrc) {
-  if (!cardEl) return;
-
-  // HTML5 Drag & Drop (most reliable)
-  cardEl.draggable = true;
-  cardEl.ondragstart = (e) => {
-    hideTooltip();
-    draggedName = cardName;
-    e.dataTransfer.setData('text/plain', cardName);
-    e.dataTransfer.effectAllowed = 'move';
-
-    // Optional ghost image
-    const ghost = $('drag-ghost');
-    const ghostImg = $('drag-ghost-img');
-    if (ghostImg) ghostImg.src = imgSrc || getImgUrl(getCardImg(CARDS.find(c => getCardName(c) === cardName)), cardName);
-    if (ghost) e.dataTransfer.setDragImage(ghost, 55, 77);
-
-    cardEl.classList.add('dragging');
-  };
-
-  cardEl.ondragend = () => {
-    cardEl.classList.remove('dragging');
-    draggedName = '';
-  };
-
-  // Touch support (mobile)
-  cardEl.addEventListener('touchstart', (e) => {
-    if (e.touches.length > 1) return;
-    hideTooltip();
-    draggedName = cardName;
-    cardEl.classList.add('dragging');
-  }, { passive: true });
+// ==================== PHYSICS DRAG ====================
+let _physDragging=false,_physDragName='',_physDragImg='',_snapTarget=null,_physDragMoved=false,_physStartX=0,_physStartY=0,_suppressNextClick=false;
+function initPhysDrag(el,name,imgSrc){
+  el.addEventListener('mousedown',(e)=>{
+    if(e.button!==0)return;e.preventDefault();
+    _physDragging=true;_physDragMoved=false;_physDragName=name;_physDragImg=imgSrc;
+    _physStartX=e.clientX;_physStartY=e.clientY;
+    let ghost=$('drag-ghost');let ghostImg=$('drag-ghost-img');
+    if(ghostImg)ghostImg.src=imgSrc;
+    ghost.style.display='block';ghost.style.left=(e.clientX-55)+'px';ghost.style.top=(e.clientY-77)+'px';
+    el.classList.add('dragging');document.body.style.userSelect='none';
+  });
 }
-
+document.addEventListener('mousemove',(e)=>{
+  if(!_physDragging)return;
+  let dx=e.clientX-_physStartX,dy=e.clientY-_physStartY;
+  if(Math.abs(dx)>5||Math.abs(dy)>5)_physDragMoved=true;
+  let ghost=$('drag-ghost');ghost.style.left=(e.clientX-55)+'px';ghost.style.top=(e.clientY-77)+'px';
+  let over=document.elementFromPoint(e.clientX,e.clientY);let slot=over?.closest('[data-slot]');
+  if(slot){ghost.style.transform='rotate(0deg) scale(0.93)';_snapTarget=slot;}
+  else{ghost.style.transform='rotate(3deg) scale(1.05)';_snapTarget=null;}
+});
+document.addEventListener('mouseup',(e)=>{
+  if(!_physDragging)return;
+  let justDragged=_physDragMoved;
+  _physDragging=false;_physDragMoved=false;
+  let ghost=$('drag-ghost');ghost.style.display='none';ghost.style.left='-9999px';document.body.style.userSelect='';
+  document.querySelectorAll('.dragging').forEach(el=>el.classList.remove('dragging'));
+  if(_snapTarget){let ev=new CustomEvent('physdrop',{bubbles:true,detail:{name:_physDragName}});_snapTarget.dispatchEvent(ev);_snapTarget=null;}
+  if(justDragged)_suppressNextClick=true;
+});
+                          
 // ==================== HTML5 DRAG & DROP ====================
 function handleDragStart(e,name){
-  hideTooltip();e.dataTransfer.setData('text/plain',name);e.dataTransfer.effectAllowed='move';
-  let ghostImg=$('drag-ghost-img');
-  let c=typeof CARDS!=='undefined'?CARDS.find(x=>getCardName(x)===name):null;
-  if(c&&ghostImg)ghostImg.src=getImgUrl(getCardImg(c),name);
-  let ghost=$('drag-ghost');if(ghost)e.dataTransfer.setDragImage(ghost,-9999,-9999);
+  hideTooltip();
+  e.dataTransfer.setData('text/plain',name);
+  e.dataTransfer.effectAllowed='move';
   setTimeout(()=>{if(e.target&&e.target.classList)e.target.classList.add('dragging');},0);
 }
 function handleDragEnd(e){if(e.target&&e.target.classList)e.target.classList.remove('dragging');}
@@ -722,97 +712,48 @@ function goDraft(){
   let panel=$('draft-side-panel');if(panel)panel.classList.remove('open');
   renderDraftSlots();filterDraftGrid();
 }
-function filterDraftGrid() {
-  let q = ($('draft-search')?.value || '').toLowerCase();
-  let sort = $('draft-sort')?.value || 'name';
-
-  let list = typeof CARDS !== 'undefined' ? CARDS.filter(c => c?.UI_Frontend_Data) : [];
-
-  list = list.filter(c => {
-    let n = (getCardName(c) || "").toLowerCase();
-    let t = (c.UI_Frontend_Data.Team || "").toLowerCase();
-    return (!q || n.includes(q) || t.includes(q)) && !isCardInDraft(c);
+function filterDraftGrid(){
+  let q=($('draft-search')?.value||'').toLowerCase(),sort=$('draft-sort')?.value||'name';
+  let list=typeof CARDS!=='undefined'?CARDS.filter(c=>c?.UI_Frontend_Data):[];
+  list=list.filter(c=>(!q||(getCardName(c)||"").toLowerCase().includes(q)||(c.UI_Frontend_Data.Team||"").toLowerCase().includes(q)));
+  if(sort==='hp')list.sort((a,b)=>getCardHP(b)-getCardHP(a));else if(sort==='dmg')list.sort((a,b)=>getCardDMG(b)-getCardDMG(a));else if(sort==='spd')list.sort((a,b)=>getCardSPD(b)-getCardSPD(a));else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
+  let grid=$('draft-grid');
+  grid.innerHTML='';
+  list.forEach(c=>{
+    let n=getCardName(c);
+    let inD=isCardInDraft(c);
+    let isSelected=(n===currentDraftPanelCard);
+    let imgSrc=getImgUrl(getCardImg(c),n);
+    let div=document.createElement('div');
+    div.className=`compact-card ${inD?'in-draft':''} ${isSelected?'selected-panel':''}`;
+    if(!inD){
+      div.onclick=(e)=>{
+        if(_suppressNextClick){_suppressNextClick=false;e.stopPropagation();return;}
+        toggleExpand(n,'draft');
+      };
+      initPhysDrag(div,n,imgSrc);
+    }
+    div.onmousemove=(ev)=>handleTooltipHover(ev,n,div);
+    div.onmouseleave=hideTooltip;
+    div.innerHTML=`<div class="card-img-sm"><img src="${imgSrc}" onerror="handleImgError(this,'${escapeJS(n)}')"></div>`;
+    grid.appendChild(div);
   });
-
-  if (sort === 'hp') list.sort((a, b) => getCardHP(b) - getCardHP(a));
-  else if (sort === 'dmg') list.sort((a, b) => getCardDMG(b) - getCardDMG(a));
-  else if (sort === 'spd') list.sort((a, b) => getCardSPD(b) - getCardSPD(a));
-  else list.sort((a, b) => getCardName(a).localeCompare(getCardName(b)));
-
-  const gridHTML = list.map(c => {
-    let n = getCardName(c);
-    let safeN = escapeJS(n);
-    let imgSrc = getImgUrl(getCardImg(c), n);
-    let isSelected = (n === currentDraftPanelCard);
-
-    return `
-      <div class="compact-card ${isSelected ? 'selected-panel' : ''}" 
-           draggable="true"
-           ondragstart="handleDragStart(event, '${safeN}')"
-           ondragend="handleDragEnd(event)"
-           onclick="toggleExpand('${safeN}', 'draft')"
-           onmousemove="handleTooltipHover(event, '${safeN}', this)"
-           onmouseleave="hideTooltip()">
-        <div class="card-img-sm">
-          <img src="${imgSrc}" onerror="handleImgError(this, '${safeN}')">
-        </div>
-      </div>`;
-  }).join('');
-
-  $('draft-grid').innerHTML = gridHTML;
-
-  // Re-attach drag listeners after DOM update (critical fix)
-  setTimeout(() => {
-    document.querySelectorAll('#draft-grid .compact-card[draggable="true"]').forEach(el => {
-      const name = el.onclick.toString().match(/toggleExpand\('([^']+)'/);
-      if (name && name[1]) {
-        const cardData = CARDS.find(c => getCardName(c) === name[1]);
-        if (cardData) {
-          initCardDrag(el, name[1], getImgUrl(getCardImg(cardData), name[1]));
-        }
-      }
-    });
-  }, 10);
 }
 function isCardInDraft(c){let n=getCardName(c);return POSITIONS.some(p=>getCardName(draftSquad[p][0])===n||getCardName(draftSquad[p][1])===n);}
-function renderDraftSlots() {
-  let html = '';
-
-  [0,1].forEach(idx => {
-    POSITIONS.forEach(pos => {
-      let c = draftSquad[pos][idx];
-      let cn = c ? getCardName(c) : null;
-
-      html += `
-        <div id="dslot-${pos}-${idx}" 
-             class="slot-card slot-${pos} ${c ? 'filled' : ''}" 
-             data-slot="${pos}-${idx}"
-             ondragover="handleDragOver(event)" 
-             ondragleave="handleDragLeave(event)" 
-             ondrop="dropDraft(event,'${pos}',${idx})">
-          ${c ? `
-            <div class="slot-pos">${pos}</div>
-            <div class="slot-name">${getDBShortName(cn)}</div>
-            <button class="remove-slot" onclick="removeDraft('${pos}',${idx}); event.stopImmediatePropagation();">✕</button>
-          ` : `
-            <div class="slot-pos">${pos}</div>
-          `}
-        </div>`;
+function renderDraftSlots(){
+  let html='';[0,1].forEach(idx=>{POSITIONS.forEach(pos=>{let c=draftSquad[pos][idx],cn=c?getCardName(c):null;html+=`<div id="dslot-${pos}-${idx}" class="slot-card slot-${pos} ${c?'filled':''}" data-slot="${pos}-${idx}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropDraft(event,'${pos}',${idx})">${c?`<div class="slot-pos">${pos}</div><div class="slot-name">${getDBShortName(cn)}</div><button class="remove-slot" onclick="removeDraft('${pos}',${idx})">✕</button>`:`<div class="slot-pos">${pos}</div>`}</div>`;});});
+  $('draft-slots-vertical').innerHTML=html;
+  // Attach physdrop to all draft slots
+  document.querySelectorAll('#draft-slots-vertical [data-slot]').forEach(slot=>{
+    slot.addEventListener('physdrop',(e)=>{
+      let parts=slot.dataset.slot.split('-');let pos=parts[0],idx=parseInt(parts[1]);
+      let c=CARDS.find(x=>getCardName(x)===e.detail.name);if(!c||isCardInDraft(c))return;
+      if(!getCardAllPos(c).includes(pos))return triggerInvalidDrop(slot);
+      draftSquad[pos][idx]=c;renderDraftSlots();filterDraftGrid();
     });
   });
-
-  $('draft-slots-vertical').innerHTML = html;
-
-  // Count cards
-  let cnt = 0;
-  POSITIONS.forEach(p => {
-    [0,1].forEach(i => {
-      if (draftSquad[p][i]) cnt++;
-    });
-  });
-
-  $('draft-count-lbl').textContent = `${cnt}/10`;
-  $('draft-confirm-btn').disabled = (cnt < 10);
+  let cnt=0;POSITIONS.forEach(p=>[0,1].forEach(i=>{if(draftSquad[p][i])cnt++;}));
+  $('draft-count-lbl').textContent=`${cnt}/10`;$('draft-confirm-btn').disabled=(cnt<10);
 }
 function dropDraft(e,pos,idx){
   e.preventDefault();if(e.currentTarget&&e.currentTarget.classList)e.currentTarget.classList.remove('drag-over');
@@ -878,14 +819,11 @@ function renderSetupBench(){
     if(Object.values(activeLineup).some(ac=>ac&&getCardName(ac)===getCardName(c)))return;
     let n=getCardName(c),safeN=escapeJS(n),imgSrc=getImgUrl(getCardImg(c),n);
     let div=document.createElement('div');
-    div.className='bench-card-item';div.draggable=true;
+    div.className='bench-card-item';
     div.innerHTML=`<img src="${imgSrc}" onerror="handleImgError(this,'${safeN}')">`;
-    div.ondragstart=(e)=>handleDragStart(e,n);
-    div.ondragend=handleDragEnd;
     div.onmousemove=(ev)=>handleTooltipHover(ev,n,div);
     div.onmouseleave=hideTooltip;
     grid.appendChild(div);
-    // FIX: initPhysDrag on bench card after it's in the DOM so physdrop on setup slots works
     initPhysDrag(div,n,imgSrc);
   });
 }
