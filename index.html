@@ -783,7 +783,7 @@ function rejectDraftSlot(slotEl){
   let pEl=slotEl.querySelector('.slot-pos');
   if(pEl){
     let orig=pEl.textContent;
-    pEl.textContent='INVALID POSITION';pEl.style.color='#FF0000';pEl.style.fontSize='0.5rem';pEl.style.fontWeight='900';pEl.style.letterSpacing='0.3px';
+    pEl.textContent='INVALID';pEl.style.color='#FF0000';pEl.style.fontSize='0.7rem';pEl.style.fontWeight='900';pEl.style.letterSpacing='0.3px';
     setTimeout(()=>{pEl.textContent=orig;pEl.style.color='';pEl.style.fontSize='';pEl.style.fontWeight='';pEl.style.letterSpacing='';slotEl.classList.remove('reject-shake');},800);
   }
 }
