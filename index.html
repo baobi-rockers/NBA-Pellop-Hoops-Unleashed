@@ -294,6 +294,33 @@
     @keyframes buffPop { 0%{opacity:0;transform:scale(0.7);} 15%{opacity:1;transform:scale(1.08);} 75%{opacity:1;transform:scale(1);} 100%{opacity:0;transform:scale(0.9) translateY(-20px);} }
     .buff-popup-title { font-family:'Orbitron',sans-serif; color:var(--gold-light); font-size:1rem; font-weight:900; letter-spacing:2px; }
     .buff-popup-detail { color: rgba(255,255,255,0.8); font-size:0.85rem; margin-top:6px; }
+
+    /* === PRECISION DRAG EFFECTS === */
+.slot-card { box-shadow: inset 0 2px 6px rgba(0,0,0,0.06); }
+.slot-card.morph-target {
+  border-color: var(--accent) !important;
+  border-style: solid !important;
+  background: rgba(232,98,26,0.1) !important;
+  box-shadow: 0 0 18px rgba(232,98,26,0.45), inset 0 0 8px rgba(232,98,26,0.12) !important;
+}
+.setup-slot-card.proximity-glow {
+  border-color: var(--accent) !important;
+  border-style: solid !important;
+  box-shadow: 0 0 28px rgba(232,98,26,0.55), inset 0 0 14px rgba(232,98,26,0.1) !important;
+}
+@keyframes snapElastic {
+  0% { transform: scale(0.94); }
+  55% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+.snap-lock { animation: snapElastic 0.32s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+@keyframes slotSnapSettle {
+  0% { transform: scale(0.88); opacity: 0.7; }
+  50% { transform: scale(1.06); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.slot-snap-settle { animation: slotSnapSettle 0.35s ease-out forwards; }
+    
   </style>
 </head>
 <body>
@@ -616,48 +643,114 @@ function isInnerRegionOfCard(e,el){if(!el)return true;const rect=el.getBoundingC
 function handleTooltipHover(e,name,el){if(isInnerRegionOfCard(e,el)){if(!$('tooltip').classList.contains('visible'))showTooltip(e,name);positionTooltip(e);}else{hideTooltip();}}
 function positionTooltipIfInnerCard(e,el){if(!isInnerRegionOfCard(e,el)){hideTooltip();return;}positionTooltip(e);}
 
-// ==================== PHYSICS DRAG ====================
-let _physDragging=false,_physDragName='',_physDragImg='',_snapTarget=null,_physDragMoved=false,_physStartX=0,_physStartY=0,_suppressNextClick=false;
-function initPhysDrag(el,name,imgSrc){
-  el.addEventListener('mousedown',(e)=>{
+// ==================== UNIFIED PRECISION DRAG ====================
+let _drag = {
+  active:false, moved:false, startX:0, startY:0,
+  name:'', imgSrc:'', context:'', // 'draft' or 'setup'
+  el:null, ghost:null, origW:0, origH:0,
+  suppressClick:false, nearSlot:null, slotDist:Infinity
+};
+
+function _mkGhost(w,h,br,shadow,scale,extra){
+  let g=document.createElement('div');
+  g.id='active-drag-ghost';
+  g.style.cssText=`position:fixed;pointer-events:none;z-index:99999;width:${w}px;height:${h}px;border-radius:${br}px;overflow:hidden;box-shadow:${shadow};transform:scale(${scale});background:#1a1a2e;opacity:1;${extra||''}`;
+  g.innerHTML=`<img src="${_drag.imgSrc}" style="width:100%;height:100%;object-fit:cover;display:block;">`;
+  document.body.appendChild(g);return g;
+}
+function _killGhost(){
+  let g=document.getElementById('active-drag-ghost');if(g)g.remove();
+  document.querySelectorAll('.morph-target').forEach(e=>e.classList.remove('morph-target'));
+  document.querySelectorAll('.proximity-glow').forEach(e=>e.classList.remove('proximity-glow'));
+}
+function _posGhost(cx,cy){
+  if(!_drag.ghost)return;
+  let w=parseFloat(_drag.ghost.style.width),h=parseFloat(_drag.ghost.style.height);
+  _drag.ghost.style.left=(cx-w/2)+'px';_drag.ghost.style.top=(cy-h/2)+'px';
+}
+function _nearestSlot(cx,cy){
+  let sel=_drag.context==='draft'?'#draft-slots-vertical [data-slot]':'#setup-slots [data-slot]';
+  let slots=document.querySelectorAll(sel),best=null,bestD=Infinity;
+  slots.forEach(s=>{let r=s.getBoundingClientRect(),sx=r.left+r.width/2,sy=r.top+r.height/2,d=Math.hypot(cx-sx,cy-sy);if(d<bestD){bestD=d;best=s;}});
+  return{slot:best,dist:bestD};
+}
+
+function initDraftDrag(el,name,imgSrc){
+  el.addEventListener('mousedown',e=>{
     if(e.button!==0)return;e.preventDefault();
-    _physDragging=true;_physDragMoved=false;_physDragName=name;_physDragImg=imgSrc;
-    _physStartX=e.clientX;_physStartY=e.clientY;
-    let ghost=$('drag-ghost');let ghostImg=$('drag-ghost-img');
-    if(ghostImg)ghostImg.src=imgSrc;
-    ghost.style.display='block';ghost.style.left=(e.clientX-55)+'px';ghost.style.top=(e.clientY-77)+'px';
-    el.classList.add('dragging');document.body.style.userSelect='none';
+    Object.assign(_drag,{active:true,moved:false,startX:e.clientX,startY:e.clientY,name,imgSrc,context:'draft',el,nearSlot:null,slotDist:Infinity});
+    _drag.origW=el.offsetWidth;_drag.origH=el.offsetHeight;
+    _drag.ghost=_mkGhost(_drag.origW,_drag.origH,10,'0 20px 40px rgba(0,0,0,0.4)',1.05,
+      'transition:transform 0.1s ease-out,border-radius 0.1s ease-out,width 0.1s ease-out,height 0.1s ease-out,box-shadow 0.1s ease-out;');
+    _posGhost(e.clientX,e.clientY);el.classList.add('dragging');document.body.style.userSelect='none';
   });
 }
-document.addEventListener('mousemove',(e)=>{
-  if(!_physDragging)return;
-  let dx=e.clientX-_physStartX,dy=e.clientY-_physStartY;
-  if(Math.abs(dx)>5||Math.abs(dy)>5)_physDragMoved=true;
-  let ghost=$('drag-ghost');ghost.style.left=(e.clientX-55)+'px';ghost.style.top=(e.clientY-77)+'px';
-  let over=document.elementFromPoint(e.clientX,e.clientY);let slot=over?.closest('[data-slot]');
-  if(slot){ghost.style.transform='rotate(0deg) scale(0.93)';_snapTarget=slot;}
-  else{ghost.style.transform='rotate(3deg) scale(1.05)';_snapTarget=null;}
-});
-document.addEventListener('mouseup',(e)=>{
-  if(!_physDragging)return;
-  let justDragged=_physDragMoved;
-  _physDragging=false;_physDragMoved=false;
-  let ghost=$('drag-ghost');ghost.style.display='none';ghost.style.left='-9999px';document.body.style.userSelect='';
-  document.querySelectorAll('.dragging').forEach(el=>el.classList.remove('dragging'));
-  if(_snapTarget){let ev=new CustomEvent('physdrop',{bubbles:true,detail:{name:_physDragName}});_snapTarget.dispatchEvent(ev);_snapTarget=null;}
-  if(justDragged)_suppressNextClick=true;
-});
-                          
-// ==================== HTML5 DRAG & DROP ====================
-function handleDragStart(e,name){
-  hideTooltip();
-  e.dataTransfer.setData('text/plain',name);
-  e.dataTransfer.effectAllowed='move';
-  setTimeout(()=>{if(e.target&&e.target.classList)e.target.classList.add('dragging');},0);
+function initSetupDrag(el,name,imgSrc){
+  el.addEventListener('mousedown',e=>{
+    if(e.button!==0)return;e.preventDefault();
+    Object.assign(_drag,{active:true,moved:false,startX:e.clientX,startY:e.clientY,name,imgSrc,context:'setup',el,nearSlot:null,slotDist:Infinity});
+    _drag.origW=el.offsetWidth;_drag.origH=el.offsetHeight;
+    _drag.ghost=_mkGhost(_drag.origW,_drag.origH,10,'0 12px 28px rgba(0,0,0,0.35)',1.0,
+      'transition:transform 0.12s ease,box-shadow 0.12s ease;');
+    _posGhost(e.clientX,e.clientY);el.classList.add('dragging');document.body.style.userSelect='none';
+  });
 }
-function handleDragEnd(e){if(e.target&&e.target.classList)e.target.classList.remove('dragging');}
-function handleDragOver(e){e.preventDefault();if(e.currentTarget&&e.currentTarget.classList)e.currentTarget.classList.add('drag-over');}
-function handleDragLeave(e){if(e.currentTarget&&e.currentTarget.classList)e.currentTarget.classList.remove('drag-over');}
+
+document.addEventListener('mousemove',e=>{
+  if(!_drag.active)return;
+  let dx=e.clientX-_drag.startX,dy=e.clientY-_drag.startY;
+  if(Math.abs(dx)>4||Math.abs(dy)>4)_drag.moved=true;
+  let{slot,dist}=_nearestSlot(e.clientX,e.clientY);
+  let g=_drag.ghost;if(!g)return;
+  document.querySelectorAll('.morph-target').forEach(x=>x.classList.remove('morph-target'));
+  document.querySelectorAll('.proximity-glow').forEach(x=>x.classList.remove('proximity-glow'));
+  if(_drag.context==='draft'){
+    let MR=80,SR=20;
+    if(slot&&dist<MR){
+      let t=Math.max(0,Math.min(1,1-(dist-SR)/(MR-SR)));
+      let sr=slot.getBoundingClientRect(),tw=sr.width,th=sr.height;
+      let cw=_drag.origW+(tw-_drag.origW)*t,ch=_drag.origH+(th-_drag.origH)*t;
+      let cbr=10+(8-10)*t,cs=1.05+(1.0-1.05)*t;
+      let sh=t>0.5?`0 ${Math.round(8-8*t)}px ${Math.round(20-20*t)}px rgba(0,0,0,${(0.4-0.3*t).toFixed(2)})`:'0 20px 40px rgba(0,0,0,0.4)';
+      g.style.width=cw+'px';g.style.height=ch+'px';g.style.borderRadius=cbr+'px';
+      g.style.transform=`scale(${cs})`;g.style.boxShadow=sh;
+      if(dist<=SR)slot.classList.add('morph-target');
+    }else{
+      g.style.width=_drag.origW+'px';g.style.height=_drag.origH+'px';g.style.borderRadius='10px';
+      g.style.transform='scale(1.05)';g.style.boxShadow='0 20px 40px rgba(0,0,0,0.4)';
+    }
+  }else{
+    if(slot&&dist<60){
+      g.style.transform='scale(0.95)';g.style.boxShadow='0 8px 20px rgba(232,98,26,0.3)';
+      slot.classList.add('proximity-glow');
+    }else{
+      g.style.transform='scale(1.0)';g.style.boxShadow='0 12px 28px rgba(0,0,0,0.35)';
+    }
+  }
+  _posGhost(e.clientX,e.clientY);_drag.nearSlot=slot;_drag.slotDist=dist;
+});
+
+document.addEventListener('mouseup',e=>{
+  if(!_drag.active)return;
+  let jd=_drag.moved;_drag.active=false;_drag.moved=false;
+  document.body.style.userSelect='';
+  document.querySelectorAll('.dragging').forEach(x=>x.classList.remove('dragging'));
+  let thresh=_drag.context==='draft'?25:65;
+  if(_drag.nearSlot&&_drag.slotDist<=thresh){
+    let ev=new CustomEvent('physdrop',{bubbles:true,detail:{name:_drag.name,context:_drag.context}});
+    _drag.nearSlot.dispatchEvent(ev);
+    _drag.nearSlot.classList.remove('morph-target','proximity-glow');
+    _drag.nearSlot.classList.add(_drag.context==='setup'?'snap-lock':'slot-snap-settle');
+    setTimeout(()=>{if(_drag.nearSlot)_drag.nearSlot.classList.remove('snap-lock','slot-snap-settle');},400);
+  }
+  _killGhost();if(jd)_drag.suppressClick=true;
+});
+
+// Legacy stubs (kept for safety)
+function handleDragStart(e,name){hideTooltip();e.dataTransfer.setData('text/plain',name);e.dataTransfer.effectAllowed='move';}
+function handleDragEnd(e){}
+function handleDragOver(e){e.preventDefault();}
+function handleDragLeave(e){}
 function triggerInvalidDrop(el){if(!el)return;el.classList.add('shake-invalid');setTimeout(()=>el.classList.remove('shake-invalid'),400);}
 
 // ==================== CATALOGUE ====================
@@ -717,36 +810,31 @@ function filterDraftGrid(){
   let list=typeof CARDS!=='undefined'?CARDS.filter(c=>c?.UI_Frontend_Data):[];
   list=list.filter(c=>(!q||(getCardName(c)||"").toLowerCase().includes(q)||(c.UI_Frontend_Data.Team||"").toLowerCase().includes(q)));
   if(sort==='hp')list.sort((a,b)=>getCardHP(b)-getCardHP(a));else if(sort==='dmg')list.sort((a,b)=>getCardDMG(b)-getCardDMG(a));else if(sort==='spd')list.sort((a,b)=>getCardSPD(b)-getCardSPD(a));else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
-  let grid=$('draft-grid');
-  grid.innerHTML='';
+  let grid=$('draft-grid');grid.innerHTML='';
   list.forEach(c=>{
-    let n=getCardName(c);
-    let inD=isCardInDraft(c);
-    let isSelected=(n===currentDraftPanelCard);
-    let imgSrc=getImgUrl(getCardImg(c),n);
+    let n=getCardName(c),inD=isCardInDraft(c),isSelected=(n===currentDraftPanelCard),imgSrc=getImgUrl(getCardImg(c),n);
     let div=document.createElement('div');
     div.className=`compact-card ${inD?'in-draft':''} ${isSelected?'selected-panel':''}`;
     if(!inD){
-      div.onclick=(e)=>{
-        if(_suppressNextClick){_suppressNextClick=false;e.stopPropagation();return;}
-        toggleExpand(n,'draft');
-      };
-      initPhysDrag(div,n,imgSrc);
+      div.onclick=(e)=>{if(_drag.suppressClick){_drag.suppressClick=false;e.stopPropagation();return;}toggleExpand(n,'draft');};
+      initDraftDrag(div,n,imgSrc);
     }
-    div.onmousemove=(ev)=>handleTooltipHover(ev,n,div);
-    div.onmouseleave=hideTooltip;
+    div.onmousemove=(ev)=>handleTooltipHover(ev,n,div);div.onmouseleave=hideTooltip;
     div.innerHTML=`<div class="card-img-sm"><img src="${imgSrc}" onerror="handleImgError(this,'${escapeJS(n)}')"></div>`;
     grid.appendChild(div);
   });
 }
+  
 function isCardInDraft(c){let n=getCardName(c);return POSITIONS.some(p=>getCardName(draftSquad[p][0])===n||getCardName(draftSquad[p][1])===n);}
 function renderDraftSlots(){
-  let html='';[0,1].forEach(idx=>{POSITIONS.forEach(pos=>{let c=draftSquad[pos][idx],cn=c?getCardName(c):null;html+=`<div id="dslot-${pos}-${idx}" class="slot-card slot-${pos} ${c?'filled':''}" data-slot="${pos}-${idx}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropDraft(event,'${pos}',${idx})">${c?`<div class="slot-pos">${pos}</div><div class="slot-name">${getDBShortName(cn)}</div><button class="remove-slot" onclick="removeDraft('${pos}',${idx})">✕</button>`:`<div class="slot-pos">${pos}</div>`}</div>`;});});
+  let html='';[0,1].forEach(idx=>{POSITIONS.forEach(pos=>{
+    let c=draftSquad[pos][idx],cn=c?getCardName(c):null;
+    html+=`<div id="dslot-${pos}-${idx}" class="slot-card slot-${pos} ${c?'filled':''}" data-slot="${pos}-${idx}">${c?`<div class="slot-pos">${pos}</div><div class="slot-name">${getDBShortName(cn)}</div><button class="remove-slot" onclick="removeDraft('${pos}',${idx})">✕</button>`:`<div class="slot-pos">${pos}</div>`}</div>`;
+  });});
   $('draft-slots-vertical').innerHTML=html;
-  // Attach physdrop to all draft slots
   document.querySelectorAll('#draft-slots-vertical [data-slot]').forEach(slot=>{
     slot.addEventListener('physdrop',(e)=>{
-      let parts=slot.dataset.slot.split('-');let pos=parts[0],idx=parseInt(parts[1]);
+      let parts=slot.dataset.slot.split('-'),pos=parts[0],idx=parseInt(parts[1]);
       let c=CARDS.find(x=>getCardName(x)===e.detail.name);if(!c||isCardInDraft(c))return;
       if(!getCardAllPos(c).includes(pos))return triggerInvalidDrop(slot);
       draftSquad[pos][idx]=c;renderDraftSlots();filterDraftGrid();
@@ -782,11 +870,10 @@ function goSetup(){
 function renderSetupSlots(){
   $('setup-slots').innerHTML=POSITIONS.map(pos=>{
     let c=activeLineup[pos];
-    return`<div id="sslots-${pos}" class="setup-slot-card setup-slot-${pos} ${c?'filled':''}" data-slot="setup-${pos}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropSetup(event,'${pos}')">
+    return`<div id="sslots-${pos}" class="setup-slot-card setup-slot-${pos} ${c?'filled':''}" data-slot="setup-${pos}">
       ${c?`<img src="${getImgUrl(getCardImg(c),getCardName(c))}" onerror="handleImgError(this,'${escapeJS(getCardName(c))}')"><button class="setup-remove" onclick="event.stopPropagation();removeSetupSlot('${pos}')">✕</button>`:`<div class="setup-slot-pos">${pos}</div><div class="setup-slot-drop-text">Drop Here</div>`}
     </div>`;
   }).join('');
-  // FIX: re-attach physdrop listeners to setup slots every render
   document.querySelectorAll('[data-slot^="setup-"]').forEach(slot=>{
     slot.addEventListener('physdrop',(e)=>{
       let pos=slot.dataset.slot.replace('setup-','');
@@ -818,13 +905,11 @@ function renderSetupBench(){
   benchRoster.forEach(c=>{
     if(Object.values(activeLineup).some(ac=>ac&&getCardName(ac)===getCardName(c)))return;
     let n=getCardName(c),safeN=escapeJS(n),imgSrc=getImgUrl(getCardImg(c),n);
-    let div=document.createElement('div');
-    div.className='bench-card-item';
+    let div=document.createElement('div');div.className='bench-card-item';
     div.innerHTML=`<img src="${imgSrc}" onerror="handleImgError(this,'${safeN}')">`;
-    div.onmousemove=(ev)=>handleTooltipHover(ev,n,div);
-    div.onmouseleave=hideTooltip;
+    div.onmousemove=(ev)=>handleTooltipHover(ev,n,div);div.onmouseleave=hideTooltip;
     grid.appendChild(div);
-    initPhysDrag(div,n,imgSrc);
+    initSetupDrag(div,n,imgSrc);
   });
 }
 
