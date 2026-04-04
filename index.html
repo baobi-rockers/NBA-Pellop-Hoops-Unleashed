@@ -1431,26 +1431,19 @@ function startBattle() {
     
     playerScore = 0; enemyScore = 0; turnCount = 1; stagedActions = []; uiState = 'IDLE';
     
-    // 2. Normalize JSON Data & Initialize Skills
+    // 2. Initialize Skills (NO MORE getLogic PARSING NEEDED!)
     [playerActive, enemyActive, playerBench, enemyBench].forEach(team => {
         for (let c of team) {
             if (!c) continue;
             
-            // Safely parse the Ability JSON once
-            if (c.Ability) {
-                c.Ability.Logic_Engine = getLogic(c.Ability.Logic_Engine || c.Ability.Logic_JSON);
-            }
-
-            // Safely parse Skill JSONs and set max uses
+            // Safely initialize max uses directly from the native JSON object
             if (c.Skills) {
                 for (let sk of c.Skills) {
-                    let logic = getLogic(sk.Logic_Engine);
-                    sk.Logic_Engine = logic; // Overwrite string with parsed object
-                    
-                    // Fallback check for max_uses capitalization
+                    let logic = sk.Logic_Engine || {};
+                    // Check for lowercase or uppercase just in case
                     let maxUses = logic.max_uses !== undefined ? logic.max_uses : (logic.Max_Uses !== undefined ? logic.Max_Uses : 1);
                     sk._usesLeft = maxUses;
-                    sk._usesThisTurn = 0; // NEW: Track per-turn limits
+                    sk._usesThisTurn = 0; 
                 }
             }
         }
@@ -1466,13 +1459,14 @@ function startBattle() {
     initAllAbilities(playerBench); initAllAbilities(enemyBench);
     
     // 5. Update UI
-    $('battle-log').innerHTML = `<div class="log-entry"><span class="log-who log-who-sys">System</span><span class="log-detail">Match initiated. First to 8 KOs wins.</span></div>`;
-    $('score-player').textContent = '0';
-    $('score-enemy').textContent = '0';
-    $('checkout-panel').style.display = 'none';
+    let logEl = document.getElementById('battle-log');
+    if(logEl) logEl.innerHTML = `<div class="log-entry"><span class="log-who log-who-sys">System</span><span class="log-detail">Match initiated. First to 8 KOs wins.</span></div>`;
+    document.getElementById('score-player').textContent = '0';
+    document.getElementById('score-enemy').textContent = '0';
+    document.getElementById('checkout-panel').style.display = 'none';
     
     showScreen('battle-screen');
-    initBattleAudio();
+    if (typeof initBattleAudio === 'function') initBattleAudio();
     renderArena();
 }
 
@@ -1758,8 +1752,15 @@ function getSkillCategory(sk){
   return'standard';
 }
 
+f// ==================== BULLETPROOF SKILL SELECTION ====================
 function canSelectOnYourTurn(sk){
-  return['standard','assist-dmg','aura-jump-miss','aura-close-miss','aura-any-miss','aura-intercept-all-assists',
+  if (!sk) return false;
+  
+  // Bulletproof fallback: If timing is explicitly REACTIVE, hide it immediately
+  const logic = sk.Logic_Engine || {};
+  if (String(logic.timing).toUpperCase() === 'REACTIVE') return false; 
+  
+  return ['standard','assist-dmg','aura-jump-miss','aura-close-miss','aura-any-miss','aura-intercept-all-assists',
     'nullify-defense','stat-buff-self','heal','grant-extra-move','shutdown','conditional-dmg',
     'steal-skill','reactive-dual-use','invulnerable-buff','freeze','steal-cancel','steal-cancel-unnull',
     'steal-cancel-nullify','global-disable-all','self-drain-dmg','free-status'].includes(getSkillCategory(sk));
