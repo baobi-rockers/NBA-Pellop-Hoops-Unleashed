@@ -738,7 +738,9 @@ function initSetupDrag(el,name,imgSrc){
     _drag.origW=el.offsetWidth;_drag.origH=el.offsetHeight;
     ghost.style.width=_drag.origW+'px';ghost.style.height=_drag.origH+'px';
     ghost.style.transform='scale(1)';ghost.style.boxShadow='0 12px 28px rgba(0,0,0,0.35)';
-    _posGhost(e.clientX,e.clientY);document.body.style.userSelect='none';
+    _posGhost(e.clientX,e.clientY);
+    el.style.opacity='0.15';el.style.transform='scale(0.92)';
+    document.body.style.userSelect='none';
   });
 }
 
@@ -790,10 +792,11 @@ function rejectDraftSlot(slotEl){
 function rejectSetupSlot(slotEl,sourceEl){
   if(_drag.ghost&&sourceEl){
     let sr=sourceEl.getBoundingClientRect(),g=_drag.ghost;
-    g.style.transition='left 0.22s ease-in,top 0.22s ease-in,width 0.22s ease-in,height 0.22s ease-in,opacity 0.22s ease-in,transform 0.22s ease-in';
+    g.style.transition='left 0.2s ease-in,top 0.2s ease-in,width 0.2s ease-in,height 0.2s ease-in,opacity 0.2s ease-in,transform 0.2s ease-in';
     g.style.left=sr.left+'px';g.style.top=sr.top+'px';g.style.width=sr.width+'px';g.style.height=sr.height+'px';
-    g.style.opacity='0';g.style.transform='scale(0.85)';
-    let ref=g;setTimeout(()=>{ref.remove();},260);_drag.ghost=null;
+    g.style.opacity='0';g.style.transform='scale(0.9)';
+    let ref=g;setTimeout(()=>{ref.remove();},240);_drag.ghost=null;
+    sourceEl.style.opacity='';sourceEl.style.transform='';
   }else{_killGhost();}
   slotEl.classList.remove('reject-shake-h');void slotEl.offsetWidth;slotEl.classList.add('reject-shake-h');
   let lb=slotEl.querySelector('.setup-slot-drop-text');
@@ -815,16 +818,20 @@ document.addEventListener('mouseup',e=>{
       let card=CARDS.find(x=>getCardName(x)===_drag.name);
       if(!card||isCardInDraft(card)||!getCardAllPos(card).includes(pos)){_killGhost();rejectDraftSlot(_drag.nearSlot);if(jd)_drag.suppressClick=true;return;}
     }else if(_drag.context==='setup'){
-      let pos=_drag.nearSlot.dataset.slot.replace('setup-','');
-      let card=benchRoster.find(x=>getCardName(x)===_drag.name);
-      if(!card||!getCardAllPos(card).includes(pos)){rejectSetupSlot(_drag.nearSlot,_drag.sourceEl);if(jd)_drag.suppressClick=true;return;}
+    let pos=_drag.nearSlot.dataset.slot.replace('setup-','');
+    let card=benchRoster.find(x=>getCardName(x)===_drag.name);
+    if(!card||!getCardAllPos(card).includes(pos)){
+      if(_drag.sourceEl){_drag.sourceEl.style.opacity='';_drag.sourceEl.style.transform='';}
+      rejectSetupSlot(_drag.nearSlot,_drag.sourceEl);if(jd)_drag.suppressClick=true;return;
     }
+  }
     let ev=new CustomEvent('physdrop',{bubbles:true,detail:{name:_drag.name,context:_drag.context}});
     _drag.nearSlot.dispatchEvent(ev);
     let ns=_drag.nearSlot;ns.classList.remove('morph-target','proximity-glow');
     ns.classList.add(_drag.context==='setup'?'snap-lock':'slot-snap-settle');
     setTimeout(()=>{ns.classList.remove('snap-lock','slot-snap-settle');},400);
   }
+  if(_drag.context==='setup'&&_drag.sourceEl){_drag.sourceEl.style.opacity='';_drag.sourceEl.style.transform='';}
   _killGhost();if(jd)_drag.suppressClick=true;
 });
 
