@@ -712,28 +712,69 @@ function filterDraftGrid(){
   let q=($('draft-search')?.value||'').toLowerCase(),sort=$('draft-sort')?.value||'name';
   let list=typeof CARDS!=='undefined'?CARDS.filter(c=>c?.UI_Frontend_Data):[];
   list=list.filter(c=>(!q||(getCardName(c)||"").toLowerCase().includes(q)||(c.UI_Frontend_Data.Team||"").toLowerCase().includes(q)));
-  if(sort==='hp')list.sort((a,b)=>getCardHP(b)-getCardHP(a));else if(sort==='dmg')list.sort((a,b)=>getCardDMG(b)-getCardDMG(a));else if(sort==='spd')list.sort((a,b)=>getCardSPD(b)-getCardSPD(a));else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
-  $('draft-grid').innerHTML=list.map(c=>{
-    let n=getCardName(c),inD=isCardInDraft(c),safeN=escapeJS(n);
-    let isSelected=(n===currentDraftPanelCard);
-    return`<div class="compact-card ${inD?'in-draft':''} ${isSelected?'selected-panel':''}" ${!inD?`draggable="true" ondragstart="handleDragStart(event,'${safeN}')" ondragend="handleDragEnd(event)"`:''} onclick="${!inD?`toggleExpand('${safeN}','draft')`:'void(0)'}" onmousemove="handleTooltipHover(event,'${safeN}',this)" onmouseleave="hideTooltip()"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),n)}" onerror="handleImgError(this,'${safeN}')"></div></div>`;
+  
+  if(sort==='hp')list.sort((a,b)=>getCardHP(b)-getCardHP(a));
+  else if(sort==='dmg')list.sort((a,b)=>getCardDMG(b)-getCardDMG(a));
+  else if(sort==='spd')list.sort((a,b)=>getCardSPD(b)-getCardSPD(a));
+  else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
+
+  const grid = $('draft-grid');
+  grid.innerHTML = list.map(c => {
+    let n = getCardName(c), inD = isCardInDraft(c), safeN = escapeJS(n);
+    let isSelected = (n === currentDraftPanelCard);
+    
+    // Logic: Only allow dragging if NOT already in draft
+    return `<div class="compact-card ${inD ? 'in-draft' : ''} ${isSelected ? 'selected-panel' : ''}" 
+                 ${!inD ? `draggable="true" ondragstart="handleDragStart(event,'${safeN}')" ondragend="handleDragEnd(event)"` : ''} 
+                 onclick="${!inD ? `toggleExpand('${safeN}','draft')` : 'void(0)'}" 
+                 onpointermove="positionTooltipIfInnerCard(event, this)" 
+                 onpointerenter="showTooltip(event, '${safeN}')"
+                 onpointerleave="hideTooltip()">
+              <div class="card-img-sm">
+                <img src="${getImgUrl(getCardImg(c), n)}" onerror="handleImgError(this,'${safeN}')" draggable="false">
+              </div>
+            </div>`;
   }).join('');
 }
 function isCardInDraft(c){let n=getCardName(c);return POSITIONS.some(p=>getCardName(draftSquad[p][0])===n||getCardName(draftSquad[p][1])===n);}
 function renderDraftSlots(){
-  let html='';[0,1].forEach(idx=>{POSITIONS.forEach(pos=>{let c=draftSquad[pos][idx],cn=c?getCardName(c):null;html+=`<div id="dslot-${pos}-${idx}" class="slot-card slot-${pos} ${c?'filled':''}" data-slot="${pos}-${idx}" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="dropDraft(event,'${pos}',${idx})">${c?`<div class="slot-pos">${pos}</div><div class="slot-name">${getDBShortName(cn)}</div><button class="remove-slot" onclick="removeDraft('${pos}',${idx})">✕</button>`:`<div class="slot-pos">${pos}</div>`}</div>`;});});
-  $('draft-slots-vertical').innerHTML=html;
-  // Attach physdrop to all draft slots
-  document.querySelectorAll('#draft-slots-vertical [data-slot]').forEach(slot=>{
-    slot.addEventListener('physdrop',(e)=>{
-      let parts=slot.dataset.slot.split('-');let pos=parts[0],idx=parseInt(parts[1]);
-      let c=CARDS.find(x=>getCardName(x)===e.detail.name);if(!c||isCardInDraft(c))return;
-      if(!getCardAllPos(c).includes(pos))return triggerInvalidDrop(slot);
-      draftSquad[pos][idx]=c;renderDraftSlots();filterDraftGrid();
+  let html='';
+  [0,1].forEach(idx => {
+    POSITIONS.forEach(pos => {
+      let c = draftSquad[pos][idx], cn = c ? getCardName(c) : null;
+      html += `<div id="dslot-${pos}-${idx}" class="slot-card slot-${pos} ${c?'filled':''}" 
+                   data-slot="${pos}-${idx}" 
+                   ondragover="handleDragOver(event)" 
+                   ondragleave="handleDragLeave(event)" 
+                   ondrop="dropDraft(event,'${pos}',${idx})">
+                ${c ? `<div class="slot-pos">${pos}</div>
+                       <div class="slot-name">${getDBShortName(cn)}</div>
+                       <button class="remove-slot" onclick="removeDraft('${pos}',${idx})">✕</button>` 
+                    : `<div class="slot-pos">${pos}</div>`}
+              </div>`;
     });
   });
-  let cnt=0;POSITIONS.forEach(p=>[0,1].forEach(i=>{if(draftSquad[p][i])cnt++;}));
-  $('draft-count-lbl').textContent=`${cnt}/10`;$('draft-confirm-btn').disabled=(cnt<10);
+  
+  $('draft-slots-vertical').innerHTML = html;
+
+  // Re-attach listeners for the "Physical" Drag Ghost
+  document.querySelectorAll('#draft-slots-vertical [data-slot]').forEach(slot => {
+    slot.addEventListener('physdrop', (e) => {
+      let parts = slot.dataset.slot.split('-');
+      let pos = parts[0], idx = parseInt(parts[1]);
+      let c = CARDS.find(x => getCardName(x) === e.detail.name);
+      if(!c || isCardInDraft(c)) return;
+      if(!getCardAllPos(c).includes(pos)) return triggerInvalidDrop(slot);
+      draftSquad[pos][idx] = c;
+      renderDraftSlots();
+      filterDraftGrid();
+    });
+  });
+
+  let cnt=0;
+  POSITIONS.forEach(p => [0,1].forEach(i => { if(draftSquad[p][i]) cnt++; }));
+  $('draft-count-lbl').textContent = `${cnt}/10`;
+  $('draft-confirm-btn').disabled = (cnt < 10);
 }
 function dropDraft(e,pos,idx){
   e.preventDefault();if(e.currentTarget&&e.currentTarget.classList)e.currentTarget.classList.remove('drag-over');
