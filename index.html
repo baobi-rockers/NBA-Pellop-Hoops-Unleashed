@@ -643,13 +643,21 @@ document.addEventListener('mouseup',(e)=>{
 });
 
 // ==================== HTML5 DRAG & DROP ====================
-function handleDragStart(e,name){
-  hideTooltip();e.dataTransfer.setData('text/plain',name);e.dataTransfer.effectAllowed='move';
-  let ghostImg=$('drag-ghost-img');
-  let c=typeof CARDS!=='undefined'?CARDS.find(x=>getCardName(x)===name):null;
-  if(c&&ghostImg)ghostImg.src=getImgUrl(getCardImg(c),name);
-  let ghost=$('drag-ghost');if(ghost)e.dataTransfer.setDragImage(ghost,-9999,-9999);
-  setTimeout(()=>{if(e.target&&e.target.classList)e.target.classList.add('dragging');},0);
+function handleDragStart(e, name){
+  hideTooltip();
+  e.dataTransfer.setData('text/plain', name);
+  e.dataTransfer.effectAllowed = 'move';
+  
+  let c = typeof CARDS !== 'undefined' ? CARDS.find(x => getCardName(x) === name) : null;
+  let ghostImg = $('drag-ghost-img');
+  
+  if(c && ghostImg) {
+    ghostImg.src = getImgUrl(getCardImg(c), name);
+    // This allows the standard drag to occur without being blocked by the ghost element
+    e.dataTransfer.setDragImage(new Image(), 0, 0); 
+  }
+  
+  if(e.target && e.target.classList) e.target.classList.add('dragging');
 }
 function handleDragEnd(e){if(e.target&&e.target.classList)e.target.classList.remove('dragging');}
 function handleDragOver(e){e.preventDefault();if(e.currentTarget&&e.currentTarget.classList)e.currentTarget.classList.add('drag-over');}
