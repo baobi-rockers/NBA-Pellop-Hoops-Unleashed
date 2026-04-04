@@ -320,6 +320,37 @@
   100% { transform: scale(1); opacity: 1; }
 }
 .slot-snap-settle { animation: slotSnapSettle 0.35s ease-out forwards; }
+.compact-card.in-draft { filter: grayscale(100%) brightness(0.5); pointer-events: none; }
+.slot-card.morph-target {
+  border-color: var(--accent) !important; border-style: solid !important;
+  background: rgba(232,98,26,0.12) !important;
+  box-shadow: 0 0 22px rgba(232,98,26,0.5), inset 0 0 10px rgba(232,98,26,0.15) !important;
+}
+.setup-slot-card.proximity-glow {
+  border-color: var(--accent) !important; border-style: solid !important;
+  box-shadow: 0 0 30px rgba(232,98,26,0.6), inset 0 0 16px rgba(232,98,26,0.12) !important;
+}
+@keyframes rejectShakeHaptic {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  12% { transform: translateX(-5px) rotate(-1.5deg); }
+  24% { transform: translateX(5px) rotate(1.5deg); }
+  36% { transform: translateX(-4px) rotate(-1deg); }
+  48% { transform: translateX(4px) rotate(1deg); }
+  60% { transform: translateX(-3px) rotate(-0.5deg); }
+  72% { transform: translateX(3px) rotate(0.5deg); }
+  84% { transform: translateX(-1px); }
+}
+.reject-shake { animation: rejectShakeHaptic 0.4s ease; }
+@keyframes rejectShakeH {
+  0%, 100% { transform: translateX(0); }
+  14.3% { transform: translateX(-7px); }
+  28.6% { transform: translateX(7px); }
+  42.9% { transform: translateX(-7px); }
+  57.1% { transform: translateX(7px); }
+  71.4% { transform: translateX(-7px); }
+  85.7% { transform: translateX(7px); }
+}
+.reject-shake-h { animation: rejectShakeH 0.3s ease; }
     
   </style>
 </head>
@@ -644,24 +675,14 @@ function handleTooltipHover(e,name,el){if(isInnerRegionOfCard(e,el)){if(!$('tool
 function positionTooltipIfInnerCard(e,el){if(!isInnerRegionOfCard(e,el)){hideTooltip();return;}positionTooltip(e);}
 
 // ==================== UNIFIED PRECISION DRAG ====================
-let _drag = {
-  active:false, moved:false, startX:0, startY:0,
-  name:'', imgSrc:'', context:'', // 'draft' or 'setup'
-  el:null, ghost:null, origW:0, origH:0,
-  suppressClick:false, nearSlot:null, slotDist:Infinity
-};
+let _drag={active:false,moved:false,startX:0,startY:0,name:'',imgSrc:'',context:'',el:null,ghost:null,origW:0,origH:0,imgLayer:null,textLayer:null,sourceEl:null,suppressClick:false,nearSlot:null,slotDist:Infinity};
+const POS_CLR={PG:'var(--pos-pg)',SG:'var(--pos-sg)',SF:'var(--pos-sf)',PF:'var(--pos-pf)',C:'var(--pos-c)'};
 
-function _mkGhost(w,h,br,shadow,scale,extra){
-  let g=document.createElement('div');
-  g.id='active-drag-ghost';
-  g.style.cssText=`position:fixed;pointer-events:none;z-index:99999;width:${w}px;height:${h}px;border-radius:${br}px;overflow:hidden;box-shadow:${shadow};transform:scale(${scale});background:#1a1a2e;opacity:1;${extra||''}`;
-  g.innerHTML=`<img src="${_drag.imgSrc}" style="width:100%;height:100%;object-fit:cover;display:block;">`;
-  document.body.appendChild(g);return g;
-}
 function _killGhost(){
   let g=document.getElementById('active-drag-ghost');if(g)g.remove();
   document.querySelectorAll('.morph-target').forEach(e=>e.classList.remove('morph-target'));
   document.querySelectorAll('.proximity-glow').forEach(e=>e.classList.remove('proximity-glow'));
+  _drag.ghost=null;
 }
 function _posGhost(cx,cy){
   if(!_drag.ghost)return;
@@ -674,25 +695,50 @@ function _nearestSlot(cx,cy){
   slots.forEach(s=>{let r=s.getBoundingClientRect(),sx=r.left+r.width/2,sy=r.top+r.height/2,d=Math.hypot(cx-sx,cy-sy);if(d<bestD){bestD=d;best=s;}});
   return{slot:best,dist:bestD};
 }
+function _createMorphGhost(name,imgSrc){
+  let card=CARDS.find(x=>getCardName(x)===name);
+  let pos=card?(card.UI_Frontend_Data?.Positions?.Primary||'N/A'):'N/A';
+  let sn=card?getDBShortName(getCardName(card)):name;
+  let hp=card?getCardHP(card):0,dmg=card?getCardDMG(card):0;
+  let pc=POS_CLR[pos]||'var(--text-muted)';
+  let g=document.createElement('div');g.id='active-drag-ghost';
+  g.style.cssText='position:fixed;pointer-events:none;z-index:99999;overflow:hidden;background:#1a1a2e;transition:width 0.08s linear,height 0.08s linear,border-radius 0.08s linear,box-shadow 0.08s linear,transform 0.08s linear;';
+  let il=document.createElement('div');il.className='morph-img';
+  il.style.cssText='position:absolute;inset:0;transition:opacity 0.1s ease;';
+  il.innerHTML=`<img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;display:block;">`;
+  let tl=document.createElement('div');tl.className='morph-text';
+  tl.style.cssText=`position:absolute;inset:0;display:flex;align-items:center;gap:6px;padding:0 10px;opacity:0;transition:opacity 0.1s ease;background:var(--surface-2);border:1.5px solid var(--border-heavy);border-radius:inherit;`;
+  tl.innerHTML=`<span style="font-weight:900;font-size:0.85rem;color:${pc};letter-spacing:0.5px;">${pos}</span><span style="font-weight:700;font-size:0.72rem;flex:1;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${sn}</span><span style="font-size:0.62rem;color:var(--text-muted);white-space:nowrap;">${hp}HP ${dmg}DMG</span>`;
+  g.appendChild(il);g.appendChild(tl);document.body.appendChild(g);
+  return{ghost:g,imgLayer:il,textLayer:tl};
+}
+function _createSetupGhost(imgSrc){
+  let g=document.createElement('div');g.id='active-drag-ghost';
+  g.style.cssText='position:fixed;pointer-events:none;z-index:99999;overflow:hidden;border-radius:10px;border:2px solid rgba(232,98,26,0.5);transition:transform 0.12s ease,box-shadow 0.12s ease;';
+  g.innerHTML=`<img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;display:block;">`;
+  document.body.appendChild(g);return g;
+}
 
 function initDraftDrag(el,name,imgSrc){
   el.addEventListener('mousedown',e=>{
     if(e.button!==0)return;e.preventDefault();
-    Object.assign(_drag,{active:true,moved:false,startX:e.clientX,startY:e.clientY,name,imgSrc,context:'draft',el,nearSlot:null,slotDist:Infinity});
+    let{ghost,imgLayer,textLayer}=_createMorphGhost(name,imgSrc);
+    Object.assign(_drag,{active:true,moved:false,startX:e.clientX,startY:e.clientY,name,imgSrc,context:'draft',el,ghost,imgLayer,textLayer,sourceEl:null,nearSlot:null,slotDist:Infinity});
     _drag.origW=el.offsetWidth;_drag.origH=el.offsetHeight;
-    _drag.ghost=_mkGhost(_drag.origW,_drag.origH,10,'0 20px 40px rgba(0,0,0,0.4)',1.05,
-      'transition:transform 0.1s ease-out,border-radius 0.1s ease-out,width 0.1s ease-out,height 0.1s ease-out,box-shadow 0.1s ease-out;');
+    ghost.style.width=_drag.origW+'px';ghost.style.height=_drag.origH+'px';ghost.style.borderRadius='10px';
+    ghost.style.transform='scale(1.05)';ghost.style.boxShadow='0 14px 32px rgba(0,0,0,0.45)';
     _posGhost(e.clientX,e.clientY);el.classList.add('dragging');document.body.style.userSelect='none';
   });
 }
 function initSetupDrag(el,name,imgSrc){
   el.addEventListener('mousedown',e=>{
     if(e.button!==0)return;e.preventDefault();
-    Object.assign(_drag,{active:true,moved:false,startX:e.clientX,startY:e.clientY,name,imgSrc,context:'setup',el,nearSlot:null,slotDist:Infinity});
+    let ghost=_createSetupGhost(imgSrc);
+    Object.assign(_drag,{active:true,moved:false,startX:e.clientX,startY:e.clientY,name,imgSrc,context:'setup',el,ghost,imgLayer:null,textLayer:null,sourceEl:el,nearSlot:null,slotDist:Infinity});
     _drag.origW=el.offsetWidth;_drag.origH=el.offsetHeight;
-    _drag.ghost=_mkGhost(_drag.origW,_drag.origH,10,'0 12px 28px rgba(0,0,0,0.35)',1.0,
-      'transition:transform 0.12s ease,box-shadow 0.12s ease;');
-    _posGhost(e.clientX,e.clientY);el.classList.add('dragging');document.body.style.userSelect='none';
+    ghost.style.width=_drag.origW+'px';ghost.style.height=_drag.origH+'px';
+    ghost.style.transform='scale(1)';ghost.style.boxShadow='0 12px 28px rgba(0,0,0,0.35)';
+    _posGhost(e.clientX,e.clientY);document.body.style.userSelect='none';
   });
 }
 
@@ -704,49 +750,84 @@ document.addEventListener('mousemove',e=>{
   let g=_drag.ghost;if(!g)return;
   document.querySelectorAll('.morph-target').forEach(x=>x.classList.remove('morph-target'));
   document.querySelectorAll('.proximity-glow').forEach(x=>x.classList.remove('proximity-glow'));
-  if(_drag.context==='draft'){
-    let MR=80,SR=20;
+  if(_drag.context==='draft'&&_drag.imgLayer&&_drag.textLayer){
+    let MR=120,SR=25;
     if(slot&&dist<MR){
       let t=Math.max(0,Math.min(1,1-(dist-SR)/(MR-SR)));
-      let sr=slot.getBoundingClientRect(),tw=sr.width,th=sr.height;
-      let cw=_drag.origW+(tw-_drag.origW)*t,ch=_drag.origH+(th-_drag.origH)*t;
+      let sr=slot.getBoundingClientRect();
+      let cw=_drag.origW+(sr.width-_drag.origW)*t,ch=_drag.origH+(sr.height-_drag.origH)*t;
       let cbr=10+(8-10)*t,cs=1.05+(1.0-1.05)*t;
-      let sh=t>0.5?`0 ${Math.round(8-8*t)}px ${Math.round(20-20*t)}px rgba(0,0,0,${(0.4-0.3*t).toFixed(2)})`:'0 20px 40px rgba(0,0,0,0.4)';
+      let sh=t>0.4?`0 ${Math.round(12-12*t)}px ${Math.round(28-28*t)}px rgba(0,0,0,${(0.45-0.4*t).toFixed(2)})`:'0 12px 28px rgba(0,0,0,0.45)';
       g.style.width=cw+'px';g.style.height=ch+'px';g.style.borderRadius=cbr+'px';
       g.style.transform=`scale(${cs})`;g.style.boxShadow=sh;
+      _drag.imgLayer.style.opacity=(1-t).toFixed(3);_drag.textLayer.style.opacity=t.toFixed(3);
       if(dist<=SR)slot.classList.add('morph-target');
     }else{
       g.style.width=_drag.origW+'px';g.style.height=_drag.origH+'px';g.style.borderRadius='10px';
-      g.style.transform='scale(1.05)';g.style.boxShadow='0 20px 40px rgba(0,0,0,0.4)';
+      g.style.transform='scale(1.05)';g.style.boxShadow='0 12px 28px rgba(0,0,0,0.45)';
+      _drag.imgLayer.style.opacity='1';_drag.textLayer.style.opacity='0';
     }
-  }else{
-    if(slot&&dist<60){
-      g.style.transform='scale(0.95)';g.style.boxShadow='0 8px 20px rgba(232,98,26,0.3)';
+  }else if(_drag.context==='setup'){
+    if(slot&&dist<55){
+      g.style.transform='scale(0.95)';g.style.boxShadow='0 8px 20px rgba(232,98,26,0.35)';g.style.borderColor='rgba(232,98,26,0.8)';
       slot.classList.add('proximity-glow');
     }else{
-      g.style.transform='scale(1.0)';g.style.boxShadow='0 12px 28px rgba(0,0,0,0.35)';
+      g.style.transform='scale(1)';g.style.boxShadow='0 12px 28px rgba(0,0,0,0.35)';g.style.borderColor='rgba(232,98,26,0.5)';
     }
   }
   _posGhost(e.clientX,e.clientY);_drag.nearSlot=slot;_drag.slotDist=dist;
 });
+
+function rejectDraftSlot(slotEl){
+  slotEl.classList.remove('reject-shake');void slotEl.offsetWidth;slotEl.classList.add('reject-shake');
+  let pEl=slotEl.querySelector('.slot-pos');
+  if(pEl){
+    let orig=pEl.textContent;
+    pEl.textContent='INVALID POSITION';pEl.style.color='#FF0000';pEl.style.fontSize='0.5rem';pEl.style.fontWeight='900';pEl.style.letterSpacing='0.3px';
+    setTimeout(()=>{pEl.textContent=orig;pEl.style.color='';pEl.style.fontSize='';pEl.style.fontWeight='';pEl.style.letterSpacing='';slotEl.classList.remove('reject-shake');},800);
+  }
+}
+function rejectSetupSlot(slotEl,sourceEl){
+  if(_drag.ghost&&sourceEl){
+    let sr=sourceEl.getBoundingClientRect(),g=_drag.ghost;
+    g.style.transition='left 0.22s ease-in,top 0.22s ease-in,width 0.22s ease-in,height 0.22s ease-in,opacity 0.22s ease-in,transform 0.22s ease-in';
+    g.style.left=sr.left+'px';g.style.top=sr.top+'px';g.style.width=sr.width+'px';g.style.height=sr.height+'px';
+    g.style.opacity='0';g.style.transform='scale(0.85)';
+    let ref=g;setTimeout(()=>{ref.remove();},260);_drag.ghost=null;
+  }else{_killGhost();}
+  slotEl.classList.remove('reject-shake-h');void slotEl.offsetWidth;slotEl.classList.add('reject-shake-h');
+  let lb=slotEl.querySelector('.setup-slot-drop-text');
+  if(lb){
+    lb.textContent='INVALID';lb.style.color='#FF0000';lb.style.fontWeight='900';lb.style.opacity='1';lb.style.fontSize='0.8rem';
+    setTimeout(()=>{lb.textContent='Drop Here';lb.style.color='';lb.style.fontWeight='';lb.style.opacity='';lb.style.fontSize='';slotEl.classList.remove('reject-shake-h');},500);
+  }
+}
 
 document.addEventListener('mouseup',e=>{
   if(!_drag.active)return;
   let jd=_drag.moved;_drag.active=false;_drag.moved=false;
   document.body.style.userSelect='';
   document.querySelectorAll('.dragging').forEach(x=>x.classList.remove('dragging'));
-  let thresh=_drag.context==='draft'?25:65;
-  if(_drag.nearSlot&&_drag.slotDist<=thresh){
+  let dThresh=_drag.context==='draft'?25:50;
+  if(_drag.nearSlot&&_drag.slotDist<=dThresh){
+    if(_drag.context==='draft'){
+      let parts=_drag.nearSlot.dataset.slot.split('-'),pos=parts[0];
+      let card=CARDS.find(x=>getCardName(x)===_drag.name);
+      if(!card||isCardInDraft(card)||!getCardAllPos(card).includes(pos)){_killGhost();rejectDraftSlot(_drag.nearSlot);if(jd)_drag.suppressClick=true;return;}
+    }else if(_drag.context==='setup'){
+      let pos=_drag.nearSlot.dataset.slot.replace('setup-','');
+      let card=benchRoster.find(x=>getCardName(x)===_drag.name);
+      if(!card||!getCardAllPos(card).includes(pos)){rejectSetupSlot(_drag.nearSlot,_drag.sourceEl);if(jd)_drag.suppressClick=true;return;}
+    }
     let ev=new CustomEvent('physdrop',{bubbles:true,detail:{name:_drag.name,context:_drag.context}});
     _drag.nearSlot.dispatchEvent(ev);
-    _drag.nearSlot.classList.remove('morph-target','proximity-glow');
-    _drag.nearSlot.classList.add(_drag.context==='setup'?'snap-lock':'slot-snap-settle');
-    setTimeout(()=>{if(_drag.nearSlot)_drag.nearSlot.classList.remove('snap-lock','slot-snap-settle');},400);
+    let ns=_drag.nearSlot;ns.classList.remove('morph-target','proximity-glow');
+    ns.classList.add(_drag.context==='setup'?'snap-lock':'slot-snap-settle');
+    setTimeout(()=>{ns.classList.remove('snap-lock','slot-snap-settle');},400);
   }
   _killGhost();if(jd)_drag.suppressClick=true;
 });
 
-// Legacy stubs (kept for safety)
 function handleDragStart(e,name){hideTooltip();e.dataTransfer.setData('text/plain',name);e.dataTransfer.effectAllowed='move';}
 function handleDragEnd(e){}
 function handleDragOver(e){e.preventDefault();}
@@ -835,9 +916,8 @@ function renderDraftSlots(){
   document.querySelectorAll('#draft-slots-vertical [data-slot]').forEach(slot=>{
     slot.addEventListener('physdrop',(e)=>{
       let parts=slot.dataset.slot.split('-'),pos=parts[0],idx=parseInt(parts[1]);
-      let c=CARDS.find(x=>getCardName(x)===e.detail.name);if(!c||isCardInDraft(c))return;
-      if(!getCardAllPos(c).includes(pos))return triggerInvalidDrop(slot);
-      draftSquad[pos][idx]=c;renderDraftSlots();filterDraftGrid();
+      draftSquad[pos][idx]=CARDS.find(x=>getCardName(x)===e.detail.name);
+      renderDraftSlots();filterDraftGrid();
     });
   });
   let cnt=0;POSITIONS.forEach(p=>[0,1].forEach(i=>{if(draftSquad[p][i])cnt++;}));
@@ -877,9 +957,8 @@ function renderSetupSlots(){
   document.querySelectorAll('[data-slot^="setup-"]').forEach(slot=>{
     slot.addEventListener('physdrop',(e)=>{
       let pos=slot.dataset.slot.replace('setup-','');
-      let c=benchRoster.find(x=>getCardName(x)===e.detail.name);if(!c)return;
-      if(!getCardAllPos(c).includes(pos))return triggerInvalidDrop(slot);
-      activeLineup[pos]=c;renderSetupSlots();renderSetupBench();
+      activeLineup[pos]=benchRoster.find(x=>getCardName(x)===e.detail.name);
+      renderSetupSlots();renderSetupBench();
     });
   });
   let cnt=Object.values(activeLineup).filter(x=>x).length;
@@ -912,7 +991,7 @@ function renderSetupBench(){
     initSetupDrag(div,n,imgSrc);
   });
 }
-
+  
 // ==================== BATTLE STATE ====================
 let activeAuras=[],pendingBlocks=[],frozenCards={},shutdownCards={};
 let disabledSkills={},drainedNextTurn={},invulnerable={},stolenSkills={},statBuffs={};
