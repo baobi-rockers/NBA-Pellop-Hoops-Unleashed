@@ -1004,22 +1004,26 @@ function playAttackSound(){
 }
 function stopBgMusic(){if(bgMusic){bgMusic.pause();bgMusic.currentTime=0;bgMusicStarted=false;}}
 
+// ==================== BATTLE ENGINE STATE & UTILS ====================
 function getCardName(c){return c?.UI_Frontend_Data?.Name||"Unknown";}
 function getCardImg(c){return c?.UI_Frontend_Data?.Image_File||"";}
 function getCardHP(c){return c?.UI_Frontend_Data?.Stats?.HP||0;}
 function getCardDMG(c){return c?.UI_Frontend_Data?.Stats?.Base_DMG||0;}
 function getCardSPD(c){return c?.UI_Frontend_Data?.Stats?.Speed||0;}
-function getCardAllPos(c){const p=c?.UI_Frontend_Data?.Positions;if(!p)return[];let arr=[p.Primary];if(p.Secondary)arr.push(p.Secondary);if(p.Third)arr.push(p.Third);return arr.filter(Boolean);}
+function getCardAllPos(c){const p=c?.UI_Frontend_Data?.Positions;if(!p)return[];let arr=[p.Primary, p.Secondary, p.Third];return arr.filter(Boolean);}
 function getCardPos(c){const p=c?.UI_Frontend_Data?.Positions;return p?p.Primary+(p.Secondary?'/'+p.Secondary:''):"N/A";}
 function escapeJS(s){return s?s.toString().replace(/\\/g,"\\\\").replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/`/g,"\\`"):"";}
 function shortName(n){return n?n.replace(/ \(.+?\)$/,''):"Unknown";}
 function getDBShortName(f){if(!f)return"Unknown";let m=f.match(/^(.*?)(\s\(.*)?$/);if(!m)return f;let b=m[1],v=m[2]||'';let p=b.split(' ');if(p.length>1){let first=p.shift();return first.charAt(0)+'. '+p.join(' ')+v;}return b+v;}
-function getImgUrl(f,n){return(!f||f.length<3)?`https://placehold.co/400x560/1a1a2e/FFD166?text=${encodeURIComponent(shortName(n))}`:GITHUB_RAW_BASE+f;}
+
+// UPDATED: Added encodeURI(f) to handle the spaces in "GOAT TIER CARDS/" safely!
+function getImgUrl(f,n){return(!f||f.length<3)?`https://placehold.co/400x560/1a1a2e/FFD166?text=${encodeURIComponent(shortName(n))}`:GITHUB_RAW_BASE+encodeURI(f);}
+
 function handleImgError(el,n){el.onerror=null;el.src=`https://placehold.co/400x560/1a1a2e/FFD166?text=${encodeURIComponent(shortName(n))}`;}
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  let el=$(id);if(el)el.classList.add('active');window.scrollTo(0,0);
-  if(id!=='battle-screen') stopBgMusic();
+  let el=document.getElementById(id);if(el)el.classList.add('active');window.scrollTo(0,0);
+  if(id!=='battle-screen' && typeof stopBgMusic === 'function') stopBgMusic();
 }
 function delay(ms){return new Promise(r=>setTimeout(r,ms));}
 
