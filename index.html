@@ -1219,12 +1219,13 @@ function onCardClick(team,idx,e){
       pendingReactiveAction.resolveReac(idx);uiState='IDLE';pendingReactiveAction=null;renderArena();
     }return;
   }
-  if(team==='player'&&uiState==='IDLE'){
+if(team==='player'&&uiState==='IDLE'){
     let c=playerActive[idx];if(c.isDead)return;
     let ck=c._instanceId;
+    if(frozenCards[ck]){logMsg2('sys','System',`${shortName(getCardName(c))} is frozen this turn.`);return;}
     if(shutdownCards[ck]){logMsg2('sys','System',`${shortName(getCardName(c))} is shutdown.`);return;}
     if(drainedNextTurn[ck]){logMsg2('sys','System',`${shortName(getCardName(c))} is drained.`);return;}
-      if(stagedActions.some(a=>a.actorIdx===idx)){logMsg2('sys','System','Already staged.');return;}
+    if(stagedActions.some(a=>a.actorIdx===idx)){logMsg2('sys','System','Already staged.');return;}
     let nonFreeCount=stagedActions.filter(a=>!a.isFreeAction).length;
     if(nonFreeCount>=Math.min(2,playerActive.filter(x=>!x.isDead).length))return;
     showActionPanels(c,idx);
@@ -1330,8 +1331,8 @@ function isMoveLocked(sk){
 
 // ==================== ACTION PANELS ====================
 function showActionPanels(c,idx){
+  let ck=c._instanceId;
   let name=shortName(getCardName(c));
-  $('action-card-name').textContent=name;
   let btns=[];
   if(playerBench.filter(x=>!x.isDead).length>0){
     btns.push(`<button class="game-btn game-btn-outline" style="padding:8px 12px;font-size:0.7rem;" onclick="selectAction(${idx},'swap',0)">SWAP</button>`);
