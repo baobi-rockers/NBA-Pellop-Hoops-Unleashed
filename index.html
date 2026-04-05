@@ -1330,6 +1330,7 @@ function isMoveLocked(sk){
 
 // ==================== ACTION PANELS ====================
 function showActionPanels(c,idx){
+  let ck=c._instanceId;
   let name=shortName(getCardName(c));
   let btns=[];
   if(playerBench.filter(x=>!x.isDead).length>0){
