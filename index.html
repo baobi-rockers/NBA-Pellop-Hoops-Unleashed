@@ -876,7 +876,7 @@ function goCat(){showScreen('catalogue-screen');if(typeof CARDS!=='undefined')fi
 function filterCat(){
   let q=($('cs')?.value||'').toLowerCase(),posF=$('cp')?.value||'',sort=$('csort')?.value||'name';
   let list=typeof CARDS!=='undefined'?CARDS.filter(c=>c?.UI_Frontend_Data):[];
-  list=list.filter(c=>{let n=(getCardName(c)||"").toLowerCase(),t=(c.UI_Frontend_Data.Team||"").toLowerCase();return(!q||n.includes(q)||t.includes(q))&&(!posF||getCardAllPos(c).includes(posF));});
+  list=list.filter(c=>{let n=(getCardName(c)||"").toLowerCase(),raw=(c.UI_Frontend_Data?.Name||"").toLowerCase(),fmt=(c.UI_Frontend_Data?.Formatted_Name||"").toLowerCase(),t=(c.UI_Frontend_Data.Team||"").toLowerCase();return(!q||n.includes(q)||raw.includes(q)||fmt.includes(q)||t.includes(q))&&(!posF||getCardAllPos(c).includes(posF));});
   if(sort==='hp')list.sort((a,b)=>getCardHP(b)-getCardHP(a));else if(sort==='dmg')list.sort((a,b)=>getCardDMG(b)-getCardDMG(a));else if(sort==='spd')list.sort((a,b)=>getCardSPD(b)-getCardSPD(a));else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
   $('cgrid').innerHTML=list.map(c=>{let n=getCardName(c),safeN=escapeJS(n),isSelected=(n===expandedCardCat);return`<div class="compact-card ${isSelected?'selected-panel':''}" onclick="toggleExpand('${safeN}','cat')" onmousemove="handleTooltipHover(event,'${safeN}',this)" onmouseleave="hideTooltip()"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),n)}" onerror="handleImgError(this,'${safeN}')"></div></div>`;}).join('');
 }
@@ -925,7 +925,7 @@ function goDraft(){
 function filterDraftGrid(){
   let q=($('draft-search')?.value||'').toLowerCase(),sort=$('draft-sort')?.value||'name';
   let list=typeof CARDS!=='undefined'?CARDS.filter(c=>c?.UI_Frontend_Data):[];
-  list=list.filter(c=>(!q||(getCardName(c)||"").toLowerCase().includes(q)||(c.UI_Frontend_Data.Team||"").toLowerCase().includes(q)));
+  list=list.filter(c=>{let n=(getCardName(c)||"").toLowerCase(),raw=(c.UI_Frontend_Data?.Name||"").toLowerCase(),fmt=(c.UI_Frontend_Data?.Formatted_Name||"").toLowerCase(),t=(c.UI_Frontend_Data.Team||"").toLowerCase();return!q||n.includes(q)||raw.includes(q)||fmt.includes(q)||t.includes(q);});
   if(sort==='hp')list.sort((a,b)=>getCardHP(b)-getCardHP(a));else if(sort==='dmg')list.sort((a,b)=>getCardDMG(b)-getCardDMG(a));else if(sort==='spd')list.sort((a,b)=>getCardSPD(b)-getCardSPD(a));else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
   let grid=$('draft-grid');grid.innerHTML='';
   list.forEach(c=>{
