@@ -1352,7 +1352,7 @@ function showActionPanels(c,idx){
       btns.push(`<button class="action-btn action-btn-skill" onclick="selectAction(${idx},'skill',${sIdx})">${sk.Name.toUpperCase()}<br><span class="action-btn-dmg">(${sk.Display_DMG})</span></button>`);
     }
   });
-  let ck=c._instanceId;
+  // REMOVED: let ck=c._instanceId;  <-- This duplicate declaration was causing the SyntaxError
   if(stolenSkills[ck]){
     stolenSkills[ck].forEach((ssk,ssIdx)=>{
       btns.push(`<button class="action-btn action-btn-skill" style="border:1.5px solid var(--gold);" onclick="selectAction(${idx},'stolen-skill',${ssIdx})">[STOLEN] ${ssk.Name.toUpperCase()}<br><span class="action-btn-dmg">(${ssk.Display_DMG})</span></button>`);
