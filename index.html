@@ -684,10 +684,21 @@ function _killGhost(){
   document.querySelectorAll('.proximity-glow').forEach(e=>e.classList.remove('proximity-glow'));
   _drag.ghost=null;
 }
-function _posGhost(cx,cy){
+const SNAP_RADIUS=60;
+function _posGhost(cx,cy,forceSnap){
   if(!_drag.ghost)return;
   let w=parseFloat(_drag.ghost.style.width),h=parseFloat(_drag.ghost.style.height);
-  _drag.ghost.style.left=(cx-w/2)+'px';_drag.ghost.style.top=(cy-h/2)+'px';
+  let tgt=forceSnap||(_drag.nearSlot&&_drag.slotDist<SNAP_RADIUS?_drag.nearSlot:null);
+  if(tgt){
+    let sr=tgt.getBoundingClientRect();
+    let sx=sr.left+sr.width/2,sy=sr.top+sr.height/2;
+    let d=forceSnap?0:_drag.slotDist;
+    let pull=Math.pow(Math.max(0,1-d/SNAP_RADIUS),2.2);
+    _drag.ghost.style.left=(cx+(sx-cx)*pull-w/2)+'px';
+    _drag.ghost.style.top=(cy+(sy-cy)*pull-h/2)+'px';
+  }else{
+    _drag.ghost.style.left=(cx-w/2)+'px';_drag.ghost.style.top=(cy-h/2)+'px';
+  }
 }
 function _nearestSlot(cx,cy){
   let sel=_drag.context==='draft'?'#draft-slots-vertical [data-slot]':'#setup-slots [data-slot]';
@@ -811,29 +822,36 @@ document.addEventListener('mouseup',e=>{
   let jd=_drag.moved;_drag.active=false;_drag.moved=false;
   document.body.style.userSelect='';
   document.querySelectorAll('.dragging').forEach(x=>x.classList.remove('dragging'));
-  let dThresh=_drag.context==='draft'?25:50;
-  if(_drag.nearSlot&&_drag.slotDist<=dThresh){
+  if(_drag.nearSlot&&_drag.slotDist<=SNAP_RADIUS){
+    // Auto-center ghost to slot center with quick snap
+    if(_drag.ghost){
+      _drag.ghost.style.transition='left 0.07s ease-out,top 0.07s ease-out';
+      _posGhost(e.clientX,e.clientY,_drag.nearSlot);
+    }
     if(_drag.context==='draft'){
       let parts=_drag.nearSlot.dataset.slot.split('-'),pos=parts[0];
       let card=CARDS.find(x=>getCardName(x)===_drag.name);
       if(!card||isCardInDraft(card)||!getCardAllPos(card).includes(pos)){_killGhost();rejectDraftSlot(_drag.nearSlot);if(jd)_drag.suppressClick=true;return;}
     }else if(_drag.context==='setup'){
-    let pos=_drag.nearSlot.dataset.slot.replace('setup-','');
-    let card=benchRoster.find(x=>getCardName(x)===_drag.name);
-    if(!card||!getCardAllPos(card).includes(pos)){
-      if(_drag.sourceEl){_drag.sourceEl.style.opacity='';_drag.sourceEl.style.transform='';}
-      rejectSetupSlot(_drag.nearSlot,_drag.sourceEl);if(jd)_drag.suppressClick=true;return;
+      let pos=_drag.nearSlot.dataset.slot.replace('setup-','');
+      let card=benchRoster.find(x=>getCardName(x)===_drag.name);
+      if(!card||!getCardAllPos(card).includes(pos)){
+        if(_drag.sourceEl){_drag.sourceEl.style.opacity='';_drag.sourceEl.style.transform='';}
+        rejectSetupSlot(_drag.nearSlot,_drag.sourceEl);if(jd)_drag.suppressClick=true;return;
+      }
     }
-  }
     let ev=new CustomEvent('physdrop',{bubbles:true,detail:{name:_drag.name,context:_drag.context}});
     _drag.nearSlot.dispatchEvent(ev);
     let ns=_drag.nearSlot;ns.classList.remove('morph-target','proximity-glow');
     ns.classList.add(_drag.context==='setup'?'snap-lock':'slot-snap-settle');
     setTimeout(()=>{ns.classList.remove('snap-lock','slot-snap-settle');},400);
+    // Let the snap animation frame render before removing ghost
+    if(jd)_drag.suppressClick=true;
+    setTimeout(()=>{if(_drag.context==='setup'&&_drag.sourceEl){_drag.sourceEl.style.opacity='';_drag.sourceEl.style.transform='';}_killGhost();},80);
+    return;
   }
   if(_drag.context==='setup'&&_drag.sourceEl){_drag.sourceEl.style.opacity='';_drag.sourceEl.style.transform='';}
   _killGhost();if(jd)_drag.suppressClick=true;
-});
 
 function handleDragStart(e,name){hideTooltip();e.dataTransfer.setData('text/plain',name);e.dataTransfer.effectAllowed='move';}
 function handleDragEnd(e){}
