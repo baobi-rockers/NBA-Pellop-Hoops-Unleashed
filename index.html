@@ -852,7 +852,8 @@ document.addEventListener('mouseup',e=>{
   }
   if(_drag.context==='setup'&&_drag.sourceEl){_drag.sourceEl.style.opacity='';_drag.sourceEl.style.transform='';}
   _killGhost();if(jd)_drag.suppressClick=true;
-
+});
+  
 function handleDragStart(e,name){hideTooltip();e.dataTransfer.setData('text/plain',name);e.dataTransfer.effectAllowed='move';}
 function handleDragEnd(e){}
 function handleDragOver(e){e.preventDefault();}
