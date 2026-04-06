@@ -2208,6 +2208,7 @@ async function handleDeadReplacements(teamStr, activeArr, benchArr) {
 
 // ==================== CARDS DATABASE ====================
 const CARDS = [
+
   {
     "UI_Frontend_Data": {
       "Name": "Allen Iverson",
@@ -2232,7 +2233,7 @@ const CARDS = [
       "Name": "The Answer",
       "Description_UI": "Iverson is the pound for pound greatest NBA player of all time. His speed and shiftiness allows him to weave in and out of defenses with ease. Defenders are not able to steal the ball from Iverson, and players 6'6 and shorter cannot block or contest his skills through defensive skills.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "IMMUNE_TO_STEAL",
@@ -2240,7 +2241,7 @@ const CARDS = [
         ],
         "condition": "enemy_height:<=6'6",
         "target": "unblockable,uncontestable",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -2251,13 +2252,13 @@ const CARDS = [
         "Description_UI": "Iverson evades his defender and goes in for the reverse layup. For a maximum of 5 uses.",
         "Logic_Engine": {
           "skill_class": "OFFENSIVE",
-          "logic_class": "HEIGHT_BASED_BLOCK_IMMUNITY\"}",
+          "logic_class": "COMMAND_OFFENSIVE",
           "execution": "DEAL_FLAT_DMG",
           "timing": "STANDARD",
           "is_reactive": false,
           "coin_flip": false,
           "target_scope": "LANE_MATCHUP",
-          "target": false,
+          "target": true,
           "can_select": true,
           "dmg_formula": "FLAT:1150",
           "dmg_raw": 1150,
@@ -2344,14 +2345,14 @@ const CARDS = [
       "Name": "S.T.A.T",
       "Description_UI": "Nicknamed STAT (Standing Tall And Talented), Amar'e Stoudemire lives by this mantra. His style of play is electrifying and dynamic, an offensive powerhouse. Stoudemire's skills cannot be blocked or contested by defensive skills.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNBLOCKABLE"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -2453,14 +2454,14 @@ const CARDS = [
       "Name": "Finals MVP",
       "Description_UI": "Iguodala excelled in the 2015 NBA Finals with his great defense and took home the Finals MVP. He performs the best when playing in tandem with teammates. When he has 4 Warriors teammates, Iguodala will gain 850 HP. When at least one Warriors teammate is no longer on the team, he will lose the boost.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "TEAM_SYNERGY_HP_BOOST"
         ],
         "condition": "teammate_team_count:Golden State Warriors>=4",
         "target": "hp",
-        "modifier": "+850 HP"
+        "modifier_value": "+850 HP"
       }
     },
     "Skills": [
@@ -2566,14 +2567,14 @@ const CARDS = [
       "Name": "The Brow",
       "Description_UI": "Anthony Davis was incredibly dominant during his time in New Orleans. His blocking and rim protection were second to none. Anthony Davis' basic attacks and skills will move first (x2 priority).",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "ALL_MOVES_PRIORITY_2"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -2677,14 +2678,14 @@ const CARDS = [
       "Name": "Bubble Big",
       "Description_UI": "Anthony Davis was incredibly dominant during the Lakers' championship run in the bubble. When paired with LeBron, they were unstoppable. When Lakers LeBron is teammates with Davis, Davis will gain 200 DMG for his damaging skills and 300 DMG for basic attacks. When LeBron is no longer on the team, he will lose the boost.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate:LeBron James",
         "target": "damaging_skill,basic_attack",
-        "modifier": "+200 SKILL DMG, +300 BASIC DMG"
+        "modifier_value": "+200 SKILL DMG, +300 BASIC DMG"
       }
     },
     "Skills": [
@@ -2788,14 +2789,14 @@ const CARDS = [
       "Name": "Ant-Man",
       "Description_UI": "Anthony Edwards is one of the most promising players of the future. Already a superstar and becoming one of the league's premier scorers and athletes. Anthony Edwards's basic attacks and skills will move first (x3 priority).",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "ALL_MOVES_PRIORITY_3"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -2897,14 +2898,14 @@ const CARDS = [
       "Name": "AR-15",
       "Description_UI": "Austin Reaves is a fan favourite Los Angeles Laker. He has improved every year since entering the league, and is now playing a pivotal role in the Lakers' offense. When Lakers LeBron and Luka are on the team, Reaves will gain an additional 500 HP and 300 DMG for his basic attacks. He will lose the boost when they are no longer on the team.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate:LeBron James&Luka Doncic",
         "target": "hp,basic_attack",
-        "modifier": "+500 HP, +300 BASIC DMG"
+        "modifier_value": "+500 HP, +300 BASIC DMG"
       }
     },
     "Skills": [
@@ -2971,7 +2972,7 @@ const CARDS = [
           "valid_triggers": [],
           "consumes_move": false,
           "free_action": false,
-          "team_condition": "1.0",
+          "team_condition": null,
           "hp_condition": null,
           "block_amount": null,
           "turns_active": null,
@@ -3006,14 +3007,14 @@ const CARDS = [
       "Name": "Big Ben",
       "Description_UI": "Ben Wallace is not the tallest center, but what he lacks in height, he more than makes up in his size and strength. All damage from all close shot skills from opponents will be halved against Wallace.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "HALVE_INCOMING_CLOSE_SHOT"
         ],
         "condition": "always",
         "target": "incoming_close_shot_dmg",
-        "modifier": "*0.5 DMG"
+        "modifier_value": "*0.5 DMG"
       }
     },
     "Skills": [
@@ -3119,14 +3120,14 @@ const CARDS = [
       "Name": "11 Rings",
       "Description_UI": "Russell won 11 championships by being a defensive monster and an amazing team player. The opposing C will focus only on Russell, he cannot target other players with basic attacks or damage dealing skills. However, the opposing C may still target other players with defensive skills.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "FORCED_TARGET_ON_SELF"
         ],
         "condition": "enemy_pos:C",
         "target": "forced_target",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -3232,14 +3233,14 @@ const CARDS = [
       "Name": "Big Red",
       "Description_UI": "Bill Walton is one of the most skilled big men of all time. He has some of the greatest instincts and feel for the game. Walton cannot be frozen by opponent's special skills.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "IMMUNE_TO_FREEZE"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -3341,14 +3342,14 @@ const CARDS = [
       "Name": "Rim Monster",
       "Description_UI": "Blake Griffin is a monster at putting the ball through the hoop with his insane athleticism and strength. Griffin's skills cannot be blocked or contested by defensive skills.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNBLOCKABLE"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -3450,14 +3451,14 @@ const CARDS = [
       "Name": "Houdini Of The Hardwood",
       "Description_UI": "Cousy is a Boston legend, a pioneer of Boston basketball. When any Boston Celtics card is on the team, Cousy will gain an additional 200 DMG for his basic attack and an additional 1 SPD. When there is no Celtic left, he will lose the boost.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate_team:Boston Celtics",
         "target": "basic_attack,spd",
-        "modifier": "+200 BASIC DMG, +1 SPD"
+        "modifier_value": "+200 BASIC DMG, +1 SPD"
       }
     },
     "Skills": [
@@ -3561,14 +3562,14 @@ const CARDS = [
       "Name": "Big Bob",
       "Description_UI": "Bob McAdoo is a generational offensive player. He has three scoring titles and is known for being a versatile scorer. McAdoo's basic attacks will deal additional 300 DMG to opponents with 7 SPD and lower.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "CONDITIONAL_BONUS_DMG_STAT"
         ],
         "condition": "enemy_spd:<=7",
         "target": "basic_attack",
-        "modifier": "+300 DMG"
+        "modifier_value": "+300 DMG"
       }
     },
     "Skills": [
@@ -3670,7 +3671,7 @@ const CARDS = [
       "Name": "Big Blue",
       "Description_UI": "Bob Pettit is one of the founding fathers of basketball. He was a pioneer who defined the modern power forward position. Opponents cannot use defensive skills to intercept Pettit's skills and skills that force a coin flip will not affect him.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNINTERCEPTABLE",
@@ -3678,7 +3679,7 @@ const CARDS = [
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -3782,14 +3783,14 @@ const CARDS = [
       "Name": "Stay Melo",
       "Description_UI": "Carmelo is one of the most lethal scorers in NBA history. His toughness combined with his knack for hitting contested shots, makes him a player that can go nuclear at any time. Carmelo's basic attacks and skills cannot be contested by defensive skills, but he can still be blocked.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNCONTESTABLE"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -3891,14 +3892,14 @@ const CARDS = [
       "Name": "Sir Charles",
       "Description_UI": "Barkley is an undersized power forward with the speed and talent of a guard, the versatility of a wing, and the strength and footwork of a big man. Opponents are unable to steal the ball from Barkley.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "IMMUNE_TO_STEAL"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -4000,7 +4001,7 @@ const CARDS = [
       "Name": "Boshasaurus",
       "Description_UI": "Chris Bosh is the prototype for NBA's modern big men. His size, athleticism, defense and shooting make him the ideal big in today's game. Bosh's skills cannot be blocked or contested by players 6'11 and shorter.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNBLOCKABLE",
@@ -4008,7 +4009,7 @@ const CARDS = [
         ],
         "condition": "enemy_height:<=6'11",
         "target": "unblockable,uncontestable",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -4110,14 +4111,14 @@ const CARDS = [
       "Name": "Run TMC",
       "Description_UI": "Chris Mullin is a loyal player for the Golden State Warriors and was a part of the dynamic trio- Run TMC. When any Warriors card is on the team, Mullin will gain an additional 200 DMG for all his skills and an additional 2 SPD. When there is no Warrior left, he will lose the boost.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate_team:Golden State Warriors",
         "target": "all_skills,spd",
-        "modifier": "+200 SKILL DMG, +2 SPD"
+        "modifier_value": "+200 SKILL DMG, +2 SPD"
       }
     },
     "Skills": [
@@ -4219,7 +4220,7 @@ const CARDS = [
       "Name": "Point God",
       "Description_UI": "Chris Paul is one of the greatest point guards ever. His assist skill cannot be intercepted by defensive skills, and his tight handles prevent opponents from stealing the ball from him.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "IMMUNE_TO_STEAL",
@@ -4227,7 +4228,7 @@ const CARDS = [
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -4329,14 +4330,14 @@ const CARDS = [
       "Name": "The Glide",
       "Description_UI": "Drexler is a Trail Blazer legend. He has been an icon of the franchise for decades. When any Portland Trail Blazer card is on the team with Drexler, he will gain an additional 500 HP. And additional 1 SPD. When there is no Trail Blazer left, he will lose the boost.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate_team:Portland Trail Blazers",
         "target": "hp,spd",
-        "modifier": "+500 HP, +1 SPD"
+        "modifier_value": "+500 HP, +1 SPD"
       }
     },
     "Skills": [
@@ -4438,14 +4439,14 @@ const CARDS = [
       "Name": "Dame Time",
       "Description_UI": "Damian Lillard is one of the best shooters in NBA history. He shoots the ball with confidence from anywhere with the quick release. Opponents will not be able to contest his skills with defensive skills, however they may still block his skills.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNCONTESTABLE"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -4547,7 +4548,7 @@ const CARDS = [
       "Name": "The Admiral",
       "Description_UI": "Robinson has a commanding presence on the court, and is one of the only few players to record a quadruple double. Robinson's skills cannot be blocked or contested through defensive skills. All skills from opponents also do 100 DMG less to Robinson.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNBLOCKABLE",
@@ -4555,7 +4556,7 @@ const CARDS = [
         ],
         "condition": "always",
         "target": "incoming_skill_dmg",
-        "modifier": "-100 DMG"
+        "modifier_value": "-100 DMG"
       }
     },
     "Skills": [
@@ -4627,7 +4628,7 @@ const CARDS = [
           "team_condition": null,
           "hp_condition": null,
           "block_amount": null,
-          "turns_active": 3,
+          "turns_active": null,
           "cannot_be_nullified": false,
           "requires_input": false,
           "input_type": null
@@ -4659,14 +4660,14 @@ const CARDS = [
       "Name": "The Worm",
       "Description_UI": "Rodman is one of the game's most impactful defenders. His hustle and energy is unparalleled, a truly unselfish team player. While Rodman is playing, any damage from all opponents' skills will be reduced by 250 DMG. This applies to all his teammates, excluding himself.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "TEAM_SKILL_DMG_REDUCE_250"
         ],
         "condition": "always",
         "target": "teammate_incoming_skill_dmg",
-        "modifier": "-250 DMG"
+        "modifier_value": "-250 DMG"
       }
     },
     "Skills": [
@@ -4770,14 +4771,14 @@ const CARDS = [
       "Name": "Chicago Native",
       "Description_UI": "Rose is a product of Chicago. He was born and raised in the Windy City and he took the league by storm as a rookie. Rose's athleticism was unmatched and he was able to get to the rim at will. All of Rose's basic attacks and skills will move first (x3 priority).",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "ALL_MOVES_PRIORITY_3"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -4881,14 +4882,14 @@ const CARDS = [
       "Name": "Mt. Mutombo",
       "Description_UI": "Trying to score with Mutombo around is indeed like trying to shoot over a mountain. All damage from all opponent's skills will be halved against Mutombo (except from Hawks, Nuggets, and 76ers cards).",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "HALVE_INCOMING_SKILLS_EXCEPT_SPECIFIC_TEAMS"
         ],
         "condition": "enemy_team_not:Atlanta Hawks|Denver Nuggets|Philadelphia 76ers",
         "target": "incoming_skill_dmg",
-        "modifier": "*0.5 DMG"
+        "modifier_value": "*0.5 DMG"
       }
     },
     "Skills": [
@@ -4962,7 +4963,7 @@ const CARDS = [
           "team_condition": null,
           "hp_condition": null,
           "block_amount": null,
-          "turns_active": 3,
+          "turns_active": null,
           "cannot_be_nullified": false,
           "requires_input": false,
           "input_type": null
@@ -4994,7 +4995,7 @@ const CARDS = [
       "Name": "The Germanator",
       "Description_UI": "Dirk revolutionized the game, a 7-footer who can hit it from deep. With his high release point, his skills cannot be blocked by defensive skills. However, they may still be contested or miss. Dirk is also one of the most loyal superstars. When there is another Maverick on his team, his SPD will increase by 2.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "SKILLS_UNBLOCKABLE",
@@ -5002,7 +5003,7 @@ const CARDS = [
         ],
         "condition": "teammate_team:Dallas Mavericks",
         "target": "spd",
-        "modifier": "+2 SPD"
+        "modifier_value": "+2 SPD"
       }
     },
     "Skills": [
@@ -5104,14 +5105,14 @@ const CARDS = [
       "Name": "The Human Highlight Reel",
       "Description_UI": "Wilkins is a human highlight reel. His electrifying dunks and blitzing speed make him an offensive threat. Wilkins' skills cannot be blocked or contested by defensive skills.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNBLOCKABLE"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -5213,14 +5214,14 @@ const CARDS = [
       "Name": "Small Ball Menace",
       "Description_UI": "Draymond's defensive versatility allows him to play both PF and C, despite his size. When Draymond is played at PF, he gains an additional 300 HP. When Draymond is played at C, he gains an additional 1 SPD.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "POSITION_BASED_BOOST"
         ],
         "condition": "position:PF|position:C",
         "target": "hp|spd",
-        "modifier": "+300 HP, +1 SPD"
+        "modifier_value": "+300 HP, +1 SPD"
       }
     },
     "Skills": [
@@ -5292,7 +5293,7 @@ const CARDS = [
           "team_condition": null,
           "hp_condition": null,
           "block_amount": null,
-          "turns_active": 3,
+          "turns_active": null,
           "cannot_be_nullified": false,
           "requires_input": false,
           "input_type": null
@@ -5324,14 +5325,14 @@ const CARDS = [
       "Name": "Death Lineup",
       "Description_UI": "The Warriors' Death Lineup remains one of the most effective lineups of all time. When any Warriors Stephen Curry, Klay Thompson, and Kevin Durant are on the team with Draymond, Draymond will gain 3000 HP. When at least one of them are no longer on the team, he will lose the boost.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate:Stephen Curry&Klay Thompson&Kevin Durant",
         "target": "hp",
-        "modifier": "+3000 HP"
+        "modifier_value": "+3000 HP"
       }
     },
     "Skills": [
@@ -5439,14 +5440,14 @@ const CARDS = [
       "Name": "Magic Shoulders",
       "Description_UI": "Dwight is one of the most athletic bigs ever. His physique framed by his magically wide shoulders, showcases his freakish strength. Opponents under 6'9 cannot target Dwight with any basic attacks or damaging skills. He can still be targeted by basic attacks and defensive skills.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "HEIGHT_BASED_TARGET_IMMUNITY"
         ],
         "condition": "enemy_height:<6'9",
         "target": "untargetable_by_attacks",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -5550,14 +5551,14 @@ const CARDS = [
       "Name": "Flash",
       "Description_UI": "Wade uses his blinding speed to evade his defenders. Opponents will not be able to damage Wade with skills for the first turn. He can still be targeted by basic attacks and defensive skills.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "FIRST_TURN_SKILL_IMMUNITY"
         ],
         "condition": "turn:1",
         "target": "skill_immunity",
-        "modifier": "+200 BASIC DMG"
+        "modifier_value": "+200 BASIC DMG"
       }
     },
     "Skills": [
@@ -5628,7 +5629,7 @@ const CARDS = [
           "free_action": false,
           "team_condition": null,
           "hp_condition": null,
-          "block_amount": 800,
+          "block_amount": null,
           "turns_active": null,
           "cannot_be_nullified": false,
           "requires_input": false,
@@ -5661,14 +5662,14 @@ const CARDS = [
       "Name": "Dynamic Duo",
       "Description_UI": "Dwyane Wade and LeBron James are the most dominant duo in NBA history. When any LeBron card is on the team, Wade will gain an additional 200 DMG for his basic attack. When LeBron is no longer on the team, he will lose the boost.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate:LeBron James",
         "target": "basic_attack",
-        "modifier": "+200 BASIC DMG"
+        "modifier_value": "+200 BASIC DMG"
       }
     },
     "Skills": [
@@ -5735,7 +5736,7 @@ const CARDS = [
           "valid_triggers": [],
           "consumes_move": false,
           "free_action": true,
-          "team_condition": "1.0",
+          "team_condition": null,
           "hp_condition": null,
           "block_amount": null,
           "turns_active": null,
@@ -5770,7 +5771,7 @@ const CARDS = [
       "Name": "Mr Inside",
       "Description_UI": "Elgin Baylor is an inside scoring machine, an unstoppable force inside the paint. Baylor's basic attack and skills cannot be blocked or contested by defensive skills and skills that force a coin flip does not affect him.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNBLOCKABLE",
@@ -5778,7 +5779,7 @@ const CARDS = [
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -5880,14 +5881,14 @@ const CARDS = [
       "Name": "The Big E",
       "Description_UI": "Elvin Hayes and Wes Unseld were a dynamic duo in Washington. Together, they made up a dangerous front court pairing. When any Wes Unseld card is on the team, Hayes will gain an additional 350 DMG for damaging skills and an additional 2 SPD. When Unseld is no longer on the team, he will lose the boost.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate:Wes Unseld",
         "target": "damaging_skill,spd",
-        "modifier": "+350 SKILL DMG, +2 SPD"
+        "modifier_value": "+350 SKILL DMG, +2 SPD"
       }
     },
     "Skills": [
@@ -5991,14 +5992,14 @@ const CARDS = [
       "Name": "The Glove",
       "Description_UI": "Payton's presence disrupts the opponent's guards offense. The damage from the opponent's PG and SG's jumpshot skills will be halved when they are using the skills to damage Payton.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "HALVE_INCOMING_JUMPSHOT"
         ],
         "condition": "enemy_pos:PG|SG",
         "target": "incoming_jumpshot_dmg",
-        "modifier": "*0.5 DMG"
+        "modifier_value": "*0.5 DMG"
       }
     },
     "Skills": [
@@ -6074,7 +6075,7 @@ const CARDS = [
           "team_condition": null,
           "hp_condition": null,
           "block_amount": null,
-          "turns_active": 3,
+          "turns_active": null,
           "cannot_be_nullified": false,
           "requires_input": false,
           "input_type": null
@@ -6106,7 +6107,7 @@ const CARDS = [
       "Name": "The Iceman",
       "Description_UI": "George \"The Iceman\" Gervin is a Spurs legend, and he is a walking bucket. Gervin's skills cannot be blocked or contested by defensive skills and skills that force a coin flip does not affect him when there is another Spurs player is on his team.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "SKILLS_UNBLOCKABLE",
@@ -6114,7 +6115,7 @@ const CARDS = [
         ],
         "condition": "teammate_team:San Antonio Spurs",
         "target": "unblockable,uncontestable,immune_coinflip",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -6216,14 +6217,14 @@ const CARDS = [
       "Name": "Mr. Basketball",
       "Description_UI": "George Mikan is a founding father for the sport. He was a phenomenal scorer with a wide variety of moves that are still used today. Mikan cannot be blocked by defensive skills, however he can be contested.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNBLOCKABLE"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -6325,14 +6326,14 @@ const CARDS = [
       "Name": "Greek Freak",
       "Description_UI": "Giannis' strong physique and defensive instincts make him a menace. He is able to protect the rim well with ease. Any close shot skills used against his team's PF and C will be completely blocked in the first 2 rounds from when Giannis has been played.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "FIRST_2_ROUNDS_BLOCK_SKILL_TYPE"
         ],
         "condition": "turn:1,2",
         "target": "block_close_shot_vs_pf_c",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -6434,14 +6435,14 @@ const CARDS = [
       "Name": "The Dream",
       "Description_UI": "Hakeem is one of the best playoff risers in NBA history. Once locked in, Hakeem is unstoppable and is perhaps the greatest defender of all time. Hakeem's defensive skills cannot be nullified by opponents.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "DEFENSIVE_SKILLS_UNNULLIFIABLE"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -6545,7 +6546,7 @@ const CARDS = [
       "Name": "Zeke",
       "Description_UI": "Isiah is an absolute pest on defense, hounding his assignment constantly. The opposing PG will focus only on Isiah, he cannot target other players with basic attacks or damage dealing skills. However, the opposing PG may still target other players with defensive skills. Additionally, all damage from skills dealt to Isiah will be halved.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "FORCED_TARGET_ON_SELF",
@@ -6553,7 +6554,7 @@ const CARDS = [
         ],
         "condition": "always",
         "target": "forced_target_from_pg,incoming_skill_dmg",
-        "modifier": "true, *0.5"
+        "modifier_value": "true, *0.5"
       }
     },
     "Skills": [
@@ -6623,7 +6624,7 @@ const CARDS = [
           "team_condition": null,
           "hp_condition": null,
           "block_amount": null,
-          "turns_active": 3,
+          "turns_active": null,
           "cannot_be_nullified": false,
           "requires_input": false,
           "input_type": null
@@ -6655,14 +6656,14 @@ const CARDS = [
       "Name": "The Beard",
       "Description_UI": "Harden's knack to draw fouls is well known. Harden gets to the free throw line at will. When any opponents use defensive skills to block his basic attack or damaging skills, it results in an additional 300 DMG to Harden's original target on top of the original damage, regardless of the block attempt's success. Opponents will also not be able to steal the ball from Harden, an attempt will result in 300 DMG to the opponent.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "ON_BEING_BLOCKED | IMMUNE_TO_STEAL",
         "effects": [
           "PENALTY_ON_BLOCK_ATTEMPT"
         ],
         "condition": "on_blocked",
         "target": "enemy_target",
-        "modifier": "+300 DMG"
+        "modifier_value": "+300 DMG"
       }
     },
     "Skills": [
@@ -6764,14 +6765,14 @@ const CARDS = [
       "Name": "Sixth Man",
       "Description_UI": "As a Sixth Man of the Year winner, Harden can be played as the Sixth Card on a team. He is to be placed below your starting SG/PG and he will move last every turn (-10 priority). Harden can be targeted by the same opponents that can target the teammate that is above Harden. If he is not played as a Sixth Man, he will gain 1600 HP, an additional 600 DMG to his basic attack, an additional 600 DMG to his damaging skill, and an additional 3 uses for his skill. Harden may switch from the starting lineup to the Sixth Man spot, but this move will be considered a turn for Harden. He cannot switch if there is no teammate to replace him on the starting lineup immediately. His replacement teammate will be able to attack that turn.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SIXTH_MAN_LOGIC"
         ],
         "condition": "position_not:Sixth Man",
         "target": "hp,basic_attack,damaging_skill,max_uses",
-        "modifier": "+1600 HP, +600 SKILL DMG, +600 BASIC DMG, +3 USES"
+        "modifier_value": "+1600 HP, +600 SKILL DMG, +600 BASIC DMG, +3 USES"
       }
     },
     "Skills": [
@@ -6873,7 +6874,7 @@ const CARDS = [
       "Name": "Big Game James",
       "Description_UI": "James Worthy always rises up to the occasion. He is a clutch offensive machine that cannot be slowed down. Worthy's skills cannot be contested by defensive skills and skills that force a coin flip does not affect him.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNCONTESTABLE",
@@ -6881,7 +6882,7 @@ const CARDS = [
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -6983,14 +6984,14 @@ const CARDS = [
       "Name": "J-Kidd",
       "Description_UI": "Jason Kidd is one of the best defenders at the point guard position ever. All basic attacks used against Kidd will have a 50% chance to miss. A coin flip will be used to determine if it misses (opponent chooses side first).",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "HALVE_BASIC_ATK_MISS_CHANCE"
         ],
         "condition": "always",
         "target": "incoming_basic_attack_miss_chance",
-        "modifier": "0.5"
+        "modifier_value": "0.5"
       }
     },
     "Skills": [
@@ -7062,7 +7063,7 @@ const CARDS = [
           "team_condition": null,
           "hp_condition": null,
           "block_amount": null,
-          "turns_active": 2,
+          "turns_active": null,
           "cannot_be_nullified": false,
           "requires_input": false,
           "input_type": null
@@ -7094,14 +7095,14 @@ const CARDS = [
       "Name": "The Logo",
       "Description_UI": "Jerry West is the logo. He is respected by teammates and rivals alike. West cannot be damaged by any skills in the first 2 rounds. He can still be targeted by basic attacks and defensive skills.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "FIRST_2_ROUNDS_BLOCK_SKILL_TYPE"
         ],
         "condition": "turn:1,2",
         "target": "skill_immunity",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -7168,7 +7169,7 @@ const CARDS = [
           "valid_triggers": [],
           "consumes_move": true,
           "free_action": false,
-          "team_condition": "1.0",
+          "team_condition": null,
           "hp_condition": "1.0",
           "block_amount": null,
           "turns_active": null,
@@ -7203,14 +7204,14 @@ const CARDS = [
       "Name": "Broadway Joe",
       "Description_UI": "Dumars is a highly effective perimeter defender, he gives his opponents hell when defending them. Any close shot skills used against his team's PG and SG will be completely blocked in the first 2 rounds.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "FIRST_2_ROUNDS_BLOCK_SKILL_TYPE"
         ],
         "condition": "turn:1,2",
         "target": "block_close_shot_vs_pg_sg",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -7316,14 +7317,14 @@ const CARDS = [
       "Name": "The Process",
       "Description_UI": "Joel Embiid's ability to draw contact and get calls is lethal. When any opponents use defensive skills to block his basic attack or damaging skills, it results in an additional 300 DMG to Embiid's original target on top of the original damage, regardless of the block attempt's success.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "ON_BEING_BLOCKED",
         "effects": [
           "PENALTY_ON_BLOCK_ATTEMPT"
         ],
         "condition": "on_blocked",
         "target": "enemy_target",
-        "modifier": "+300 DMG"
+        "modifier_value": "+300 DMG"
       }
     },
     "Skills": [
@@ -7427,14 +7428,14 @@ const CARDS = [
       "Name": "Hondo",
       "Description_UI": "Havlicek and Russell go together like bread and butter. When any Bill Russell card is on the team with Havlicek, he will gain an additional 550 DMG for his basic attack and additional 1 SPD. When Russell is no longer on the team, he will lose the boost.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate:Bill Russell",
         "target": "basic_attack,spd",
-        "modifier": "+550 BASIC DMG, +1 SPD"
+        "modifier_value": "+550 BASIC DMG, +1 SPD"
       }
     },
     "Skills": [
@@ -7538,14 +7539,14 @@ const CARDS = [
       "Name": "Stock",
       "Description_UI": "John Stockton is one half of the Jazz's most dynamic duo in history. Together, they are an unstoppable offensive force. When any Karl Malone card is on the team, Stockton will gain an additional 200 DMG for all skills. When Malone is no longer on the team, he will lose the boost.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate:Karl Malone",
         "target": "all_skills",
-        "modifier": "+200 SKILL DMG"
+        "modifier_value": "+200 SKILL DMG"
       }
     },
     "Skills": [
@@ -7649,7 +7650,7 @@ const CARDS = [
       "Name": "Dr. J",
       "Description_UI": "Erving is one of the NBA's most iconic and influential figures. He is an enduring legend that will never be forgotten. Once a game, when \"The Doctor\" is damaged to 1000 HP or lower, he will recover another 500 HP.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "ON_LOW_HP",
         "effects": [
           "RECOVER_HP",
@@ -7657,7 +7658,7 @@ const CARDS = [
         ],
         "condition": "hp_below:1000",
         "target": "hp",
-        "modifier": "+500 HP"
+        "modifier_value": "+500 HP"
       }
     },
     "Skills": [
@@ -7759,14 +7760,14 @@ const CARDS = [
       "Name": "The Tower Of Power",
       "Description_UI": "Standing at 7'2 and weighing 225 LBS, Kareem was a giant dominating force in his prime. His skyhook was an unstoppable weapon that no one could stop. Kareem cannot be frozen by opponent's special skills.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "IMMUNE_TO_FREEZE"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -7870,7 +7871,7 @@ const CARDS = [
       "Name": "The Captain",
       "Description_UI": "Kareem Abdul-Jabbar was the former NBA all-time top scorer. Kareem could score at will, with a variety of moves that could not be defended. Kareem cannot be blocked or contested by defensive skills from opponents 7'0 and shorter.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNBLOCKABLE",
@@ -7878,7 +7879,7 @@ const CARDS = [
         ],
         "condition": "enemy_height:<=7'0",
         "target": "unblockable,uncontestable",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -7980,14 +7981,14 @@ const CARDS = [
       "Name": "The Mailman",
       "Description_UI": "Karl Malone is one half of the Jazz's most dynamic duo in history. Together, they are an unstoppable offensive force. When any John Stockton card is on the team, Malone will gain an additional 200 DMG for all skills. When Stockton is no longer on the team, he will lose the boost.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate:John Stockton",
         "target": "all_skills",
-        "modifier": "+200 SKILL DMG"
+        "modifier_value": "+200 SKILL DMG"
       }
     },
     "Skills": [
@@ -8089,14 +8090,14 @@ const CARDS = [
       "Name": "The Klaw",
       "Description_UI": "Kawhi has one of the biggest and strongest hands in the league which gave him the nickname: The Klaw. His hands allow him to contest shots effectively. Any jumpshot skills used against his team's SG and SF will fail in the first 2 rounds.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "FIRST_2_ROUNDS_BLOCK_SKILL_TYPE"
         ],
         "condition": "turn:1,2",
         "target": "contest_jumpshot_vs_sg_sf",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -8200,7 +8201,7 @@ const CARDS = [
       "Name": "Fun Guy",
       "Description_UI": "Kawhi is a fun guy... but he means business on the court. His concentration on court gives him an advantage. Opponents cannot steal the ball from Kawhi and opponents shorter than 6'10 cannot use defensive skills to block or contest his basic attacks and skills.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "IMMUNE_TO_STEAL",
@@ -8208,7 +8209,7 @@ const CARDS = [
         ],
         "condition": "enemy_height:<6'10",
         "target": "unblockable,uncontestable",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -8310,14 +8311,14 @@ const CARDS = [
       "Name": "The Terminator",
       "Description_UI": "Kawhi is the terminator. His calm, quiet, and robotic efficiency on the court allows him to operate with insane consistency. Kawhi's stats for his HP, basic attack DMG, speed, and skills cannot be altered by any skills or abilities by both teammates and opponents.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "STATS_IMMUNE_TO_ALTERATION"
         ],
         "condition": "always",
         "target": "stats_immunity",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -8419,7 +8420,7 @@ const CARDS = [
       "Name": "Slim Reaper",
       "Description_UI": "Durant's height and length coupled with his guard-like movement makes him a matchup nightmare. His skills cannot be blocked and contested by defensive skills from players shorter than him and players taller than him cannot steal the ball from him.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "IMMUNE_TO_STEAL",
@@ -8428,7 +8429,7 @@ const CARDS = [
         ],
         "condition": "enemy_height:<6'11",
         "target": "unblockable,uncontestable",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -8530,14 +8531,14 @@ const CARDS = [
       "Name": "Easy Money Sniper",
       "Description_UI": "Durant is one of the most talented players in league history. He leverages his size and skills to overpower defenders. Durant does an additional 350 DMG for basic attacks if the opposing player is shorter than him.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "CONDITIONAL_BONUS_DMG_STAT"
         ],
         "condition": "enemy_height:<6'11",
         "target": "basic_attack",
-        "modifier": "+350 BASIC DMG"
+        "modifier_value": "+350 BASIC DMG"
       }
     },
     "Skills": [
@@ -8641,14 +8642,14 @@ const CARDS = [
       "Name": "The Servant",
       "Description_UI": "Durant gave himself the nickname \u201cThe Servant\u201d, and he truly does serve well. Durant\u2019s tremendous contributions to Team USA adds to his legacy. When any Team USA card is on the team, Durant will gain an additional 1 SPD. When there is no Team USA players left, he will lose the boost.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate_team:Team USA",
         "target": "spd",
-        "modifier": "+1 SPD"
+        "modifier_value": "+1 SPD"
       }
     },
     "Skills": [
@@ -8750,7 +8751,7 @@ const CARDS = [
       "Name": "Big Ticket",
       "Description_UI": "Kevin Garnett aka Big Ticket is a large man with a bigger personality. But perhaps his most impressive trait is his relentlessness. Garnett never gives up, even when he is backed up against the wall. Once a game, when he is damaged to 1000 HP or lower, he will recover another 1000 HP.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "ON_LOW_HP",
         "effects": [
           "RECOVER_HP",
@@ -8758,7 +8759,7 @@ const CARDS = [
         ],
         "condition": "hp_below:1000",
         "target": "hp",
-        "modifier": "+1000 HP"
+        "modifier_value": "+1000 HP"
       }
     },
     "Skills": [
@@ -8862,14 +8863,14 @@ const CARDS = [
       "Name": "Board Magnet",
       "Description_UI": "Kevin Love is a monster on the boards, grabbing rebounds at extremely high rates. If Love's skill misses, gets contested or gets blocked, Love will rebound the ball and instead deal basic attack damage to his original target. This will not count as a turn.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "ON_SKILL_MISS_BLOCK_CONTEST",
         "effects": [
           "AUTO_REBOUND_PUTBACK"
         ],
         "condition": "on_skill_fail",
         "target": "enemy_target",
-        "modifier": "+BASIC DMG"
+        "modifier_value": "+BASIC DMG"
       }
     },
     "Skills": [
@@ -8971,7 +8972,7 @@ const CARDS = [
       "Name": "The Torture Chamber",
       "Description_UI": "Dubbed \u201cThe Torture Chamber\u201d, defenders feel as if they are being tortured whenever they have to defend McHale in the low post with his 8-foot wingspan. McHale\u2019s damaging skills cannot be blocked or contested through defensive skills, and he is not affected by skills that force a coin flip.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNBLOCKABLE",
@@ -8979,7 +8980,7 @@ const CARDS = [
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -9083,14 +9084,14 @@ const CARDS = [
       "Name": "Splash Brother",
       "Description_UI": "Klay is one half of the Splash Brothers and he is a scorching hot shooter when he is in the zone. When any Stephen Curry card is on the team with Klay, he will gain an additional 500 DMG for all skills and additional 1 SPD. When Curry is no longer on the team, he will lose the boost.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate:Stephen Curry",
         "target": "all_skills,spd",
-        "modifier": "+500 SKILL DMG, +1 SPD"
+        "modifier_value": "+500 SKILL DMG, +1 SPD"
       }
     },
     "Skills": [
@@ -9192,14 +9193,14 @@ const CARDS = [
       "Name": "Captain Klay",
       "Description_UI": "The nickname Captain Klay originated from his well-known passion for boating in the San Francisco Bay. But besides ruling the high seas, Klay also rules the court. Klay holds the NBA record for most points in a quarter, scoring 37 points on 13-for-13 shooting and 9-for-9 from 3- a perfect quarter. For every damaging skill that Klay successfully hits, he will gain an additional 300 DMG for that skill.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "STACKING_DMG_BUFF_ON_HIT"
         ],
         "condition": "on_skill_hit",
         "target": "skill_dmg",
-        "modifier": "+300 SKILL DMG"
+        "modifier_value": "+300 SKILL DMG"
       }
     },
     "Skills": [
@@ -9304,14 +9305,14 @@ const CARDS = [
       "Name": "Young Mamba",
       "Description_UI": "Kobe \"Bean\" Bryant donned the Mamba Rim Attack Kobe \"Bean\" Bryant Jab steps, dribbles to the baseline, fakes, then shoots the fadeaway. For a maximum of 5 uses.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNBLOCKABLE"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -9413,7 +9414,7 @@ const CARDS = [
       "Name": "Black Mamba",
       "Description_UI": "Kobe's \"Black Mamba\" mentality is almost as well known as he is. His focus on the court instills fear in all opponents. Kobe is also unfazed by all defenders, nothing can scare him. All of Kobe's skills cannot be blocked by skills. Opponents also cannot freeze Kobe through skills.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNBLOCKABLE",
@@ -9421,7 +9422,7 @@ const CARDS = [
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -9523,7 +9524,7 @@ const CARDS = [
       "Name": "Bean",
       "Description_UI": "Kobe Bryant is one of Team USA's most celebrated players, he is an Olympic icon. All of Kobe skill's cannot be blocked by defensive skills. Opponents also cannot freeze Kobe through skills. However, his skills may still be contested or miss.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNBLOCKABLE",
@@ -9531,7 +9532,7 @@ const CARDS = [
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -9633,14 +9634,14 @@ const CARDS = [
       "Name": "Uncle Drew",
       "Description_UI": "Kyrie Irving has the best handles in NBA history, he often toys with defenders using his wide variety of moves. Opponents will not be able to steal the ball from him.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "IMMUNE_TO_STEAL"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -9742,14 +9743,14 @@ const CARDS = [
       "Name": "Larry Legend",
       "Description_UI": "Larry Legend is one of the greatest triple double threats of all time. Bird is an incredible scorer and rebounder. If Bird's skill misses, gets contested or gets blocked, Bird will rebound the ball and instead deal basic attack damage to his original target. This will not count as a turn.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "ON_SKILL_MISS_BLOCK_CONTEST",
         "effects": [
           "AUTO_REBOUND_PUTBACK"
         ],
         "condition": "on_skill_fail",
         "target": "enemy_target",
-        "modifier": "+BASIC DMG"
+        "modifier_value": "+BASIC DMG"
       }
     },
     "Skills": [
@@ -9853,14 +9854,14 @@ const CARDS = [
       "Name": "Heatlemania",
       "Description_UI": "LeBron's unstoppable Heatles work as a cohesive unit to overcome opponents. If any damaging skills from LeBron or his team's SF/PF, misses, gets blocked, or contested, LeBron will grab the ball for a putback. The damage dealt to the original target will be LeBron's basic attack damage.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "ON_TEAMMATE_SKILL_FAIL",
         "effects": [
           "LEBRON_PUTBACK"
         ],
         "condition": "teammate_skill_fail",
         "target": "enemy_target",
-        "modifier": "+BASIC DMG"
+        "modifier_value": "+BASIC DMG"
       }
     },
     "Skills": [
@@ -9931,7 +9932,7 @@ const CARDS = [
           "free_action": false,
           "team_condition": null,
           "hp_condition": null,
-          "block_amount": 1000,
+          "block_amount": null,
           "turns_active": null,
           "cannot_be_nullified": false,
           "requires_input": false,
@@ -9964,7 +9965,7 @@ const CARDS = [
       "Name": "The Block",
       "Description_UI": "As the player with the most unstoppable defensive move of all time, LeBron's clutch chasedown blocks allow him to overwhelm opponents. LeBron cannot be taken down until he is the last card on his team. He is able to take damage but will HP will not drop below 1 HP.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "ON_LETHAL_HIT",
         "effects": [
           "SURVIVE_AT_1HP",
@@ -9972,7 +9973,7 @@ const CARDS = [
         ],
         "condition": "hp_below:1",
         "target": "hp",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -10075,14 +10076,14 @@ const CARDS = [
       "Name": "The Chosen One",
       "Description_UI": "With LeBron, his teammates will have wide open looks. LeBron's skills cannot be contested through defensive skills. Skills can still be blocked and can still miss.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNCONTESTABLE"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -10184,14 +10185,14 @@ const CARDS = [
       "Name": "Kid From Akron",
       "Description_UI": "LeBron had one of the greatest rookie seasons of all time. Jumping straight into the NBA from high school is no easy feat, dominating from the start like he did is even harder. LeBron's athleticism proved too much for defenders. All of LeBron's basic attacks and skills will move first (x3 priority).",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "ALL_MOVES_PRIORITY_3"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -10293,14 +10294,14 @@ const CARDS = [
       "Name": "Captain America",
       "Description_UI": "LeBron was the face of the Redeem Team. With LeBron as the unstoppable force, Team USA was destroyed everyone in their way. LeBron's basic attacks will deal an additional 100 DMG to all opponents (except for Team USA cards).",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "CONDITIONAL_BONUS_DMG_VS_NON_TEAMUSA"
         ],
         "condition": "enemy_team_not:Team USA",
         "target": "basic_attack",
-        "modifier": "+100 BASIC DMG"
+        "modifier_value": "+100 BASIC DMG"
       }
     },
     "Skills": [
@@ -10402,14 +10403,14 @@ const CARDS = [
       "Name": "Ledploy",
       "Description_UI": "Prime LeBron James was a perennial Defensive Player of the Year candidate, but he was snubbed due to voter fatigue. LeBron's defense causes any close shot skills and assist skills used against his team's PF and C will be completely blocked in the first 2 rounds.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "FIRST_2_ROUNDS_BLOCK_SKILL_TYPE"
         ],
         "condition": "turn:1,2",
         "target": "block_close_shot_and_assist_vs_pf_c",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -10515,7 +10516,7 @@ const CARDS = [
       "Name": "Luka Magic",
       "Description_UI": "Luka is a transcendent offensive player and he has shown that he has the clutch gene. Once a game, when Luka's HP has been reduced to 0, Luka will hold on to 1 HP. He will be untargetable for the rest of the turn and he will move first the next turn (x2 priority).",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "ON_LETHAL_HIT",
         "effects": [
           "SURVIVE_AT_1HP",
@@ -10524,7 +10525,7 @@ const CARDS = [
         ],
         "condition": "hp_below:1",
         "target": "hp",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -10626,7 +10627,7 @@ const CARDS = [
       "Name": "The Don of LA",
       "Description_UI": "Luka has arrived in Los Angeles, bringing transcendent offense that demolishes defenses at will. Luka is an offensive maestro that defies circumstances. Once a game, when Luka's HP has been reduced to 0, Luka will be healed for 1700 HP. He will be untargetable for the rest of the turn.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "ON_LETHAL_HIT",
         "effects": [
           "HEAL_ON_DEATH",
@@ -10634,7 +10635,7 @@ const CARDS = [
         ],
         "condition": "hp_below:1",
         "target": "hp",
-        "modifier": "+1700 HP"
+        "modifier_value": "+1700 HP"
       }
     },
     "Skills": [
@@ -10737,14 +10738,14 @@ const CARDS = [
       "Name": "Showtime",
       "Description_UI": "Magic and his Showtime Lakers played an exciting style of basketball. Magic controlled the floor which brought their offense to new heights. When there is another Los Angeles Laker on Magic's team, his SPD will increase by 1 and damage from all his skills will increase by 150 DMG. When there is no Laker left, he will lose his boost.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate_team:Los Angeles Lakers",
         "target": "spd,all_skills",
-        "modifier": "+1 SPD, +150 SKILL DMG"
+        "modifier_value": "+1 SPD, +150 SKILL DMG"
       }
     },
     "Skills": [
@@ -10846,14 +10847,14 @@ const CARDS = [
       "Name": "European Backcourt",
       "Description_UI": "Manu Ginobili is one half of the Spur's European backcourt. Parker and Ginobili's chemistry is outstanding. When any Tony Parker card is on the team, Ginobili will gain an additional 500 HP and additional 1 SPD. When Parker is no longer on the team, he will lose the boost.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate:Tony Parker",
         "target": "hp,spd",
-        "modifier": "+500 HP, +1 SPD"
+        "modifier_value": "+500 HP, +1 SPD"
       }
     },
     "Skills": [
@@ -10955,7 +10956,7 @@ const CARDS = [
       "Name": "Air Jordan",
       "Description_UI": "Jordan's impressive vertical gave him his fitting nickname, \"Air Jordan\". Defenders are unable to block any of his skills through defensive skills. Additionally, his tight handles prevent any opponents from stealing the ball from him.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNBLOCKABLE",
@@ -10963,7 +10964,7 @@ const CARDS = [
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -11067,14 +11068,14 @@ const CARDS = [
       "Name": "Be Like Mike",
       "Description_UI": "Jordan's rookie season beat every expectation. Jordan was a sensation, an icon, a revelation, and his effortless style of play befuddled defenders. All of Jordan's basic attacks and skills will move first (x3 priority).",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "ALL_MOVES_PRIORITY_3"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -11176,14 +11177,14 @@ const CARDS = [
       "Name": "Chairman Of The Boards",
       "Description_UI": "Moses Malone is the Chairman of the Boards, he is an offensive rebound magnet. If Malone's skill misses, gets contested or gets blocked, Malone will rebound the ball and instead deal basic attack damage to his original target. This will not count as a turn.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "ON_SKILL_MISS_BLOCK_CONTEST",
         "effects": [
           "AUTO_REBOUND_PUTBACK"
         ],
         "condition": "on_skill_fail",
         "target": "enemy_target",
-        "modifier": "+BASIC DMG"
+        "modifier_value": "+BASIC DMG"
       }
     },
     "Skills": [
@@ -11287,14 +11288,14 @@ const CARDS = [
       "Name": "Nate The Great",
       "Description_UI": "Nate Thurmond is a tank, a strong defensive force. All damage from all opponent's basic attacks will be halved against Thurmond (except from Warriors cards).",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "HALVE_INCOMING_BASIC_ATK_EXCEPT_WARRIORS"
         ],
         "condition": "enemy_team_not:Golden State Warriors",
         "target": "incoming_basic_attack_dmg",
-        "modifier": "*0.5 DMG"
+        "modifier_value": "*0.5 DMG"
       }
     },
     "Skills": [
@@ -11368,7 +11369,7 @@ const CARDS = [
           "team_condition": null,
           "hp_condition": null,
           "block_amount": null,
-          "turns_active": 3,
+          "turns_active": null,
           "cannot_be_nullified": false,
           "requires_input": false,
           "input_type": null
@@ -11400,7 +11401,7 @@ const CARDS = [
       "Name": "The Joker",
       "Description_UI": "Jokic is a generational playmaker. His assist skill is unable to be intercepted by defensive skills. Due to his unorthodox shot, Jokic's basic attacks cannot be blocked by defensive skills, but it can be contested and skills that force a coin flip will still be successful.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNBLOCKABLE",
@@ -11408,7 +11409,7 @@ const CARDS = [
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -11510,14 +11511,14 @@ const CARDS = [
       "Name": "Big O",
       "Description_UI": "Oscar Robertson is the first NBA player to average a triple double over a season. His versatility poses a big threat to all defenders. Defenders cannot steal the ball from Robertson and they cannot intercept his assist skill.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "IMMUNE_TO_STEAL"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -11619,7 +11620,7 @@ const CARDS = [
       "Name": "Big Pat",
       "Description_UI": "Patrick Ewing's size and agility makes him incredibly hard to defend or score on. Opponents with 8 SPD or less are not able to use any defensive skills on Ewing. All opponents also cannot nullify his defensive skills.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SPD_BASED_DEFENSE_IMMUNITY",
@@ -11627,7 +11628,7 @@ const CARDS = [
         ],
         "condition": "enemy_spd:<=8",
         "target": "defense_immunity",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -11731,14 +11732,14 @@ const CARDS = [
       "Name": "Spanish Virtuoso",
       "Description_UI": "Pau Gasol is a 7-footer that prefers to rely on his finesse and soft touch to score, instead of his size and brute force. Opponents heavier than 255 lbs are unable to contest or block his skills with defensive skills.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "WEIGHT_BASED_BLOCK_IMMUNITY"
         ],
         "condition": "enemy_weight:>255",
         "target": "unblockable,uncontestable",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -11840,14 +11841,14 @@ const CARDS = [
       "Name": "PG-13",
       "Description_UI": "Paul George's game is smooth. He moves and handles the ball extremely well especially for his size. George does an additional 350 DMG for basic attacks if the opposing player is slower than him.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "CONDITIONAL_BONUS_DMG_STAT"
         ],
         "condition": "enemy_spd:<self",
         "target": "basic_attack",
-        "modifier": "+350 BASIC DMG"
+        "modifier_value": "+350 BASIC DMG"
       }
     },
     "Skills": [
@@ -11949,14 +11950,14 @@ const CARDS = [
       "Name": "The Truth",
       "Description_UI": "Paul Pierce is a big-time Celtic legend, a scorer that is not afraid of the bright lights. When any Boston Celtics card is on the team, Pierce will gain an additional 200 DMG for his damaging skill and an additional 2 SPD. When there is no Celtic left, he will lose the boost.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate_team:Boston Celtics",
         "target": "damaging_skill,spd",
-        "modifier": "+200 SKILL DMG, +2 SPD"
+        "modifier_value": "+200 SKILL DMG, +2 SPD"
       }
     },
     "Skills": [
@@ -12060,14 +12061,14 @@ const CARDS = [
       "Name": "Pistol Pete",
       "Description_UI": "Maravich was ahead of his time. His flashy style of play befuddled defenders and helped him score with ease. Maravich's skills cannot be blocked by defensive skills but his skills can still be contested.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNBLOCKABLE"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -12169,7 +12170,7 @@ const CARDS = [
       "Name": "Sugar Ray",
       "Description_UI": "Ray Allen has a perfect shooting form. Pretty to look at and it seems like it always goes in. Allen is not affected by skills that force coin flips and his skills cannot miss. However, he may be blocked and contested.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "IMMUNE_COINFLIP_SKILLS",
@@ -12177,7 +12178,7 @@ const CARDS = [
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -12279,14 +12280,14 @@ const CARDS = [
       "Name": "The 4th Heatle",
       "Description_UI": "Ray Allen joined the legendary Heatles and complemented them perfectly. The sharpshooting veteran brought them to new heights. When any one of LeBron, Wade or Bosh is on the team, Allen will gain an additional 300 DMG for all skills. When they are no longer on the team, he will lose the boost.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate:LeBron James|Dwyane Wade|Chris Bosh",
         "target": "all_skills",
-        "modifier": "+300 SKILL DMG"
+        "modifier_value": "+300 SKILL DMG"
       }
     },
     "Skills": [
@@ -12388,14 +12389,14 @@ const CARDS = [
       "Name": "The Knick Killer",
       "Description_UI": "Miller is one of the most clutch players ever and a known Knick killer. Miller's basic attacks and skills will all deal an additional 500 DMG when he is targeting any New York Knick player.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "CONDITIONAL_BONUS_DMG_VS_TEAM"
         ],
         "condition": "enemy_team:New York Knicks",
         "target": "basic_attack,all_skills",
-        "modifier": "+500 BASIC DMG, +500 SKILL DMG"
+        "modifier_value": "+500 BASIC DMG, +500 SKILL DMG"
       }
     },
     "Skills": [
@@ -12499,14 +12500,14 @@ const CARDS = [
       "Name": "Miami Greyhound",
       "Description_UI": "Rick Barry has remarkable quickness and instincts which makes him difficult to defend. Opponents cannot steal the ball from Barry.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "IMMUNE_TO_STEAL"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -12608,14 +12609,14 @@ const CARDS = [
       "Name": "The Chief",
       "Description_UI": "Robert Parish was a defensive anchor for the Celtics and was known for his durability and consistency. The opposing C will focus only on Parish, he cannot target other players with basic attacks or damage dealing skills. However, the opposing C may still target other players with defensive skills.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "FORCED_TARGET_ON_SELF"
         ],
         "condition": "enemy_pos:C",
         "target": "forced_target",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -12721,14 +12722,14 @@ const CARDS = [
       "Name": "Brodie",
       "Description_UI": "Westbrook holds a grudge against the Warriors and always excels against them. Westbrook will gain additional 1000 HP and 400 DMG for his basic attack when there is a Golden State Warrior on the opposing team. When there is no Warrior left on the opposing team, he will lose the boost.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "ENEMY_SYNERGY_STAT_BUFF"
         ],
         "condition": "enemy_team:Golden State Warriors",
         "target": "hp,basic_attack",
-        "modifier": "+1000 HP, +400 BASIC DMG"
+        "modifier_value": "+1000 HP, +400 BASIC DMG"
       }
     },
     "Skills": [
@@ -12832,14 +12833,14 @@ const CARDS = [
       "Name": "Air Robin",
       "Description_UI": "Pippen is Jordan's right-hand man, the Robin to his Batman. But that is no slight to Pippen, the all-time great defender is a legend in his own right. When any Michael Jordan card is on the team with Pippen, he will gain additional 250 DMG for all skills. When Jordan is no longer on the team, he will lose the boost.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate:Michael Jordan",
         "target": "all_skills",
-        "modifier": "+250 SKILL DMG"
+        "modifier_value": "+250 SKILL DMG"
       }
     },
     "Skills": [
@@ -12943,14 +12944,14 @@ const CARDS = [
       "Name": "Thunder Boy",
       "Description_UI": "Shai's explosive rise into superstardom has put his team on the map. His consistency has turned OKC into contenders overnight. Shai is Mr. Consistent, and no one is able to throw him off his game. Shai is unaffected by any defensive skills.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "IMMUNE_DEFENSIVE_SKILLS"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -13017,7 +13018,7 @@ const CARDS = [
           "valid_triggers": [],
           "consumes_move": false,
           "free_action": false,
-          "team_condition": "1.0",
+          "team_condition": null,
           "hp_condition": null,
           "block_amount": null,
           "turns_active": null,
@@ -13052,14 +13053,14 @@ const CARDS = [
       "Name": "Shaq-Fu",
       "Description_UI": "Shaq is humongous but he is extremely nimble. Shaq is combines his size and speed to perfection. Opponents with 8 SPD or lower are not able to damage Shaq with any skills. They may still damage him with basic attacks or use defensive skills on him.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SPD_BASED_SKILL_IMMUNITY"
         ],
         "condition": "enemy_spd:<=8",
         "target": "skill_immunity",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -13130,7 +13131,7 @@ const CARDS = [
           "free_action": false,
           "team_condition": null,
           "hp_condition": null,
-          "block_amount": 800,
+          "block_amount": null,
           "turns_active": null,
           "cannot_be_nullified": false,
           "requires_input": false,
@@ -13163,7 +13164,7 @@ const CARDS = [
       "Name": "The Diesel",
       "Description_UI": "Shaq \"The Diesel\" is a locomotive, he cannot be stopped. Shaq is unable to miss any of his skills, his skills also cannot be blocked with defensive skills. However, his skills can be contested, and his basic attacks can be blocked.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNBLOCKABLE",
@@ -13171,7 +13172,7 @@ const CARDS = [
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -13273,14 +13274,14 @@ const CARDS = [
       "Name": "The Squid",
       "Description_UI": "Moncrief is one of the best perimeter defenders ever. He hounds his assignments relentlessly with his high defensive IQ. Basic attack damage from all opponents used against Moncrief will be halved.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "HALVE_INCOMING_BASIC_ATK"
         ],
         "condition": "always",
         "target": "incoming_basic_attack_dmg",
-        "modifier": "*0.5 DMG"
+        "modifier_value": "*0.5 DMG"
       }
     },
     "Skills": [
@@ -13386,14 +13387,14 @@ const CARDS = [
       "Name": "Splash Brother",
       "Description_UI": "Curry is one half of the Splash Brothers, contributing heavily with his unstoppable pull up shots while Klay helps to relieve defensive pressure off of Curry. When any Warriors Klay Thompson card is on the team with Curry, he will gain an additional 1000 HP and 1 SPD. When Klay is no longer on the team, he will lose the boost.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate:Klay Thompson",
         "target": "hp,spd",
-        "modifier": "+1000 HP, +1 SPD"
+        "modifier_value": "+1000 HP, +1 SPD"
       }
     },
     "Skills": [
@@ -13495,14 +13496,14 @@ const CARDS = [
       "Name": "Chef Curry",
       "Description_UI": "Curry will start cooking once he gets into his groove. When his shots start falling, his confidence grows. Curry will increase his basic attack by 400 DMG for the rest of the game for every \"Skyfucker\" skill he hits.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "ON_SKILL_HIT",
         "effects": [
           "STACKING_DMG_BUFF"
         ],
         "condition": "on_hit:Skyfucker",
         "target": "basic_attack",
-        "modifier": "+400 BASIC DMG"
+        "modifier_value": "+400 BASIC DMG"
       }
     },
     "Skills": [
@@ -13608,14 +13609,14 @@ const CARDS = [
       "Name": "Hair Canada",
       "Description_UI": "Steve Nash is part of the exclusive 50-40-90 club. He is an amazing shooter that cannot be left open. Opponent's skills that force a coin flip will not affect Nash.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "IMMUNE_COINFLIP_SKILLS"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -13717,14 +13718,14 @@ const CARDS = [
       "Name": "The Fundamentals",
       "Description_UI": "Having mastered the fundamentals, all damage from all opponent's basic attacks will be halved against Duncan (except from Spurs cards).",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "HALVE_INCOMING_BASIC_ATK_EXCEPT_SPURS"
         ],
         "condition": "enemy_team_not:San Antonio Spurs",
         "target": "incoming_basic_attack_dmg",
-        "modifier": "*0.5 DMG"
+        "modifier_value": "*0.5 DMG"
       }
     },
     "Skills": [
@@ -13760,7 +13761,7 @@ const CARDS = [
           "team_condition": null,
           "hp_condition": null,
           "block_amount": null,
-          "turns_active": 3,
+          "turns_active": null,
           "cannot_be_nullified": false,
           "requires_input": false,
           "input_type": null
@@ -13830,14 +13831,14 @@ const CARDS = [
       "Name": "European Backcourt",
       "Description_UI": "Tony Parker is one half of the Spur's European backcourt. Parker and Ginobili's chemistry is outstanding. When any Manu Ginobili card is on the team, Parker will gain an additional 300 DMG for his basic attack and additional 1 SPD. When Ginobili is no longer on the team, he will lose the boost.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate:Manu Ginobili",
         "target": "basic_attack,spd",
-        "modifier": "+300 BASIC DMG, +1 SPD"
+        "modifier_value": "+300 BASIC DMG, +1 SPD"
       }
     },
     "Skills": [
@@ -13939,14 +13940,14 @@ const CARDS = [
       "Name": "T-Mac",
       "Description_UI": "McGrady is a microwave scorer who heats up in an instant. When any of McGrady's basic attacks or skills gets blocked, contested or misses, he will gain an additional 100 DMG the next turn for any basic attacks or skills. This will last only one turn, but there is no limit in a game.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "ON_SKILL_FAIL",
         "effects": [
           "HEAT_UP_DMG_BUFF"
         ],
         "condition": "on_miss_block_contest",
         "target": "all_dmg_next_turn",
-        "modifier": "+100 DMG"
+        "modifier_value": "+100 DMG"
       }
     },
     "Skills": [
@@ -14050,14 +14051,14 @@ const CARDS = [
       "Name": "Alien",
       "Description_UI": "Wembanyama is a generational talent, sometimes, his combination of size and skill seems like it's out of this world. Opponents shorter than 7'1 are unable to block or contest his damaging skills and basic attacks. Opponents shorter than 7'1 are also not able to nullify his defensive skills.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "HEIGHT_BASED_BLOCK_IMMUNITY"
         ],
         "condition": "enemy_height:<7'1",
         "target": "unblockable,uncontestable",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -14161,14 +14162,14 @@ const CARDS = [
       "Name": "Vinsanity",
       "Description_UI": "Vince Carter is the best in-game dunker in NBA history. His explosive and ferocious dunks make him a formidable opponent. His skills cannot be blocked or contested by defensive skills.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "SKILLS_UNBLOCKABLE"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -14270,14 +14271,14 @@ const CARDS = [
       "Name": "Clyde",
       "Description_UI": "Walt Frazier is one the biggest icons and personalities in NBA history. His assist skill cannot be intercepted by defensive skills.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "ASSIST_UNINTERCEPTABLE"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -14295,7 +14296,7 @@ const CARDS = [
           "coin_flip": false,
           "target_scope": "LANE_MATCHUP",
           "target": true,
-          "can_select": true,
+          "can_select": false,
           "dmg_formula": "MULT:1.5*TEAMMATE_BASE_DMG[C]",
           "dmg_raw": "x1.5 (C)",
           "modifiers": [
@@ -14381,14 +14382,14 @@ const CARDS = [
       "Name": "The Wide U",
       "Description_UI": "Wes Unseld and Elvin Hayes were a dynamic duo in Washington. Together, they made up a dangerous front court pairing. When any Elvin Hayes card is on the team, Unseld will gain an additional 500 HP and an additional 2 SPD. When Hayes is no longer on the team, he will lose the boost.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate:Elvin Hayes",
         "target": "hp,spd",
-        "modifier": "+500 HP, +2 SPD"
+        "modifier_value": "+500 HP, +2 SPD"
       }
     },
     "Skills": [
@@ -14496,14 +14497,14 @@ const CARDS = [
       "Name": "Captain New York",
       "Description_UI": "Willis Reed is New York royalty. He is a legend for the franchise and set the golden standard for New York big men. When any New York Knicks card is on the team, Reed will gain an additional 200 DMG for all skills and an additional 2 SPD. When there is no Knick left, he will lose the boost.",
       "Logic_Engine": {
-        "type": "CONDITIONAL_PASSIVE_ABILITY",
+        "logic_class": "CONDITIONAL_PASSIVE_ABILITY",
         "trigger": "TEAMMATE_SYNERGY",
         "effects": [
           "TEAMMATE_SYNERGY_STAT_BUFF"
         ],
         "condition": "teammate_team:New York Knicks",
         "target": "all_skills,spd",
-        "modifier": "+200 SKILL DMG, +2 SPD"
+        "modifier_value": "+200 SKILL DMG, +2 SPD"
       }
     },
     "Skills": [
@@ -14607,14 +14608,14 @@ const CARDS = [
       "Name": "One Hundred",
       "Description_UI": "Wilt's mythical 100 points remains unbreakable, even decades later. Wilt's career is seen to be folklore, and this makes Wilt an untouchable figure. Any damage to Wilt by basic attacks will be reduced by 200 DMG.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "HALVE_INCOMING_BASIC_ATK"
         ],
         "condition": "always",
         "target": "incoming_basic_attack_dmg",
-        "modifier": "-200 DMG"
+        "modifier_value": "-200 DMG"
       }
     },
     "Skills": [
@@ -14685,7 +14686,7 @@ const CARDS = [
           "free_action": false,
           "team_condition": null,
           "hp_condition": null,
-          "block_amount": 800,
+          "block_amount": null,
           "turns_active": null,
           "cannot_be_nullified": false,
           "requires_input": false,
@@ -14718,14 +14719,14 @@ const CARDS = [
       "Name": "The Stilt",
       "Description_UI": "Wilt was a giant among men. Standing 7'1 and weighing 275 LBS, Wilt's physical presence alone was enough to intimidate opponents. Wilt cannot be frozen by opponent's special skills.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "IMMUNE_TO_FREEZE"
         ],
         "condition": null,
         "target": null,
-        "modifier": null
+        "modifier_value": null
       }
     },
     "Skills": [
@@ -14827,14 +14828,14 @@ const CARDS = [
       "Name": "The Great Wall",
       "Description_UI": "Yao Ming's size overwhelms opponents as he towers over everyone on the court. Opponents 6'11 or shorter are not able to damage Yao with any skills. They may still damage him with basic attacks or use defensive skills on him.",
       "Logic_Engine": {
-        "type": "PASSIVE_ABILITY",
+        "logic_class": "PASSIVE_ABILITY",
         "trigger": "ALWAYS",
         "effects": [
           "HEIGHT_BASED_SKILL_IMMUNITY"
         ],
         "condition": "enemy_height:<=6'11",
         "target": "skill_immunity",
-        "modifier": "true"
+        "modifier_value": true
       }
     },
     "Skills": [
@@ -14907,8 +14908,8 @@ const CARDS = [
           "team_condition": null,
           "hp_condition": null,
           "block_amount": null,
-          "turns_active": 2,
-          "cannot_be_nullified": true,
+          "turns_active": null,
+          "cannot_be_nullified": false,
           "requires_input": false,
           "input_type": null
         }
