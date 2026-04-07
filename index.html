@@ -447,9 +447,15 @@ function getSearchText(c) {
     getCardVariant(c).toLowerCase(),
     getCardTeam(c).toLowerCase(),
   ];
-  getCardSkills(c).forEach(sk => { parts.push(sk.Name.toLowerCase()); parts.push((sk.Description_UI||'').toLowerCase()); });
+  getCardSkills(c).forEach(sk => { 
+    parts.push((sk.Name || '').toLowerCase()); 
+    parts.push((sk.Description_UI || '').toLowerCase()); 
+  });
   const ab = getAbility(c);
-  if (ab) { parts.push(ab.Name.toLowerCase()); parts.push((ab.Description_UI||'').toLowerCase()); }
+  if (ab) { 
+    parts.push((ab.Name || '').toLowerCase()); 
+    parts.push((ab.Description_UI || '').toLowerCase()); 
+  }
   return parts.join(' ');
 }
 
