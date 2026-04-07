@@ -744,6 +744,12 @@ function applyModifierTag(card, mod) {
   if (m.includes('HALVE_INCOMING_CLOSE_SHOT')) card._halveCloseShot = true;
   if (m.includes('HALVE_INCOMING_JUMPSHOT')) card._halveJumpShot = true;
   if (m.includes('HALVE_INCOMING_SKILLS_EXCEPT_SPECIFIC_TEAMS')) card._halveAllExceptTeams = true;
+  
+  // NEW FIXES: Adding the missing JSON hooks your engine was looking for
+  if (m.includes('HALVE_INCOMING_BASIC')) card._halveBasic = true;
+  if (m.includes('ONE_TIME_RECOVER')) card._oneTimeRecover = true;
+  if (m.includes('PREVENT_KO_UNTIL_LAST')) card._preventKOUntilLast = true;
+
   if (m.includes('ALL_MOVES_PRIORITY_3')) card._priorityBonus = 3;
   else if (m.includes('ALL_MOVES_PRIORITY_2')) card._priorityBonus = 2;
   if (m.includes('CONDITIONAL_BONUS_DMG_STAT')) card._conditionalDmgBonus = true;
@@ -1187,6 +1193,22 @@ async function executeAction(act) {
 
   // ===== NON-TARGETING SKILLS =====
   if (sk && !_isReactiveSkill(logic)) {
+    // Global Hard Disable
+    if (exec.includes('DISABLE_ALL_SKILLS')) {
+      const dur = parseInt(logic.turns_active || 2);
+      defs.forEach((tC, idx) => {
+        if (tC && !tC.isDead) {
+          (tC.Skills || []).forEach((eSk, eSi) => {
+            _disabledSkills[tC._instanceId] = { skillIdx: eSi, turnsLeft: dur };
+          });
+          addTrackedEffect(shortName(getCardName(atkC)), tC._instanceId, shortName(getCardName(tC)), 'disable', logic.effect_description || 'All skills disabled', dur);
+        }
+      });
+      logMsg(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} activated Global Hard Disable! All enemy skills locked for ${dur} turns!`);
+      if (sk._usesLeft !== undefined) sk._usesLeft--; sk._usesThisTurn++; 
+      renderArena(); 
+      return; 
+    }
 
     if (exec.includes('FREEZE') || exec.includes('DRIBBLE') || exec.includes('CROSSOVER')) {
       const tIdx = act.inputResolved?.targetIdx;
@@ -1347,6 +1369,7 @@ async function executeAction(act) {
 
   if (_screened[defC._instanceId]) { logMsg('block', 'Screen', `${shortName(getCardName(defC))} is screened! Skill guaranteed.`); }
 
+// Coin flip
   if (sk && logic.coin_flip && !atkC._immuneCoinflip && !_screened[defC._instanceId]) {
     const flip = Math.random() < 0.5;
     logMsg('coin', 'Coin', `Flip for ${sk.Name}: ${flip ? 'HEADS' : 'TAILS'}`);
@@ -1369,11 +1392,18 @@ async function executeAction(act) {
 
   // BUG 9 FIX: screen bypass correctly checks if target's instanceId is screened (not a raw empty string)
   const blocked = checkAuraBlock(act, sk, atkC, act.execTeam, defC);
-  if (blocked) { logMsg(isP ? 'def' : 'atk', isP ? 'You' : 'Bot', blocked); if (sk) { if (sk._usesLeft !== undefined) sk._usesLeft--; sk._usesThisTurn++; } await checkReboundTriggers(act, atkC, act.execTeam); return; }
+  if (blocked) { 
+      logMsg(isP ? 'def' : 'atk', isP ? 'You' : 'Bot', blocked); 
+      if (sk) { if (sk._usesLeft !== undefined) sk._usesLeft--; sk._usesThisTurn++; } 
+      await checkReboundTriggers(act, atkC, act.execTeam); 
+      return; 
+  }
 
+  // Defensive reactions (opposing team's reactive skills)
   if (!_screened[defC._instanceId] && !atkC._skillsUnblockable) await promptAndApplyReaction(act, sk, atkC, defC, dIdx, isP, defs);
   if (act._blocked) { if (sk) { if (sk._usesLeft !== undefined) sk._usesLeft--; sk._usesThisTurn++; } await checkReboundTriggers(act, atkC, act.execTeam); return; }
 
+  // Apply damage
   logMsg(isP ? 'atk' : 'def', whoLabel, `[${atkC.battleRole}] ${shortName(getCardName(atkC))} → ${sk?.Name || 'Basic'} on [${defC.battleRole}] ${shortName(getCardName(defC))} — ${dmgRaw} DMG`);
   await playCombatAnimation(`${isP ? 'player' : 'enemy'}-${act.actorIdx}`, `${isP ? 'enemy' : 'player'}-${dIdx}`, dmgRaw, defC, act.execTeam, dIdx, true);
 
