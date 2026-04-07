@@ -713,9 +713,23 @@ function startBattle(){
   _statBuffs={};_activeEffects=[];_synergyApplied=new Set();
   _frozen={};_shutdown={};_drained={};_invulnerable={};_disabledSkills={};_screened={};
   _surviveUsed={};_healUsed={};_stackHits={};_stolenSkills={};
-  [...playerActive,...playerBench,...enemyActive,...enemyBench].forEach(c=>{if(c)applyPassiveAbility(c);});
+    [...playerActive,...enemyActive,...playerBench,...enemyBench].forEach(c=>{if(c)applyPassiveAbility(c);});
   [...playerActive,...playerBench].forEach(c=>{if(c)applySynergyAbilities(c,playerActive);});
   [...enemyActive,...enemyBench].forEach(c=>{if(c)applySynergyAbilities(c,enemyActive);});
+
+  // Activate team-wide board states (Rodman -250 skill dmg reduce, etc)
+  const activateTeamAuras = (activeArr, teamStr) => {
+    for (const c of activeArr) {
+      if (!c) continue;
+      if (hasCardEffect(activeArr, 'TEAM_SKILL_DMG_REDUCE_250')) {
+        logMsg('sys', 'System', `${shortName(getCardName(c))} reduces ALL enemy skill damage by 250!`);
+        addBoardState({type: 'team_dmg_reduce_250', sourceTeam: teamStr, targetTeam: teamStr === 'player' ? 'enemy' : 'player', duration: 9999, amount: 250});
+        break; // Only need one Rodman per team
+      }
+    }
+  };
+  activateTeamAuras(playerActive, 'player');
+  activateTeamAuras(enemyActive, 'enemy');
   $('battle-log').innerHTML='';logMsg('sys','System','Match initiated. First to 8 KOs wins.');
   $('score-player').textContent='0';$('score-enemy').textContent='0';$('checkout-panel').style.display='none';
   $('turn-indicator').textContent='TURN 1 — STAGING';showScreen('battle-screen');initBattleAudio();renderArena();
@@ -1245,8 +1259,16 @@ async function playCombatAnimation(atkId,defId,dmgIn,targetObj,execTeam,defIdx){
   if(dmgIn&&targetObj._mitigate){dmg=Math.max(0,dmgIn-targetObj._mitigate);targetObj._mitigate=0;}
   if(_screened[targetObj._instanceId]){dmg=Math.max(0,dmg-0);logMsg('block','Screen',`${shortName(getCardName(targetObj))} is screened!`);}
   playAttackSound();
-  if(dE&&dmg>0){dE.querySelector('.battle-card')?.classList.add('anim-shake');const p=document.createElement('div');p.className='dmg-popup';p.textContent=`-${dmg}`;(dE.querySelector('.battle-card')||dE).appendChild(p);setTimeout(()=>{dE.querySelector('.battle-card')?.classList.remove('anim-shake');p.remove();},900);}
-  targetObj.currentHp=Math.max(0,targetObj.currentHp-dmg);
+  // Apply personal damage reduction board states (Robinson -100 skill dmg reduce, etc.)
+  let finalDmg = dmg;
+  if (hasCardEffect([targetObj], 'SKILL_DMG_REDUCE_100')) {
+    const bs = getCardEffect([targetObj], 'SKILL_DMG_REDUCE_100');
+    if (bs) { finalDmg = Math.max(0, finalDmg - (bs.amount || 100)); logMsg('block', 'Ability', `${shortName(getCardName(targetObj))} reduces damage by ${bs.amount || 100}! → ${finalDmg}`); }
+  if (hasBoardState(isP?'player':'enemy', 'team_dmg_reduce_250')) {
+    finalDmg = Math.max(0, finalDmg - 250); logMsg('block', 'Ability', `Team damage reduced by 250! → ${finalDmg}`);
+  }
+  if(dE&&finalDmg>0){dE.querySelector('.battle-card')?.classList.add('anim-shake');const p=document.createElement('div');p.className='dmg-popup';p.textContent=`-${finalDmg}`;(dE.querySelector('.battleRole')||dE.querySelector('.battle-card')||dE).appendChild(p);setTimeout(()=>{dE.querySelector('.battle-card')?.classList.remove('anim-shake');p.remove();},900);}
+  targetObj.currentHp=Math.max(0,targetObj.currentHp-finalDmg);
   const hpMax=getCardHP(targetObj),pct=Math.max(0,(targetObj.currentHp/hpMax)*100);
   const fill=document.getElementById(`hpf-${defId}`);if(fill){fill.style.width=pct+'%';fill.style.background=pct>50?'#40E0A0':pct>20?'#FFD166':'#FF6B6B';}
   const hpt=document.getElementById(`hpt-${defId}`);if(hpt)hpt.textContent=`${targetObj.currentHp}/${hpMax}`;
