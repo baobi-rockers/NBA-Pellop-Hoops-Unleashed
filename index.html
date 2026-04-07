@@ -1198,6 +1198,26 @@ async function executeAction(act){
   // Coin flip
   if(sk&&logic.coin_flip&&!atkC._immuneCoinflip&&!_screened[defC._instanceId]){const flip=Math.random()<0.5;logMsg('coin','Coin',`Flip for ${sk.Name}: ${flip?'HEADS':'TAILS'}`);await animateCoinFlip(shortName(getCardName(atkC)),sk.Name,flip);if(!flip){logMsg('sys','System',`${sk.Name} missed!`);if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;await checkReboundTriggers(act,atkC,act.execTeam);return;}}
 
+  // Coin flip check
+  if (sk && logic.coin_flip && !atkC._immuneCoinflip && !_screened[defC._instanceId]) {
+    const flip = Math.random() < 0.5;
+    logMsg('coin', 'Coin', `Flip for ${sk.Name}: ${flip ? 'HEADS' : 'TAILS'}`);
+    await animateCoinFlip(shortName(getCardName(atkC)), sk.Name, flip);
+    if (!flip) { logMsg('sys', 'System', `${sk.Name} missed!`); if (sk._usesLeft !== undefined) sk._usesLeft--; sk._usesThisTurn++; await checkReboundTriggers(act, atkC, act.execTeam); return; }
+  }
+
+  // Ability-based damage halving (independent of coin flip)
+  if (sk && defC._halveCloseShot) {
+    const atkPos = atkC.battleRole || '';
+    const isJumpShot = (sk.Nature || '').toLowerCase().includes('jump shot');
+    const isCloseShot = (sk.Nature || '').toLowerCase().includes('close shot');
+    if ((isJumpShot && (atkPos === 'PG' || atkPos === 'SG')) || isCloseShot) {
+      dmgRaw = Math.floor(Math.max(0, dmgRaw / 2));
+      logMsg('block', 'Ability', `${shortName(getCardName(defC))} halves ${isJumpShot ? 'jump shot' : 'close shot'}! → ${dmgRaw}`);
+    }
+  }
+  if (sk && defC._halveAllExceptTeams) { dmgRaw = Math.floor(dmgRaw / 2); logMsg('block', 'Ability', `${shortName(getCardName(defC))} halves incoming skill damage! → ${dmgRaw}`); }
+      
   // Aura block check
   const blocked=checkAuraBlock(act,sk,atkC,act.execTeam);
   if(blocked){logMsg(isP?'def':'atk',isP?'You':'Bot',blocked);if(sk){if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;}await checkReboundTriggers(act,atkC,act.execTeam);return;}
