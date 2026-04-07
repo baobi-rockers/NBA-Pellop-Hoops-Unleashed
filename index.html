@@ -1,4 +1,1676 @@
-  // ==================== CARDS DATABASE ====================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>NBA Pellop Hoops Unleashed · TCG Pocket Edition</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700;800&family=Barlow+Condensed:wght@700;800;900&family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#F5F0E8;--bg-dark:#FFFDF9;--surface:#FFFFFF;--surface-2:#F0EBE0;--border:#E0D8CC;--border-heavy:#C8B89A;--accent:#E8621A;--accent-dark:#C4501A;--accent-light:#FF8C42;--green:#2D6A4F;--green-light:#40916C;--green-pale:#D8F3DC;--text:#1A1A1A;--text-light:#4A4A4A;--text-muted:#8A8A8A;--gold:#C8960C;--gold-light:#FFD166;--red:#D62828;--blue:#1B4F72;--pos-pg:#E8621A;--pos-sg:#D62828;--pos-sf:#2D6A4F;--pos-pf:#1B4F72;--pos-c:#6B3FA0;--pos-6th:#C8960C;--battle-bg:#0A0F1A;--battle-surface:rgba(255,255,255,0.06);--battle-border:rgba(255,255,255,0.15);--log-width:360px;--btn-radius:8px}
+body{background:var(--bg);font-family:'Inter',sans-serif;color:var(--text);overflow-y:scroll;height:100vh;overflow-x:hidden}
+.screen{display:none;min-height:100vh;background:var(--bg)}.screen.active{display:block}
+.game-btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 22px;border-radius:var(--btn-radius);font-weight:700;font-size:.85rem;cursor:pointer;font-family:'Inter',sans-serif;border:none;position:relative;overflow:hidden;transition:transform .12s ease,filter .12s ease;text-shadow:0 1px 2px rgba(0,0,0,.4);letter-spacing:.5px}
+.game-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.18) 0%,rgba(0,0,0,.08) 100%);border-radius:inherit;pointer-events:none}
+.game-btn:hover:not(:disabled){transform:scale(.97);filter:brightness(1.08)}.game-btn:active:not(:disabled){transform:scale(.94);filter:brightness(.95)}.game-btn:disabled{opacity:.45;cursor:not-allowed;transform:none!important}
+.game-btn-orange{background:linear-gradient(180deg,#F07030,#C4501A);color:#fff;box-shadow:0 3px 0 #8B3010,0 4px 12px rgba(232,98,26,.4)}
+.game-btn-green{background:linear-gradient(180deg,#3A8060,#1E5235);color:#fff;box-shadow:0 3px 0 #0F3020,0 4px 12px rgba(45,106,79,.4)}
+.game-btn-red{background:linear-gradient(180deg,#D84040,#982020);color:#fff;box-shadow:0 3px 0 #601010,0 4px 12px rgba(180,40,40,.5)}
+.game-btn-blue{background:linear-gradient(180deg,#2A6090,#0D3060);color:#fff;box-shadow:0 3px 0 #081840,0 4px 12px rgba(27,79,114,.4)}
+.game-btn-gold{background:linear-gradient(180deg,#E0A820,#A07008);color:#fff;box-shadow:0 3px 0 #604000,0 4px 12px rgba(200,150,12,.4)}
+.game-btn-purple{background:linear-gradient(180deg,#9060C0,#602090);color:#fff;box-shadow:0 3px 0 #300860,0 4px 12px rgba(107,63,160,.4)}
+.game-btn-outline{background:linear-gradient(180deg,#f5f0e8,#e0d0bc);color:var(--text);box-shadow:0 3px 0 #b8a890,0 2px 6px rgba(0,0,0,.15)}
+.game-btn-ghost{background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.06));color:rgba(255,255,255,.85);box-shadow:0 3px 0 rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.2)}
+.game-btn-teal{background:linear-gradient(180deg,#40E0A0,#1A9060);color:#0A1A10;box-shadow:0 3px 0 #0A5030,0 4px 12px rgba(64,224,160,.3)}
+.game-btn-cyan{background:linear-gradient(180deg,#4FC3F7,#0288D1);color:#0A1929;box-shadow:0 3px 0 #014060,0 4px 12px rgba(79,195,247,.4)}
+.app-header{background:var(--surface);border-bottom:2px solid var(--border);padding:6px 16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;z-index:100;position:sticky;top:0;box-shadow:0 2px 8px rgba(0,0,0,.08)}
+.header-logo-wrap{display:flex;align-items:center;gap:10px}
+.header-logo-img{height:38px;width:auto;object-fit:contain}
+.nav{display:flex;gap:4px;background:var(--surface-2);padding:4px;border-radius:40px;border:1px solid var(--border)}
+.nav-btn{padding:5px 14px;border-radius:30px;font-weight:600;font-size:.8rem;background:transparent;border:none;cursor:pointer;color:var(--text-light);font-family:'Inter',sans-serif;transition:all .15s}
+.nav-btn.active,.nav-btn:hover{background:var(--accent);color:#fff}
+.tooltip-bubble{position:fixed;z-index:9999;background:rgba(10,15,26,.95);border:1px solid rgba(255,255,255,.2);padding:10px 12px;border-radius:10px;color:#E8E8E8;max-width:280px;font-size:.68rem;line-height:1.4;box-shadow:0 10px 28px rgba(0,0,0,.7);backdrop-filter:blur(10px);opacity:0;pointer-events:none;transition:opacity .15s;font-weight:300}
+.tooltip-bubble .tt-name{color:var(--gold-light);font-weight:700;font-size:.82rem;margin-bottom:3px}
+.tooltip-bubble .tt-ability{color:#80CFFF;font-weight:600;font-size:.65rem;margin-bottom:2px}
+.tooltip-bubble .tt-skill{margin-top:3px}
+.tooltip-bubble .tt-skill-name{color:#fff;font-weight:600;font-size:.7rem}
+.tooltip-bubble .tt-skill-dmg{color:#FF8C8C;font-size:.65rem}
+.tooltip-bubble .tt-skill-desc{color:rgba(255,255,255,.4);font-size:.6rem}
+.tooltip-bubble.visible{opacity:1}
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;padding:8px 16px;background:var(--surface-2);border-bottom:1px solid var(--border);align-items:center}
+.styled-search-wrap{position:relative;display:flex;align-items:center}
+.styled-search-wrap .search-icon{position:absolute;left:10px;font-size:13px;color:var(--text-muted);pointer-events:none}
+input[type="text"].pill-input{padding:6px 12px 6px 30px;border-radius:50px;border:1.5px solid var(--border);background:#fff;color:var(--text);font-size:.82rem;height:32px;outline:none;font-family:'Inter',sans-serif;transition:border-color .2s}
+input[type="text"].pill-input:focus{border-color:var(--accent)}
+input[type="text"].pill-input::placeholder{color:var(--text-muted)}
+select.pill-select{padding:5px 12px;border-radius:50px;border:1.5px solid var(--border);background:#fff;color:var(--text);font-size:.82rem;height:32px;outline:none;font-family:'Inter',sans-serif;cursor:pointer;transition:border-color .2s}
+select.pill-select:focus{border-color:var(--accent)}
+.sticky-container{position:sticky;top:0;z-index:90;background:var(--bg)}
+#cat-split-wrapper{display:flex;align-items:flex-start;gap:0;min-height:calc(100vh - 90px)}
+#cat-left-panel{width:0;overflow:hidden;flex-shrink:0;position:sticky;top:90px;max-height:calc(100vh - 90px);overflow-y:auto;background:var(--surface);border-right:2px solid var(--border-heavy);transition:width .35s cubic-bezier(.4,0,.2,1)}
+#cat-left-panel.open{width:360px}
+.cat-left-inner{width:360px;padding:18px 16px}
+.cat-left-card-img{width:100%;aspect-ratio:5/7;border-radius:12px;overflow:hidden;border:2px solid var(--border);background:#1a1a2e;margin-bottom:14px;box-shadow:0 8px 24px rgba(0,0,0,.15)}
+.cat-left-card-img img{width:100%;height:100%;object-fit:cover}
+@keyframes catCardIn{0%{transform:rotateY(720deg) scale(.4);opacity:0}15%{opacity:1}70%{transform:rotateY(0deg) scale(1.03)}100%{transform:rotateY(0deg) scale(1);opacity:1}}
+.cat-left-card-img.animating{animation:catCardIn 1.4s cubic-bezier(.08,.95,.2,1) forwards;perspective:1200px;transform-style:preserve-3d}
+#cat-right-panel{flex:1;min-width:0}
+#cgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:20px;padding:14px 18px;align-items:start}
+#home-screen{background:radial-gradient(ellipse at 50% 40%,#1a2a1a,#0a0f0a);min-height:100vh;overflow:hidden}
+.home-hero{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;text-align:center;gap:32px;padding:20px;position:relative}
+.home-logo-wrap{position:relative;display:inline-block;cursor:default}
+.home-logo-glow{position:absolute;inset:-40px;background:radial-gradient(ellipse at center,rgba(232,98,26,.7),rgba(45,106,79,.4) 40%,transparent 70%);border-radius:50%;filter:blur(20px);animation:pulseFlame 2.8s ease-in-out infinite;pointer-events:none;z-index:0}
+.home-logo-glow-2{position:absolute;inset:-20px;background:radial-gradient(ellipse at center,rgba(255,180,50,.5),rgba(232,98,26,.3) 50%,transparent 70%);border-radius:50%;filter:blur(12px);animation:pulseFlame2 2.1s ease-in-out infinite;pointer-events:none;z-index:0}
+@keyframes pulseFlame{0%{opacity:.6;transform:scale(.92)}50%{opacity:1;transform:scale(1.08)}100%{opacity:.6;transform:scale(.92)}}
+@keyframes pulseFlame2{0%{opacity:.4;transform:scale(1) translateY(0)}50%{opacity:.9;transform:scale(1.05) translateY(-8px)}100%{opacity:.4;transform:scale(1) translateY(0)}}
+.home-big-logo{width:min(500px,85vw);position:relative;z-index:1;filter:drop-shadow(0 4px 20px rgba(232,98,26,.5))}
+.home-btn-row{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.card-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:14px 18px;align-items:start}
+.compact-card{position:relative;width:100%;padding-bottom:140%;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 3px 10px rgba(0,0,0,.12);transition:transform .2s,box-shadow .2s;cursor:pointer;border:2px solid var(--border)}
+.compact-card:hover{transform:translateY(-4px) scale(1.03);box-shadow:0 10px 24px rgba(232,98,26,.25);border-color:var(--accent);z-index:5}
+.compact-card.in-draft{opacity:.25;pointer-events:none;filter:grayscale(70%)}
+.compact-card.selected-panel{border-color:var(--green);box-shadow:0 6px 20px rgba(45,106,79,.35)}
+.card-img-sm{position:absolute;inset:0;background:#1a1a2e;pointer-events:none}
+.card-img-sm img{width:100%;height:100%;object-fit:cover}
+.ec-header{border-bottom:2px solid var(--border);padding-bottom:6px;margin-bottom:8px}
+.ec-title{font-size:1.15rem;font-weight:800;line-height:1.1}
+.ec-team{color:var(--accent);font-weight:700;font-size:.65rem;letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.ec-stats-row{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.ec-stat{background:var(--surface-2);padding:4px 10px;border-radius:6px;font-weight:800;border:1px solid var(--border);font-size:.82rem;display:flex;align-items:center;gap:3px}
+.ec-stat span{font-size:.55rem;color:var(--text-muted)}
+.ec-ability-block{background:rgba(45,106,79,.06);border-left:3px solid var(--green);padding:6px 8px;margin-bottom:8px;border-radius:0 6px 6px 0}
+.ec-ability-name{font-weight:800;color:var(--green);font-size:.82rem}
+.ec-ability-desc{font-size:.65rem;color:var(--text-light);line-height:1.35;margin-top:2px}
+.ec-skill-wrap{background:var(--surface-2);border:1px solid var(--border);padding:7px 8px;border-radius:8px;margin-bottom:6px}
+.ec-skill-header{display:flex;justify-content:space-between;align-items:flex-start;font-weight:800;font-size:.75rem;margin-bottom:3px;gap:4px}
+.ec-skill-name{flex:1;color:var(--text)}
+.ec-skill-dmg{color:var(--red);background:rgba(214,40,40,.08);padding:1px 5px;border-radius:4px;font-size:.68rem;white-space:nowrap}
+.ec-skill-desc{font-size:.62rem;color:var(--text-light);line-height:1.3}
+.ec-effect-tag{display:inline-block;background:rgba(200,150,12,.12);color:var(--gold);font-size:.58rem;font-weight:700;padding:1px 5px;border-radius:3px;margin-top:2px;border:1px solid rgba(200,150,12,.25)}
+.draft-layout{display:flex;min-height:calc(100vh - 90px)}
+.draft-main{flex:1;overflow-y:auto;min-width:0}
+.draft-sidebar{width:200px;flex-shrink:0;background:var(--surface);border-left:2px solid var(--border);display:flex;flex-direction:column;padding:14px 10px;gap:8px;position:sticky;top:90px;height:calc(100vh - 90px);overflow-y:auto}
+.draft-count-display{font-family:'Orbitron',sans-serif;font-size:2.2rem;font-weight:900;text-align:center;color:var(--accent);text-shadow:2px 2px 0 rgba(0,0,0,.08);letter-spacing:2px;margin-bottom:6px}
+.slot-card{background:var(--surface-2);border-radius:8px;border:1.5px dashed var(--border-heavy);padding:5px 6px;min-height:48px;text-align:center;position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;transition:all .2s}
+.slot-card.filled{border-style:solid;background:#fff}
+.slot-pos{font-weight:900;font-size:.9rem;letter-spacing:1px;pointer-events:none}
+.slot-name{font-weight:600;font-size:.6rem;color:var(--text);white-space:normal;line-height:1.2;pointer-events:none;word-wrap:break-word;width:100%;margin-top:2px}
+.slot-card.drag-over{background:rgba(232,98,26,.08);border-style:solid;border-color:var(--accent)}
+.slot-PG.filled{border-color:var(--pos-pg)}.slot-PG .slot-pos{color:var(--pos-pg)}
+.slot-SG.filled{border-color:var(--pos-sg)}.slot-SG .slot-pos{color:var(--pos-sg)}
+.slot-SF.filled{border-color:var(--pos-sf)}.slot-SF .slot-pos{color:var(--pos-sf)}
+.slot-PF.filled{border-color:var(--pos-pf)}.slot-PF .slot-pos{color:var(--pos-pf)}
+.slot-C.filled{border-color:var(--pos-c)}.slot-C .slot-pos{color:var(--pos-c)}
+.remove-slot,.setup-remove{position:absolute;top:-9px;right:-9px;width:22px;height:22px;border-radius:50%;z-index:100;background:linear-gradient(180deg,#D84040,#982020);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:bold;border:none;box-shadow:0 2px 0 #601010,0 2px 5px rgba(180,40,40,.5);transition:transform .12s}
+.remove-slot:hover,.setup-remove:hover{transform:scale(.88)}
+#draft-grid-wrapper{display:flex;align-items:flex-start;min-height:100%;flex-direction:row-reverse}
+#draft-cards-col{flex:1;min-width:0}
+#draft-side-panel{width:0;overflow:hidden;transition:width .35s cubic-bezier(.4,0,.2,1);flex-shrink:0;background:var(--surface);border-right:2px solid var(--border);position:sticky;top:90px;max-height:calc(100vh - 90px);overflow-y:auto}
+#draft-side-panel.open{width:380px}
+.side-panel-inner{padding:18px 16px;width:380px}
+.side-panel-card-img{width:100%;aspect-ratio:5/7;border-radius:12px;overflow:hidden;border:2px solid var(--border);background:#1a1a2e;margin-bottom:14px;box-shadow:0 8px 24px rgba(0,0,0,.15)}
+.side-panel-card-img img{width:100%;height:100%;object-fit:cover}
+@keyframes panelCardIn{0%{transform:rotateY(720deg) scale(.4);opacity:0}15%{opacity:1}70%{transform:rotateY(0deg) scale(1.03)}100%{transform:rotateY(0deg) scale(1);opacity:1}}
+.side-panel-card-img.animating{animation:panelCardIn 1.4s cubic-bezier(.08,.95,.2,1) forwards;perspective:1200px;transform-style:preserve-3d}
+.side-panel-close{position:absolute;top:10px;left:10px;width:28px;height:28px;border-radius:50%;background:linear-gradient(180deg,#D84040,#982020);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:bold;z-index:10;box-shadow:0 3px 0 #601010;border:none;transition:transform .12s}
+.side-panel-close:hover{transform:scale(.85)}
+.side-panel-relative{position:relative}
+#setup-screen{background:var(--bg)}
+.setup-header-bar{background:var(--surface);padding:10px 20px;border-bottom:2px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.setup-slots-row{display:flex;justify-content:center;gap:10px;padding:14px 20px 6px;flex-wrap:nowrap;overflow-x:auto}
+.setup-slot-card{width:240px;height:336px;flex-shrink:0;background:var(--surface);border-radius:10px;border:2px dashed var(--border-heavy);display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:visible;transition:all .2s}
+.setup-slot-card.filled{border-style:solid;border-width:2px}
+.setup-slot-card.drag-over{box-shadow:0 0 18px rgba(232,98,26,.4);transform:scale(1.03);border-color:var(--accent)}
+.setup-slot-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:8px}
+.setup-slot-pos{font-weight:900;font-size:1.4rem;letter-spacing:1px;z-index:2}
+.setup-slot-drop-text{font-size:.62rem;opacity:.4;margin-top:5px;z-index:2}
+.setup-slot-PG.filled{border-color:var(--pos-pg)}.setup-slot-PG .setup-slot-pos{color:var(--pos-pg)}
+.setup-slot-SG.filled{border-color:var(--pos-sg)}.setup-slot-SG .setup-slot-pos{color:var(--pos-sg)}
+.setup-slot-SF.filled{border-color:var(--pos-sf)}.setup-slot-SF .setup-slot-pos{color:var(--pos-sf)}
+.setup-slot-PF.filled{border-color:var(--pos-pf)}.setup-slot-PF .setup-slot-pos{color:var(--pos-pf)}
+.setup-slot-C.filled{border-color:var(--pos-c)}.setup-slot-C .setup-slot-pos{color:var(--pos-c)}
+.setup-counter{font-family:'Orbitron',sans-serif;font-weight:900;font-size:2.2rem;color:var(--green);letter-spacing:2px}
+.setup-action-bar{display:flex;align-items:center;justify-content:center;padding:10px 20px;background:var(--surface);border-bottom:1px solid var(--border);gap:16px}
+.bench-label{font-weight:800;color:var(--accent);padding:10px 20px 4px}
+.bench-scroll-row{padding:10px 20px;display:flex;flex-direction:row;overflow-x:auto;gap:12px;flex-wrap:nowrap;scroll-snap-type:x mandatory}
+.bench-scroll-row::-webkit-scrollbar{height:5px}
+.bench-scroll-row::-webkit-scrollbar-track{background:var(--border);border-radius:3px}
+.bench-scroll-row::-webkit-scrollbar-thumb{background:#7ab49a;border-radius:3px}
+.bench-card-item{width:240px;height:336px;flex-shrink:0;scroll-snap-align:start;background:#1a1a2e;border-radius:10px;overflow:hidden;cursor:grab;border:2px solid var(--border);box-shadow:0 4px 12px rgba(0,0,0,.15);position:relative;transition:transform .2s,box-shadow .2s}
+.bench-card-item:hover{transform:translateY(-4px);box-shadow:0 10px 20px rgba(232,98,26,.25);border-color:var(--accent)}
+.bench-card-item img{width:100%;height:100%;object-fit:cover}
+#battle-screen{background:var(--battle-bg);color:#fff;overflow:hidden}
+.battle-app-header{background:rgba(10,15,26,.97);border-bottom:1px solid rgba(255,255,255,.1);padding:6px 16px;display:flex;align-items:center;justify-content:space-between;position:fixed;top:0;left:0;right:0;z-index:200;backdrop-filter:blur(10px)}
+.battle-logo-img{height:34px;width:auto;object-fit:contain}
+.arena-container{display:flex;height:100vh;width:100%;overflow:hidden;position:relative;padding-top:44px;transition:padding-right .4s cubic-bezier(.4,0,.2,1)}
+.arena-container.log-open{padding-right:var(--log-width)}
+.court-area{flex:1;display:flex;flex-direction:column;background:url('https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/BATTLE%20BACKDROPS/grassy_court.png') center/cover no-repeat,radial-gradient(ellipse at center,#0d1b2a,#050a12);padding:10px 20px 8px;justify-content:space-between;overflow:hidden;position:relative;transition:all .4s cubic-bezier(.4,0,.2,1)}
+.floating-scoreboard{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(10,15,26,.88);border:1.5px solid rgba(255,255,255,.15);padding:5px 24px;border-radius:12px;display:flex;flex-direction:column;align-items:center;z-index:50;box-shadow:0 6px 20px rgba(0,0,0,.7);backdrop-filter:blur(8px)}
+.score-board{display:flex;gap:16px;font-family:'Orbitron',sans-serif;font-size:2.5rem;line-height:1;font-weight:900}
+#turn-indicator{font-weight:700;color:rgba(255,255,255,.5);font-size:.68rem;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:1px}
+.active-fan-wrapper{display:flex;justify-content:center;align-items:flex-end;position:relative;width:100%;height:270px;margin-bottom:120px}
+.enemy-fan-wrapper{display:flex;justify-content:center;align-items:flex-start;position:relative;width:100%;height:290px;margin-top:50px}
+.active-card-wrap,.enemy-card-wrap{transition:all .3s cubic-bezier(.2,.8,.2,1);cursor:pointer;position:relative;display:inline-block;margin:0 -20px}
+.active-card-wrap:hover,.enemy-card-wrap:hover{transform:rotate(var(--base-rot)) translateY(var(--base-y)) scale(1.4)!important;margin:0 35px!important;z-index:100!important}
+.active-card-wrap:hover{filter:drop-shadow(0 20px 30px rgba(64,224,160,.5))}
+.enemy-card-wrap:hover{filter:drop-shadow(0 -10px 30px rgba(255,107,107,.7))}
+.battle-card{width:165px;height:231px;border-radius:10px;border:2px solid rgba(255,255,255,.2);overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,.7);position:relative;background:#0f1320;transition:border .2s,box-shadow .2s}
+.battle-card img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:8px}
+.dead-card{filter:grayscale(100%) brightness(.3);pointer-events:none;opacity:.7}
+.battle-card.staged{border-color:#40E0A0!important;box-shadow:0 0 18px 3px rgba(64,224,160,.5)}
+.battle-card.valid-target{border-color:#FFA500!important;animation:pulseTarget 1.3s infinite ease-in-out}
+@keyframes pulseTarget{0%{box-shadow:0 0 10px 3px rgba(255,165,0,.5)}50%{box-shadow:0 0 22px 8px rgba(255,165,0,.8)}100%{box-shadow:0 0 10px 3px rgba(255,165,0,.5)}}
+.hp-bar-container{position:absolute;bottom:-11px;left:0;width:100%;height:7px;background:rgba(0,0,0,.6);border-radius:4px;overflow:hidden;z-index:5}
+.hp-fill{height:100%;background:#40E0A0;transition:width .3s,background .3s;border-radius:4px}
+.hp-text{position:absolute;bottom:-24px;width:100%;text-align:center;font-size:.68rem;font-weight:700;color:rgba(255,255,255,.85);z-index:5;white-space:nowrap;text-shadow:0 1px 3px #000}
+.bench-stack-container{position:absolute;left:14px;width:120px;z-index:150;pointer-events:none}
+.bench-stack-container.player-bench-stack{bottom:calc(130px + 128px);height:180px}
+.bench-stack-container.enemy-bench-stack{top:calc(50px + 130px);height:180px}
+.bench-stack-card{position:absolute;width:120px;height:168px;border-radius:8px;border:1.5px solid rgba(255,255,255,.2);background:#0f1320;cursor:pointer;box-shadow:-3px 3px 10px rgba(0,0,0,.7);pointer-events:auto;overflow:hidden}
+.bench-stack-card img{width:100%;height:100%;object-fit:cover}
+.bench-stack-card.face-down{background:url('https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/BACK%20OF%20CARDS/GOAT_TIER_(back).png') center/cover}
+.bench-stack-card.face-down img{display:none}
+.bench-stack-card:hover{border-color:rgba(255,255,255,.6);box-shadow:0 0 14px rgba(255,255,255,.3)}
+.bench-fan-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);backdrop-filter:blur(12px);z-index:140;display:none;flex-direction:column;align-items:center;justify-content:center}
+.bench-fan-overlay.open{display:flex}
+.bench-fan-stage{position:relative;width:100%;height:340px;display:flex;align-items:flex-end;justify-content:center}
+.bench-fan-card-wrap{position:relative;cursor:pointer;transition:all .3s cubic-bezier(.2,.8,.2,1);transform-origin:bottom center;margin:0 -20px}
+.bench-fan-card-wrap:hover{transform:rotate(var(--base-rot)) translateY(var(--base-y)) scale(1.4)!important;margin:0 35px!important;z-index:300!important;filter:brightness(1.25) drop-shadow(0 -12px 24px rgba(64,224,160,.6))}
+.bench-fan-card{width:150px;height:210px;border-radius:12px;border:2px solid rgba(255,255,255,.25);overflow:hidden;background:#0f1320;box-shadow:0 16px 36px rgba(0,0,0,.9)}
+.bench-fan-card img{width:100%;height:100%;object-fit:cover}
+.bench-fan-card-wrap.ineligible{pointer-events:none!important;cursor:not-allowed}
+.bench-fan-card-wrap.ineligible .bench-fan-card{filter:grayscale(100%) brightness(.5);border-color:rgba(255,255,255,.08)}
+.bench-fan-close{position:absolute;top:-50px;right:20px;background:linear-gradient(180deg,#D84040,#982020);color:#fff;cursor:pointer;border:none;width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:bold;z-index:210;box-shadow:0 4px 0 #601010,0 4px 16px rgba(180,40,40,.6);transition:transform .12s}
+.bench-fan-close:hover{transform:scale(.88)}
+.bench-fan-label{color:rgba(255,255,255,.7);font-size:.78rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-top:16px;background:rgba(10,15,26,.7);padding:6px 18px;border-radius:20px;border:1px solid rgba(255,255,255,.15)}
+.action-panels-wrapper{position:fixed;bottom:0;left:0;right:0;display:none;z-index:200;flex-direction:column;align-items:center;padding-bottom:8px;pointer-events:none;transition:right .4s cubic-bezier(.4,0,.2,1);background:linear-gradient(0deg,rgba(8,12,22,.95),rgba(8,12,22,0));}
+.action-panels-wrapper.visible{display:flex;pointer-events:all}
+.action-card-name{font-family:'Orbitron',sans-serif;font-size:.82rem;letter-spacing:1px;color:var(--gold-light);margin-bottom:6px;font-weight:700;background:rgba(10,15,26,.85);padding:4px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.1)}
+.action-btns-row{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;align-items:center;padding:8px 16px;background:rgba(10,15,26,.88);border:1px solid rgba(255,255,255,.12);border-radius:12px;backdrop-filter:blur(12px);max-width:90vw}
+.action-btn{padding:9px 16px;font-size:.82rem;font-weight:700;font-family:'Inter',sans-serif;border-radius:var(--btn-radius);border:none;cursor:pointer;position:relative;overflow:hidden;transition:transform .12s,filter .12s;text-shadow:0 1px 2px rgba(0,0,0,.4);letter-spacing:.5px;white-space:nowrap;text-transform:uppercase}
+.action-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,.18),rgba(0,0,0,.08));pointer-events:none}
+.action-btn:hover{transform:scale(.97);filter:brightness(1.1)}.action-btn:active{transform:scale(.93)}
+.action-btn-skill{background:linear-gradient(180deg,#7A9E7E,#3D6B54);color:#F5F0E8;box-shadow:0 3px 0 #1E3828}
+.action-btn-basic{background:linear-gradient(180deg,#E8621A,#B04010);color:#FFF8F0;box-shadow:0 3px 0 #6A2808}
+.action-btn-pass{background:linear-gradient(180deg,rgba(200,185,160,.25),rgba(160,145,120,.15));color:rgba(240,230,210,.9);box-shadow:0 2px 0 rgba(0,0,0,.5);border:1px solid rgba(200,180,150,.3)}
+.action-btn-dmg{font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.5px;color:rgba(255,255,255,.9);font-weight:400}
+.action-btn-alt{background:linear-gradient(180deg,#9060C0,#602090);color:#fff;box-shadow:0 3px 0 #300860;border:1.5px dashed rgba(255,255,255,.3)}
+.checkout-panel{position:absolute;bottom:310px;left:50%;transform:translateX(-50%);background:rgba(10,15,26,.9);border:2px solid rgba(64,224,160,.4);border-radius:12px;padding:10px 18px;width:290px;z-index:80;box-shadow:0 8px 24px rgba(64,224,160,.1);display:none;flex-direction:column;gap:7px;backdrop-filter:blur(8px)}
+.checkout-panel.panel-blur{filter:blur(3px)}
+.battle-log-panel{position:fixed;top:44px;right:0;bottom:0;width:var(--log-width);background:rgba(8,12,22,.97);border-left:1px solid rgba(255,255,255,.12);display:flex;flex-direction:column;z-index:180;transform:translateX(100%);transition:transform .4s cubic-bezier(.4,0,.2,1);backdrop-filter:blur(12px)}
+.battle-log-panel.open{transform:translateX(0)}
+.battle-log-header{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid rgba(255,255,255,.1);background:rgba(10,15,26,.9);flex-shrink:0}
+.battle-log-title{font-family:'Orbitron',sans-serif;font-size:.72rem;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:1px;text-transform:uppercase}
+.log-tabs{display:flex;gap:4px}
+.log-tab-btn{padding:4px 10px;border-radius:4px;font-size:.6rem;font-weight:700;background:rgba(255,255,255,.08);color:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.1);cursor:pointer;font-family:'Inter',sans-serif;letter-spacing:.5px;text-transform:uppercase;transition:all .15s}
+.log-tab-btn.active{background:rgba(64,224,160,.15);color:#40E0A0;border-color:rgba(64,224,160,.3)}
+.log-toggle-btn{background:linear-gradient(180deg,#3A3A5A,#1A1A3A);color:rgba(255,255,255,.8);border:none;cursor:pointer;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.75rem;box-shadow:0 2px 0 rgba(0,0,0,.5);transition:transform .12s}
+.log-open-tab{position:fixed;right:0;top:50%;transform:translateY(-50%);background:rgba(10,15,26,.92);border:1px solid rgba(255,255,255,.15);border-right:none;padding:12px 8px;border-radius:8px 0 0 8px;cursor:pointer;z-index:181;display:flex;flex-direction:column;align-items:center;gap:4px;transition:right .4s,background .15s;backdrop-filter:blur(8px)}
+.log-open-tab.panel-open{right:var(--log-width)}
+.log-open-tab:hover{background:rgba(30,40,60,.95)}
+.log-tab-text{font-size:.55rem;letter-spacing:1px;color:rgba(255,255,255,.5);text-transform:uppercase;writing-mode:vertical-rl}
+.retro-log-container{flex:1;overflow-y:auto;padding:10px 12px;font-family:'Inter',sans-serif;font-size:.78rem}
+.retro-log-container::-webkit-scrollbar{width:3px}
+.retro-log-container::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px}
+.log-entry{display:flex;flex-direction:column;margin-bottom:5px;padding-bottom:4px;border-bottom:1px solid rgba(255,255,255,.04)}
+.log-who{font-weight:700;font-size:.72rem;letter-spacing:.5px;margin-bottom:1px}
+.log-detail{color:rgba(255,255,255,.65);line-height:1.45;font-size:.76rem}
+.log-who-you{color:#40E0A0}.log-who-bot{color:#FF6B6B}.log-who-sys{color:var(--gold-light)}.log-who-coin{color:#80CFFF}.log-who-hp{color:rgba(255,255,255,.4)}.log-who-ko{color:#FF4444}.log-who-block{color:#A0D0FF}.log-who-eff{color:#C0C0FF}
+.effect-row{display:flex;align-items:center;gap:6px;padding:5px 8px;background:rgba(255,255,255,.04);border-radius:6px;margin-bottom:4px;border-left:3px solid var(--gold-light);font-size:.72rem}
+.effect-row .eff-desc{flex:1;color:rgba(255,255,255,.75)}
+.effect-row .eff-turns{color:var(--gold-light);font-weight:700;font-family:'Orbitron',sans-serif;font-size:.65rem}
+.effect-row .eff-source{color:rgba(255,255,255,.4);font-size:.6rem}
+.enemy-bench-tooltip{position:fixed;background:rgba(10,15,26,.95);border:1px solid rgba(255,255,255,.15);border-radius:8px;padding:8px 12px;z-index:9999;font-size:.78rem;color:rgba(255,255,255,.7);pointer-events:none;white-space:nowrap;box-shadow:0 6px 16px rgba(0,0,0,.7);display:none}
+.coin-flip-overlay{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.coin-flip-container{display:flex;flex-direction:column;align-items:center;gap:10px}
+.coin-flip-label{font-family:'Orbitron',sans-serif;font-size:.85rem;color:#80CFFF;letter-spacing:2px;text-transform:uppercase;text-shadow:0 0 10px rgba(128,207,255,.8)}
+.coin-flip-main{display:flex;align-items:center;gap:24px}
+.coin-wrap{perspective:600px}
+.coin{width:90px;height:90px;border-radius:50%;position:relative;transform-style:preserve-3d;animation:coinSpin .6s linear infinite}
+.coin.result-heads{animation:coinLandHeads .8s cubic-bezier(.25,.46,.45,.94) forwards}
+.coin.result-tails{animation:coinLandTails .8s cubic-bezier(.25,.46,.45,.94) forwards}
+.coin-face{position:absolute;inset:0;border-radius:50%;backface-visibility:hidden;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-weight:900;font-size:1.1rem}
+.coin-heads{background:radial-gradient(circle at 35% 30%,#FFE066,#C89010);color:#5A3A00;border:3px solid #E0A020;box-shadow:inset 0 3px 8px rgba(255,255,255,.4),inset 0 -3px 8px rgba(0,0,0,.3)}
+.coin-tails{background:radial-gradient(circle at 35% 30%,#C0C0C0,#707070);color:#303030;border:3px solid #A0A0A0;transform:rotateY(180deg)}
+@keyframes coinSpin{0%{transform:rotateY(0)}100%{transform:rotateY(360deg)}}
+@keyframes coinLandHeads{0%{transform:rotateY(720deg)}100%{transform:rotateY(0)}}
+@keyframes coinLandTails{0%{transform:rotateY(540deg)}100%{transform:rotateY(180deg)}}
+.coin-info-bar{background:rgba(10,15,26,.92);border:1px solid rgba(255,255,255,.2);padding:10px 18px;border-radius:10px;text-align:left;min-width:220px;max-width:260px}
+.coin-info-player{font-weight:700;color:var(--gold-light);font-size:.82rem}
+.coin-result-text{font-family:'Orbitron',sans-serif;font-weight:900;font-size:1.2rem;text-align:center;margin-top:4px;text-shadow:0 0 16px currentColor}
+.coin-result-text.hit{color:#40E0A0}.coin-result-text.miss{color:#FF6B6B}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(10px);z-index:9000;display:flex;align-items:center;justify-content:center}
+.modal-box{background:rgba(16,22,42,.98);border:1.5px solid rgba(255,255,255,.15);border-radius:16px;padding:24px;width:420px;max-width:92vw;box-shadow:0 24px 60px rgba(0,0,0,.9);text-align:center;max-height:80vh;overflow-y:auto}
+.modal-title{font-family:'Orbitron',sans-serif;font-size:1.4rem;letter-spacing:2px;color:var(--gold-light);margin-bottom:14px;font-weight:900}
+.modal-desc{color:rgba(255,255,255,.7);font-size:.88rem;margin-bottom:16px;line-height:1.5}
+.modal-options{display:flex;flex-direction:column;gap:9px}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-10px) rotate(-4deg)}40%,80%{transform:translateX(10px) rotate(4deg)}}
+.anim-shake{animation:shake .4s;border-color:#FF5252!important;box-shadow:inset 0 0 28px rgba(255,82,82,.7)}
+@keyframes waftUp{0%{transform:var(--base-t,translateY(0)) translateY(0) scale(1)}50%{transform:var(--base-t,translateY(0)) translateY(-55px) scale(1.1)}100%{transform:var(--base-t,translateY(0)) translateY(0) scale(1)}}
+.doing-attack{animation:waftUp .65s ease-in-out forwards}
+.dmg-popup{position:absolute;top:25%;left:50%;transform:translate(-50%,-50%);font-family:'Orbitron',sans-serif;font-size:2.5rem;color:var(--gold-light);text-shadow:0 3px 0 var(--red),0 0 16px rgba(255,82,82,.8);z-index:200;pointer-events:none;animation:popUp .9s forwards;opacity:0;white-space:nowrap}
+@keyframes popUp{0%{opacity:0;transform:translate(-50%,15px) scale(.5)}15%{opacity:1;transform:translate(-50%,-18px) scale(1.3)}80%{opacity:1;transform:translate(-50%,-35px) scale(1)}100%{opacity:0;transform:translate(-50%,-55px) scale(.8)}}
+.card-status-badge{position:absolute;top:4px;left:4px;z-index:10;background:rgba(0,0,0,.7);border-radius:4px;padding:2px 5px;font-size:.58rem;font-weight:700;border:1px solid rgba(255,255,255,.2);pointer-events:none}
+.badge-frozen{color:#80CFFF;border-color:rgba(128,207,255,.5)}
+.badge-drained{color:#FF8C42;border-color:rgba(255,140,66,.5)}
+.badge-buffed{color:#FFD166;border-color:rgba(255,209,102,.5)}
+.badge-shutdown{color:#FF6B6B;border-color:rgba(255,107,107,.5)}
+.badge-screened{color:#40E0A0;border-color:rgba(64,224,160,.5)}
+.buff-overlay{position:fixed;inset:0;z-index:8500;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.buff-popup{background:rgba(10,15,26,.95);border:2px solid var(--gold-light);border-radius:14px;padding:18px 28px;text-align:center;animation:buffPop 2.2s forwards}
+@keyframes buffPop{0%{opacity:0;transform:scale(.7)}15%{opacity:1;transform:scale(1.08)}75%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.9) translateY(-20px)}}
+.buff-popup-title{font-family:'Orbitron',sans-serif;color:var(--gold-light);font-size:1rem;font-weight:900;letter-spacing:2px}
+.buff-popup-detail{color:rgba(255,255,255,.8);font-size:.85rem;margin-top:6px}
+.slot-card.morph-target{border-color:var(--accent)!important;border-style:solid!important;background:rgba(232,98,26,.12)!important;box-shadow:0 0 22px rgba(232,98,26,.5)!important}
+.setup-slot-card.proximity-glow{border-color:var(--accent)!important;border-style:solid!important;box-shadow:0 0 30px rgba(232,98,26,.6)!important}
+@keyframes snapElastic{0%{transform:scale(.94)}55%{transform:scale(1.05)}100%{transform:scale(1)}}
+.snap-lock{animation:snapElastic .32s cubic-bezier(.34,1.56,.64,1) forwards}
+@keyframes slotSnapSettle{0%{transform:scale(.88);opacity:.7}50%{transform:scale(1.06)}100%{transform:scale(1);opacity:1}}
+.slot-snap-settle{animation:slotSnapSettle .35s ease-out forwards}
+@keyframes rejectShakeH{0%,100%{transform:translateX(0)}14.3%{transform:translateX(-7px)}28.6%{transform:translateX(7px)}42.9%{transform:translateX(-7px)}57.1%{transform:translateX(7px)}}
+.reject-shake-h{animation:rejectShakeH .3s ease}
+@keyframes rejectShakeHaptic{0%,100%{transform:translateX(0) rotate(0)}12%{transform:translateX(-5px) rotate(-1.5deg)}24%{transform:translateX(5px) rotate(1.5deg)}36%{transform:translateX(-4px) rotate(-1deg)}}
+.reject-shake{animation:rejectShakeHaptic .4s ease}
+</style>
+</head>
+<body>
+
+<div id="tooltip" class="tooltip-bubble"></div>
+<div id="enemy-bench-tooltip" class="enemy-bench-tooltip"></div>
+<div id="coin-flip-overlay" class="coin-flip-overlay" style="display:none;"></div>
+
+<div id="bench-fan-overlay" class="bench-fan-overlay" onclick="handleBenchOverlayClick(event)">
+  <div class="bench-fan-stage" id="bench-fan-stage"></div>
+  <button class="bench-fan-close" onclick="closeBenchFan()">✕</button>
+  <div class="bench-fan-label" id="bench-fan-label">YOUR BENCH</div>
+</div>
+
+<div id="uni-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-title" id="uni-modal-title">SELECT</div>
+    <div class="modal-desc" id="uni-modal-desc"></div>
+    <div class="modal-options" id="uni-modal-options"></div>
+    <button class="game-btn game-btn-ghost" style="width:100%;margin-top:12px;" id="uni-modal-skip">SKIP / CANCEL</button>
+  </div>
+</div>
+
+<div id="endgame-modal" class="modal-overlay" style="display:none;">
+  <div class="modal-box">
+    <div class="modal-title" id="endgame-title">GAME OVER</div>
+    <div id="endgame-desc" style="color:rgba(255,255,255,.7);font-size:.95rem;margin-bottom:20px;"></div>
+    <button class="game-btn game-btn-orange" style="width:100%;font-size:1rem;padding:12px;" onclick="location.reload()">PLAY AGAIN</button>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="home-screen" class="screen active">
+  <div class="app-header">
+    <div class="header-logo-wrap"><img class="header-logo-img" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/LOGO/small_logo.png" onerror="this.style.display='none'" alt="NBA Pellop Hoops"></div>
+    <div class="nav"><button class="nav-btn active" onclick="showScreen('home-screen')">Home</button><button class="nav-btn" onclick="goCat()">Cards</button></div>
+  </div>
+  <div class="home-hero">
+    <div class="home-logo-wrap"><div class="home-logo-glow"></div><div class="home-logo-glow-2"></div><img class="home-big-logo" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/LOGO/big_logo.png" onerror="this.alt='NBA Pellop Hoops Unleashed'" alt="NBA Pellop Hoops Unleashed"></div>
+    <div class="home-btn-row"><button class="game-btn game-btn-orange" style="font-size:1.05rem;padding:14px 36px;" onclick="goDraft()">DRAFT TEAM</button><button class="game-btn game-btn-outline" style="font-size:1.05rem;padding:14px 36px;" onclick="goCat()">COLLECTION</button></div>
+  </div>
+</div>
+
+<!-- CATALOGUE -->
+<div id="catalogue-screen" class="screen">
+  <div class="sticky-container">
+    <div class="app-header"><div class="header-logo-wrap"><img class="header-logo-img" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/LOGO/small_logo.png" onerror="this.style.display='none'" alt=""></div><div class="nav"><button class="nav-btn" onclick="showScreen('home-screen')">Home</button><button class="nav-btn active">Cards</button></div></div>
+    <div class="filter-bar">
+      <div class="styled-search-wrap"><span class="search-icon">🔍</span><input type="text" id="cs" class="pill-input" placeholder="Search player, variant, skill..." oninput="filterCat()"></div>
+      <select id="cp" class="pill-select" onchange="filterCat()"><option value="">All Positions</option><option value="PG">PG</option><option value="SG">SG</option><option value="SF">SF</option><option value="PF">PF</option><option value="C">C</option></select>
+      <select id="csort" class="pill-select" onchange="filterCat()"><option value="name">A-Z</option><option value="hp">HP ↓</option><option value="dmg">DMG ↓</option><option value="spd">SPD ↓</option></select>
+    </div>
+  </div>
+  <div id="cat-split-wrapper">
+    <div id="cat-left-panel"><div class="cat-left-inner"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;"><span style="font-family:'Orbitron',sans-serif;font-weight:900;color:var(--accent);font-size:.9rem;letter-spacing:1px;">CARD DETAILS</span><button onclick="closeCatLeftPanel()" style="background:linear-gradient(180deg,#D84040,#982020);color:#fff;border:none;width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:.8rem;font-weight:bold;">✕</button></div><div class="cat-left-card-img" id="cat-left-img-wrap"><img id="cat-left-img-el" src="" alt=""></div><div id="cat-left-content"></div></div></div>
+    <div id="cat-right-panel"><div id="cgrid"></div></div>
+  </div>
+</div>
+
+<!-- DRAFT -->
+<div id="draft-screen" class="screen">
+  <div class="sticky-container">
+    <div class="app-header">
+      <div class="header-logo-wrap" style="gap:14px;"><img class="header-logo-img" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/LOGO/small_logo.png" onerror="this.style.display='none'" alt=""><span style="font-family:'Orbitron',sans-serif;font-weight:900;color:var(--accent);font-size:1.1rem;letter-spacing:1px;">DRAFT SQUAD</span></div>
+      <div class="nav"><button class="nav-btn" onclick="showScreen('home-screen')">Home</button></div>
+    </div>
+    <div class="filter-bar">
+      <div class="styled-search-wrap"><span class="search-icon">🔍</span><input type="text" id="draft-search" class="pill-input" placeholder="Search name, variant, skill..." oninput="filterDraftGrid()" style="width:180px;"></div>
+      <select id="draft-pos" class="pill-select" onchange="filterDraftGrid()"><option value="">All Positions</option><option value="PG">PG</option><option value="SG">SG</option><option value="SF">SF</option><option value="PF">PF</option><option value="C">C</option></select>
+      <select id="draft-team" class="pill-select" onchange="filterDraftGrid()"><option value="">All Teams</option></select>
+      <select id="draft-tier" class="pill-select" onchange="filterDraftGrid()"><option value="">All Tiers</option></select>
+      <select id="draft-sort" class="pill-select" onchange="filterDraftGrid()"><option value="name">A-Z</option><option value="hp">HP ↓</option><option value="dmg">DMG ↓</option><option value="spd">SPD ↓</option></select>
+    </div>
+  </div>
+  <div class="draft-layout">
+    <div class="draft-main"><div id="draft-grid-wrapper"><div id="draft-cards-col"><div id="draft-grid" class="card-grid"></div></div><div id="draft-side-panel"><div class="side-panel-inner side-panel-relative"><button class="side-panel-close" onclick="closeDraftPanel()">✕</button><div class="side-panel-card-img" id="draft-panel-img"><img id="draft-panel-img-el" src="" alt=""></div><div id="draft-panel-content"></div></div></div></div></div>
+    <div class="draft-sidebar"><div class="draft-count-display" id="draft-count-lbl">0/10</div><div id="draft-slots-vertical" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;"></div><button class="game-btn game-btn-outline" onclick="autoFillDraft()" style="width:100%;">RANDOM</button><button class="game-btn game-btn-orange" id="draft-confirm-btn" onclick="goSetup()" disabled style="width:100%;margin-top:4px;">SET UP TEAM</button></div>
+  </div>
+</div>
+
+<!-- SETUP -->
+<div id="setup-screen" class="screen">
+  <div class="sticky-container">
+    <div class="setup-header-bar"><div class="header-logo-wrap"><img class="header-logo-img" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/LOGO/small_logo.png" onerror="this.style.display='none'" alt=""><span style="font-family:'Orbitron',sans-serif;font-weight:900;color:var(--accent);font-size:1.1rem;letter-spacing:1px;">STARTING LINEUP</span></div><button class="game-btn game-btn-outline" style="font-size:.8rem;padding:7px 14px;" onclick="goDraft()">Back to Draft</button></div>
+    <div style="text-align:center;font-size:.78rem;padding:8px;color:var(--text-muted);background:var(--surface-2);border-bottom:1px solid var(--border);">Drag your starting 5 from the bench below — or click RANDOM.</div>
+    <div id="setup-slots" class="setup-slots-row"></div>
+    <div class="setup-action-bar"><button class="game-btn game-btn-outline" onclick="autoFillSetup()" style="font-size:.85rem;">RANDOM</button><div class="setup-counter" id="setup-count-lbl">0/5</div><button class="game-btn game-btn-orange" id="start-battle-btn" onclick="startBattle()" disabled style="font-size:1rem;padding:12px 36px;">START BATTLE</button></div>
+  </div>
+  <div class="bench-label">YOUR BENCH</div>
+  <div id="setup-bench-grid" class="bench-scroll-row"></div>
+</div>
+
+<!-- BATTLE -->
+<div id="battle-screen" class="screen">
+  <div class="battle-app-header"><img class="battle-logo-img" src="https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/LOGO/small_logo.png" onerror="this.style.display='none'" alt=""><button class="game-btn game-btn-red" style="font-size:.78rem;padding:7px 14px;" onclick="location.reload()">FORFEIT</button></div>
+  <div class="arena-container" id="arena-container">
+    <div class="court-area" id="court-area-bg" onclick="handleCourtClick(event)">
+      <div class="floating-scoreboard"><div id="turn-indicator">STAGING PHASE</div><div class="score-board"><div style="color:#40E0A0;" id="score-player">0</div><div style="color:rgba(255,255,255,.3);">-</div><div style="color:#FF6B6B;" id="score-enemy">0</div></div></div>
+      <div class="enemy-fan-wrapper" id="enemy-active-row"></div>
+      <div id="checkout-panel" class="checkout-panel"><div style="font-family:'Orbitron',sans-serif;font-size:1rem;color:#fff;border-bottom:1px solid rgba(255,255,255,.1);padding-bottom:4px;">MOVES STAGED (<span id="staged-count">0</span>)</div><div id="staged-list" style="display:flex;flex-direction:column;gap:4px;font-size:.78rem;color:rgba(255,255,255,.65);"></div><button class="game-btn game-btn-teal" id="confirm-moves-btn" onclick="confirmMovesPhase()" style="width:100%;">LOCK IN MOVES</button></div>
+      <div class="active-fan-wrapper" id="player-active-row"></div>
+    </div>
+    <div class="bench-stack-container enemy-bench-stack" id="enemy-bench-stack"></div>
+    <div class="bench-stack-container player-bench-stack" id="player-bench-stack"></div>
+  </div>
+  <div class="action-panels-wrapper" id="action-panels-wrapper"><div class="action-card-name" id="action-card-name"></div><div class="action-btns-row" id="action-btns-row"></div></div>
+  <div class="battle-log-panel" id="battle-log-panel">
+    <div class="battle-log-header">
+      <div class="log-tabs"><button class="log-tab-btn active" id="tab-log-btn" onclick="switchLogTab('log')">BATTLE LOG</button><button class="log-tab-btn" id="tab-eff-btn" onclick="switchLogTab('effects')">EFFECTS</button></div>
+      <button class="log-toggle-btn" onclick="toggleBattleLog()">✕</button>
+    </div>
+    <div class="retro-log-container" id="battle-log"></div>
+    <div class="retro-log-container" id="effects-panel" style="display:none;"></div>
+  </div>
+  <div class="log-open-tab" id="log-open-tab" onclick="toggleBattleLog()"><span style="font-size:.7rem;color:rgba(255,255,255,.6);">📋</span><span class="log-tab-text">LOG</span></div>
+</div>
+
+<script>
+// ============================================================
+// NBA PELLOP HOOPS UNLEASHED — DATA-DRIVEN ENGINE v5.0
+// ============================================================
+
+const CARDS = [];
+
+const $ = id => document.getElementById(id);
+const GITHUB = 'https://raw.githubusercontent.com/baobi-rockers/NBA-Pellop-Hoops-Unleashed/main/';
+const POSITIONS = ['PG','SG','SF','PF','C'];
+const TARGET_MATRIX = {PG:['PG','SG'],SG:['SG','SF'],SF:['SG','SF','PF'],PF:['PF','C'],C:['C','PF']};
+
+let _ic = 0;
+const mkId = (team, name) => `${team}_${(name||'card').replace(/\s+/g,'_')}_${++_ic}`;
+const delay = ms => new Promise(r => setTimeout(r, ms));
+
+// ==================== CARD DATA ACCESSORS ====================
+function getCardName(c) { return c?.UI_Frontend_Data?.Formatted_Name || c?.UI_Frontend_Data?.Name || 'Unknown'; }
+function getCardRawName(c) { return c?.UI_Frontend_Data?.Name || ''; }
+function getCardVariant(c) { const fn = getCardName(c); const m = fn.match(/\((.+)\)$/); return m ? m[1] : ''; }
+function getCardImg(c) { return c?.UI_Frontend_Data?.Image_File || ''; }
+function getCardHP(c) { return c?.UI_Frontend_Data?.Stats?.HP || 0; }
+function getCardDMG(c) { return c?.UI_Frontend_Data?.Stats?.Base_DMG || 0; }
+function getCardSPD(c) { return c?.UI_Frontend_Data?.Stats?.Speed || 0; }
+function getCardHeight(c) { return c?.UI_Frontend_Data?.Height || ''; }
+function getCardTeam(c) { return c?.UI_Frontend_Data?.Team || ''; }
+function getCardTier(c) { return c?.UI_Frontend_Data?.Tier || ''; }
+function getCardPos(c) { const p = c?.UI_Frontend_Data?.Positions; return p ? [p.Primary, p.Secondary, p.Third].filter(Boolean) : []; }
+function getCardPosStr(c) { const p = c?.UI_Frontend_Data?.Positions; return p ? p.Primary + (p.Secondary ? '/' + p.Secondary : '') : 'N/A'; }
+function getCardSkills(c) { return c?.Skills || []; }
+function getAbility(c) { return c?.Ability || null; }
+function getAbilityLogic(c) { return c?.Ability?.Logic_Engine || {}; }
+function getSkillLogic(sk) { return sk?.Logic_Engine || {}; }
+
+function shortName(n) { return n ? n.replace(/ \(.+?\)$/, '') : 'Unknown'; }
+function getTruncatedName(fullName) {
+  if (!fullName) return '';
+  const clean = fullName.replace(/ \(.+?\)$/, '').trim();
+  const parts = clean.split(' ');
+  if (parts.length > 1) return parts[0][0] + '. ' + parts.slice(1).join(' ');
+  return clean;
+}
+function getImgUrl(f, n) { return (!f || f.length < 3) ? `https://placehold.co/400x560/1a1a2e/FFD166?text=${encodeURIComponent(shortName(n))}` : GITHUB + encodeURI(f); }
+function handleImgError(el, n) { el.onerror = null; el.src = `https://placehold.co/400x560/1a1a2e/FFD166?text=${encodeURIComponent(shortName(n))}`; }
+function escapeJS(s) { return s ? s.toString().replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/`/g,'\\`') : ''; }
+function parseHeight(h) { if (!h) return 0; const m = String(h).match(/(\d+)'(\d+)/); return m ? parseInt(m[1]) * 12 + parseInt(m[2]) : 0; }
+function parseModifierValue(modStr) {
+  const out = {hp:0, basicDmg:0, skillDmg:0, spd:0};
+  if (!modStr) return out;
+  String(modStr).split(',').map(s=>s.trim()).filter(Boolean).forEach(part => {
+    const m = part.match(/([+-]?\d+)\s*(HP|BASIC DMG|SKILL DMG|DMG|SPD)/i);
+    if (m) { const v = parseInt(m[1]), s = m[2].toUpperCase(); if(s==='HP') out.hp=v; else if(s==='BASIC DMG') out.basicDmg=v; else if(s==='SKILL DMG'||s==='DMG') out.skillDmg=v; else if(s==='SPD') out.spd=v; }
+  });
+  return out;
+}
+
+// Build a searchable text blob for each card
+function getSearchText(c) {
+  const parts = [
+    getCardRawName(c).toLowerCase(),
+    getCardName(c).toLowerCase(),
+    getTruncatedName(getCardName(c)).toLowerCase(),
+    getCardVariant(c).toLowerCase(),
+    getCardTeam(c).toLowerCase(),
+  ];
+  getCardSkills(c).forEach(sk => { parts.push(sk.Name.toLowerCase()); parts.push((sk.Description_UI||'').toLowerCase()); });
+  const ab = getAbility(c);
+  if (ab) { parts.push(ab.Name.toLowerCase()); parts.push((ab.Description_UI||'').toLowerCase()); }
+  return parts.join(' ');
+}
+
+// ==================== UI ====================
+function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); const el = $(id); if (el) el.classList.add('active'); window.scrollTo(0, 0); if (id !== 'battle-screen') stopBgMusic(); }
+
+// ==================== AUDIO ====================
+let bgMusic = null, bgMusicStarted = false;
+function initBattleAudio() { if (bgMusicStarted) return; bgMusicStarted = true; bgMusic = new Audio(GITHUB + 'SOUNDS/NBA_on_NBC.mp3'); bgMusic.loop = true; bgMusic.volume = 0.10; bgMusic.play().catch(()=>{}); }
+function playAttackSound() { try { const s = new Audio(GITHUB + 'SOUNDS/basic_attack.wav'); s.volume = 0.65; s.play().catch(()=>{}); } catch(e){} }
+function stopBgMusic() { if (bgMusic) { bgMusic.pause(); bgMusic.currentTime = 0; bgMusicStarted = false; } }
+
+// ==================== STAT BUFF SYSTEM ====================
+let _statBuffs = {};
+function ensureBuff(id) { if (!_statBuffs[id]) _statBuffs[id] = {dmgBonus:0,basicBonus:0,skillBonus:0,turnsLeft:999,startTurn:0,started:false}; }
+function getBuff(id) { return _statBuffs[id] || null; }
+function getEffectiveDMG(card, isSkill = false) {
+  const base = getCardDMG(card); const b = getBuff(card._instanceId);
+  if (!b || !b.started) return base;
+  return base + (b.dmgBonus || 0) + (isSkill ? (b.skillBonus || 0) : (b.basicBonus || 0));
+}
+function activateDelayedBuffs(currentTurn) {
+  Object.keys(_statBuffs).forEach(k => {
+    const b = _statBuffs[k];
+    if (!b.started && b.startTurn <= currentTurn) { b.started = true; }
+  });
+}
+function tickBuffs() {
+  Object.keys(_statBuffs).forEach(k => {
+    const b = _statBuffs[k];
+    if (b.turnsLeft !== 999 && b.started) { b.turnsLeft--; if (b.turnsLeft <= 0) delete _statBuffs[k]; }
+  });
+}
+
+// ==================== ACTIVE EFFECTS TRACKER ====================
+let _activeEffects = [];
+let _effectIdCounter = 0;
+function addTrackedEffect(sourceName, targetId, targetName, type, description, turnsLeft, isDelayed = false, delayTurns = 0) {
+  _effectIdCounter++;
+  _activeEffects.push({id: _effectIdCounter, sourceName, targetId, targetName, type, description, turnsLeft, maxTurns: turnsLeft, isDelayed, delayTurns, startTurn: turnCount + delayTurns, active: !isDelayed});
+}
+function tickEffects() {
+  _activeEffects = _activeEffects.filter(eff => {
+    if (eff.isDelayed && !eff.active) { if (turnCount >= eff.startTurn) { eff.active = true; } return true; }
+    if (!eff.active) return true;
+    eff.turnsLeft--;
+    return eff.turnsLeft > 0;
+  });
+}
+function removeEffectsForTarget(targetId) { _activeEffects = _activeEffects.filter(e => e.targetId !== targetId); }
+function hasEffectType(targetId, type) { return _activeEffects.some(e => e.targetId === targetId && e.active && e.type === type); }
+function renderEffectsPanel() {
+  const panel = $('effects-panel'); if (!panel) return;
+  const active = _activeEffects.filter(e => e.active);
+  const delayed = _activeEffects.filter(e => !e.active);
+  let html = '';
+  if (delayed.length) { html += `<div style="color:rgba(255,255,255,.3);font-size:.65rem;font-weight:700;margin-bottom:6px;letter-spacing:1px;">⏳ PENDING</div>`; delayed.forEach(e => { html += `<div class="effect-row" style="border-left-color:rgba(255,255,255,.2);opacity:.5"><div class="eff-desc">${e.description}</div><div class="eff-turns">IN ${e.startTurn - turnCount}T</div><div class="eff-source">${e.sourceName}</div></div>`; }); }
+  if (active.length) { html += `<div style="color:var(--gold-light);font-size:.65rem;font-weight:700;margin-bottom:6px;letter-spacing:1px;">⚡ ACTIVE</div>`; active.forEach(e => { html += `<div class="effect-row"><div class="eff-desc">${e.description}</div><div class="eff-turns">${e.turnsLeft}T</div><div class="eff-source">${e.sourceName}</div></div>`; }); }
+  if (!active.length && !delayed.length) html = `<div style="color:rgba(255,255,255,.25);font-size:.75rem;text-align:center;padding:20px;">No active effects</div>`;
+  panel.innerHTML = html;
+}
+
+// ==================== STATUS FLAGS ====================
+let _frozen = {}, _shutdown = {}, _drained = {}, _invulnerable = {}, _disabledSkills = {}, _screened = {};
+let _surviveUsed = {}, _healUsed = {}, _stackHits = {}, _stolenSkills = {};
+let _synergyApplied = new Set();
+
+// ==================== BATTLE LOG ====================
+let battleLogOpen = false, currentLogTab = 'log';
+function toggleBattleLog() {
+  battleLogOpen = !battleLogOpen;
+  const panel = $('battle-log-panel'), tab = $('log-open-tab'), arena = $('arena-container'), ap = $('action-panels-wrapper');
+  if (battleLogOpen) { panel.classList.add('open'); tab.classList.add('panel-open'); arena.classList.add('log-open'); if(ap) ap.style.right = 'var(--log-width)'; const l = $('battle-log'); if(l) l.scrollTop = l.scrollHeight; }
+  else { panel.classList.remove('open'); tab.classList.remove('panel-open'); arena.classList.remove('log-open'); if(ap) ap.style.right = '0'; }
+}
+function switchLogTab(tab) {
+  currentLogTab = tab;
+  $('tab-log-btn').classList.toggle('active', tab === 'log');
+  $('tab-eff-btn').classList.toggle('active', tab === 'effects');
+  $('battle-log').style.display = tab === 'log' ? '' : 'none';
+  $('effects-panel').style.display = tab === 'effects' ? '' : 'none';
+  if (tab === 'effects') renderEffectsPanel();
+}
+function logMsg(type, who, detail) {
+  const l = $('battle-log'); if (!l) return;
+  const cls = {atk:'log-who-you',def:'log-who-bot',coin:'log-who-coin',hp:'log-who-hp',ko:'log-who-ko',block:'log-who-block',sys:'log-who-sys',eff:'log-who-eff'}[type] || 'log-who-sys';
+  l.innerHTML += `<div class="log-entry"><span class="log-who ${cls}">${who}</span><span class="log-detail">${detail}</span></div>`;
+  if (battleLogOpen && currentLogTab === 'log') l.scrollTop = l.scrollHeight;
+}
+
+// ==================== TOOLTIP ====================
+let _tooltipEnabled = true;
+function setTooltipEnabled(v) { if (!v) hideTooltip(); _tooltipEnabled = v; }
+function showTooltip(e, name) {
+  if (!_tooltipEnabled) return;
+  const tt = $('tooltip'); if (!tt) return;
+  const c = CARDS.find(x => getCardName(x) === name); if (!c) return;
+  const ab = getAbility(c);
+  const abHtml = ab ? `<div class="tt-ability">${ab.Name}</div><div style="color:rgba(255,255,255,.4);font-size:.6rem;">${ab.Description_UI||''}</div>` : '';
+  const sHtml = getCardSkills(c).map(s => { const lg = getSkillLogic(s); return `<div class="tt-skill"><span class="tt-skill-name">${s.Name}</span> <span class="tt-skill-dmg">${s.Display_DMG}</span><div class="tt-skill-desc">${s.Description_UI}</div>${lg.effect_description ? `<span class="ec-effect-tag">${lg.effect_description}</span>` : ''}</div>`; }).join('');
+  tt.innerHTML = `<div class="tt-name">${shortName(name)}</div>${abHtml}${sHtml}`;
+  tt.classList.add('visible'); positionTooltip(e);
+}
+function hideTooltip() { const tt = $('tooltip'); if (tt) tt.classList.remove('visible'); }
+function positionTooltip(e) {
+  const tt = $('tooltip'); if (!tt || !tt.classList.contains('visible')) return;
+  const x = e.touches ? e.touches[0].clientX : e.clientX, y = e.touches ? e.touches[0].clientY : e.clientY;
+  const tw = tt.offsetWidth, th = tt.offsetHeight, pad = 10;
+  let px = x + 15, py = y + 15;
+  if (px + tw > window.innerWidth - pad) px = x - tw - 15;
+  if (py + th > window.innerHeight - pad) py = y - th - 15;
+  tt.style.left = Math.max(pad, px) + 'px'; tt.style.top = Math.max(pad, py) + 'px';
+}
+function isInnerRegion(e, el) {
+  if (!el) return true; const r = el.getBoundingClientRect();
+  const mx = e.touches ? e.touches[0].clientX : e.clientX, my = e.touches ? e.touches[0].clientY : e.clientY;
+  return mx > r.left + r.width*.15 && mx < r.right - r.width*.15 && my > r.top + r.height*.15 && my < r.bottom - r.height*.15;
+}
+function handleTooltipHover(e, name, el) { if (isInnerRegion(e, el)) { showTooltip(e, name); positionTooltip(e); } else hideTooltip(); }
+
+// ==================== DRAG SYSTEM ====================
+let _drag = {active:false,moved:false,startX:0,startY:0,name:'',imgSrc:'',context:'',el:null,ghost:null,origW:0,origH:0,imgLayer:null,textLayer:null,sourceEl:null,suppressClick:false,nearSlot:null,slotDist:Infinity};
+const POS_CLR = {PG:'var(--pos-pg)',SG:'var(--pos-sg)',SF:'var(--pos-sf)',PF:'var(--pos-pf)',C:'var(--pos-c)'};
+const SNAP_RADIUS = 60;
+function _killGhost() { const g = document.getElementById('active-drag-ghost'); if (g) g.remove(); document.querySelectorAll('.morph-target,.proximity-glow').forEach(e => e.classList.remove('morph-target','proximity-glow')); _drag.ghost = null; }
+function _posGhost(cx, cy, forceSnap) {
+  if (!_drag.ghost) return;
+  const w = parseFloat(_drag.ghost.style.width), h = parseFloat(_drag.ghost.style.height);
+  const tgt = forceSnap || (_drag.nearSlot && _drag.slotDist < SNAP_RADIUS ? _drag.nearSlot : null);
+  if (tgt) { const sr = tgt.getBoundingClientRect(); const sx = sr.left+sr.width/2, sy = sr.top+sr.height/2, d = forceSnap?0:_drag.slotDist, pull = Math.pow(Math.max(0,1-d/SNAP_RADIUS),2.2); _drag.ghost.style.left=(cx+(sx-cx)*pull-w/2)+'px'; _drag.ghost.style.top=(cy+(sy-cy)*pull-h/2)+'px'; }
+  else { _drag.ghost.style.left=(cx-w/2)+'px'; _drag.ghost.style.top=(cy-h/2)+'px'; }
+}
+function _nearestSlot(cx, cy) {
+  const sel = _drag.context==='draft'?'#draft-slots-vertical [data-slot]':'#setup-slots [data-slot]';
+  let best=null, bestD=Infinity;
+  document.querySelectorAll(sel).forEach(s => { const r=s.getBoundingClientRect(); const d=Math.hypot(cx-(r.left+r.width/2),cy-(r.top+r.height/2)); if(d<bestD){bestD=d;best=s;} });
+  return {slot:best,dist:bestD};
+}
+function _createDraftGhost(name, imgSrc) {
+  const card = CARDS.find(x => getCardName(x)===name)||null; const pos=card?getCardPos(card)[0]:'N/A'; const sn=card?getDBShortName(getCardName(card)):name; const hp=card?getCardHP(card):0, dmg=card?getCardDMG(card):0; const pc=POS_CLR[pos]||'var(--text-muted)';
+  const g=document.createElement('div'); g.id='active-drag-ghost'; g.style.cssText='position:fixed;pointer-events:none;z-index:99999;overflow:hidden;background:#1a1a2e;transition:width .08s,height .08s,border-radius .08s,box-shadow .08s,transform .08s;';
+  const il=document.createElement('div'); il.className='morph-img'; il.style.cssText='position:absolute;inset:0;transition:opacity .1s;'; il.innerHTML=`<img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;display:block;">`;
+  const tl=document.createElement('div'); tl.className='morph-text'; tl.style.cssText=`position:absolute;inset:0;display:flex;align-items:center;gap:6px;padding:0 10px;opacity:0;transition:opacity .1s;background:var(--surface-2);border:1.5px solid var(--border-heavy);border-radius:inherit;`;
+  tl.innerHTML=`<span style="font-weight:900;font-size:.85rem;color:${pc};">${pos}</span><span style="font-weight:700;font-size:.72rem;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${sn}</span><span style="font-size:.62rem;color:var(--text-muted);">${hp}HP ${dmg}DMG</span>`;
+  g.appendChild(il); g.appendChild(tl); document.body.appendChild(g); return {ghost:g,imgLayer:il,textLayer:tl};
+}
+function _createSetupGhost(imgSrc) {
+  const g=document.createElement('div'); g.id='active-drag-ghost'; g.style.cssText='position:fixed;pointer-events:none;z-index:99999;overflow:hidden;border-radius:10px;border:2px solid rgba(232,98,26,.5);transition:transform .12s,box-shadow .12s;';
+  g.innerHTML=`<img src="${imgSrc}" style="width:100%;height:100%;object-fit:cover;display:block;">`; document.body.appendChild(g); return g;
+}
+function initDraftDrag(el, name, imgSrc) {
+  el.addEventListener('mousedown', e => { if(e.button!==0)return; e.preventDefault(); const {ghost,imgLayer,textLayer}=_createDraftGhost(name,imgSrc); Object.assign(_drag,{active:true,moved:false,startX:e.clientX,startY:e.clientY,name,imgSrc,context:'draft',el,ghost,imgLayer,textLayer,sourceEl:null,nearSlot:null,slotDist:Infinity}); _drag.origW=el.offsetWidth; _drag.origH=el.offsetHeight; ghost.style.width=_drag.origW+'px'; ghost.style.height=_drag.origH+'px'; ghost.style.borderRadius='10px'; ghost.style.transform='scale(1.05)'; ghost.style.boxShadow='0 14px 32px rgba(0,0,0,.45)'; _posGhost(e.clientX,e.clientY); el.classList.add('dragging'); document.body.style.userSelect='none'; });
+}
+function initSetupDrag(el, name, imgSrc) {
+  el.addEventListener('mousedown', e => { if(e.button!==0)return; e.preventDefault(); const ghost=_createSetupGhost(imgSrc); Object.assign(_drag,{active:true,moved:false,startX:e.clientX,startY:e.clientY,name,imgSrc,context:'setup',el,ghost,imgLayer:null,textLayer:null,sourceEl:el,nearSlot:null,slotDist:Infinity}); _drag.origW=el.offsetWidth; _drag.origH=el.offsetHeight; ghost.style.width=_drag.origW+'px'; ghost.style.height=_drag.origH+'px'; ghost.style.transform='scale(1)'; ghost.style.boxShadow='0 12px 28px rgba(0,0,0,.35)'; _posGhost(e.clientX,e.clientY); el.style.opacity='0.15'; el.style.transform='scale(.92)'; document.body.style.userSelect='none'; });
+}
+document.addEventListener('mousemove', e => {
+  if(!_drag.active) return; const dx=e.clientX-_drag.startX, dy=e.clientY-_drag.startY; if(Math.abs(dx)>4||Math.abs(dy)>4) _drag.moved=true;
+  const {slot,dist}=_nearestSlot(e.clientX,e.clientY); const g=_drag.ghost; if(!g) return;
+  document.querySelectorAll('.morph-target,.proximity-glow').forEach(x=>x.classList.remove('morph-target','proximity-glow'));
+  if(_drag.context==='draft'&&_drag.imgLayer&&_drag.textLayer) {
+    const MR=120,SR=25;
+    if(slot&&dist<MR){const t=Math.max(0,Math.min(1,1-(dist-SR)/(MR-SR)));const sr=slot.getBoundingClientRect();g.style.width=(_drag.origW+(sr.width-_drag.origW)*t)+'px';g.style.height=(_drag.origH+(sr.height-_drag.origH)*t)+'px';g.style.borderRadius=(10+(8-10)*t)+'px';g.style.transform=`scale(${1.05+(1-1.05)*t})`;_drag.imgLayer.style.opacity=(1-t).toFixed(3);_drag.textLayer.style.opacity=t.toFixed(3);if(dist<=SR)slot.classList.add('morph-target');}
+    else{g.style.width=_drag.origW+'px';g.style.height=_drag.origH+'px';g.style.borderRadius='10px';g.style.transform='scale(1.05)';_drag.imgLayer.style.opacity='1';_drag.textLayer.style.opacity='0';}
+  } else if(_drag.context==='setup'){if(slot&&dist<55){g.style.transform='scale(.95)';g.style.borderColor='rgba(232,98,26,.8)';slot.classList.add('proximity-glow');}else{g.style.transform='scale(1)';g.style.borderColor='rgba(232,98,26,.5)';}}
+  _posGhost(e.clientX,e.clientY); _drag.nearSlot=slot; _drag.slotDist=dist;
+});
+document.addEventListener('mouseup', e => {
+  if(!_drag.active) return; const jd=_drag.moved; _drag.active=false; _drag.moved=false; document.body.style.userSelect=''; document.querySelectorAll('.dragging').forEach(x=>x.classList.remove('dragging'));
+  if(_drag.nearSlot&&_drag.slotDist<=SNAP_RADIUS){
+    if(_drag.ghost){_drag.ghost.style.transition='left .07s,top .07s';_posGhost(e.clientX,e.clientY,_drag.nearSlot);}
+    let valid=true;
+    if(_drag.context==='draft'){const pos=_drag.nearSlot.dataset.slot.split('-')[0];const card=CARDS.find(x=>getCardName(x)===_drag.name);if(!card||isCardInDraft(card)||!getCardPos(card).includes(pos)){_killGhost();_rejectDraftSlot(_drag.nearSlot);if(jd)_drag.suppressClick=true;return;}}
+    else if(_drag.context==='setup'){const pos=_drag.nearSlot.dataset.slot.replace('setup-','');const card=benchRoster.find(x=>getCardName(x)===_drag.name);if(!card||!getCardPos(card).includes(pos)){if(_drag.sourceEl){_drag.sourceEl.style.opacity='';_drag.sourceEl.style.transform='';}_rejectSetupSlot(_drag.nearSlot,_drag.sourceEl);if(jd)_drag.suppressClick=true;return;}}
+    _drag.nearSlot.dispatchEvent(new CustomEvent('physdrop',{bubbles:true,detail:{name:_drag.name}})); const ns=_drag.nearSlot; ns.classList.remove('morph-target','proximity-glow'); ns.classList.add(_drag.context==='setup'?'snap-lock':'slot-snap-settle'); setTimeout(()=>ns.classList.remove('snap-lock','slot-snap-settle'),400);
+    if(jd) _drag.suppressClick=true; setTimeout(()=>{if(_drag.context==='setup'&&_drag.sourceEl){_drag.sourceEl.style.opacity='';_drag.sourceEl.style.transform='';}_killGhost();},80); return;
+  }
+  if(_drag.context==='setup'&&_drag.sourceEl){_drag.sourceEl.style.opacity='';_drag.sourceEl.style.transform='';} _killGhost(); if(jd) _drag.suppressClick=true;
+});
+function _rejectDraftSlot(s){s.classList.add('reject-shake');setTimeout(()=>s.classList.remove('reject-shake'),400);const p=s.querySelector('.slot-pos');if(p){const o=p.textContent;p.textContent='INVALID';p.style.color='#FF0000';setTimeout(()=>{p.textContent=o;p.style.color='';},800);}}
+function _rejectSetupSlot(s,src){if(_drag.ghost&&src){const sr=src.getBoundingClientRect(),g=_drag.ghost;g.style.transition='left .2s,top .2s,opacity .2s,transform .2s';g.style.left=sr.left+'px';g.style.top=sr.top+'px';g.style.opacity='0';g.style.transform='scale(.9)';const ref=g;setTimeout(()=>ref.remove(),240);_drag.ghost=null;src.style.opacity='';src.style.transform='';}else _killGhost();s.classList.add('reject-shake-h');setTimeout(()=>s.classList.remove('reject-shake-h'),400);}
+
+// ==================== CATALOGUE ====================
+let expandedCardCat = null;
+function goCat() { showScreen('catalogue-screen'); filterCat(); }
+function filterCat() {
+  const q=($('cs')?.value||'').toLowerCase(), posF=$('cp')?.value||'', sort=$('csort')?.value||'name';
+  let list = CARDS.filter(c=>c?.UI_Frontend_Data);
+  list = list.filter(c => { const txt=getSearchText(c); return (!q||txt.includes(q)) && (!posF||getCardPos(c).includes(posF)); });
+  if(sort==='hp') list.sort((a,b)=>getCardHP(b)-getCardHP(a)); else if(sort==='dmg') list.sort((a,b)=>getCardDMG(b)-getCardDMG(a)); else if(sort==='spd') list.sort((a,b)=>getCardSPD(b)-getCardSPD(a)); else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
+  $('cgrid').innerHTML = list.map(c => { const n=getCardName(c), safeN=escapeJS(n), isSel=(n===expandedCardCat); return `<div class="compact-card ${isSel?'selected-panel':''}" onclick="toggleCatExpand('${safeN}')" onmousemove="handleTooltipHover(event,'${safeN}',this)" onmouseleave="hideTooltip()"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),n)}" onerror="handleImgError(this,'${safeN}')"></div></div>`; }).join('');
+}
+function closeCatLeftPanel(){expandedCardCat=null;$('cat-left-panel').classList.remove('open');filterCat();}
+function toggleCatExpand(name){const card=CARDS.find(c=>getCardName(c)===name);if(!card)return;hideTooltip();expandedCardCat=(expandedCardCat===name)?null:name;if(expandedCardCat)openCatLeftPanel(card);else closeCatLeftPanel();filterCat();}
+function openCatLeftPanel(card){const n=getCardName(card),imgEl=$('cat-left-img-el'),imgWrap=$('cat-left-img-wrap');imgEl.src=getImgUrl(getCardImg(card),n);imgEl.onerror=()=>handleImgError(imgEl,n);imgWrap.classList.remove('animating');void imgWrap.offsetWidth;imgWrap.classList.add('animating');$('cat-left-content').innerHTML=buildCardDetailHTML(card);$('cat-left-panel').classList.add('open');}
+function buildCardDetailHTML(card){
+  const n=getCardName(card),t=getCardTeam(card),hp=getCardHP(card),dmg=getCardDMG(card),spd=getCardSPD(card),p=getCardPosStr(card);
+  const ab=getAbility(card); const abHtml=ab?`<div class="ec-ability-block"><div class="ec-ability-name">${ab.Name}</div><div class="ec-ability-desc">${ab.Description_UI||''}</div></div>`:'';
+  const sHtml=getCardSkills(card).map(s=>{const lg=getSkillLogic(s);const effTag=lg.effect_description?`<span class="ec-effect-tag">${lg.effect_description}</span>`:'';return `<div class="ec-skill-wrap"><div class="ec-skill-header"><span class="ec-skill-name">${s.Name}</span><span class="ec-skill-dmg">${s.Display_DMG}</span></div><div class="ec-skill-desc">${s.Description_UI}</div>${effTag}</div>`;}).join('');
+  return `<div class="ec-header"><div class="ec-title">${n}</div><div class="ec-team">${t} · ${p}</div></div><div class="ec-stats-row"><div class="ec-stat">${hp} <span>HP</span></div><div class="ec-stat">${dmg} <span>DMG</span></div><div class="ec-stat">${spd} <span>SPD</span></div></div>${abHtml}<div style="font-size:.68rem;color:var(--text-muted);font-weight:700;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">Skills</div>${sHtml}`;
+}
+function getDBShortName(f){if(!f)return'Unknown';const m=f.match(/^(.*?)(\s\(.*)?$/);if(!m)return f;const b=m[1],v=m[2]||'';const p=b.split(' ');if(p.length>1){const fi=p.shift();return fi[0]+'. '+p.join(' ')+v;}return b+v;}
+
+// ==================== DRAFT ====================
+let currentDraftPanelCard=null, draftSquad={PG:[null,null],SG:[null,null],SF:[null,null],PF:[null,null],C:[null,null]};
+function goDraft(){draftSquad={PG:[null,null],SG:[null,null],SF:[null,null],PF:[null,null],C:[null,null]};expandedCardCat=null;currentDraftPanelCard=null;showScreen('draft-screen');$('draft-side-panel').classList.remove('open');populateDraftFilters();renderDraftSlots();filterDraftGrid();}
+function populateDraftFilters(){
+  const teams=[...new Set(CARDS.map(c=>getCardTeam(c))).values()].filter(Boolean).sort();
+  const tiers=[...new Set(CARDS.map(c=>getCardTier(c))).values()].filter(Boolean).sort();
+  $('draft-team').innerHTML='<option value="">All Teams</option>'+teams.map(t=>`<option value="${t}">${t}</option>`).join('');
+  $('draft-tier').innerHTML='<option value="">All Tiers</option>'+tiers.map(t=>`<option value="${t}">${t}</option>`).join('');
+}
+function filterDraftGrid(){
+  const q=($('draft-search')?.value||'').toLowerCase(), posF=$('draft-pos')?.value||'', teamF=$('draft-team')?.value||'', tierF=$('draft-tier')?.value||'', sort=$('draft-sort')?.value||'name';
+  let list=CARDS.filter(c=>c?.UI_Frontend_Data);
+  list=list.filter(c=>{const txt=getSearchText(c);return(!q||txt.includes(q))&&(!posF||getCardPos(c).includes(posF))&&(!teamF||getCardTeam(c)===teamF)&&(!tierF||getCardTier(c)===tierF);});
+  if(sort==='hp') list.sort((a,b)=>getCardHP(b)-getCardHP(a)); else if(sort==='dmg') list.sort((a,b)=>getCardDMG(b)-getCardDMG(a)); else if(sort==='spd') list.sort((a,b)=>getCardSPD(b)-getCardSPD(a)); else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
+  const grid=$('draft-grid'); grid.innerHTML='';
+  list.forEach(c=>{const n=getCardName(c),inD=isCardInDraft(c),isSel=(n===currentDraftPanelCard),imgSrc=getImgUrl(getCardImg(c),n);const div=document.createElement('div');div.className=`compact-card ${inD?'in-draft':''} ${isSel?'selected-panel':''}`;if(!inD){div.onclick=(e)=>{if(_drag.suppressClick){_drag.suppressClick=false;return;}openDraftPanel(n);};initDraftDrag(div,n,imgSrc);}div.onmousemove=ev=>handleTooltipHover(ev,n,div);div.onmouseleave=hideTooltip;div.innerHTML=`<div class="card-img-sm"><img src="${imgSrc}" onerror="handleImgError(this,'${escapeJS(n)}')"></div>`;grid.appendChild(div);});
+}
+function isCardInDraft(c){const n=getCardName(c);return POSITIONS.some(p=>getCardName(draftSquad[p][0])===n||getCardName(draftSquad[p][1])===n);}
+function renderDraftSlots(){
+  let html='';[0,1].forEach(idx=>POSITIONS.forEach(pos=>{const c=draftSquad[pos][idx],cn=c?getCardName(c):null;html+=`<div id="dslot-${pos}-${idx}" class="slot-card slot-${pos} ${c?'filled':''}" data-slot="${pos}-${idx}">${c?`<div class="slot-pos">${pos}</div><div class="slot-name">${getDBShortName(cn)}</div><button class="remove-slot" onclick="removeDraft('${pos}',${idx})">✕</button>`:`<div class="slot-pos">${pos}</div>`}</div>`;}));
+  $('draft-slots-vertical').innerHTML=html;
+  document.querySelectorAll('#draft-slots-vertical [data-slot]').forEach(slot=>{slot.addEventListener('physdrop',e=>{const[pos,idx]=slot.dataset.slot.split('-');draftSquad[pos][parseInt(idx)]=CARDS.find(x=>getCardName(x)===e.detail.name);renderDraftSlots();filterDraftGrid();});});
+  let cnt=0;POSITIONS.forEach(p=>[0,1].forEach(i=>{if(draftSquad[p][i])cnt++;}));$('draft-count-lbl').textContent=`${cnt}/10`;$('draft-confirm-btn').disabled=cnt<10;
+}
+function removeDraft(pos,idx){draftSquad[pos][idx]=null;renderDraftSlots();filterDraftGrid();}
+function autoFillDraft(){draftSquad={PG:[null,null],SG:[null,null],SF:[null,null],PF:[null,null],C:[null,null]};const shuf=[...CARDS].sort(()=>Math.random()-.5);POSITIONS.forEach(pos=>{const m=shuf.filter(c=>getCardPos(c).includes(pos)&&!isCardInDraft(c));if(m[0])draftSquad[pos][0]=m[0];if(m[1])draftSquad[pos][1]=m[1];});renderDraftSlots();filterDraftGrid();}
+function openDraftPanel(name){const card=CARDS.find(c=>getCardName(c)===name);if(!card)return;currentDraftPanelCard=name;const imgEl=$('draft-panel-img-el'),imgWrap=$('draft-panel-img');imgEl.src=getImgUrl(getCardImg(card),name);imgEl.onerror=()=>handleImgError(imgEl,name);imgWrap.classList.remove('animating');void imgWrap.offsetWidth;imgWrap.classList.add('animating');$('draft-panel-content').innerHTML=buildCardDetailHTML(card);$('draft-side-panel').classList.add('open');filterDraftGrid();}
+function closeDraftPanel(){$('draft-side-panel').classList.remove('open');currentDraftPanelCard=null;filterDraftGrid();}
+
+// ==================== SETUP ====================
+let activeLineup={PG:null,SG:null,SF:null,PF:null,C:null}, benchRoster=[];
+function goSetup(){benchRoster=[];POSITIONS.forEach(p=>[0,1].forEach(i=>{if(draftSquad[p][i])benchRoster.push(draftSquad[p][i]);}));activeLineup={PG:null,SG:null,SF:null,PF:null,C:null};showScreen('setup-screen');renderSetupSlots();renderSetupBench();}
+function renderSetupSlots(){$('setup-slots').innerHTML=POSITIONS.map(pos=>{const c=activeLineup[pos];return `<div id="sslots-${pos}" class="setup-slot-card setup-slot-${pos} ${c?'filled':''}" data-slot="setup-${pos}">${c?`<img src="${getImgUrl(getCardImg(c),getCardName(c))}" onerror="handleImgError(this,'${escapeJS(getCardName(c))}')"><button class="setup-remove" onclick="event.stopPropagation();removeSetupSlot('${pos}')">✕</button>`:`<div class="setup-slot-pos">${pos}</div><div class="setup-slot-drop-text">Drop Here</div>`}</div>`;}).join('');document.querySelectorAll('[data-slot^="setup-"]').forEach(slot=>{slot.addEventListener('physdrop',e=>{const pos=slot.dataset.slot.replace('setup-','');activeLineup[pos]=benchRoster.find(x=>getCardName(x)===e.detail.name);renderSetupSlots();renderSetupBench();});});const cnt=Object.values(activeLineup).filter(x=>x).length;$('setup-count-lbl').textContent=`${cnt}/5`;$('start-battle-btn').disabled=cnt<5;}
+function removeSetupSlot(pos){activeLineup[pos]=null;renderSetupSlots();renderSetupBench();}
+function autoFillSetup(){activeLineup={PG:null,SG:null,SF:null,PF:null,C:null};const shuf=[...benchRoster].sort(()=>Math.random()-.5);POSITIONS.forEach(pos=>{if(!activeLineup[pos]){const m=shuf.find(c=>getCardPos(c).includes(pos)&&!Object.values(activeLineup).includes(c));if(m)activeLineup[pos]=m;}});renderSetupSlots();renderSetupBench();}
+function renderSetupBench(){const grid=$('setup-bench-grid');grid.innerHTML='';benchRoster.forEach(c=>{if(Object.values(activeLineup).some(ac=>ac&&getCardName(ac)===getCardName(c)))return;const n=getCardName(c),imgSrc=getImgUrl(getCardImg(c),n);const div=document.createElement('div');div.className='bench-card-item';div.innerHTML=`<img src="${imgSrc}" onerror="handleImgError(this,'${escapeJS(n)}')">`;div.onmousemove=ev=>handleTooltipHover(ev,n,div);div.onmouseleave=hideTooltip;grid.appendChild(div);initSetupDrag(div,n,imgSrc);});}
+
+// ==================== BATTLE STATE ====================
+let playerActive=[],playerBench=[],enemyActive=[],enemyBench=[];
+let playerScore=0,enemyScore=0,turnCount=1,isAnimating=false;
+let uiState='IDLE',pendingAction=null,stagedActions=[];
+let playerBenchOpen=false;
+
+function cloneCard(c,team){const cc=JSON.parse(JSON.stringify(c));cc.currentHp=getCardHP(cc);cc.isDead=false;cc._instanceId=mkId(team,getCardName(cc));(cc.Skills||[]).forEach(sk=>{const mx=sk.Logic_Engine?.max_uses??99;sk._usesLeft=mx;sk._usesThisTurn=0;});return cc;}
+function buildEnemyRoster(){const dr={PG:[],SG:[],SF:[],PF:[],C:[]};const p=[...CARDS].sort(()=>Math.random()-.5);for(const c of p){for(const po of getCardPos(c)){if(POSITIONS.includes(po)&&dr[po].length<2){if(!POSITIONS.some(x=>dr[x].some(y=>getCardName(y)===getCardName(c)))){dr[po].push(c);break;}}}if(POSITIONS.every(x=>dr[x].length>=2))break;}const st=[],be=[];POSITIONS.forEach(po=>{if(dr[po][0]){const c=cloneCard(dr[po][0],'enemy');c.battleRole=po;st.push(c);}if(dr[po][1]){const c=cloneCard(dr[po][1],'enemy');c.battleRole=po;be.push(c);}});return{st,be};}
+
+function startBattle(){
+  playerActive=POSITIONS.map(po=>{if(!activeLineup[po])return null;const c=cloneCard(activeLineup[po],'player');c.battleRole=po;return c;}).filter(Boolean);
+  playerBench=benchRoster.filter(c=>!playerActive.some(ac=>getCardName(ac)===getCardName(c))).map(c=>cloneCard(c,'player'));
+  const eR=buildEnemyRoster();enemyActive=eR.st;enemyBench=eR.be;
+  playerScore=0;enemyScore=0;turnCount=1;stagedActions=[];uiState='IDLE';
+  _statBuffs={};_activeEffects=[];_synergyApplied=new Set();
+  _frozen={};_shutdown={};_drained={};_invulnerable={};_disabledSkills={};_screened={};
+  _surviveUsed={};_healUsed={};_stackHits={};_stolenSkills={};
+  [...playerActive,...playerBench,...enemyActive,...enemyBench].forEach(c=>{if(c)applyPassiveAbility(c);});
+  [...playerActive,...playerBench].forEach(c=>{if(c)applySynergyAbilities(c,playerActive);});
+  [...enemyActive,...enemyBench].forEach(c=>{if(c)applySynergyAbilities(c,enemyActive);});
+  $('battle-log').innerHTML='';logMsg('sys','System','Match initiated. First to 8 KOs wins.');
+  $('score-player').textContent='0';$('score-enemy').textContent='0';$('checkout-panel').style.display='none';
+  $('turn-indicator').textContent='TURN 1 — STAGING';showScreen('battle-screen');initBattleAudio();renderArena();
+}
+
+// ==================== PASSIVE ABILITY ====================
+function applyPassiveAbility(card){const logic=getAbilityLogic(card);if(!logic)return;const effects=Array.isArray(logic.effects)?logic.effects:(logic.effects?[logic.effects]:[]);effects.forEach(eff=>applyModifierTag(card,eff));}
+function applyModifierTag(card,mod){
+  if(!mod||mod==='NONE')return;const m=String(mod).toUpperCase();
+  if(m.includes('IMMUNE_TO_STEAL'))card._immuneSteal=true;if(m.includes('HEIGHT_BASED_BLOCK_IMMUNITY'))card._heightBlockImmune=true;
+  if(m.includes('SKILLS_UNBLOCKABLE'))card._skillsUnblockable=true;if(m.includes('SKILLS_UNCONTESTABLE'))card._skillsUncontestable=true;
+  if(m.includes('IMMUNE_COINFLIP'))card._immuneCoinflip=true;if(m.includes('IMMUNE_TO_FREEZE'))card._immuneFreeze=true;
+  if(m.includes('ASSIST_UNINTERCEPTABLE'))card._assistUninterceptable=true;if(m.includes('FORCED_TARGET_ON_SELF'))card._forcedTarget=true;
+  if(m.includes('HALVE_INCOMING_CLOSE_SHOT'))card._halveCloseShot=true;if(m.includes('CONDITIONAL_BONUS_DMG_STAT'))card._conditionalDmgBonus=true;
+  if(m.includes('ALL_MOVES_PRIORITY_3'))card._priorityBonus=3;else if(m.includes('ALL_MOVES_PRIORITY_2'))card._priorityBonus=2;
+  // Parse params for height threshold etc
+  const params=logic.params||{};
+  if(params.height_threshold) card._heightBlockThreshold=parseHeight(params.height_threshold);
+}
+function applySynergyAbilities(card,team){
+  const logic=getAbilityLogic(card);if(!logic||!logic.condition)return;
+  if(!evaluateCondition(logic.condition,card,null,{sourceTeam:team}))return;
+  const key=card._instanceId;if(_synergyApplied.has(key))return;_synergyApplied.add(key);
+  const mv=parseModifierValue(logic.modifier_value);
+  if(mv.hp){card.UI_Frontend_Data.Stats.HP+=mv.hp;card.currentHp=Math.min(card.currentHp+mv.hp,card.UI_Frontend_Data.Stats.HP);}
+  if(mv.basicDmg){ensureBuff(key);_statBuffs[key].basicBonus+=mv.basicDmg;}
+  if(mv.skillDmg){ensureBuff(key);_statBuffs[key].skillBonus+=mv.skillDmg;}
+  if(mv.spd)card.UI_Frontend_Data.Stats.Speed+=mv.spd;
+  logMsg('sys','System',`SYNERGY: ${shortName(getCardName(card))} gains ${logic.modifier_value}!`);
+}
+
+// ==================== CONDITION EVALUATOR ====================
+function evaluateCondition(condStr,src,tgt,board){if(!condStr)return true;return String(condStr).split(';').map(s=>s.trim()).filter(Boolean).every(c=>_evalCond(c,src,tgt,board));}
+function _evalCond(cond,src,tgt,board){if(!cond)return true;const m=cond.match(/^([^:]+):([><!=]+)?(.+)$/);if(!m)return true;const[,subj,op,raw]=m;const s=subj.trim().toLowerCase(),v=raw.trim();let sv;
+  if(s==='teammate'){return(board?.sourceTeam||[]).some(c=>c&&!c.isDead&&c!==src&&(getCardName(c)||'').toLowerCase().includes(v.toLowerCase()));}
+  if(s==='teammate_team'){return(board?.sourceTeam||[]).some(c=>c&&!c.isDead&&c!==src&&(getCardTeam(c)||'').toLowerCase().includes(v.toLowerCase()));}
+  if(s==='teammate_team_count'){const cm=cond.match(/teammate_team_count:([^><=!]+)([><=!]+)(\d+)/);if(!cm)return true;const cnt=(board?.sourceTeam||[]).filter(c=>c&&!c.isDead&&c!==src&&(getCardTeam(c)||'').toLowerCase().includes(cm[1].trim().toLowerCase())).length;return_cmp(cnt,cm[2],parseInt(cm[3]));}
+  if(s==='enemy_spd')sv=tgt?getCardSPD(tgt):0;else if(s==='enemy_height')sv=tgt?parseHeight(getCardHeight(tgt)):0;else return true;
+  if(sv===undefined)return true;let cv;if(s==='enemy_height')cv=parseHeight(v);else cv=parseFloat(v)||0;return _cmp(sv,op||'==',cv);}
+function _cmp(a,op,b){if(op==='<='||op==='=<')return a<=b;if(op==='>='||op==='=>')return a>=b;if(op==='<')return a<b;if(op==='>')return a>b;if(op==='!='||op==='!')return a!==b;return a==b;}
+
+// ==================== DMG FORMULA ====================
+function parseDmgFormula(formula,actingCard,targetCard,boardState,action){
+  if(!formula||String(formula).toUpperCase().includes('NO_DMG')||String(formula).toUpperCase().includes('N/A'))return 0;
+  const f=String(formula).toUpperCase().trim();
+  const flatM=f.match(/^FLAT:(\d+)/);if(flatM)return parseInt(flatM[1]);
+  if(f.includes('TEAMMATE_BASE_DMG')){const posM=f.match(/\[([^\]]+)\]/);const positions=posM?posM[1].split(',').map(p=>p.trim()):[];const multM=f.match(/MULT:([\d.]+)/);const addM=f.match(/ADD:(\d+)/);const team=boardState?.sourceTeam||[];let tm=action?.assistTarget?team[action.assistTarget]:null;if(!tm)tm=team.find(c=>c&&!c.isDead&&positions.includes(c.battleRole));if(!tm)return 0;const base=getCardDMG(tm)+(getBuff(tm._instanceId)?.basicBonus||0);if(multM)return Math.floor(parseFloat(multM[1])*base);if(addM)return base+parseInt(addM[1]);return base;}
+  return parseInt(formula)||0;
+}
+
+// ==================== RENDER ARENA ====================
+function renderBenchStacks(){
+  $('enemy-bench-stack').innerHTML=enemyBench.filter(c=>!c.isDead).map((c,i)=>`<div class="bench-stack-card face-down" style="top:${i*5}px;left:${i*5}px;z-index:${i};" onmouseenter="showEnemyBenchTooltip(event,${enemyBench.filter(x=>!x.isDead).length})" onmouseleave="hideEnemyBenchTooltip()"></div>`).join('');
+  const pB=$('player-bench-stack');pB.innerHTML='';
+  playerBench.filter(c=>!c.isDead).forEach((c,i)=>{const div=document.createElement('div');div.className='bench-stack-card';const img=document.createElement('img');img.src=getImgUrl(getCardImg(c),getCardName(c));img.onerror=()=>handleImgError(img,getCardName(c));div.appendChild(img);div.style.top=(i*5)+'px';div.style.left=(i*5)+'px';div.style.zIndex=i;div.onmouseenter=e=>{if(!playerBenchOpen)showTooltip(e,getCardName(c));};div.onmouseleave=hideTooltip;div.onmousemove=positionTooltip;div.onclick=e=>{e.stopPropagation();openBenchFan();};pB.appendChild(div);});
+}
+function renderArena(){renderBenchStacks();$('enemy-active-row').innerHTML=renderFanned(enemyActive,true);$('player-active-row').innerHTML=renderFanned(playerActive,false);}
+function renderFanned(team,isEnemy){
+  const n=team.length;if(!n)return '';
+  return team.map((c,i)=>{
+    const mid=(n-1)/2,offset=i-mid,arcY=isEnemy?-(offset*offset*12):(offset*offset*12),rot=isEnemy?(-offset*8):(offset*8);
+    const hpMax=getCardHP(c),pct=Math.max(0,(c.currentHp/hpMax)*100),clr=pct>50?'#40E0A0':pct>20?'#FFD166':'#FF6B6B';
+    const isStaged=!isEnemy&&stagedActions.some(a=>a.actorIdx===i);
+    let isValidTgt=false;
+       if(isEnemy&&uiState==='AWAITING_TARGET'&&pendingAction){const actor=playerActive[pendingAction.actorIdx];if(actor)isValidTgt=getValidTargets(actor,enemyActive).some(v=>v.i===i);}
+    const ck=c._instanceId;
+    let badges='';
+    if(_frozen[ck]) badges+=`<div class="card-status-badge badge-frozen">❄ FROZEN</div>`;
+    if(_drained[ck]) badges+=`<div class="card-status-badge badge-drained">💤 DRAINED</div>`;
+    if(_shutdown[ck]) badges+=`<div class="card-status-badge badge-shutdown">🚫 SHUTDOWN</div>`;
+    if(_statBuffs[ck]&&_statBuffs[ck].started) badges+=`<div class="card-status-badge badge-buffed">⬆ BUFFED</div>`;
+    if(_screened[ck]) badges+=`<div class="card-status-badge badge-screened">🛡 SCREENED</div>`;
+    const wrapClass=isEnemy?'enemy-card-wrap':'active-card-wrap';
+    const cardClass=`battle-card ${c.isDead?'dead-card':''} ${isStaged?'staged':''} ${isValidTgt?'valid-target':''}`;
+    const tN=escapeJS(getCardName(c));
+    return `<div class="${wrapClass}" id="wrap-${isEnemy?'enemy':'player'}-${i}" style="--base-rot:${rot}deg;--base-y:${arcY}px;transform:rotate(var(--base-rot)) translateY(var(--base-y));transform-origin:${isEnemy?'top center':'bottom center'};" onclick="onCardClick('${isEnemy?'enemy':'player'}',${i},event)" onmousemove="handleTooltipHover(event,'${tN}',this)" onmouseleave="hideTooltip()">${isEnemy?`<div class="hp-bar-container"><div class="hp-fill" id="hpf-enemy-${i}" style="width:${pct}%;background:${clr};"></div></div>`:''}<div class="${cardClass}" id="card-${isEnemy?'enemy':'player'}-${i}"><img src="${getImgUrl(getCardImg(c),getCardName(c))}" onerror="handleImgError(this,'${tN}')">${badges}</div>${isStaged?`<button class="undo-btn" onclick="event.stopPropagation();undoAction(${i})">✕</button>`:''}${!isEnemy?`<div class="hp-bar-container"><div class="hp-fill" id="hpf-player-${i}" style="width:${pct}%;background:${clr};"></div></div>`:''}<div class="hp-text" id="hpt-${isEnemy?'enemy':'player'}-${i}">${c.currentHp}/${hpMax}</div></div>`;
+  }).join('');
+}
+
+// ==================== TARGETING ====================
+function getValidTargets(atkC, tgtTeam) {
+  const role = atkC.battleRole || 'PG';
+  const validRoles = TARGET_MATRIX[role] || [];
+  return tgtTeam.map((c,i) => ({c,i})).filter(d => {
+    if (!d.c || d.c.isDead || _shutdown[d.c._instanceId]) return false;
+    return validRoles.includes(d.c.battleRole);
+  });
+}
+
+// ==================== UNIVERSAL MODAL ====================
+function showModal(title, desc, options, skipLabel = 'SKIP / CANCEL') {
+  return new Promise(resolve => {
+    $('uni-modal-title').textContent = title;
+    $('uni-modal-desc').textContent = desc;
+    $('uni-modal-options').innerHTML = options.map((opt, i) => `<button class="game-btn game-btn-${opt.color||'purple'}" style="width:100%;text-align:left;" onclick="window._modalResolve(${i})">${opt.label}</button>`).join('');
+    $('uni-modal-skip').textContent = skipLabel;
+    $('uni-modal-skip').onclick = () => { $('uni-modal').style.display='none'; resolve(null); };
+    window._modalResolve = (i) => { $('uni-modal').style.display='none'; resolve(i); };
+    $('uni-modal').style.display = 'flex';
+  });
+}
+
+// ==================== COIN FLIP ====================
+async function animateCoinFlip(playerName, skillName, result) {
+  return new Promise(resolve => {
+    const overlay = $('coin-flip-overlay'); overlay.style.display = 'flex';
+    overlay.innerHTML = `<div class="coin-flip-container"><div class="coin-flip-label">— COIN FLIP —</div><div class="coin-flip-main"><div class="coin-wrap"><div class="coin" id="anim-coin"><div class="coin-face coin-heads">H</div><div class="coin-face coin-tails">T</div></div></div><div class="coin-info-bar"><div class="coin-info-player">${playerName}</div><div style="font-size:.72rem;color:rgba(255,255,255,.7);">${skillName}</div><div class="coin-result-text" id="coin-result-txt" style="display:none;"></div></div></div></div>`;
+    setTimeout(() => {
+      const coin = document.getElementById('anim-coin');
+      if (coin) coin.className = result ? 'coin result-heads' : 'coin result-tails';
+      setTimeout(() => {
+        const rt = document.getElementById('coin-result-txt');
+        if (rt) { rt.style.display='block'; rt.className=result?'coin-result-text hit':'coin-result-text miss'; rt.textContent=result?'HEADS — HIT!':'TAILS — MISS!'; }
+        setTimeout(() => { overlay.style.display='none'; overlay.innerHTML=''; resolve(); }, 1500);
+      }, 900);
+    }, 1200);
+  });
+}
+
+// ==================== BUFF ANIMATION ====================
+async function showBuffAnimation(playerName, description) {
+  return new Promise(resolve => {
+    const el = document.createElement('div'); el.className = 'buff-overlay';
+    el.innerHTML = `<div class="buff-popup"><div class="buff-popup-title">⬆ BUFF ACTIVATED!</div><div style="color:var(--gold-light);font-size:.9rem;font-weight:700;">${playerName}</div><div class="buff-popup-detail">${description}</div></div>`;
+    document.body.appendChild(el); setTimeout(() => { el.remove(); resolve(); }, 2400);
+  });
+}
+
+// ==================== BENCH FAN ====================
+function openBenchFan() {
+  playerBenchOpen = true;
+  $('bench-fan-overlay').classList.add('open'); $('bench-fan-stage').innerHTML = '';
+  $('checkout-panel').classList.add('panel-blur');
+  const aliveBench = playerBench.filter(c => !c.isDead), n = aliveBench.length;
+  aliveBench.forEach((c, i) => {
+    const mid=(n-1)/2, offset=i-mid, angle=offset*10, arcY=offset*offset*12;
+    const wrap = document.createElement('div'); wrap.className = 'bench-fan-card-wrap';
+    wrap.style.cssText = `z-index:${n+i};--base-rot:${angle}deg;--base-y:${arcY}px;transform:rotate(var(--base-rot)) translateY(var(--base-y));`;
+    const card = document.createElement('div'); card.className = 'bench-fan-card';
+    const img = document.createElement('img'); img.src = getImgUrl(getCardImg(c), getCardName(c)); img.onerror = () => handleImgError(img, getCardName(c));
+    card.appendChild(img); wrap.appendChild(card);
+    wrap.onmousemove = ev => handleTooltipHover(ev, getCardName(c), wrap); wrap.onmouseleave = hideTooltip;
+    if (uiState === 'AWAITING_BENCH' && pendingAction?.pos) { if (!getCardPos(c).includes(pendingAction.pos)) wrap.classList.add('ineligible'); }
+    wrap.onclick = (ev) => { ev.stopPropagation(); onBenchFanCardClick(i); };
+    $('bench-fan-stage').appendChild(wrap);
+  });
+}
+function closeBenchFan() { playerBenchOpen=false; $('bench-fan-overlay').classList.remove('open'); $('checkout-panel').classList.remove('panel-blur'); if(uiState==='AWAITING_BENCH'){uiState='IDLE';pendingAction=null;logMsg('sys','System','Swap cancelled.');} }
+function handleBenchOverlayClick(e) { if(e.target===e.currentTarget||e.target.id==='bench-fan-stage'||e.target.id==='bench-fan-label) closeBenchFan(); }
+function onBenchFanCardClick(idx) {
+  const aliveBench=playerBench.filter(c=>!c.isDead); const incomingCard=aliveBench[idx]; if(!incomingCard){closeBenchFan();return;}
+  if(uiState==='AWAITING_BENCH'){const swapPos=pendingAction?.pos;if(swapPos&&!getCardPos(incomingCard).includes(swapPos)){logMsg('sys','System',`${shortName(getCardName(incomingCard))} cannot play ${swapPos}!`);return;}const realBenchIdx=playerBench.findIndex(c=>getCardName(c)===getCardName(incomingCard));stagedActions.push({...pendingAction,targetIdx:realBenchIdx,targetTeam:'bench'});uiState='IDLE';closeBenchFan();renderArena();renderCheckout();hideActionPanels();}
+function showEnemyBenchTooltip(e,cnt){const tt=$('enemy-bench-tooltip');tt.innerHTML=`<b style="color:#FF6B6B;">Opponent's Bench</b><br>${cnt} card(s) remaining`;tt.style.display='block';tt.style.left=(e.clientX+12)+'px';tt.style.top=(e.clientY-10)+'px';}
+function hideEnemyBenchTooltip(){$('enemy-bench-tooltip').style.display='none';}
+
+// ==================== COURT & CARD CLICKS ====================
+function handleCourtClick(e){if(e.target.closest('.action-panels-wrapper,.active-card-wrap,.enemy-card-wrap,.bench-stack-container'))return;if(uiState==='AWAITING_TARGET'){uiState='IDLE';pendingAction=null;logMsg('sys','System','Targeting cancelled.');setTooltipEnabled(true);renderArena();}hideActionPanels();}
+function hideActionPanels(){const w=$('action-panels-wrapper');if(w)w.classList.remove('visible');}
+
+function onCardClick(team, idx, e) {
+  e.stopPropagation(); if(isAnimating) return; hideTooltip();
+  if(playerBenchOpen){closeBenchFan();return;}
+  if(uiState==='AWAITING_TARGET'){
+    if(team==='enemy'&&!enemyActive[idx].isDead){const actor=playerActive[pendingAction.actorIdx];if(getValidTargets(actor,enemyActive).some(v=>v.i===idx)){stagedActions.push({...pendingAction,targetIdx:idx,targetTeam:'enemy'});uiState='IDLE';setTooltipEnabled(true);renderArena();renderCheckout();hideActionPanels();}else logMsg('sys','System','Invalid target — check lane match.');}
+    return;
+  }
+  if(team==='player'&&uiState==='IDLE'){
+    const c=playerActive[idx];if(c.isDead)return;const ck=c._instanceId;
+    if(_shutdown[ck]){logMsg('sys','System',`${shortName(getCardName(c))} is shutdown.`);return;}
+    if(_drained[ck]){logMsg('sys','System',`${shortName(getCardName(c))} is drained.`);return;}
+    if(_frozen[ck]){logMsg('sys','System',`${shortName(getCardName(c))} is frozen this turn.`);return;}
+    if(stagedActions.some(a=>a.actorIdx===idx&&!a.isFreeAction)){logMsg('sys','System','Already staged.');return;}
+    const nonFreeCount=stagedActions.filter(a=>!a.isFreeAction).length;
+    if(nonFreeCount>=Math.min(2,playerActive.filter(x=>!x.isDead).length))return;
+    showActionPanel(c, idx);
+  }
+}
+
+// ==================== ACTION PANEL ====================
+function _isReactiveSkill(logic){if(!logic)return false;if(logic.is_reactive===true)return true;const t=String(logic.timing||'').toUpperCase();if(t==='REACTIVE'||t==='REACTION')return true;const e=String(logic.execution||'').toUpperCase();if(e.includes('BLOCK')&&!e.includes('NON_BLOCKING'))return true;if(e.includes('CONTEST')&&!e.includes('NON_CONTEST'))return true;return false;}
+function _isNonTargetingSkill(logic){if(!logic)return false;const e=String(logic.execution||'').toUpperCase();return['FREEZE','DRIBBLE','CROSSOVER','STEAL_CANCEL','GRANT_EXTRA_MOVE','AURA_JUMP_MISS','AURA_CLOSE_MISS','AURA_ANY_MISS','STAT_BUFF','SELF_BUFF','INVULNERABLE_THIS_TURN','SHUTDOWN_TARGET','DISABLE_SPECIFIC_SKILL','INTERCEPT_ASSIST','HEAL','SELF_DRAIN'].some(nt=>e.includes(nt));}
+
+function showActionPanel(c, idx) {
+  const btns = [];
+  if(playerBench.filter(x=>!x.isDead).length > 0) btns.push(`<button class="game-btn game-btn-outline" style="padding:8px 12px;font-size:.7rem;" onclick="selectAction(${idx},'swap',null)">SWAP</button>`);
+  btns.push(`<button class="game-btn game-btn-ghost" style="padding:8px 12px;font-size:.7rem;" onclick="selectAction(${idx},'pass',null)">PASS</button>`);
+  btns.push(`<div style="width:1px;height:25px;background:rgba(255,255,255,.1);margin:0 4px;"></div>`);
+  btns.push(`<button class="action-btn action-btn-basic" onclick="selectAction(${idx},'basic',null)">BASIC<br><span class="action-btn-dmg">(${getEffectiveDMG(c)})</span></button>`);
+  
+  (c.Skills || []).forEach((sk, sIdx) => {
+    const logic = sk.Logic_Engine || {};
+    if (_isReactiveSkill(logic)) return;
+    if (sk._usesLeft <= 0) return;
+    const ds = _disabledSkills[c._instanceId];
+    const isDisabled = ds && ds.skillIdx === sIdx && ds.turnsLeft > 0;
+    if (isDisabled) { btns.push(`<button class="action-btn action-btn-skill" disabled style="opacity:.3;cursor:not-allowed;">${sk.Name.toUpperCase()}<br><span class="action-btn-dmg">(DISABLED)</span></button>`); return; }
+    
+    btns.push(`<button class="action-btn action-btn-skill" onclick="selectAction(${idx},'skill',${sIdx})">${sk.Name.toUpperCase()}<br><span class="action-btn-dmg">(${sk.Display_DMG})</span></button>`);
+    
+    // Alternate Mode Button
+    if (logic.alternate_mode) {
+      btns.push(`<button class="action-btn action-btn-alt" onclick="selectAction(${idx},'alt-mode',${sIdx})">ALT: ${String(logic.alternate_mode.execution).replace(/_/g,' ')}<br><span class="action-btn-dmg" style="font-size:.65rem;color:rgba(255,255,255,.6);">[CHOOSE MODE]</span></button>`);
+    }
+  });
+  
+  const stolen = _stolenSkills[c._instanceId] || [];
+  stolen.forEach((sk, sIdx) => { btns.push(`<button class="action-btn action-btn-skill" style="border:1.5px solid var(--gold);" onclick="selectAction(${idx},'stolen-skill',${sIdx})">[STOLEN] ${sk.Name.toUpperCase()}<br><span class="action-btn-dmg">(${sk.Display_DMG})</span></button>`); });
+  
+  $('action-btns-row').innerHTML = btns.join('');
+  $('action-panels-wrapper').classList.add('visible');
+}
+
+// ==================== ACTION SELECTION ====================
+async function selectAction(actorIdx, type, skillIdx) {
+  hideActionPanels();
+  const c = playerActive[actorIdx]; const ck = c._instanceId;
+  let sk = null, logic = {}, priority = 1, isFreeAction = false, isAltMode = false;
+
+  if (type === 'skill' || type === 'alt-mode' || type === 'stolen-skill') {
+    sk = type === 'stolen-skill' ? (_stolenSkills[ck]||[])[skillIdx] : c.Skills[skillIdx];
+    logic = sk?.Logic_Engine || {};
+    priority = (logic.priority || 1) * (c._priorityBonus || 1);
+    isFreeAction = logic.free_action === true || logic.consumes_move === false || String(logic.timing||'').toUpperCase() === 'FREE_ACTION';
+    
+    if (type === 'alt-mode') {
+      isAltMode = true;
+      logic = logic.alternate_mode || {};
+      priority = (logic.priority || 1) * (c._priorityBonus || 1);
+      isFreeAction = logic.is_reactive === true; // Reactive block is free
+    }
+  } else if (type === 'basic') { priority = c._priorityBonus || 1; }
+
+  if (sk) {
+    if (logic.team_condition && !evaluateCondition(logic.team_condition, c, null, {sourceTeam:playerActive})) { logMsg('sys','System',`${sk.Name} condition not met.`); return; }
+    const upt = logic.uses_per_turn;
+    if (upt && sk._usesThisTurn >= upt) { logMsg('sys','System',`${sk.Name} already used this turn.`); return; }
+  }
+
+  pendingAction = {actorIdx, actionType:type, skillIdx, priority, speed:getCardSPD(c), pos:c.battleRole, isFreeAction, isAltMode, execTeam:'player'};
+
+  if (sk && logic.requires_input && logic.input_type) {
+    const resolved = await _resolveInput(logic.input_type, c, actorIdx, sk, logic);
+    if (resolved === null) return;
+    pendingAction.inputResolved = resolved;
+  } else if (sk && !logic.requires_input && !_isReactiveSkill(logic)) {
+    const scope = String(logic.target_scope || '').toUpperCase();
+    if (scope === 'ANY_TEAMMATE' || scope === 'ALL_TEAMMATES') { const r = await _resolveInput('select_teammate_or_self', c, actorIdx, sk, logic); if(r===null)return; pendingAction.inputResolved=r; }
+    else if (scope === 'ADJACENT_ENEMY') { const r = await _resolveInput('adjacent_enemy', c, actorIdx, sk, logic); if(r===null)return; pendingAction.inputResolved=r; }
+  }
+
+  if (type === 'pass') { stagedActions.push({...pendingAction, targetIdx:null, targetTeam:null}); pendingAction=null; renderArena(); renderCheckout(); }
+  else if (type === 'swap') { uiState = 'AWAITING_BENCH'; openBenchFan(); }
+  else {
+    if (sk && (_isNonTargetingSkill(logic) || isAltMode)) { stagedActions.push({...pendingAction, targetIdx:null, targetTeam:null}); pendingAction=null; renderArena(); renderCheckout(); return; }
+    if (getValidTargets(c, enemyActive).length === 0) { logMsg('sys','System',`${shortName(getCardName(c))} has no valid targets!`); return; }
+    uiState = 'AWAITING_TARGET'; setTooltipEnabled(false); renderArena();
+  }
+}
+
+async function _resolveInput(inputType, actorCard, actorIdx, sk, logic) {
+  const iT = String(inputType||'').toLowerCase();
+  if (iT === 'select_enemy' || iT === 'freeze_target' || iT === 'dribble_target') {
+    const enemies = enemyActive.map((c,i)=>({c,i})).filter(x=>!x.c.isDead);
+    if(!enemies.length) return null;
+    const choice = await showModal(sk.Name, 'Select a target:', enemies.map(x=>({label:`[${x.c.battleRole}] ${shortName(getCardName(x.c))} — HP:${x.c.currentHp}`, color:'cyan'})));
+    return choice!==null ? {targetIdx: enemies[choice].i} : null;
+  }
+  if (iT === 'adjacent_enemy') {
+    const posOrder=['PG','SG','SF','PF','C'], myIdx=posOrder.indexOf(actorCard.battleRole||'PG'), adjRoles=[];
+    if(myIdx>0)adjRoles.push(posOrder[myIdx-1]);if(myIdx<posOrder.length-1)adjRoles.push(posOrder[myIdx+1]);
+    const enemies = enemyActive.map((c,i)=>({c,i})).filter(x=>!x.c.isDead&&adjRoles.includes(x.c.battleRole));
+    if(!enemies.length){logMsg('sys','System','No adjacent enemies.');return null;}
+    const choice = await showModal(sk.Name, 'Select adjacent enemy:', enemies.map(x=>({label:`[${x.c.battleRole}] ${shortName(getCardName(x.c))} — HP:${x.c.currentHp}`,color:'cyan'})));
+    return choice!==null ? {targetIdx: enemies[choice].i} : null;
+  }
+  if (iT === 'select_disable_skill') {
+    const opts=[];
+    enemyActive.forEach((ec,ei)=>{if(ec.isDead)return;(ec.Skills||[]).forEach((esk,esi)=>{const ds=_disabledSkills[ec._instanceId];if(!ds||ds.skillIdx!==esi)opts.push({cardIdx:ei,skillIdx:esi,sk:esk,card:ec});});});
+    if(!opts.length)return null;
+    const choice = await showModal('DISABLE A SKILL','Select enemy skill to disable (50% flip):',opts.map(o=>({label:`${shortName(getCardName(o.card))}: ${o.sk.Name}`,color:'red'})));
+    return choice!==null ? opts[choice] : null;
+  }
+  if (iT === 'select_teammate_or_self') {
+    const targets = playerActive.map((c,i)=>({c,i})).filter(x=>!x.c.isDead);
+    const choice = await showModal('SELECT TARGET','Choose a target:',targets.map(x=>({label:`[${x.c.battleRole}] ${shortName(getCardName(x.c))} — HP:${x.c.currentHp}/${getCardHP(x.c)}`,color:'green'})));
+    return choice!==null ? {targetIdx: targets[choice].i} : null;
+  }
+  return {};
+}
+
+function undoAction(idx){stagedActions=stagedActions.filter(a=>a.actorIdx!==idx);uiState='IDLE';renderArena();renderCheckout();}
+function renderCheckout(){
+  const max=Math.min(2,playerActive.filter(x=>!x.isDead).length),nonFreeCount=stagedActions.filter(a=>!a.isFreeAction).length;
+  const p=$('checkout-panel');$('staged-count').textContent=`${nonFreeCount}/${max}`;
+  if(stagedActions.length>0){
+    p.style.display='flex';
+    $('staged-list').innerHTML=stagedActions.map(a=>{const ac=playerActive[a.actorIdx];const skName=a.actionType==='pass'?'Pass':a.actionType==='swap'?'Swap':a.actionType==='alt-mode'?'Alt-'+(a.isAltMode?'Block':'?'):(a.actionType==='skill'||a.actionType==='stolen-skill')?(ac.Skills[a.skillIdx]?.Name||'Skill'):'Basic Attack';const tgt=a.targetTeam==='enemy'?` → ${shortName(getCardName(enemyActive[a.targetIdx]))}`:'';return `<div>▶ [${ac.battleRole}] ${shortName(getCardName(ac))}: ${skName}${tgt}</div>`;}).join('');
+    $('confirm-moves-btn').disabled=false;
+  } else p.style.display='none';
+}
+
+// ==================== ENEMY AI ====================
+async function generateEnemyAI(){
+  const acts=[],alive=enemyActive.map((c,i)=>({c,i})).filter(x=>!x.c.isDead);
+  for(let i=0;i<Math.min(2,alive.length);i++){
+    const{c,i:ai}=alive[i];const ck=c._instanceId;
+    if(_frozen[ck]||_drained[ck]||_shutdown[ck])continue;
+    const vT=getValidTargets(c,playerActive);
+    if(!vT.length){acts.push({actorIdx:ai,actionType:'pass',skillIdx:null,targetIdx:null,targetTeam:null,priority:1,speed:getCardSPD(c),pos:c.battleRole,isFreeAction:false,execTeam:'enemy',c});continue;}
+    const t=vT[Math.floor(Math.random()*vT.length)];
+    const usableSk=(c.Skills||[]).map((sk,si)=>({sk,si})).filter(({sk})=>{const l=sk.Logic_Engine||{};if(_isReactiveSkill(l))return false;if(sk._usesLeft<=0)return false;if(l.uses_per_turn&&sk._usesThisTurn>=l.uses_per_turn)return false;return true;});
+    const useSk=Math.random()>0.4&&usableSk.length>0;let sIdx=null,prio=1,isFree=false;
+    if(useSk){const pick=usableSk[Math.floor(Math.random()*usableSk.length)];sIdx=pick.si;prio=(pick.sk.Logic_Engine?.priority||1)*(c._priorityBonus||1);isFree=pick.sk.Logic_Engine?.free_action===true;
+      // AI alternate mode logic (e.g. Heatlemania block)
+      if(pick.sk.Logic_Engine?.alternate_mode && Math.random()>0.5) { isFree = true; } // Fake flag to trigger alt block later
+    } else { prio=c._priorityBonus||1; }
+    acts.push({actorIdx:ai,actionType:useSk?'skill':'basic',skillIdx:sIdx,targetIdx:t.i,targetTeam:'player',priority:prio,speed:getCardSPD(c),pos:c.battleRole,isFreeAction:isFree,execTeam:'enemy',c,useAltBlock:useSk&&usableSk.find(u=>u.sk.Logic_Engine?.alternate_mode)?true:false});
+  }
+  return acts;
+}
+
+// ==================== CONFIRM PHASE ====================
+async function confirmMovesPhase(){
+  if(isAnimating)return;$('checkout-panel').style.display='none';document.querySelectorAll('.undo-btn').forEach(b=>b.style.display='none');isAnimating=true;
+  $('turn-indicator').textContent=`TURN ${turnCount} — EXECUTING`;logMsg('sys','System',`--- Turn ${turnCount} ---`);
+  
+  // Process pending drains from previous turn
+  Object.keys(_pendingDrains||{}).forEach(k => { _drained[k] = true; });
+  _pendingDrains = {};
+  
+  const eStaged=await generateEnemyAI();
+  const pStaged=stagedActions.map(a=>({...a,execTeam:'player',c:playerActive[a.actorIdx]}));
+  const master=[...pStaged,...eStaged];
+  const PH={PG:5,SG:4,SF:3,PF:2,C:1};
+  master.sort((a,b)=>{if(a.priority!==b.priority)return b.priority-a.priority;if(a.speed!==b.speed)return b.speed-a.speed;const ap=PH[(a.pos||'').split('/')[0]]||0,bp=PH[(b.pos||'').split('/')[0]]||0;if(ap!==bp)return bp-ap;return Math.random()>.5?1:-1;});
+
+  for(const act of master){
+    if(playerScore>=8||enemyScore>=8)break;
+    const actC=act.execTeam==='player'?playerActive[act.actorIdx]:enemyActive[act.actorIdx];if(!actC||actC.isDead)continue;
+    const ack=actC._instanceId;
+    if(_drained[ck]){logMsg('sys','System',`${shortName(getCardName(actC))} is drained.`);continue;}
+    if(_shutdown[ck]){logMsg('sys','System',`${shortName(getCardName(actC))} is shutdown.`);continue;}
+    if(_frozen[ck]&&act.actionType!=='pass'){logMsg('sys','System',`${shortName(getCardName(actC))} is frozen.`);continue;}
+    await executeAction(act);
+  }
+
+  await handleDeadReplacements('player',playerActive,playerBench);
+  await handleDeadReplacements('enemy',enemyActive,enemyBench);
+  
+  // Tick all effects and buffs
+  tickEffects(); tickBuffs(); activateDelayedBuffs(turnCount);
+  
+  // Clear single-turn statuses
+  Object.keys(_frozen).forEach(k=>delete _frozen[k]);
+  Object.keys(_drained).forEach(k=>delete _drained[k]);
+  Object.keys(_invulnerable).forEach(k=>delete _invulnerable[k]);
+  Object.keys(_screened).forEach(k=>delete _screened[k]);
+  Object.keys(_shutdown).forEach(k=>{_shutdown[k]--;if(_shutdown[k]<=0)delete _shutdown[k];});
+  Object.keys(_disabledSkills).forEach(k=>{_disabledSkills[k].turnsLeft--;if(_disabledSkills[k].turnsLeft<=0)delete _disabledSkills[k];});
+  
+  [...playerActive,...enemyActive,...playerBench,...enemyBench].forEach(c=>{if(c)(c.Skills||[]).forEach(sk=>{if(sk)sk._usesThisTurn=0;});});
+
+  stagedActions=[];pendingAction=null;uiState='IDLE';setTooltipEnabled(true);turnCount++;
+  if(playerScore>=8||enemyScore>=8){const won=playerScore>=8;$('endgame-title').textContent=won?'YOU WIN! 🏆':'YOU LOSE 😢';$('endgame-title').style.color=won?'#40E0A0':'#FF6B6B';$('endgame-desc').textContent=won?'You knocked out 8 opponents first!':'Opponent knocked out 8 of your players.';$('endgame-modal').style.display='flex';isAnimating=false;return;}
+  isAnimating=false;$('turn-indicator').textContent=`TURN ${turnCount} — STAGING`;renderArena();renderBenchStacks();renderCheckout();hideActionPanels();renderEffectsPanel();logMsg('sys','System',`Turn ${turnCount} begins. Select your moves!`);
+}
+
+// ==================== EXECUTE ACTION ====================
+async function executeAction(act){
+  const isP=act.execTeam==='player';const atks=isP?playerActive:enemyActive,defs=isP?enemyActive:playerActive;
+  const atkC=atks[act.actorIdx];if(!atkC||atkC.isDead)return;const whoLabel=isP?'You':'Bot';const ack=atkC._instanceId;
+
+  if(act.actionType==='pass'){logMsg('sys',whoLabel,`${shortName(getCardName(atkC))} passes.`);return;}
+  if(act.actionType==='swap'){const bArr=isP?playerBench:enemyBench;const incoming=bArr[act.targetIdx];if(!incoming)return;incoming.battleRole=atkC.battleRole;if(!incoming.currentHp)incoming.currentHp=getCardHP(incoming);atks[act.actorIdx]=incoming;bArr[act.targetIdx]=atkC;logMsg('sys',whoLabel,`Swap: ${shortName(getCardName(atkC))} → ${shortName(getCardName(incoming))}`);renderArena();renderBenchStacks();await delay(700);return;}
+
+  let sk=null, logic={}, isAltMode=act.isAltMode;
+  if(act.actionType==='skill'||act.actionType==='alt-mode'){
+    sk=act.actionType==='stolen-skill'?(_stolenSkills[ack]||[])[act.skillIdx]:atkC.Skills[act.skillIdx];
+    if(isAltMode&&sk) logic=sk.Logic_Engine?.alternate_mode||{};
+    else logic=sk?.Logic_Engine||{};
+  }
+  const exec=String(logic.execution||'').toUpperCase();
+  const boardState={sourceTeam:atks,defTeam:defs,myKOs:isP?playerScore:enemyScore,oppKOs:isP?enemyScore:playerScore};
+
+  // Handle Alternate Mode execution (e.g., Reactive Block)
+  if(isAltMode && exec.includes('BLOCK')){
+    logMsg('block',whoLabel,`${shortName(getCardName(atkC))} uses Alternate Mode: ${exec.replace(/_/g,' ')}!`);
+    if(sk){sk._usesLeft--;sk._usesThisTurn++;}renderArena();return;
+  }
+
+  // NON-TARGETING SKILLS
+  if(sk && !_isReactiveSkill(logic)) {
+    if(exec.includes('FREEZE')||exec.includes('DRIBBLE')||exec.includes('CROSSOVER')){
+      const tIdx=act.inputResolved?.targetIdx;const tTeam=isP?enemyActive:playerActive;const frozenC=tTeam[tIdx];
+      if(frozenC&&!frozenC.isDead&&!frozenC._immuneFreeze){_frozen[frozenC._instanceId]=true;logMsg(isP?'atk':'def',whoLabel,`${shortName(getCardName(atkC))} freezes ${shortName(getCardName(frozenC))}!`);
+      // Check concurrent effect for simultaneous damage
+      if(sk.Logic_Engine?.concurrent_effect?.execution?.includes('FREEZE')){
+        const ce=sk.Logic_Engine.concurrent_effect;
+        const dmg=parseInt(ce.dmg_concurrent||0);
+        if(dmg>0&&frozenC){await playCombatAnimation(`${isP?'player':'enemy'}-${act.actorIdx}`,`${isP?'enemy':'player'}-${tIdx}`,dmg,frozenC,act.execTeam,tIdx,true);if(frozenC.currentHp<=0)handleKO(frozenC,isP?'enemy':'player',tIdx);}
+        addTrackedEffect(shortName(getCardName(atkC)),frozenC._instanceId,shortName(getCardName(frozenC)),'freeze',ce.effect_description||'Freeze + cancel move',1);
+      } else {
+        const rawDmg=parseInt(logic.dmg_raw||0);if(rawDmg>0&&frozenC){await playCombatAnimation(`${isP?'player':'enemy'}-${act.actorIdx}`,`${isP?'enemy':'player'}-${tIdx}`,rawDmg,frozenC,act.execTeam,tIdx,true);if(frozenC.currentHp<=0)handleKO(frozenC,isP?'enemy':'player',tIdx);}
+        addTrackedEffect(shortName(getCardName(atkC)),frozenC._instanceId,shortName(getCardName(frozenC)),'freeze',logic.effect_description||'Freeze + cancel move',1);
+      }
+      if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;renderArena();return;
+    }
+    if(exec.includes('STEAL_CANCEL')){
+      const tIdx=act.inputResolved?.targetIdx;const tTeam=isP?enemyActive:playerActive;const tC=tTeam[tIdx];
+      if(tC&&!tC.isDead&&!tC._immuneSteal){_frozen[tC._instanceId]=true;logMsg(isP?'atk':'def',whoLabel,`${shortName(getCardName(atkC))} steals and cancels ${shortName(getCardName(tC))}!`);addTrackedEffect(shortName(getCardName(atkC)),tC._instanceId,shortName(getCardName(tC)),'cancel',logic.effect_description||'Steal and cancel move',parseInt(logic.turns_active)||1);}
+      if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;renderArena();return;
+    }
+    if(exec.includes('STAT_BUFF')||exec.includes('SELF_BUFF')){
+      const mv=parseModifierValue(logic.modifier_value||'');const dur=parseInt(logic.turns_active||3);const delay=parseInt(logic.buff_start_delay||0);
+      if(mv.basicDmg||mv.skillDmg){ensureBuff(ack);if(mv.basicDmg)_statBuffs[ack].basicBonus+=mv.basicDmg;if(mv.skillDmg)_statBuffs[ack].skillBonus+=mv.skillDmg;if(dur)_statBuffs[ack].turnsLeft=dur;if(delay)_statBuffs[ack].startTurn=turnCount+delay;}
+      const desc=logic.effect_description||`+${mv.basicDmg||mv.skillDmg||0} DMG for ${dur} turns`;
+      await showBuffAnimation(shortName(getCardName(atkC)),desc);addTrackedEffect(shortName(getCardName(atkC)),ack,shortName(getCardName(atkC)),'buff',desc,dur);
+      // Check concurrent (e.g., Luka invulnerable)
+      if(sk.Logic_Engine?.concurrent_effect?.execution?.includes('INVULNERABLE')){_invulnerable[ack]=true;logMsg('sys','System',`${shortName(getCardName(atkC))} is INVULNERABLE this turn!`);}
+      if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;return;
+    }
+    if(exec.includes('INVULNERABLE')){_invulnerable[ack]=true;await showBuffAnimation(shortName(getCardName(atkC)),'INVULNERABLE this turn!');if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;return;}
+    if(exec.includes('AURA')){const dur=parseInt(logic.turns_active||2);const aType=exec.includes('JUMP')?'jumpshot-miss':'closeshot-miss';addBoardState({type:aType,sourceTeam:act.execTeam,duration:dur});addTrackedEffect(shortName(getCardName(atkC)),'all','All Opponents',logic.effect_description||`50% miss chance ${dur}T`,dur);if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;return;}
+    if(exec.includes('SHUTDOWN')){const tIdx=act.targetIdx??act.inputResolved?.targetIdx;const tC=defs[tIdx];if(tC){_shutdown[tC._instanceId]=parseInt(logic.turns_active||2);addTrackedEffect(shortName(getCardName(atkC)),tC._instanceId,shortName(getCardName(tC)),'shutdown','Shutdown',_shutdown[tC._instanceId]);const raw=parseInt(logic.dmg_raw||0);logMsg(isP?'atk':'def',whoLabel,`${shortName(getCardName(atkC))} shuts down ${shortName(getCardName(tC))}!`);if(raw>0){await playCombatAnimation(`${isP?'player':'enemy'}-${act.actorIdx}`,`${isP?'enemy':'player'}-${tIdx}`,raw,tC,act.execTeam,tIdx,true);if(tC.currentHp<=0)handleKO(tC,isP?'enemy':'player',tIdx);}}if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;renderArena();return;}
+    if(exec.includes('DISABLE_SPECIFIC')){const resolved=act.inputResolved;if(resolved){const flip=Math.random()<0.5;await animateCoinFlip(shortName(getCardName(atkC)),`${sk.Name}`,flip);if(flip){_disabledSkills[defs[resolved.cardIdx]._instanceId]={skillIdx:resolved.skillIdx,turnsLeft:parseInt(logic.turns_active||3)};addTrackedEffect(shortName(getCardName(atkC)),defs[resolved.cardIdx]._instanceId,shortName(getCardName(defs[resolved.cardIdx])),'disable',`Disable ${resolved.sk.Name}`,_disabledSkills[defs[resolved.cardIdx]._instanceId].turnsLeft);logMsg(isP?'atk':'def',whoLabel,`${shortName(getCardName(atkC))} disables ${resolved.sk.Name}!`);}else logMsg(isP?'def':'atk',isP?'You':'Bot',`Disable failed!`);}if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;renderArena();return;}
+    if(exec.includes('INTERCEPT_ASSIST')){const tIdx=act.inputResolved?.targetIdx;const tTeam=isP?playerActive:enemyActive;const tC=tIdx!=null?tTeam[tIdx]:atkC;if(tC){_screened[tC._instanceId]=true;addTrackedEffect(shortName(getCardName(atkC)),tC._instanceId,shortName(getCardName(tC)),'screen','Screen Guarantee',1);logMsg(isP?'atk':'def',whoLabel,`${shortName(getCardName(atkC))} guarantees ${shortName(getCardName(tC))}'s next skill!`);}if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;return;}
+    if(exec.includes('HEAL')){const tIdx=act.inputResolved?.targetIdx;const team2=isP?playerActive:enemyActive;const tc=tIdx!=null?team2[tIdx]:atkC;if(tc){const ha=parseInt(logic.heal_amount||300);tc.currentHp=Math.min(getCardHP(tc),tc.currentHp+ha);addTrackedEffect(shortName(getCardName(atkC)),tc._instanceId,shortName(getCardName(tc)),'heal',`Heal ${ha} HP`,1);logMsg(isP?'atk':'def',whoLabel,`${shortName(getCardName(atkC))} heals ${shortName(getCardName(tc))} for ${ha}!`);}if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;renderArena();return;}
+    if(exec.includes('GRANT_EXTRA_MOVE')){const tIdx=act.inputResolved?.targetIdx;const team2=isP?playerActive:enemyActive;const chosen=tIdx!=null?team2[tIdx]:team2.find((c,ci)=>!c.isDead&&c!==atkC);if(chosen){const vd=getValidTargets(chosen,defs);if(vd.length){const tgt2=vd[Math.floor(Math.random()*vd.length)];await playCombatAnimation(`${isP?'player':'enemy'}-${team2.indexOf(chosen)}`,`${isP?'enemy':'player'}-${tgt2.i}`,getEffectiveDMG(chosen),tgt2.c,act.execTeam,tgt2.i,false);if(tgt2.c.currentHp<=0)handleKO(tgt2.c,isP?'enemy':'player',tgt2.i);}}if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;renderArena();return;}
+    // Non-targeting skills not caught above just go straight to staging
+    if(_isNonTargetingSkill(logic)){if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;return;}
+  }
+
+  // STANDARD DAMAGE TARGETING
+  let defC=defs[act.targetIdx],dIdx=act.targetIdx;
+  if(!defC||defC.isDead){const vt=getValidTargets(atkC,defs);if(!vt.length)return;defC=vt[0].c;dIdx=vt[0].i;}
+  if(_invulnerable[defC._instanceId]){logMsg('sys','System',`${shortName(getCardName(defC))} is invulnerable!`);return;}
+
+  let dmgRaw=0;
+  if(sk){dmgRaw=parseDmgFormula(logic.dmg_formula||sk.Display_DMG,atkC,defC,boardState,{logic});if(getBuff(ack)?.skillBonus&&!isAltMode)dmgRaw+=getBuff(ack).skillBonus;}
+  else{dmgRaw=getEffectiveDMG(atkC,false);if(act.actionType==='basic'&&defC._halveBasic)dmgRaw=Math.floor(dmgRaw/2);}
+
+  // Screen Guarantee Check
+  if(_screened[defC._instanceId]){logMsg('block','Screen',`${shortName(getCardName(defC))} is screened! Skill guaranteed.`);}
+
+  // Coin flip
+  if(sk&&logic.coin_flip&&!atkC._immuneCoinflip&&!_screened[defC._instanceId]){const flip=Math.random()<0.5;logMsg('coin','Coin',`Flip for ${sk.Name}: ${flip?'HEADS':'TAILS'}`);await animateCoinFlip(shortName(getCardName(atkC)),sk.Name,flip);if(!flip){logMsg('sys','System',`${sk.Name} missed!`);if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;await checkReboundTriggers(act,atkC,act.execTeam);return;}}
+
+  // Aura block check
+  const blocked=checkAuraBlock(act,sk,atkC,act.execTeam);
+  if(blocked){logMsg(isP?'def':'atk',isP?'You':'Bot',blocked);if(sk){if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;}await checkReboundTriggers(act,atkC,act.execTeam);return;}
+
+  // Reactions
+  if(!_screened[defC._instanceId]&&!atkC._skillsUnblockable) await promptAndApplyReaction(act,sk,atkC,defC,dIdx,isP,defs);
+  if(act._blocked){if(sk){if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;}await checkReboundTriggers(act,atkC,act.execTeam);return;}
+
+  logMsg(isP?'atk':'def',whoLabel,`[${atkC.battleRole}] ${shortName(getCardName(atkC))} → ${sk?.Name||'Basic'} on [${defC.battleRole}] ${shortName(getCardName(defC))} — ${dmgRaw} DMG`);
+  await playCombatAnimation(`${isP?'player':'enemy'}-${act.actorIdx}`,`${isP?'enemy':'player'}-${dIdx}`,dmgRaw,defC,act.execTeam,dIdx,true);
+  
+  // Post-Effect (Self-Drain, Putback)
+  if(sk&&sk.Logic_Engine?.post_effect){const pe=sk.Logic_Engine.post_effect;if(pe.execution==='SELF_DRAIN'&&pe.trigger_condition==='always'){logMsg('sys','System',`${shortName(getCardName(atkC))} will be drained next turn.`);_pendingDrains[ack]=true;}}
+  // Concurrent Effect for standard damage skills (e.g. Wilt putback)
+  if(sk&&sk.Logic_Engine?.post_effect?.execution==='DEAL_FLAT_DMG'&&sk.Logic_Engine?.post_effect?.trigger_condition==='on_block_success'&&act._blocked){const pe=sk.Logic_Engine.post_effect;const putDmg=parseInt(pe.dmg_raw||0);const tC2=atkC;await playCombatAnimation(`${isP?'player':'enemy'}-${act.actorIdx}`,`${isP?'enemy':'player'}-${defs.indexOf(atkC)}`,putDmg,atkC,act.execTeam,defs.indexOf(atkC),true);if(atkC.currentHp<=0)handleKO(atkC,isP?'enemy':'player',defs.indexOf(atkC));}
+
+  if(sk){if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;}
+  logMsg('hp','HP',`${shortName(getCardName(defC))}: ${defC.currentHp}/${getCardHP(defC)}`);
+  checkHPRecover(defC);if(defC.currentHp<=0)handleKO(defC,isP?'enemy':'player',dIdx);renderArena();
+}
+
+function checkAuraBlock(act,sk,atkC,execTeam){
+  if(!sk)return null;const nat=(sk.Nature||'').toLowerCase();const oppTeam=execTeam==='player'?'enemy':'player';
+  if(hasBoardState('jumpshot-miss-chance',oppTeam)&&nat.includes('jump shot')&&!atkC._immuneCoinflip&&!_screened[act.targetIdx!==null?enemyActive[act.targetIdx]._instanceId:''])return`${sk.Name} MISSED (jump aura)!`;
+  if(hasBoardState('closeshot-miss-chance',oppTeam)&&nat.includes('close shot')&&!atkC._immuneCoinflip&&!_screened[act.targetIdx!==null?enemyActive[act.targetIdx]._instanceId:''])return`${sk.Name} MISSED (close aura)!`;
+  return null;
+}
+let _pendingDrains = {};
+
+// ==================== REACTION ENGINE ====================
+async function promptAndApplyReaction(act,sk,atkC,defC,dIdx,isP,defs){
+  const nat=sk?(sk.Nature||'').toLowerCase():'basic';const isJump=nat.includes('jump shot'),isClose=nat.includes('close shot');
+  const defTeam=isP?enemyActive:playerActive;
+  let valids=[];
+  for(let[i,c]of defTeam.entries()){if(c.isDead)continue;for(let[si,rsk]of(c.Skills||[]).entries()){const rl=rsk.Logic_Engine||{};if(!_isReactiveSkill(rl))continue;if(rsk._usesLeft<=0)continue;if(rl.uses_per_turn&&rsk._usesThisTurn>=rl.uses_per_turn)continue;if(atkC._immuneDefSkills)continue;if(_screened[atkC._instanceId])continue;
+    const triggers=Array.isArray(rl.valid_triggers)?rl.valid_triggers:[];
+    let triggered=false;
+    if(triggers.includes('any_move'))triggered=true;if(triggers.includes('any_attack'))triggered=true;if(triggers.includes('close_shot')&&isClose&&!atkC._skillsUnblockable)triggered=true;if(triggers.includes('damaging_skill')&&sk&&nat!=='basic')triggered=true;
+    if(atkC._heightBlockImmune&&parseHeight(getCardHeight(c))<(atkC._heightBlockThreshold||999))triggered=false;
+    if(triggered)valids.push({cIdx:i,sIdx:si,rsk,c});}}
+  if(!valids.length)return;
+  let chosen=null;
+  if(isP){if(Math.random()<0.4)chosen=valids[Math.floor(Math.random()*valids.length)];}
+  else{const choice=await showModal('INCOMING ATTACK',`${shortName(getCardName(atkC))} (Opp.) uses ${sk?.Name||'Basic Attack'} on ${shortName(getCardName(defC))}. React?`,valids.map(v=>({label:`[${v.c.battleRole}] ${shortName(getCardName(v.c))}: ${v.rsk.Name}`,color:'purple'})),'SKIP (No Defense)');if(choice!==null)chosen=valids[choice];}
+  if(!chosen)return;
+  const{rsk,c:reactCard}=chosen;const rl=rsk.Logic_Engine||{};rsk._usesLeft--;rsk._usesThisTurn++;
+  const reactWho=isP?'Bot':'You';logMsg('block',reactWho,`${shortName(getCardName(reactCard))} reacts: ${rsk.Name}!`);
+  const re=String(rl.execution||'').toUpperCase(),applies=String(rl.applies_status||'').toUpperCase();
+  if(re.includes('BLOCK_FULL')||applies.includes('BLOCK_FULL')){act._blocked=true;logMsg('block',reactWho,'Complete block!');return;}
+  if(re.includes('BLOCK_PARTIAL')||applies.includes('MITIGATE')){const amt=parseInt(rl.block_amount||500)||500;act._mitigate=(act._mitigate||0)+amt;logMsg('block',reactWho,`Mitigates ${amt} DMG!`);return;}
+  if(re.includes('GRANT_EXTRA_MOVE')){/* handled in primary execution for simplicity */}
+}
+
+// ==================== COMBAT ANIMATION ====================
+async function playCombatAnimation(atkId,defId,dmgIn,targetObj,execTeam,defIdx){
+  const aE=document.getElementById(`wrap-${atkId}`),dE=document.getElementById(`wrap-${defId}`);
+  if(aE)aE.classList.add('doing-attack');await delay(360);
+  let dmg=dmgIn;
+  if(dmgIn&&targetObj._mitigate){dmg=Math.max(0,dmgIn-targetObj._mitigate);targetObj._mitigate=0;}
+  if(_screened[targetObj._instanceId]){dmg=Math.max(0,dmg-0);logMsg('block','Screen',`${shortName(getCardName(targetObj))} is screened!`);}
+  playAttackSound();
+  if(dE&&dmg>0){dE.querySelector('.battle-card')?.classList.add('anim-shake');const p=document.createElement('div');p.className='dmg-popup';p.textContent=`-${dmg}`;(dE.querySelector('.battle-card')||dE).appendChild(p);setTimeout(()=>{dE.querySelector('.battle-card')?.classList.remove('anim-shake');p.remove();},900);}
+  targetObj.currentHp=Math.max(0,targetObj.currentHp-dmg);
+  const hpMax=getCardHP(targetObj),pct=Math.max(0,(targetObj.currentHp/hpMax)*100);
+  const fill=document.getElementById(`hpf-${defId}`);if(fill){fill.style.width=pct+'%';fill.style.background=pct>50?'#40E0A0':pct>20?'#FFD166':'#FF6B6B';}
+  const hpt=document.getElementById(`hpt-${defId}`);if(hpt)hpt.textContent=`${targetObj.currentHp}/${hpMax}`;
+  await delay(660);if(aE)aE.classList.remove('doing-attack');return dmg;
+}
+
+// ==================== KO & SURVIVAL ====================
+function handleKO(defCard,teamStr,dIdx){if(defCard.currentHp>0)return;defCard.isDead=true;if(teamStr==='enemy')playerScore++;else enemyScore++;$('score-player').textContent=playerScore;$('score-enemy').textContent=enemyScore;const cardEl=document.getElementById(`card-${teamStr}-${dIdx}`);if(cardEl)cardEl.classList.add('dead-card');logMsg('ko','KO',`${shortName(getCardName(defCard))} knocked out!`);removeEffectsForTarget(defCard._instanceId);}
+function checkHPRecover(card){if(!card||!card._oneTimeRecover)return;const id=card._instanceId;if(_healUsed[id])return;const maxHp=getCardHP(card);if(card.currentHp<=maxHp*0.3&&card.currentHp>0){_healUsed[id]=true;const heal=Math.floor(maxHp*0.35);card.currentHp=Math.min(maxHp,card.currentHp+heal);logMsg('sys','System',`${shortName(getCardName(card))} recovers ${heal} HP!`);renderArena();}}
+
+// ==================== REBOUND TRIGGER ====================
+async function checkReboundTriggers(failedAct,failedCard,failedCardTeam){
+  const roster=failedCardTeam==='player'?playerActive:enemyActive;const triggers=[];
+  for(let[i,c]of roster.entries()){if(c.isDead)continue;for(let[si,rsk]of(c.Skills||[]).entries()){const rl=rsk.Logic_Engine||{};if(rsk._usesLeft<=0)continue;if(rl.uses_per_turn&&rsk._usesThisTurn>=rl.uses_per_turn)continue;if(Array.isArray(rl.valid_triggers)&&rl.valid_triggers.includes('teammate_skill_fail'))triggers.push({cIdx:i,sIdx:si,rsk,c});}}
+  if(!triggers.length)return;const isP=failedCardTeam==='player';let chosen=null;
+  if(!isP){if(Math.random()<0.4)chosen=triggers[0];}
+  else{const choice=await showModal('REBOUND',`${shortName(getCardName(failedCard))}'s move failed! Use rebound?`,triggers.map(v=>({label:`[${v.c.battleRole}] ${shortName(getCardName(v.c))}: ${v.rsk.Name}`,color:'teal'})),'SKIP');if(choice!==null)chosen=triggers[choice];}
+  if(!chosen)return;const{rsk}=chosen;rsk._usesLeft--;rsk._usesThisTurn++;const who=isP?'You':'Bot';logMsg('sys',who,`${shortName(getCardName(chosen.c))} triggers ${rsk.Name}!`);renderArena();
+}
+
+// ==================== DEAD REPLACEMENTS ====================
+async function handleDeadReplacements(teamStr,activeArr,benchArr){
+  for(let i=0;i<activeArr.length;i++){if(activeArr[i]&&activeArr[i].isDead){const dR=activeArr[i].battleRole||'PG';const vB=benchArr.map((c,idx)=>({c,idx})).filter(b=>b.c&&!b.c.isDead&&getCardPos(b.c).includes(dR));if(!vB.length)continue;let r=vB[0];if(teamStr==='player'&&vB.length>1){const choice=await showModal(`REPLACE ${dR}`,`Choose a sub for ${dR}:`,vB.map(b=>({label:`${shortName(getCardName(b.c))} — HP:${getCardHP(b.c)}`,color:'teal'})),'Auto-pick');if(choice!==null)r=vB[choice];}logMsg('sys','System',`${shortName(getCardName(r.c))} enters at ${dR}!`);activeArr[i]=benchArr[r.idx];benchArr[r.idx]=activeArr[i];activeArr[i].battleRole=dR;if(!activeArr[i].currentHp)activeArr[i].currentHp=getCardHP(activeArr[i]);applyPassiveAbility(activeArr[i]);applySynergyAbilities(activeArr[i],activeArr);renderArena();renderBenchStacks();await delay(600);}}
+}
+
+// ==================== GLOBAL STATE & BOARD STATES ====================
+// BUG FIX: _pendingDrains was scoped inside confirmMovesPhase but needed globally
+if (typeof _pendingDrains === 'undefined') { var _pendingDrains = {}; }
+
+let _boardStates = [];
+function addBoardState(state) { _boardStates.push(state); }
+function hasBoardState(type, team) { return _boardStates.some(s => s.type === type && (!team || s.sourceTeam === team)); }
+function tickBoardStates() { _boardStates = _boardStates.map(s => ({...s, duration: s.duration - 1})).filter(s => s.duration > 0); }
+
+// ==================== GET DB SHORT NAME ====================
+function getDBShortName(f) {
+  if (!f) return 'Unknown';
+  const clean = f.replace(/ \(.+?\)$/, '').trim();
+  const p = clean.split(' ');
+  if (p.length > 1) { const fi = p.shift(); return fi[0] + '. ' + p.join(' '); }
+  return clean;
+}
+
+// ==================== KO & SURVIVAL ENHANCEMENTS ====================
+function checkSurvive(card) {
+  if (!card || card.currentHp > 0) return false;
+  const id = card._instanceId;
+  if (_surviveUsed[id]) return false;
+  const logic = getAbilityLogic(card);
+  const effects = Array.isArray(logic.effects) ? logic.effects : [logic.effects || ''];
+  if (effects.some(e => String(e).includes('SURVIVE_AT_1HP'))) { _surviveUsed[id] = true; card.currentHp = 1; _frozen[id] = true; logMsg('sys', 'System', `${shortName(getCardName(card))} survives at 1 HP!`); addTrackedEffect(shortName(getCardName(card)), id, shortName(getCardName(card)), 'survive', 'Survive at 1 HP', 1); return true; }
+  if (effects.some(e => String(e).includes('HEAL_ON_DEATH'))) { _surviveUsed[id] = true; card.currentHp = parseInt(logic.heal_amount || 500); logMsg('sys', 'System', `${shortName(getCardName(card))} heals on death!`); addTrackedEffect(shortName(getCardName(card)), id, shortName(getCardName(card)), 'heal', 'Heal on death', 1); return true; }
+  return false;
+}
+function checkPreventKO(card, team) {
+  if (!card || !card._preventKOUntilLast) return false;
+  if (team.filter(c => c && !c.isDead && c !== card).length > 0) { card.currentHp = 1; logMsg('sys', 'System', `${shortName(getCardName(card))} cannot fall while teammates stand!`); return true; }
+  return false;
+}
+
+// ==================== OVERWRITE confirmMovesPhase ====================
+// Now properly handles pending drains from previous turn's post-effects
+async function confirmMovesPhase() {
+  if (isAnimating) return;
+  $('checkout-panel').style.display = 'none';
+  document.querySelectorAll('.undo-btn').forEach(b => b.style.display = 'none');
+  isAnimating = true;
+  $('turn-indicator').textContent = `TURN ${turnCount} — EXECUTING`;
+  logMsg('sys', 'System', `--- Turn ${turnCount} ---`);
+
+  // CRITICAL: Process pending drains from previous turn's post-effects BEFORE actions resolve
+  Object.keys(_pendingDrains).forEach(k => { _drained[k] = true; });
+  _pendingDrains = {};
+
+  const eStaged = await generateEnemyAI();
+  const pStaged = stagedActions.map(a => ({ ...a, execTeam: 'player', c: playerActive[a.actorIdx] }));
+  const master = [...pStaged, ...eStaged];
+  const PH = { PG: 5, SG: 4, SF: 3, PF: 2, C: 1 };
+  master.sort((a, b) => {
+    if (a.priority !== b.priority) return b.priority - a.priority;
+    if (a.speed !== b.speed) return b.speed - a.speed;
+    const ap = PH[(a.pos || '').split('/')[0]] || 0, bp = PH[(b.pos || '').split('/')[0]] || 0;
+    if (ap !== bp) return bp - ap;
+    return Math.random() > 0.5 ? 1 : -1;
+  });
+
+  for (const act of master) {
+    if (playerScore >= 8 || enemyScore >= 8) break;
+    const actC = act.execTeam === 'player' ? playerActive[act.actorIdx] : enemyActive[act.actorIdx];
+    if (!actC || actC.isDead) continue;
+    const ck = actC._instanceId;
+    if (_drained[ck]) { logMsg('sys', 'System', `${shortName(getCardName(actC))} is drained.`); continue; }
+    if (_shutdown[ck]) { logMsg('sys', 'System', `${shortName(getCardName(actC))} is shutdown.`); continue; }
+    if (_frozen[ck] && act.actionType !== 'pass') { logMsg('sys', 'System', `${shortName(getCardName(actC))} is frozen.`); continue; }
+    await executeAction(act);
+  }
+
+  await handleDeadReplacements('player', playerActive, playerBench);
+  await handleDeadReplacements('enemy', enemyActive, enemyBench);
+
+  // Tick all timers in correct order
+  tickBoardStates();
+  tickEffects();
+  tickBuffs();
+  activateDelayedBuffs(turnCount);
+
+  // Clear single-turn statuses
+  Object.keys(_frozen).forEach(k => delete _frozen[k]);
+  Object.keys(_drained).forEach(k => delete _drained[k]);
+  Object.keys(_invulnerable).forEach(k => delete _invulnerable[k]);
+  Object.keys(_screened).forEach(k => delete _screened[k]);
+  Object.keys(_shutdown).forEach(k => { _shutdown[k]--; if (_shutdown[k] <= 0) delete _shutdown[k]; });
+  Object.keys(_disabledSkills).forEach(k => { _disabledSkills[k].turnsLeft--; if (_disabledSkills[k].turnsLeft <= 0) delete _disabledSkills[k]; });
+
+  // Reset per-turn usage counters
+  [...playerActive, ...enemyActive, ...playerBench, ...enemyBench].forEach(c => {
+    if (c) (c.Skills || []).forEach(sk => { if (sk) sk._usesThisTurn = 0; });
+  });
+
+  stagedActions = [];
+  pendingAction = null;
+  uiState = 'IDLE';
+  setTooltipEnabled(true);
+  turnCount++;
+
+  if (playerScore >= 8 || enemyScore >= 8) {
+    const won = playerScore >= 8;
+    $('endgame-title').textContent = won ? 'YOU WIN! 🏆' : 'YOU LOSE 😢';
+    $('endgame-title').style.color = won ? '#40E0A0' : '#FF6B6B';
+    $('endgame-desc').textContent = won ? 'You knocked out 8 opponents first!' : 'Opponent knocked out 8 of your players.';
+    $('endgame-modal').style.display = 'flex';
+    isAnimating = false;
+    return;
+  }
+
+  isAnimating = false;
+  $('turn-indicator').textContent = `TURN ${turnCount} — STAGING`;
+  renderArena();
+  renderBenchStacks();
+  renderCheckout();
+  hideActionPanels();
+  renderEffectsPanel();
+  logMsg('sys', 'System', `Turn ${turnCount} begins. Select your moves!`);
+}
+
+// ==================== EXECUTE ACTION (COMPLETE) ====================
+async function executeAction(act) {
+  const isP = act.execTeam === 'player';
+  const atks = isP ? playerActive : enemyActive;
+  const defs = isP ? enemyActive : playerActive;
+  const atkC = atks[act.actorIdx];
+  if (!atkC || atkC.isDead) return;
+  const whoLabel = isP ? 'You' : 'Bot';
+  const ack = atkC._instanceId;
+
+  if (act.actionType === 'pass') { logMsg('sys', whoLabel, `${shortName(getCardName(atkC))} passes.`); return; }
+  if (act.actionType === 'swap') {
+    const bArr = isP ? playerBench : enemyBench;
+    const incoming = bArr[act.targetIdx];
+    if (!incoming) return;
+    incoming.battleRole = atkC.battleRole;
+    if (!incoming.currentHp) incoming.currentHp = getCardHP(incoming);
+    atks[act.actorIdx] = incoming; bArr[act.targetIdx] = atkC;
+    logMsg('sys', whoLabel, `Swap: ${shortName(getCardName(atkC))} → ${shortName(getCardName(incoming))}`);
+    renderArena(); renderBenchStacks(); await delay(700); return;
+  }
+
+  let sk = null, logic = {}, isAltMode = act.isAltMode || false;
+
+  if (act.actionType === 'skill' || act.actionType === 'alt-mode' || act.actionType === 'stolen-skill') {
+    sk = act.actionType === 'stolen-skill' ? (_stolenSkills[ack] || [])[act.skillIdx] : atkC.Skills[act.skillIdx];
+    if (isAltMode && sk) logic = sk.Logic_Engine?.alternate_mode || {};
+    else logic = sk?.Logic_Engine || {};
+  }
+  const exec = String(logic.execution || '').toUpperCase();
+  const boardState = { sourceTeam: atks, defTeam: defs, myKOs: isP ? playerScore : enemyScore, oppKOs: isP ? enemyScore : playerScore };
+
+  // Handle Alternate Mode execution (e.g., Reactive Block for Heatlemania)
+  if (isAltMode && exec.includes('BLOCK')) {
+    logMsg('block', whoLabel, `${shortName(getCardName(atkC))} uses Alternate Mode: ${exec.replace(/_/g, ' ')}!`);
+    if (sk) { sk._usesLeft--; sk._usesThisTurn++; }
+    renderArena(); return;
+  }
+
+  // ===== NON-TARGETING SKILL EXECUTIONS =====
+  if (sk && !_isReactiveSkill(logic)) {
+
+    // FREEZE / DRIBBLE / CROSSOVER
+    if (exec.includes('FREEZE') || exec.includes('DRIBBLE') || exec.includes('CROSSOVER')) {
+      const tIdx = act.inputResolved?.targetIdx;
+      const tTeam = isP ? enemyActive : playerActive;
+      const frozenC = tTeam[tIdx];
+      if (frozenC && !frozenC.isDead && !frozenC._immuneFreeze) {
+        _frozen[frozenC._instanceId] = true;
+        logMsg(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} freezes ${shortName(getCardName(frozenC))}!`);
+      }
+      // Concurrent effect check (e.g., Steph Grand Theft: freeze + damage simultaneously)
+      const ce = sk.Logic_Engine?.concurrent_effect;
+      if (ce) {
+        const ceExec = String(ce.execution || '').toUpperCase();
+        if (ceExec.includes('FREEZE')) {
+          addTrackedEffect(shortName(getCardName(atkC)), frozenC._instanceId, shortName(getCardName(frozenC)), 'freeze', ce.effect_description || 'Freeze + cancel move', parseInt(logic.turns_active) || 1);
+          const dmg = parseInt(ce.dmg_concurrent || 0);
+          if (dmg > 0 && frozenC) { await playCombatAnimation(`${isP ? 'player' : 'enemy'}-${act.actorIdx}`, `${isP ? 'enemy' : 'player'}-${tIdx}`, dmg, frozenC, act.execTeam, tIdx, true); if (frozenC.currentHp <= 0) handleKO(frozenC, isP ? 'enemy' : 'player', tIdx); }
+        }
+      } else {
+        const rawDmg = parseInt(logic.dmg_raw || 0);
+        addTrackedEffect(shortName(getCardName(atkC)), frozenC._instanceId, shortName(getCardName(frozenC)), 'freeze', logic.effect_description || 'Freeze + cancel move', parseInt(logic.turns_active) || 1);
+        if (rawDmg > 0 && frozenC) { await playCombatAnimation(`${isP ? 'player' : 'enemy'}-${act.actorIdx}`, `${isP ? 'enemy' : 'player'}-${tIdx}`, rawDmg, frozenC, act.execTeam, tIdx, true); if (frozenC.currentHp <= 0) handleKO(frozenC, isP ? 'enemy' : 'player', tIdx); }
+      }
+      if (sk._usesLeft !== undefined) sk._usesLeft--; sk._usesThisTurn++; renderArena(); return;
+    }
+
+    // STEAL_CANCEL (Grabby Gary)
+    if (exec.includes('STEAL_CANCEL')) {
+      const tIdx = act.inputResolved?.targetIdx;
+      const tTeam = isP ? enemyActive : playerActive;
+      const tC = tTeam[tIdx];
+      if (tC && !tC.isDead && !tC._immuneSteal) {
+        _frozen[tC._instanceId] = true;
+        logMsg(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} steals and cancels ${shortName(getCardName(tC))}!`);
+        addTrackedEffect(shortName(getCardName(atkC)), tC._instanceId, shortName(getCardName(tC)), 'cancel', logic.effect_description || 'Steal and cancel move', parseInt(logic.turns_active) || 1);
+      }
+      if (sk._usesLeft !== undefined) sk._usesLeft--; sk._usesThisTurn++; renderArena(); return;
+    }
+
+    // STAT_BUFF / SELF_BUFF (with proper delayed activation)
+    if (exec.includes('STAT_BUFF') || exec.includes('SELF_BUFF')) {
+      const mv = parseModifierValue(logic.modifier_value || '');
+      const dur = parseInt(logic.turns_active || 3);
+      const delay = parseInt(logic.buff_start_delay || 0);
+      if (mv.basicDmg || mv.skillDmg) {
+        ensureBuff(ack);
+        if (mv.basicDmg) _statBuffs[ack].basicBonus += mv.basicDmg;
+        if (mv.skillDmg) _statBuffs[ack].skillBonus += mv.skillDmg;
+        if (dur) _statBuffs[ack].turnsLeft = dur;
+        if (delay) _statBuffs[ack].startTurn = turnCount + delay;
+      }
+      const desc = logic.effect_description || `+${mv.basicDmg || mv.skillDmg || 0} DMG for ${dur} turns`;
+      await showBuffAnimation(shortName(getCardName(atkC)), desc);
+      addTrackedEffect(shortName(getCardName(atkC)), ack, shortName(getCardName(atkC)), 'buff', desc, dur);
+      if (sk.Logic_Engine?.concurrent_effect?.execution?.includes('INVULNERABLE')) {
+        _invulnerable[ack] = true;
+        logMsg('sys', 'System', `${shortName(getCardName(atkC))} is INVULNERABLE this turn!`);
+        addTrackedEffect(shortName(getCardName(atkC)), ack, shortName(getCardName(atkC)), 'invulnerable', 'Invulnerable + Stat Buff', 1);
+      }
+      if (sk._usesLeft !== undefined) sk._usesLeft--; sk._usesThisTurn++; return;
+    }
+
+    // INVULNERABLE (standalone)
+    if (exec.includes('INVULNERABLE')) {
+      _invulnerable[ack] = true;
+      await showBuffAnimation(shortName(getCardName(atkC)), 'INVULNERABLE this turn!');
+      addTrackedEffect(shortName(getCardName(atkC)), ack, shortName(getCardName(atkC)), 'invulnerable', 'Invulnerable this turn', 1);
+      if (sk._usesLeft !== undefined) sk._usesLeft--; sk._usesThisTurn++; return;
+    }
+
+    // AURA effects
+    if (exec.includes('AURA')) {
+      const dur = parseInt(logic.turns_active || 2);
+      const aType = exec.includes('JUMP') ? 'jumpshot-miss-chance' : 'closeshot-miss-chance';
+      addBoardState({ type: aType, sourceTeam: act.execTeam, duration: dur });
+      addTrackedEffect(shortName(getCardName(atkC)), 'all', 'All Opponents', logic.effect_description || `50% ${exec.includes('JUMP') ? 'jump' : 'close'} shot miss ${dur}T`, dur);
+      logMsg(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} activates ${sk.Name}!`);
+      if (sk._usesLeft !== undefined) sk._usesLeft--; sk._usesThisTurn++; return;
+    }
+
+    // SHUTDOWN
+    if (exec.includes('SHUTDOWN')) {
+      const tIdx = act.targetIdx ?? act.inputResolved?.targetIdx;
+      const tC = defs[tIdx];
+      if (tC) {
+        const shutDur = parseInt(logic.turns_active || 2);
+        _shutdown[tC._instanceId] = shutDur;
+        addTrackedEffect(shortName(getCardName(atkC)), tC._instanceId, shortName(getCardName(tC)), 'shutdown', 'Shutdown', shutDur);
+        const raw = parseInt(logic.dmg_raw || 0);
+        logMsg(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} shuts down ${shortName(getCardName(tC))}!`);
+        if (raw > 0) { await playCombatAnimation(`${isP ? 'player' : 'enemy'}-${act.actorIdx}`, `${isP ? 'enemy' : 'player'}-${tIdx}`, raw, tC, act.execTeam, tIdx, true); if (tC.currentHp <= 0) handleKO(tC, isP ? 'enemy' : 'player', tIdx); }
+      }
+      if (sk._usesLeft !== undefined) sk._usesLeft--; sk._usesThisTurn++; renderArena(); return;
+    }
+
+    // DISABLE_SPECIFIC_SKILL
+    if (exec.includes('DISABLE_SPECIFIC')) {
+      const resolved = act.inputResolved;
+      if (resolved) {
+        const flip = Math.random() < 0.5;
+        await animateCoinFlip(shortName(getCardName(atkC)), `${sk.Name}`, flip);
+        if (flip) {
+          const disDur = parseInt(logic.turns_active || 3);
+          _disabledSkills[defs[resolved.cardIdx]._instanceId] = { skillIdx: resolved.skillIdx, turnsLeft: disDur };
+          addTrackedEffect(shortName(getCardName(atkC)), defs[resolved.cardIdx]._instanceId, shortName(getCardName(defs[resolved.cardIdx])), 'disable', `Disable ${resolved.sk.Name}`, disDur);
+          logMsg(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} disables ${resolved.sk.Name}!`);
+        } else { logMsg(isP ? 'def' : 'atk', isP ? 'You' : 'Bot', `Disable failed!`); }
+      }
+      if (sk._usesLeft !== undefined) sk._usesLeft--; sk._usesThisTurn++; renderArena(); return;
+    }
+
+    // INTERCEPT_ASSIST / SCREEN GUARANTEE
+    if (exec.includes('INTERCEPT_ASSIST')) {
+      const tIdx = act.inputResolved?.targetIdx;
+      const tTeam = isP ? playerActive : enemyActive;
+      const tC = tIdx != null ? tTeam[tIdx] : atkC;
+      if (tC) {
+        _screened[tC._instanceId] = true;
+        addTrackedEffect(shortName(getCardName(atkC)), tC._instanceId, shortName(getCardName(tC)), 'screen', 'Screen Guarantee', 1);
+        logMsg(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} guarantees ${shortName(getCardName(tC))}'s next skill!`);
+      }
+      if (sk._usesLeft !== undefined) sk._usesLeft--; sk._usesThisTurn++; return;
+    }
+
+    // HEAL
+    if (exec.includes('HEAL')) {
+      const tIdx = act.inputResolved?.targetIdx;
+      const team2 = isP ? playerActive : enemyActive;
+      const tc = tIdx != null ? team2[tIdx] : atkC;
+      if (tc) {
+        const ha = parseInt(logic.heal_amount || 300);
+        tc.currentHp = Math.min(getCardHP(tc), tc.currentHp + ha);
+        addTrackedEffect(shortName(getCardName(atkC)), tc._instanceId, shortName(getCardName(tc)), 'heal', `Heal ${ha} HP`, 1);
+        logMsg(isP ? 'atk' : 'def', whoLabel, `${shortName(getCardName(atkC))} heals ${shortName(getCardName(tc))} for ${ha}!`);
+      }
+      if (sk._usesLeft !== undefined) sk._usesLeft--; sk._usesThisTurn++; renderArena(); return;
+    }
+
+    // GRANT_EXTRA_MOVE
+    if (exec.includes('GRANT_EXTRA_MOVE')) {
+      const tIdx = act.inputResolved?.targetIdx;
+      const team2 = isP ? playerActive : enemyActive;
+      const chosen = tIdx != null ? team2[tIdx] : team2.find((c, ci) => !c.isDead && c !== atkC);
+      if (chosen) {
+        const vd = getValidTargets(chosen, defs);
+        if (vd.length) { const tgt2 = vd[Math.floor(Math.random() * vd.length)]; await playCombatAnimation(`${isP ? 'player' : 'enemy'}-${team2.indexOf(chosen)}`, `${isP ? 'enemy' : 'player'}-${tgt2.i}`, getEffectiveDMG(chosen), tgt2.c, act.execTeam, tgt2.i, false); if (tgt2.c.currentHp <= 0) handleKO(tgt2.c, isP ? 'enemy' : 'player', tgt2.i); }
+      }
+      if (sk._usesLeft !== undefined) sk._usesLeft--; sk._usesThisTurn++; renderArena(); return;
+    }
+
+    // SELF_DRAIN (Primary execution only — post-effect handles the delayed drain)
+    if (exec.includes('SELF_DRAIN')) {
+      logMsg('sys', 'System', `${shortName(getCardName(atkC))} will be drained next turn.`);
+      _pendingDrains[ack] = true;
+      if (sk._usesLeft !== undefined) sk._usesLeft--; sk._usesThisTurn++; renderArena(); return;
+    }
+
+    // Any remaining non-targeting skill
+    if (_isNonTargetingSkill(logic)) { if (sk._usesLeft !== undefined) sk._usesLeft--; sk._usesThisTurn++; return; }
+  }
+
+  // ===== STANDARD DAMAGE TARGETING =====
+  let defC = defs[act.targetIdx], dIdx = act.targetIdx;
+  if (!defC || defC.isDead) { const vt = getValidTargets(atkC, defs); if (!vt.length) return; defC = vt[0].c; dIdx = vt[0].i; }
+  if (_invulnerable[defC._instanceId]) { logMsg('sys', 'System', `${shortName(getCardName(defC))} is invulnerable!`); return; }
+
+  let dmgRaw = 0;
+  if (sk) { dmgRaw = parseDmgFormula(logic.dmg_formula || sk.Display_DMG, atkC, defC, boardState, { logic }); if (getBuff(ack)?.skillBonus && !isAltMode) dmgRaw += getBuff(ack).skillBonus; }
+  else { dmgRaw = getEffectiveDMG(atkC, false); if (act.actionType === 'basic' && defC._halveBasic) dmgRaw = Math.floor(dmgRaw / 2); }
+
+  // Screen Guarantee bypass - skill goes through uncontested/unblockable
+  if (_screened[defC._instanceId]) { logMsg('block', 'Screen', `${shortName(getCardName(defC))} is screened! Skill guaranteed.`); }
+
+  // Coin flip check
+  if (sk && logic.coin_flip && !atkC._immuneCoinflip && !_screened[defC._instanceId]) {
+    const flip = Math.random() < 0.5;
+    logMsg('coin', 'Coin', `Flip for ${sk.Name}: ${flip ? 'HEADS' : 'TAILS'}`);
+    await animateCoinFlip(shortName(getCardName(atkC)), sk.Name, flip);
+    if (!flip) { logMsg('sys', 'System', `${sk.Name} missed!`); if (sk._usesLeft !== undefined) sk._usesLeft--; sk._usesThisTurn++; await checkReboundTriggers(act, atkC, act.execTeam); return; }
+  }
+
+  // Aura block check
+  const blocked = checkAuraBlock(act, sk, atkC, act.execTeam);
+  if (blocked) { logMsg(isP ? 'def' : 'atk', isP ? 'You' : 'Bot', blocked); if (sk) { if (sk._usesLeft !== undefined) sk._usesLeft--; sk._usesThisTurn++; } await checkReboundTriggers(act, atkC, act.execTeam); return; }
+
+  // Defensive reactions (opposing team's reactive skills)
+  if (!_screened[defC._instanceId] && !atkC._skillsUnblockable) await promptAndApplyReaction(act, sk, atkC, defC, dIdx, isP, defs);
+  if (act._blocked) { if (sk) { if (sk._usesLeft !== undefined) sk._usesLeft--; sk._usesThisTurn++; } await checkReboundTriggers(act, atkC, act.execTeam); return; }
+
+  // Apply damage
+  logMsg(isP ? 'atk' : 'def', whoLabel, `[${atkC.battleRole}] ${shortName(getCardName(atkC))} → ${sk?.Name || 'Basic'} on [${defC.battleRole}] ${shortName(getCardName(defC))} — ${dmgRaw} DMG`);
+  await playCombatAnimation(`${isP ? 'player' : 'enemy'}-${act.actorIdx}`, `${isP ? 'enemy' : 'player'}-${dIdx}`, dmgRaw, defC, act.execTeam, dIdx, true);
+
+  // ===== POST-EFFECTS (fires after primary resolves successfully) =====
+  if (sk && sk.Logic_Engine?.post_effect) {
+    const pe = sk.Logic_Engine.post_effect;
+    if (pe.execution === 'SELF_DRAIN' && pe.trigger_condition === 'always') { logMsg('sys', 'System', `${shortName(getCardName(atkC))} will be drained next turn.`); _pendingDrains[ack] = true; }
+    if (pe.execution === 'DEAL_FLAT_DMG' && pe.trigger_condition === 'on_block_success' && act._blocked) {
+      const putDmg = parseInt(pe.dmg_raw || 0);
+      if (putDmg > 0) { await playCombatAnimation(`${isP ? 'player' : 'enemy'}-${act.actorIdx}`, `${isP ? 'enemy' : 'player'}-${defs.indexOf(atkC)}`, putDmg, atkC, act.execTeam, defs.indexOf(atkC), true); if (atkC.currentHp <= 0) handleKO(atkC, isP ? 'enemy' : 'player', defs.indexOf(atkC)); }
+  }
+
+  // ===== CONCURRENT EFFECTS (fires simultaneously with primary) =====
+  if (sk && sk.Logic_Engine?.concurrent_effect && !act._blocked) {
+    const ce = sk.Logic_Engine.concurrent_effect;
+    const ceExec = String(ce.execution || '').toUpperCase();
+    if (ceExec.includes('INVULNERABLE')) { _invulnerable[ack] = true; logMsg('sys', 'System', `${shortName(getCardName(atkC))} is INVULNERABLE this turn!`); addTrackedEffect(shortName(getCardName(atkC)), ack, shortName(getCardName(atkC)), 'invulnerable', 'Invulnerable + Stat Buff', 1); }
+    if (ceExec.includes('STAT_BUFF')) { const mv = parseModifierValue(ce.modifier_value || ''); const dur = parseInt(ce.turns_active || 3); const delay = parseInt(ce.buff_start_delay || 0); if (mv.basicDmg || mv.skillDmg) { ensureBuff(ack); if (mv.basicDmg) _statBuffs[ack].basicBonus += mv.basicDmg; if (mv.skillDmg) _statBuffs[ack].skillBonus += mv.skillDmg; if(dur)_statBuffs[ack].turnsLeft=dur;if(delay)_statBuffs[ack].startTurn=turnCount+delay;} await showBuffAnimation(shortName(getCardName(atkC)),ce.effect_description||`+DMG for ${dur} turns`);addTrackedEffect(shortName(getCardName(atkC)),ack,shortName(getCardName(atkC)),'buff',ce.effect_description||`+DMG for ${dur}T`,dur);}
+    if(ceExec.includes('FREEZE')&&!act._blocked){const tIdx=act.inputResolved?.targetIdx;const tTeam=isP?enemyActive:playerActive;const frozenC=tTeam[tIdx];if(frozenC&&!frozenC.isDead&&!frozenC._immuneFreeze){_frozen[frozenC._instanceId]=true;logMsg(isP?'atk':'def',whoLabel,`${shortName(getCardName(atkC))} freezes ${shortName(getCardName(frozenC))}!`);addTrackedEffect(shortName(getCardName(atkC)),frozenC._instanceId,shortName(getCardName(frozenC)),'freeze',ce.effect_description||'Freeze + cancel move',parseInt(logic.turns_active)||1);const dmg=parseInt(ce.dmg_concurrent||0);if(dmg>0&&frozenC){await playCombatAnimation(`${isP?'player':'enemy'}-${act.actorIdx}`,`${isP?'enemy':'player'}-${tIdx}`,dmg,frozenC,act.execTeam,tIdx,true);if(frozenC.currentHp<=0)handleKO(frozenC,isP?'enemy':'player',tIdx);}}
+  }
+
+  if (sk) { if (sk._usesLeft !== undefined) sk._usesLeft--; sk._usesThisTurn++; }
+  logMsg('hp', 'HP', `${shortName(getCardName(defC))}: ${defC.currentHp}/${getCardHP(defC)}`);
+  checkHPRecover(defC); if (defC.currentHp <= 0) handleKO(defC, isP ? 'enemy' : 'player', dIdx);
+  renderArena();
+}
+
+// ==================== REBOUND TRIGGER ====================
+async function checkReboundTriggers(failedAct, failedCard, failedCardTeam) {
+  const roster = failedCardTeam === 'player' ? playerActive : enemyActive;
+  const triggers = [];
+  for (let [i, c] of roster.entries()) {
+    if (c.isDead) continue;
+    for (let [si, rsk] of (c.Skills || []).entries()) {
+      const rl = rsk.Logic_Engine || {};
+      if (rsk._usesLeft <= 0) continue;
+      if (rl.uses_per_turn && rsk._usesThisTurn >= rl.uses_per_turn) continue;
+      const vt = Array.isArray(rl.valid_triggers) ? rl.valid_triggers : [];
+      if (vt.includes('teammate_skill_fail')) triggers.push({ cIdx: i, sIdx: si, rsk, c });
+    }
+  }
+  if (!triggers.length) return;
+  const isP = failedCardTeam === 'player';
+  let chosen = null;
+  if (!isP) { if (Math.random() < 0.4) chosen = triggers[0]; }
+  else { const choice = await showModal('REBOUND OPPORTUNITY', `${shortName(getCardName(failedCard))}'s move failed! Use rebound?`, triggers.map(v => ({ label: `[${v.c.battleRole}] ${shortName(getCardName(v.c))}: ${v.rsk.Name}`, color: 'teal' })), 'SKIP'); if (choice !== null) chosen = triggers[choice]; }
+  if (!chosen) return;
+  const { rsk } = chosen; rsk._usesLeft--; rsk._usesThisTurn++;
+  const who = isP ? 'You' : 'Bot';
+  logMsg('sys', who, `${shortName(getCardName(chosen.c))} triggers ${rsk.Name} (rebound)!`);
+  if (String(rsk.Logic_Engine.execution || '').toUpperCase().includes('GRANT_EXTRA_MOVE')) {
+    const atkTeam = isP ? playerActive : enemyActive; const defTeam = isP ? enemyActive : playerActive;
+    const fIdx = atkTeam.indexOf(failedCard); const validTgts = getValidTargets(failedCard, defTeam);
+    if (validTgts.length) {
+      let tIdx;
+      if (isP) { const tChoice = await showModal('REBOUND ATTACK', `${shortName(getCardName(failedCard))} gets another shot!`, validTgts.map(v => ({ label: `[${v.c.battleRole}] ${shortName(getCardName(v.c))}`, color: 'orange' })), 'SKIP'); if (tChoice === null) return; tIdx = validTgts[tChoice].i; }
+      else { tIdx = validTgts[Math.floor(Math.random() * validTgts.length)].i; }
+      await playCombatAnimation(`${isP ? 'player' : 'enemy'}-${fIdx}`, `${isP ? 'enemy' : 'player'}-${tIdx}`, getEffectiveDMG(failedCard, false), defTeam[tIdx], failedCardTeam, tIdx, false); if (defTeam[tIdx].currentHp <= 0) handleKO(defTeam[tIdx], isP ? 'enemy' : 'player', tIdx); renderArena();
+    }
+  }
+}
+
+// ==================== INIT ====================
+window.addEventListener('DOMContentLoaded', () => { if (typeof CARDS !== 'undefined' && CARDS.length > 0) populateDraftFilters(); });
+</script>
+</body>
+</html>
+// ==================== CARDS DATABASE ====================
 const CARDS = [
 
   {
