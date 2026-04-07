@@ -723,28 +723,42 @@ function startBattle(){
 
 // ==================== PASSIVE ABILITY ====================
 function applyPassiveAbility(card){const logic=getAbilityLogic(card);if(!logic)return;const effects=Array.isArray(logic.effects)?logic.effects:(logic.effects?[logic.effects]:[]);effects.forEach(eff=>applyModifierTag(card,eff));}
-function applyModifierTag(card,mod){
-  if(!mod||mod==='NONE')return;const m=String(mod).toUpperCase();
-  if(m.includes('IMMUNE_TO_STEAL'))card._immuneSteal=true;if(m.includes('HEIGHT_BASED_BLOCK_IMMUNITY'))card._heightBlockImmune=true;
-  if(m.includes('SKILLS_UNBLOCKABLE'))card._skillsUnblockable=true;if(m.includes('SKILLS_UNCONTESTABLE'))card._skillsUncontestable=true;
-  if(m.includes('IMMUNE_COINFLIP'))card._immuneCoinflip=true;if(m.includes('IMMUNE_TO_FREEZE'))card._immuneFreeze=true;
-  if(m.includes('ASSIST_UNINTERCEPTABLE'))card._assistUninterceptable=true;if(m.includes('FORCED_TARGET_ON_SELF'))card._forcedTarget=true;
-  if(m.includes('HALVE_INCOMING_CLOSE_SHOT'))card._halveCloseShot=true;if(m.includes('CONDITIONAL_BONUS_DMG_STAT'))card._conditionalDmgBonus=true;
-  if(m.includes('ALL_MOVES_PRIORITY_3'))card._priorityBonus=3;else if(m.includes('ALL_MOVES_PRIORITY_2'))card._priorityBonus=2;
-  // Parse params for height threshold etc
-  const params=logic.params||{};
-  if(params.height_threshold) card._heightBlockThreshold=parseHeight(params.height_threshold);
+function applyModifierTag(card, mod) {
+  if (!mod || mod === 'NONE') return;
+  const m = String(mod).toUpperCase();
+  if (m.includes('IMMUNE_TO_STEAL')) card._immuneSteal = true;
+  if (m.includes('HEIGHT_BASED_BLOCK_IMMUNE')) card._heightBlockImmune = true;
+  if (m.includes('SKILLS_UNBLOCKABLE')) card._skillsUnblockable = true;
+  if (m.includes('SKILLS_UNCONTESTABLE')) card._skillsUncontestable = true;
+  if (m.includes('IMMUNE_COINFLIP')) card._immuneCoinflip = true;
+  if (m.includes('IMMUNE_TO_FREEZE')) card._immuneFreeze = true;
+  if (m.includes('ASSIST_UNINTERCEPTABLE')) card._assistUninterceptable = true;
+  if (m.includes('FORCED_TARGET_ON_SELF')) card._forcedTarget = true;
+  if (m.includes('HALVE_INCOMING_CLOSE_SHOT')) card._halveCloseShot = true;
+  if (m.includes('HALVE_INCOMING_JUMPSHOT')) card._halveJumpShot = true;
+  if (m.includes('HALVE_INCOMING_SKILLS_EXCEPT_SPECIFIC_TEAMS')) card._halveAllExceptTeams = true;
+  if (m.includes('ALL_MOVES_PRIORITY_3')) card._priorityBonus = 3;
+  else if (m.includes('ALL_MOVES_PRIORITY_2')) card._priorityBonus = 2;
+  if (m.includes('CONDITIONAL_BONUS_DMG_STAT')) card._conditionalDmgBonus = true;
+  if (card.Ability?.Logic_Engine?.params?.height_threshold) card._heightBlockThreshold = parseHeight(card.Ability.Logic_Engine.params.height_threshold);
+  if (card.Ability?.Logic_Engine?.params?.except_teams) card._halveAllExceptTeams = card.Ability.Logic_Engine.params.except_teams;
 }
-function applySynergyAbilities(card,team){
-  const logic=getAbilityLogic(card);if(!logic||!logic.condition)return;
-  if(!evaluateCondition(logic.condition,card,null,{sourceTeam:team}))return;
-  const key=card._instanceId;if(_synergyApplied.has(key))return;_synergyApplied.add(key);
-  const mv=parseModifierValue(logic.modifier_value);
-  if(mv.hp){card.UI_Frontend_Data.Stats.HP+=mv.hp;card.currentHp=Math.min(card.currentHp+mv.hp,card.UI_Frontend_Data.Stats.HP);}
-  if(mv.basicDmg){ensureBuff(key);_statBuffs[key].basicBonus+=mv.basicDmg;}
-  if(mv.skillDmg){ensureBuff(key);_statBuffs[key].skillBonus+=mv.skillDmg;}
-  if(mv.spd)card.UI_Frontend_Data.Stats.Speed+=mv.spd;
-  logMsg('sys','System',`SYNERGY: ${shortName(getCardName(card))} gains ${logic.modifier_value}!`);
+function applySynergyAbilities(card, team) {
+  const logic = getAbilityLogic(card);
+  if (!logic || !logic.condition) return;
+  if (!evaluateCondition(logic.condition, card, null, {sourceTeam: team})) return;
+  const key = card._instanceId;
+  if (_synergyApplied.has(key)) return;
+  _synergyApplied.add(key);
+  const mv = parseModifierValue(logic.modifier_value);
+  if (mv.hp) { card.UI_Frontend_Data.Stats.HP += mv.hp; card.currentHp = Math.min(card.currentHp + mv.hp, card.UI_Frontend_Data.Stats.HP); }
+  if (mv.basicDmg) { ensureBuff(key); _statBuffs[key].basicBonus += mv.basicDmg; }
+  if (mv.skillDmg) { ensureBuff(key); _statBuffs[key].skillBonus += mv.skillDmg; }
+  if (mv.spd) card.UI_Frontend_Data.Stats.Speed += mv.spd;
+  if (Array.isArray(logic.effects) && logic.effects.some(e => String(e).includes('FIRST_TURN_SKILL_IMMUNITY'))) {
+    card._firstTurnSkillImmunity = true; card._firstTurnSkillImmunityTurn = 1;
+  }
+  logMsg('sys', 'System', `SYNERGY: ${shortName(getCardName(card))} gains ${logic.modifier_value}!`);
 }
 
 // ==================== CONDITION EVALUATOR ====================
@@ -1151,6 +1165,13 @@ async function executeAction(act){
   // STANDARD DAMAGE TARGETING
   let defC=defs[act.targetIdx],dIdx=act.targetIdx;
   if(!defC||defC.isDead){const vt=getValidTargets(atkC,defs);if(!vt.length)return;defC=vt[0].c;dIdx=vt[0].i;}
+        // Screen guarantee bypass
+    if (_screened[defC._instanceId]) { logMsg('block', 'Screen', `${shortName(getCardName(defC))} is screened! Skill guaranteed.`); }
+    if (_invulnerable[defC._instanceId]) { logMsg('sys', 'System', `${shortName(getCardName(defC))} is invulnerable!`); return; }
+    // First turn immunity check
+    if (card._firstTurnSkillImmunity && act.actionType !== 'pass') {
+      const isSkill = act.actionType === 'skill' || act.actionType === 'alt-mode';
+      if (isSkill) { logMsg('sys', 'System', `${shortName(getCardName(card))} has first turn skill immunity!`); return; }
   if(_invulnerable[defC._instanceId]){logMsg('sys','System',`${shortName(getCardName(defC))} is invulnerable!`);return;}
 
   let dmgRaw=0;
