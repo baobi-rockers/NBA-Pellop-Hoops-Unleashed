@@ -1664,6 +1664,7 @@ async function handleDeadReplacements(teamStr, activeArr, benchArr) {
 // ==================== CARDS DATABASE ====================
 const CARDS = [
   {
+     
     "UI_Frontend_Data": {
       "CardID": "PHI_AIV_G01",
       "Name": "Allen Iverson",
@@ -2308,6 +2309,681 @@ const CARDS = [
           "coin_flip": false,
           "turns_active": 1,
           "effect_description": "Defender frozen this turn"
+        }
+      }
+    ]
+  },
+  {
+    "UI_Frontend_Data": {
+      "CardID": "CHI_MJO_G01",
+      "Name": "Michael Jordan",
+      "Formatted_Name": "M. Jordan (Air Jordan)",
+      "Team": "Chicago Bulls",
+      "Team_ID": "CHI",
+      "Variant": "Air Jordan",
+      "Tier": "GOAT",
+      "Image_File": "GOAT TIER CARDS/m.jordan_air_jordan_[GOAT].png",
+      "Positions": { "Primary": "SG", "Secondary": "SF", "Third": null },
+      "Height": "6'6\"",
+      "Weight": 216,
+      "Stats": { "HP": 3200, "Base_DMG": 950, "Speed": 9 }
+    },
+    "Ability": {
+      "Name": "The Flu Game",
+      "Description_UI": "When Jordan's HP falls below 30%, he gains +300 basic DMG and becomes immune to freeze effects.",
+      "Logic_Engine": {
+        "condition": "Self_HP:<=960",
+        "modifier_value": "+300 BASIC DMG",
+        "effects": ["IMMUNE_TO_FREEZE"]
+      }
+    },
+    "Skills": [
+      {
+        "Skill_ID": "CHI_MJO_G01_S1",
+        "Name": "Fadeaway Jumper",
+        "Description_UI": "Jordan's unblockable signature fadeaway. DMG = 1400. Max 3 uses.",
+        "Display_DMG": "1400",
+        "Nature": "Offensive: Jump Shot",
+        "Logic_Engine": {
+          "dmg_formula": "FLAT:1400",
+          "execution": "DEAL_FLAT_DMG",
+          "target_scope": "SELECTED_ENEMY",
+          "max_uses": 3,
+          "uses_per_turn": 1,
+          "priority": 1,
+          "is_reactive": false,
+          "free_action": false,
+          "coin_flip": false,
+          "effect_description": "Unblockable Jump Shot"
+        }
+      },
+      {
+        "Skill_ID": "CHI_MJO_G01_S2",
+        "Name": "The Shrug",
+        "Description_UI": "Jordan gets in the zone, gaining +200 Skill DMG for 2 turns. Priority x2. Free action. Max 2 uses.",
+        "Display_DMG": "BUFF",
+        "Nature": "Utility: Self_Buff",
+        "Logic_Engine": {
+          "dmg_formula": "NO_DMG",
+          "execution": "STAT_BUFF",
+          "target_scope": "SELF",
+          "requires_input": false,
+          "max_uses": 2,
+          "uses_per_turn": 1,
+          "priority": 2,
+          "is_reactive": false,
+          "free_action": true,
+          "coin_flip": false,
+          "turns_active": 2,
+          "modifier_value": "+200 SKILL DMG",
+          "effect_description": "Self Skill DMG buff"
+        }
+      }
+    ]
+  },
+  {
+    "UI_Frontend_Data": {
+      "CardID": "LAL_KOB_G01",
+      "Name": "Kobe Bryant",
+      "Formatted_Name": "K. Bryant (Black Mamba)",
+      "Team": "Los Angeles Lakers",
+      "Team_ID": "LAL",
+      "Variant": "Black Mamba",
+      "Tier": "GOAT",
+      "Image_File": "GOAT TIER CARDS/k.bryant_black_mamba_[GOAT].png",
+      "Positions": { "Primary": "SG", "Secondary": "SF", "Third": null },
+      "Height": "6'6\"",
+      "Weight": 212,
+      "Stats": { "HP": 3100, "Base_DMG": 900, "Speed": 9 }
+    },
+    "Ability": {
+      "Name": "Mamba Mentality",
+      "Description_UI": "Kobe's offensive skills cannot be contested by opponents.",
+      "Logic_Engine": {
+        "condition": "always",
+        "modifier_value": "NONE",
+        "effects": ["SKILLS_UNCONTESTABLE"]
+      }
+    },
+    "Skills": [
+      {
+        "Skill_ID": "LAL_KOB_G01_S1",
+        "Name": "Pivot Post Fade",
+        "Description_UI": "Kobe hits a contested post fadeaway. DMG = 1250. Max 4 uses.",
+        "Display_DMG": "1250",
+        "Nature": "Offensive: Close Shot",
+        "Logic_Engine": {
+          "dmg_formula": "FLAT:1250",
+          "execution": "DEAL_FLAT_DMG",
+          "target_scope": "SELECTED_ENEMY",
+          "max_uses": 4,
+          "uses_per_turn": 1,
+          "priority": 1,
+          "is_reactive": false,
+          "free_action": false,
+          "coin_flip": false,
+          "effect_description": "Standard Close Shot DMG"
+        }
+      },
+      {
+        "Skill_ID": "LAL_KOB_G01_S2",
+        "Name": "Mamba Defense",
+        "Description_UI": "Kobe heavily contests an enemy Jump Shot, reducing damage by half. Reactive. Max 2 uses.",
+        "Display_DMG": "CONTEST",
+        "Nature": "Defensive: Contest",
+        "Logic_Engine": {
+          "dmg_formula": "NO_DMG",
+          "execution": "BLOCK_PARTIAL",
+          "target_scope": "CASTING_ENEMY",
+          "requires_input": false,
+          "block_amount": 500,
+          "max_uses": 2,
+          "uses_per_turn": 1,
+          "priority": 3,
+          "is_reactive": true,
+          "valid_triggers": ["jump_shot"],
+          "free_action": false,
+          "coin_flip": false,
+          "effect_description": "Halves incoming Jump Shot DMG"
+        }
+      }
+    ]
+  },
+  {
+    "UI_Frontend_Data": {
+      "CardID": "MIA_LBJ_G01",
+      "Name": "LeBron James",
+      "Formatted_Name": "L. James (The Chosen One)",
+      "Team": "Miami Heat",
+      "Team_ID": "MIA",
+      "Variant": "The Chosen One",
+      "Tier": "GOAT",
+      "Image_File": "GOAT TIER CARDS/l.james_the_chosen_one_[GOAT].png",
+      "Positions": { "Primary": "SF", "Secondary": "PF", "Third": "PG" },
+      "Height": "6'8\"",
+      "Weight": 250,
+      "Stats": { "HP": 3500, "Base_DMG": 920, "Speed": 10 }
+    },
+    "Ability": {
+      "Name": "Freight Train",
+      "Description_UI": "LeBron gains +100 HP max and +50 Basic DMG for every teammate currently on the floor.",
+      "Logic_Engine": {
+        "condition": "always",
+        "modifier_value": "+100 MAX HP, +50 BASIC DMG",
+        "effects": []
+      }
+    },
+    "Skills": [
+      {
+        "Skill_ID": "MIA_LBJ_G01_S1",
+        "Name": "Tomahawk Jam",
+        "Description_UI": "A vicious driving dunk. DMG = 1350. Max 3 uses.",
+        "Display_DMG": "1350",
+        "Nature": "Offensive: Close Shot",
+        "Logic_Engine": {
+          "dmg_formula": "FLAT:1350",
+          "execution": "DEAL_FLAT_DMG",
+          "target_scope": "SELECTED_ENEMY",
+          "max_uses": 3,
+          "uses_per_turn": 1,
+          "priority": 1,
+          "is_reactive": false,
+          "free_action": false,
+          "coin_flip": false,
+          "effect_description": "Massive flat damage"
+        }
+      },
+      {
+        "Skill_ID": "MIA_LBJ_G01_S2",
+        "Name": "Chase Down Block",
+        "Description_UI": "LeBron completely blocks a Close Shot attempt. Reactive. Max 1 use.",
+        "Display_DMG": "BLOCK",
+        "Nature": "Defensive: Block",
+        "Logic_Engine": {
+          "dmg_formula": "NO_DMG",
+          "execution": "BLOCK_FULL",
+          "target_scope": "CASTING_ENEMY",
+          "requires_input": false,
+          "max_uses": 1,
+          "uses_per_turn": 1,
+          "priority": 3,
+          "is_reactive": true,
+          "valid_triggers": ["close_shot"],
+          "free_action": false,
+          "coin_flip": false,
+          "effect_description": "Full block on Close Shot"
+        }
+      }
+    ]
+  },
+  {
+    "UI_Frontend_Data": {
+      "CardID": "BOS_LBI_G01",
+      "Name": "Larry Bird",
+      "Formatted_Name": "L. Bird (Larry Legend)",
+      "Team": "Boston Celtics",
+      "Team_ID": "BOS",
+      "Variant": "Larry Legend",
+      "Tier": "GOAT",
+      "Image_File": "GOAT TIER CARDS/l.bird_larry_legend_[GOAT].png",
+      "Positions": { "Primary": "SF", "Secondary": "PF", "Third": null },
+      "Height": "6'9\"",
+      "Weight": 220,
+      "Stats": { "HP": 3100, "Base_DMG": 850, "Speed": 6 }
+    },
+    "Ability": {
+      "Name": "Trash Talker",
+      "Description_UI": "Bird's presence demoralizes the enemy. All adjacent enemies suffer a 50% miss chance on Jump Shots.",
+      "Logic_Engine": {
+        "condition": "always",
+        "modifier_value": "NONE",
+        "effects": ["HALVE_INCOMING_JUMPSHOT"]
+      }
+    },
+    "Skills": [
+      {
+        "Skill_ID": "BOS_LBI_G01_S1",
+        "Name": "Step-Back Three",
+        "Description_UI": "Bird hits a clutch three. DMG = 1500. Coin flip required (50% hit chance). Max 4 uses.",
+        "Display_DMG": "1500",
+        "Nature": "Offensive: Jump Shot",
+        "Logic_Engine": {
+          "dmg_formula": "FLAT:1500",
+          "execution": "DEAL_FLAT_DMG",
+          "target_scope": "SELECTED_ENEMY",
+          "max_uses": 4,
+          "uses_per_turn": 1,
+          "priority": 1,
+          "is_reactive": false,
+          "free_action": false,
+          "coin_flip": true,
+          "effect_description": "High damage, 50% accuracy"
+        }
+      },
+      {
+        "Skill_ID": "BOS_LBI_G01_S2",
+        "Name": "Touch Pass",
+        "Description_UI": "Bird finds the open man. Grants an extra move to a selected teammate. Free action. Max 2 uses.",
+        "Display_DMG": "EXTRA MOVE",
+        "Nature": "Utility: Assist",
+        "Logic_Engine": {
+          "dmg_formula": "NO_DMG",
+          "execution": "GRANT_EXTRA_MOVE",
+          "target_scope": "SELECTED_TEAMMATE",
+          "requires_input": true,
+          "input_type": "select_teammate_or_self",
+          "max_uses": 2,
+          "uses_per_turn": 1,
+          "priority": 2,
+          "is_reactive": false,
+          "free_action": true,
+          "coin_flip": false,
+          "effect_description": "Teammate gains immediate action"
+        }
+      }
+    ]
+  },
+  {
+    "UI_Frontend_Data": {
+      "CardID": "MIA_DWA_G01",
+      "Name": "Dwyane Wade",
+      "Formatted_Name": "D. Wade (Flash)",
+      "Team": "Miami Heat",
+      "Team_ID": "MIA",
+      "Variant": "Flash",
+      "Tier": "GOAT",
+      "Image_File": "GOAT TIER CARDS/d.wade_flash_[GOAT].png",
+      "Positions": { "Primary": "SG", "Secondary": "PG", "Third": null },
+      "Height": "6'4\"",
+      "Weight": 220,
+      "Stats": { "HP": 2900, "Base_DMG": 880, "Speed": 10 }
+    },
+    "Ability": {
+      "Name": "Slashing Threat",
+      "Description_UI": "Wade's explosive speed grants him Priority 2 on all basic attacks.",
+      "Logic_Engine": {
+        "condition": "always",
+        "modifier_value": "NONE",
+        "effects": ["ALL_MOVES_PRIORITY_2"]
+      }
+    },
+    "Skills": [
+      {
+        "Skill_ID": "MIA_DWA_G01_S1",
+        "Name": "Eurostep",
+        "Description_UI": "Wade weaves through traffic. DMG = 1200. Max 3 uses.",
+        "Display_DMG": "1200",
+        "Nature": "Offensive: Close Shot",
+        "Logic_Engine": {
+          "dmg_formula": "FLAT:1200",
+          "execution": "DEAL_FLAT_DMG",
+          "target_scope": "SELECTED_ENEMY",
+          "max_uses": 3,
+          "uses_per_turn": 1,
+          "priority": 1,
+          "is_reactive": false,
+          "free_action": false,
+          "coin_flip": false,
+          "effect_description": "Standard slashing DMG"
+        }
+      },
+      {
+        "Skill_ID": "MIA_DWA_G01_S2",
+        "Name": "Weakside Block",
+        "Description_UI": "Wade rotates to completely block any Jump Shot. Reactive. Max 2 uses.",
+        "Display_DMG": "BLOCK",
+        "Nature": "Defensive: Block",
+        "Logic_Engine": {
+          "dmg_formula": "NO_DMG",
+          "execution": "BLOCK_FULL",
+          "target_scope": "CASTING_ENEMY",
+          "requires_input": false,
+          "max_uses": 2,
+          "uses_per_turn": 1,
+          "priority": 3,
+          "is_reactive": true,
+          "valid_triggers": ["jump_shot"],
+          "free_action": false,
+          "coin_flip": false,
+          "effect_description": "Full block on Jump Shot"
+        }
+      }
+    ]
+  },
+  {
+    "UI_Frontend_Data": {
+      "CardID": "OKC_KDU_G01",
+      "Name": "Kevin Durant",
+      "Formatted_Name": "K. Durant (Slim Reaper)",
+      "Team": "Oklahoma City Thunder",
+      "Team_ID": "OKC",
+      "Variant": "Slim Reaper",
+      "Tier": "GOAT",
+      "Image_File": "GOAT TIER CARDS/k.durant_slim_reaper_[GOAT].png",
+      "Positions": { "Primary": "SF", "Secondary": "PF", "Third": "SG" },
+      "Height": "6'11\"",
+      "Weight": 240,
+      "Stats": { "HP": 3100, "Base_DMG": 940, "Speed": 7 }
+    },
+    "Ability": {
+      "Name": "Unblockable Release",
+      "Description_UI": "Durant's high release point means defenders shorter than 6'11\" cannot block his Jump Shots.",
+      "Logic_Engine": {
+        "condition": "always",
+        "modifier_value": "NONE",
+        "params": { "height_threshold": "6'11\"" },
+        "effects": ["HEIGHT_BASED_BLOCK_IMMUNE"]
+      }
+    },
+    "Skills": [
+      {
+        "Skill_ID": "OKC_KDU_G01_S1",
+        "Name": "Pull-up Jumper",
+        "Description_UI": "A smooth pull-up from mid-range. DMG = 1300. Max 4 uses.",
+        "Display_DMG": "1300",
+        "Nature": "Offensive: Jump Shot",
+        "Logic_Engine": {
+          "dmg_formula": "FLAT:1300",
+          "execution": "DEAL_FLAT_DMG",
+          "target_scope": "SELECTED_ENEMY",
+          "max_uses": 4,
+          "uses_per_turn": 1,
+          "priority": 1,
+          "is_reactive": false,
+          "free_action": false,
+          "coin_flip": false,
+          "effect_description": "Standard jump shot"
+        }
+      },
+      {
+        "Skill_ID": "OKC_KDU_G01_S2",
+        "Name": "Hesi Pull-up Crossover",
+        "Description_UI": "Freezes the selected enemy for this turn. Free action. Max 1 use.",
+        "Display_DMG": "FREEZE",
+        "Nature": "Utility: Dribble",
+        "Logic_Engine": {
+          "dmg_formula": "NO_DMG",
+          "execution": "FREEZE",
+          "target_scope": "SELECTED_ENEMY",
+          "requires_input": true,
+          "input_type": "freeze_target",
+          "max_uses": 1,
+          "uses_per_turn": 1,
+          "priority": 2,
+          "is_reactive": false,
+          "free_action": true,
+          "coin_flip": false,
+          "turns_active": 1,
+          "effect_description": "Freezes 1 opponent"
+        }
+      }
+    ]
+  },
+  {
+    "UI_Frontend_Data": {
+      "CardID": "PHI_JER_G01",
+      "Name": "Julius Erving",
+      "Formatted_Name": "J. Erving (Dr. J)",
+      "Team": "Philadelphia 76ers",
+      "Team_ID": "PHI",
+      "Variant": "Dr. J",
+      "Tier": "GOAT",
+      "Image_File": "GOAT TIER CARDS/j.erving_dr_j_[GOAT].png",
+      "Positions": { "Primary": "SF", "Secondary": "SG", "Third": null },
+      "Height": "6'7\"",
+      "Weight": 210,
+      "Stats": { "HP": 2950, "Base_DMG": 870, "Speed": 9 }
+    },
+    "Ability": {
+      "Name": "High Flyer",
+      "Description_UI": "Dr. J leaps above the rim. All his Close Shot skills bypass blocks.",
+      "Logic_Engine": {
+        "condition": "always",
+        "modifier_value": "NONE",
+        "effects": ["SKILLS_UNBLOCKABLE"]
+      }
+    },
+    "Skills": [
+      {
+        "Skill_ID": "PHI_JER_G01_S1",
+        "Name": "Baseline Scoop",
+        "Description_UI": "Iconic reverse baseline scoop. DMG = 1100. Max 3 uses.",
+        "Display_DMG": "1100",
+        "Nature": "Offensive: Close Shot",
+        "Logic_Engine": {
+          "dmg_formula": "FLAT:1100",
+          "execution": "DEAL_FLAT_DMG",
+          "target_scope": "SELECTED_ENEMY",
+          "max_uses": 3,
+          "uses_per_turn": 1,
+          "priority": 1,
+          "is_reactive": false,
+          "free_action": false,
+          "coin_flip": false,
+          "effect_description": "Unblockable Close Shot"
+        }
+      },
+      {
+        "Skill_ID": "PHI_JER_G01_S2",
+        "Name": "Aerial Steal",
+        "Description_UI": "Dr. J intercepts a pass or steals from the target, canceling their move. Max 1 use.",
+        "Display_DMG": "STEAL",
+        "Nature": "Defensive: Steal",
+        "Logic_Engine": {
+          "dmg_formula": "NO_DMG",
+          "execution": "STEAL_CANCEL",
+          "target_scope": "SELECTED_ENEMY",
+          "requires_input": true,
+          "input_type": "select_enemy",
+          "max_uses": 1,
+          "uses_per_turn": 1,
+          "priority": 3,
+          "is_reactive": false,
+          "free_action": false,
+          "coin_flip": false,
+          "effect_description": "Cancels opponent action"
+        }
+      }
+    ]
+  },
+  {
+    "UI_Frontend_Data": {
+      "CardID": "ORL_TMC_G01",
+      "Name": "Tracy McGrady",
+      "Formatted_Name": "T. McGrady (T-Mac)",
+      "Team": "Orlando Magic",
+      "Team_ID": "ORL",
+      "Variant": "T-Mac",
+      "Tier": "GOAT",
+      "Image_File": "GOAT TIER CARDS/t.mcgrady_tmac_[GOAT].png",
+      "Positions": { "Primary": "SG", "Secondary": "SF", "Third": null },
+      "Height": "6'8\"",
+      "Weight": 210,
+      "Stats": { "HP": 2850, "Base_DMG": 930, "Speed": 9 }
+    },
+    "Ability": {
+      "Name": "13 in 35",
+      "Description_UI": "T-Mac thrives under pressure. If his HP is under 500, his skills gain +500 DMG.",
+      "Logic_Engine": {
+        "condition": "Self_HP:<=500",
+        "modifier_value": "+500 SKILL DMG",
+        "effects": []
+      }
+    },
+    "Skills": [
+      {
+        "Skill_ID": "ORL_TMC_G01_S1",
+        "Name": "Pull-Up Three",
+        "Description_UI": "McGrady pulls up from deep. DMG = 1450. Coin flip required (50%). Max 4 uses.",
+        "Display_DMG": "1450",
+        "Nature": "Offensive: Jump Shot",
+        "Logic_Engine": {
+          "dmg_formula": "FLAT:1450",
+          "execution": "DEAL_FLAT_DMG",
+          "target_scope": "SELECTED_ENEMY",
+          "max_uses": 4,
+          "uses_per_turn": 1,
+          "priority": 1,
+          "is_reactive": false,
+          "free_action": false,
+          "coin_flip": true,
+          "effect_description": "High damage, requires flip"
+        }
+      },
+      {
+        "Skill_ID": "ORL_TMC_G01_S2",
+        "Name": "Lethal First Step",
+        "Description_UI": "Grants T-Mac +3 SPD and +100 Base DMG for 3 turns. Free action. Max 1 use.",
+        "Display_DMG": "BUFF",
+        "Nature": "Utility: Self_Buff",
+        "Logic_Engine": {
+          "dmg_formula": "NO_DMG",
+          "execution": "STAT_BUFF",
+          "target_scope": "SELF",
+          "requires_input": false,
+          "max_uses": 1,
+          "uses_per_turn": 1,
+          "priority": 2,
+          "is_reactive": false,
+          "free_action": true,
+          "coin_flip": false,
+          "turns_active": 3,
+          "modifier_value": "+100 BASIC DMG, +3 SPD",
+          "effect_description": "Increases SPD and DMG"
+        }
+      }
+    ]
+  },
+  {
+    "UI_Frontend_Data": {
+      "CardID": "TOR_VCA_G01",
+      "Name": "Vince Carter",
+      "Formatted_Name": "V. Carter (Vinsanity)",
+      "Team": "Toronto Raptors",
+      "Team_ID": "TOR",
+      "Variant": "Vinsanity",
+      "Tier": "GOAT",
+      "Image_File": "GOAT TIER CARDS/v.carter_vinsanity_[GOAT].png",
+      "Positions": { "Primary": "SG", "Secondary": "SF", "Third": null },
+      "Height": "6'6\"",
+      "Weight": 220,
+      "Stats": { "HP": 2800, "Base_DMG": 910, "Speed": 9 }
+    },
+    "Ability": {
+      "Name": "Half-Man Half-Amazing",
+      "Description_UI": "Carter's dunks cannot be contested or blocked by anyone shorter than 6'10\".",
+      "Logic_Engine": {
+        "condition": "always",
+        "modifier_value": "NONE",
+        "params": { "height_threshold": "6'10\"" },
+        "effects": ["HEIGHT_BASED_BLOCK_IMMUNE"]
+      }
+    },
+    "Skills": [
+      {
+        "Skill_ID": "TOR_VCA_G01_S1",
+        "Name": "360 Windmill",
+        "Description_UI": "A devastating windmill dunk. DMG = 1300. Max 3 uses.",
+        "Display_DMG": "1300",
+        "Nature": "Offensive: Close Shot",
+        "Logic_Engine": {
+          "dmg_formula": "FLAT:1300",
+          "execution": "DEAL_FLAT_DMG",
+          "target_scope": "SELECTED_ENEMY",
+          "max_uses": 3,
+          "uses_per_turn": 1,
+          "priority": 1,
+          "is_reactive": false,
+          "free_action": false,
+          "coin_flip": false,
+          "effect_description": "Devastating dunk DMG"
+        }
+      },
+      {
+        "Skill_ID": "TOR_VCA_G01_S2",
+        "Name": "Alley-Oop Finish",
+        "Description_UI": "If Carter receives an assist, he finishes with authority. DMG = PG Base × 1.5. Max 2 uses.",
+        "Display_DMG": "PG Base×1.5",
+        "Nature": "Offensive: Close Shot",
+        "Logic_Engine": {
+          "dmg_formula": "TEAMMATE_BASE_DMG:[PG] MULT:1.5",
+          "execution": "DEAL_FLAT_DMG",
+          "target_scope": "SELECTED_ENEMY",
+          "max_uses": 2,
+          "uses_per_turn": 1,
+          "priority": 1,
+          "is_reactive": false,
+          "free_action": false,
+          "coin_flip": false,
+          "effect_description": "Scales off PG DMG"
+        }
+      }
+    ]
+  },
+  {
+    "UI_Frontend_Data": {
+      "CardID": "BOS_PPI_G01",
+      "Name": "Paul Pierce",
+      "Formatted_Name": "P. Pierce (The Truth)",
+      "Team": "Boston Celtics",
+      "Team_ID": "BOS",
+      "Variant": "The Truth",
+      "Tier": "GOAT",
+      "Image_File": "GOAT TIER CARDS/p.pierce_the_truth_[GOAT].png",
+      "Positions": { "Primary": "SF", "Secondary": "SG", "Third": null },
+      "Height": "6'7\"",
+      "Weight": 235,
+      "Stats": { "HP": 3050, "Base_DMG": 860, "Speed": 6 }
+    },
+    "Ability": {
+      "Name": "Clutch Performer",
+      "Description_UI": "Once per game, Pierce can recover 35% of his HP when his HP falls below 30%.",
+      "Logic_Engine": {
+        "condition": "always",
+        "modifier_value": "NONE",
+        "effects": ["ONE_TIME_RECOVER"]
+      }
+    },
+    "Skills": [
+      {
+        "Skill_ID": "BOS_PPI_G01_S1",
+        "Name": "Elbow Jumper",
+        "Description_UI": "Pierce's signature mid-range jumper. DMG = 1200. Max 4 uses.",
+        "Display_DMG": "1200",
+        "Nature": "Offensive: Jump Shot",
+        "Logic_Engine": {
+          "dmg_formula": "FLAT:1200",
+          "execution": "DEAL_FLAT_DMG",
+          "target_scope": "SELECTED_ENEMY",
+          "max_uses": 4,
+          "uses_per_turn": 1,
+          "priority": 1,
+          "is_reactive": false,
+          "free_action": false,
+          "coin_flip": false,
+          "effect_description": "Standard jump shot"
+        }
+      },
+      {
+        "Skill_ID": "BOS_PPI_G01_S2",
+        "Name": "Cold Blooded",
+        "Description_UI": "Disables a selected enemy skill for 2 turns. Requires coin flip. Max 1 use.",
+        "Display_DMG": "DISABLE",
+        "Nature": "Utility: Disable",
+        "Logic_Engine": {
+          "dmg_formula": "NO_DMG",
+          "execution": "DISABLE_SPECIFIC_SKILL",
+          "target_scope": "SELECTED_ENEMY",
+          "requires_input": true,
+          "input_type": "select_disable_skill",
+          "max_uses": 1,
+          "uses_per_turn": 1,
+          "priority": 2,
+          "is_reactive": false,
+          "free_action": false,
+          "coin_flip": true,
+          "turns_active": 2,
+          "effect_description": "Locks 1 enemy skill"
         }
       }
     ]
