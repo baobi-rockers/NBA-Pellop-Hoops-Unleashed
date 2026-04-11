@@ -410,14 +410,9 @@ const ENGINE = (() => {
   function parseUM(umStr) {
     const out = { usesPerTurn: 99, maxUses: 99, priority: 1 };
     if (!umStr) return out;
-    const parts = String(umStr).split('|').map(s => s.trim());
-    parts.forEach(p => {
+    String(umStr).split('|').map(s => s.trim()).forEach(p => {
       const m = p.match(/^([UMP]):(-?\d+)/);
-      if (!m) return;
-      const [, k, v] = m;
-      if (k === 'U') out.usesPerTurn = parseInt(v);
-      else if (k === 'M') out.maxUses = parseInt(v);
-      else if (k === 'P') out.priority = parseInt(v);
+      if (m) { if (m[1]==='U') out.usesPerTurn=parseInt(m[2]); else if (m[1]==='M') out.maxUses=parseInt(m[2]); else if (m[1]==='P') out.priority=parseInt(m[2]); }
     });
     return out;
   }
@@ -425,230 +420,258 @@ const ENGINE = (() => {
   function parseTD(tdStr) {
     const out = { turns: 0, delay: 0 };
     if (!tdStr || tdStr === 'DEFAULT') return out;
-    const parts = String(tdStr).split('|').map(s => s.trim());
-    parts.forEach(p => {
+    String(tdStr).split('|').map(s => s.trim()).forEach(p => {
       const m = p.match(/^([TD]):(\d+)/);
-      if (m) { if (m[1] === 'T') out.turns = parseInt(m[2]); else out.delay = parseInt(m[2]); }
+      if (m) { if (m[1]==='T') out.turns=parseInt(m[2]); else out.delay=parseInt(m[2]); }
     });
     return out;
   }
 
-  // Parse "Deal_Flat_DMG:1150" → { type, value }
+  // ── Condition String Parser ──────────────────────────────
+  // Converts raw strings like "Casting_Enemy.Height <= 6'6\"" into
+  // {target, attribute, operator, value} objects that evalCondition expects.
+  function parseConditionString(raw) {
+    if (!raw || raw==='always' || raw==='ALWAYS') return null;
+    const s = String(raw).trim();
+    let m;
+    // "Self_HP:<=960"
+    m = s.match(/^Self[_\.](\w+):([<>=!]+)(.+)$/);
+    if (m) return { target:'Self', attribute:m[1], operator:m[2], value:m[3].trim() };
+    // "Own_Team.Team_ID = LAL" / "Own_Team.Player_Count >= 4"
+    m = s.match(/^(Own_Team)\.(\w+)\s*([<>=!]+)\s*(.+)$/);
+    if (m) return { target:m[1], attribute:m[2], operator:m[3], value:m[4].trim() };
+    // "Casting_Enemy.Height <= 6'6\"" / "Casting_Enemy.Weight < 280"
+    m = s.match(/^(Casting_Enemy|Casting_Teammate|Targeted_Enemy|Enemy_Team)\.(\w+)\s*([<>=!]+)\s*(.+)$/);
+    if (m) return { target:m[1], attribute:m[2], operator:m[3], value:m[4].trim() };
+    // "Self.Height <= 6'6\""
+    m = s.match(/^Self\.(\w+)\s*([<>=!]+)\s*(.+)$/);
+    if (m) return { target:'Self', attribute:m[1], operator:m[2], value:m[3].trim() };
+    return null;
+  }
+
+  // ── Trigger Parser ───────────────────────────────────────
+  function parseTrigger(triggerStr) {
+    const s = String(triggerStr || '');
+    const out = { type:'', nature:'', scope:'all' };
+    if (s.startsWith('ON:ENEMY_CAST:')) {
+      out.type = 'ENEMY_CAST';
+      if (s.includes(']:[!Self]')) out.scope = 'not_self';
+      else if (s.includes(']:[Self]')) out.scope = 'self';
+      const nm = s.match(/\[Nature:([^\]]+)\]/);
+      if (nm) out.nature = nm[1];
+    } else if (s.startsWith('ON:ALWAYS')) {
+      out.type = 'ALWAYS';
+    } else if (s.startsWith('ON:ROSTER')) {
+      out.type = 'ROSTER';
+    }
+    return out;
+  }
+
+  // ── Action String Parser ─────────────────────────────────
   function parseActionString(actionStr) {
-    if (!actionStr) return { type: 'NONE' };
+    if (!actionStr) return { type:'NONE' };
     const s = String(actionStr).trim();
 
-    // Deal_Flat_DMG:N
-    let m = s.match(/^Deal_Flat_DMG:(\d+)$/i);
-    if (m) return { type: 'DEAL_FLAT_DMG', value: parseInt(m[1]) };
-
-    // Deal_Assist_Dmg:Nx_Base:Ref(POS) or Deal_Assist_Dmg:+N_Base:Ref(POS)
-    m = s.match(/^Deal_Assist_Dmg:([\d.]+)x_Base:Ref\(([^)]+)\)$/i);
-    if (m) return { type: 'DEAL_ASSIST_DMG_MULT', mult: parseFloat(m[1]), ref: m[2].split('/') };
-    m = s.match(/^Deal_Assist_Dmg:\+(\d+)_Base:Ref\(([^)]+)\)$/i);
-    if (m) return { type: 'DEAL_ASSIST_DMG_ADD', add: parseInt(m[1]), ref: m[2].split('/') };
-
-    // Stat_Buff:+/-N_TYPE
-    m = s.match(/^Stat_Buff:([+-]\d+)_(MAX_HP|HP|Base|SPD|Nature:Offensive(?::\w+)?)$/i);
+    // Apply_State:X — maps to passive flags
+    let m = s.match(/^Apply_State:(Unblockable|Uncontestable|Freeze|Invulnerable|Immune_All_Coin_Flip)$/i);
     if (m) {
-      const val = parseInt(m[1]), typ = m[2].toLowerCase();
-      if (typ === 'max_hp') return { type: 'STAT_BUFF_MAX_HP', value: val };
-      if (typ === 'hp') return { type: 'STAT_BUFF_HP', value: val };
-      if (typ === 'base') return { type: 'STAT_BUFF_BASE_DMG', value: val };
-      if (typ === 'spd') return { type: 'STAT_BUFF_SPD', value: val };
-      if (typ.startsWith('nature:offensive')) return { type: 'STAT_BUFF_SKILL_DMG', value: val };
+      const v = m[1].toUpperCase();
+      if (v==='UNBLOCKABLE') return { type:'APPLY_STATE_UNBLOCKABLE' };
+      if (v==='UNCONTESTABLE') return { type:'APPLY_STATE_UNCONTESTABLE' };
+      if (v==='FREEZE') return { type:'FREEZE' };
+      if (v==='INVULNERABLE') return { type:'APPLY_STATE_INVULNERABLE' };
+      if (v==='IMMUNE_ALL_COIN_FLIP') return { type:'APPLY_STATE_IMMUNE_COINFLIP' };
     }
 
-    // Untargetable_By:...
+    // Global_Debuff:Contest:Jump_Shot
+    m = s.match(/^Global_Debuff:Contest:(.+)$/i);
+    if (m) return { type:'GLOBAL_DEBUFF_CONTEST', natureFilter:m[1] };
+    // Global_Debuff:Force_Coin_Flip_On_Offensive:Jump_Shot[Refund:False]
+    m = s.match(/^Global_Debuff:Force_Coin_Flip_On_Offensive:(.+?)(?:\[Refund:(True|False)\])?$/i);
+    if (m) return { type:'GLOBAL_DEBUFF_FORCE_COIN', natureFilter:m[1], refund:(m[2]==='True') };
+    // Global_Debuff:Force_Coin_Flip_On_Offensive:Close_Shot (no refund tag)
+    m = s.match(/^Global_Debuff:Force_Coin_Flip_On_Offensive:(.+)$/i);
+    if (m) return { type:'GLOBAL_DEBUFF_FORCE_COIN', natureFilter:m[1], refund:false };
+
+    // DMG_Reduction:N (bare, no prefix — used in ability rules)
+    m = s.match(/^DMG_Reduction:(\d+)$/i);
+    if (m) return { type:'DAMAGE_REDUCTION_FLAT', value:parseInt(m[1]) };
+
+    // Screen_Guarantee_Hit
+    if (s.match(/^Screen_Guarantee_Hit$/i)) return { type:'SCREEN_GUARANTEE_HIT' };
+
+    // Hard_Disable_Shutdown:Ref_Skill:Q1
+    m = s.match(/^Hard_Disable_Shutdown:Ref_Skill:Q1$/i);
+    if (m) return { type:'HARD_DISABLE_SHUTDOWN_SKILL' };
+    // Hard_Disable_Shutdown:All_Offensive+Base
+    m = s.match(/^Hard_Disable_Shutdown:All_Offensive\+Base$/i);
+    if (m) return { type:'HARD_DISABLE_SHUTDOWN_ALL' };
+
+    // Grant_Extra_Move:Base_Only
+    if (s.match(/^Grant_Extra_Move:Base_Only$/i)) return { type:'GRANT_EXTRA_MOVE_BASE_ONLY' };
+    // Grant_Extra_Move (plain)
+    if (s.match(/^Grant_Extra_Move$/i)) return { type:'GRANT_EXTRA_MOVE' };
+
+    // Deal_Flat_DMG:N
+    m = s.match(/^Deal_Flat_DMG:(\d+)$/i);
+    if (m) return { type:'DEAL_FLAT_DMG', value:parseInt(m[1]) };
+
+    // Deal_Assist_Dmg:Nx_Base:Ref(POS)
+    m = s.match(/^Deal_Assist_Dmg:([\d.]+)x_Base:Ref\(([^)]+)\)$/i);
+    if (m) return { type:'DEAL_ASSIST_DMG_MULT', mult:parseFloat(m[1]), ref:m[2].split('/') };
+    // Deal_Assist_Dmg:+N_Base:Ref(POS)
+    m = s.match(/^Deal_Assist_Dmg:\+(\d+)_Base:Ref\(([^)]+)\)$/i);
+    if (m) return { type:'DEAL_ASSIST_DMG_ADD', add:parseInt(m[1]), ref:m[2].split('/') };
+
+    // Stat_Buff variants
+    m = s.match(/^Stat_Buff:([+-]\d+)_MAX_HP$/i);
+    if (m) return { type:'STAT_BUFF_MAX_HP', value:parseInt(m[1]) };
+    m = s.match(/^Stat_Buff:([+-]\d+)_HP$/i);
+    if (m) return { type:'STAT_BUFF_HP', value:parseInt(m[1]) };
+    m = s.match(/^Stat_Buff:([+-]\d+)_Base$/i);
+    if (m) return { type:'STAT_BUFF_BASE_DMG', value:parseInt(m[1]) };
+    m = s.match(/^Stat_Buff:([+-]\d+)_SPD$/i);
+    if (m) return { type:'STAT_BUFF_SPD', value:parseInt(m[1]) };
+    m = s.match(/^Stat_Buff:([+-]\d+)_Nature:Offensive(?::(\w+))?$/i);
+    if (m) return { type:'STAT_BUFF_SKILL_DMG', value:parseInt(m[1]), natureScope:m[2]||null };
+
+    // Untargetable_By:... (various formats)
     if (s.startsWith('Untargetable_By:')) {
       const rest = s.slice('Untargetable_By:'.length);
-      return { type: 'UNTARGETABLE_BY', spec: rest };
+      return { type:'UNTARGETABLE_BY', spec:rest };
     }
 
-    // Apply_Modifier:Damage_Reduction:x0.5:...
+    // Apply_Modifier:Damage_Reduction:x0.5
     m = s.match(/^Apply_Modifier:Damage_Reduction:x([\d.]+)/i);
-    if (m) return { type: 'DAMAGE_REDUCTION_MULT', mult: parseFloat(m[1]) };
+    if (m) return { type:'DAMAGE_REDUCTION_MULT', mult:parseFloat(m[1]) };
+    // Apply_Modifier:Damage_Reduction:N_Flat
     m = s.match(/^Apply_Modifier:Damage_Reduction:(\d+)_Flat/i);
-    if (m) return { type: 'DAMAGE_REDUCTION_FLAT', value: parseInt(m[1]) };
+    if (m) return { type:'DAMAGE_REDUCTION_FLAT', value:parseInt(m[1]) };
 
-    // Apply_Priority:...
+    // Apply_Priority:Nx
     m = s.match(/^Apply_Priority:.*?(\d+)x$/i);
-    if (m) return { type: 'APPLY_PRIORITY', multiplier: parseInt(m[1]) };
+    if (m) return { type:'APPLY_PRIORITY', multiplier:parseInt(m[1]) };
 
     // Behavior_Modifier:Force_Enemy_Lock_Attack_On_Self
-    if (s.includes('Force_Enemy_Lock_Attack_On_Self')) return { type: 'FORCE_LOCK_ON_SELF' };
+    if (s.includes('Force_Enemy_Lock_Attack_On_Self')) return { type:'FORCE_LOCK_ON_SELF' };
 
     // Reactionary_DMG_Reduction:N
     m = s.match(/^Reactionary_DMG_Reduction:(\d+)$/i);
-    if (m) return { type: 'REACTIONARY_DMG_REDUCTION', value: parseInt(m[1]) };
+    if (m) return { type:'REACTIONARY_DMG_REDUCTION', value:parseInt(m[1]) };
 
-    // Block / Freeze / Grant_Extra_Move — simple keywords
+    // Simple keywords
     const kw = s.toUpperCase();
-    if (kw === 'BLOCK') return { type: 'BLOCK' };
-    if (kw === 'FREEZE') return { type: 'FREEZE' };
-    if (kw === 'GRANT_EXTRA_MOVE') return { type: 'GRANT_EXTRA_MOVE' };
-    if (kw === 'CONTEST') return { type: 'CONTEST' };
-    if (kw === 'INTERCEPT') return { type: 'INTERCEPT' };
+    if (kw==='BLOCK') return { type:'BLOCK' };
+    if (kw==='FREEZE') return { type:'FREEZE' };
+    if (kw==='CONTEST') return { type:'CONTEST' };
+    if (kw==='INTERCEPT') return { type:'INTERCEPT' };
 
-    // Stat_Buff:+300_HP (alias)
-    m = s.match(/^Stat_Buff:\+(\d+)_HP$/i);
-    if (m) return { type: 'STAT_BUFF_HP', value: parseInt(m[1]) };
-
-    return { type: 'UNKNOWN', raw: s };
+    return { type:'UNKNOWN', raw:s };
   }
 
   // ── Condition Evaluator ───────────────────────────────────
   function evalCondition(cond, ctx) {
-    // ctx = { self, ownTeam, enemyTeam, castingEnemy, castingTeammate, targetEnemy }
     if (!cond) return true;
+    // If cond is a string, parse it into structured form
+    if (typeof cond === 'string') {
+      cond = parseConditionString(cond);
+      if (!cond) return true; // "always" or unparseable → pass
+    }
     const { target, attribute, operator, value } = cond;
     let subject = null;
 
-    if (target === 'Self') subject = ctx.self;
-    else if (target === 'Own_Team') subject = ctx.ownTeam;
-    else if (target === 'Enemy_Team') subject = ctx.enemyTeam;
-    else if (target === 'Casting_Enemy') subject = ctx.castingEnemy;
-    else if (target === 'Casting_Teammate') subject = ctx.castingTeammate;
-    else if (target === 'Targeted_Enemy') subject = ctx.targetEnemy;
+    if (target==='Self') subject = ctx.self;
+    else if (target==='Own_Team') subject = ctx.ownTeam;
+    else if (target==='Enemy_Team') subject = ctx.enemyTeam;
+    else if (target==='Casting_Enemy') subject = ctx.castingEnemy;
+    else if (target==='Casting_Teammate') subject = ctx.castingTeammate;
+    else if (target==='Targeted_Enemy') subject = ctx.targetEnemy;
 
     if (!subject) return false;
 
-    // Team-level checks (array subjects)
+    // Team-level (array) subjects
     if (Array.isArray(subject)) {
-      if (attribute === 'Team_ID') {
-        const matchingAlive = subject.filter(c => c && !c.isDead && getCardTeam(c) === value && c !== ctx.self);
-        if (operator === '=') return matchingAlive.length > 0;
-        if (operator === '!=') return matchingAlive.length === 0;
+      if (attribute==='Team_ID') {
+        const alive = subject.filter(c => c && !c.isDead && c !== ctx.self);
+        const matching = alive.filter(c => getCardTeam(c) === value);
+        return operator==='=' ? matching.length>0 : matching.length===0;
       }
-      if (attribute === 'Player_Count') {
+      if (attribute==='Player_Count') {
         const alive = subject.filter(c => c && !c.isDead && c !== ctx.self);
         return compare(alive.length, operator, parseInt(value));
       }
-      if (attribute === 'Pos') {
+      if (attribute==='Pos') {
         const matching = subject.filter(c => c && !c.isDead && getCardPos(c).includes(value));
-        return operator === '=' ? matching.length > 0 : matching.length === 0;
+        return operator==='=' ? matching.length>0 : matching.length===0;
       }
       return false;
     }
 
-    // Single card checks
+    // Single-card subjects
     let lhs;
-    if (attribute === 'Height') lhs = parseHeight(getCardHeight(subject));
-    else if (attribute === 'SPD') lhs = getCardSPD(subject);
-    else if (attribute === 'HP') lhs = subject.currentHp ?? getCardHP(subject);
-    else if (attribute === 'Weight') lhs = subject.UI_Frontend_Data?.Weight ?? 0;
-    else if (attribute === 'Team_ID') {
-      lhs = getCardTeam(subject);
-      const rhs = String(value);
-      if (operator === '=') return lhs === rhs;
-      if (operator === '!=') return lhs !== rhs;
-      return false;
+    switch (attribute) {
+      case 'Height': lhs = parseHeight(getCardHeight(subject)); break;
+      case 'SPD': lhs = getCardSPD(subject); break;
+      case 'HP': lhs = subject.currentHp != null ? subject.currentHp : getCardHP(subject); break;
+      case 'Weight': lhs = subject.UI_Frontend_Data?.Weight || 0; break;
+      case 'Team_ID':
+        lhs = getCardTeam(subject);
+        return operator==='=' ? lhs===String(value) : lhs!==String(value);
+      case 'Pos':
+        const positions = getCardPos(subject);
+        return operator==='=' ? positions.includes(String(value)) : !positions.includes(String(value));
+      default: return true;
     }
-    else if (attribute === 'Pos') {
-      const positions = getCardPos(subject);
-      if (operator === '=') return positions.includes(String(value));
-      if (operator === '!=') return !positions.includes(String(value));
-      return false;
-    }
-    else return true;
-
-    const rhsNum = attribute === 'Height' ? parseHeight(String(value)) : parseFloat(value);
+    const rhsNum = attribute==='Height' ? parseHeight(String(value)) : parseFloat(String(value));
     return compare(lhs, operator, rhsNum);
   }
 
   function compare(a, op, b) {
-    if (op === '<=' || op === '=<') return a <= b;
-    if (op === '>=' || op === '=>') return a >= b;
-    if (op === '<') return a < b;
-    if (op === '>') return a > b;
-    if (op === '!=' || op === '!') return a !== b;
-    return a == b;
+    if (op==='<='||op==='=<') return a<=b;
+    if (op==='>='||op==='=>') return a>=b;
+    if (op==='<') return a<b;
+    if (op==='>') return a>b;
+    if (op==='!='||op==='!') return a!==b;
+    return a==b;
   }
 
-  // ── Ability Passive Boot ─────────────────────────────────
-  function bootPassiveAbilities(card, ownTeam) {
-    const ability = card.Ability;
-    if (!ability || !ability.Rules) return;
-    ability.Rules.forEach(rule => {
-      const trigger = String(rule.trigger || '');
-      if (!trigger.startsWith('ON:ALWAYS')) return;
-      const parsed = parseActionString(rule.action);
-      applyPassiveFlag(card, parsed, rule);
-    });
-    // Priority from Apply_Priority
-    ability.Rules.forEach(rule => {
-      const parsed = parseActionString(rule.action);
-      if (parsed.type === 'APPLY_PRIORITY') {
-        card._priorityBonus = Math.max(card._priorityBonus || 1, parsed.multiplier);
-      }
-    });
-  }
-
+  // ── Passive Flag Application ──────────────────────────────
   function applyPassiveFlag(card, parsed, rule) {
     switch (parsed.type) {
-      case 'UNTARGETABLE_BY':
-        _applyUntargetableFlag(card, parsed.spec);
-        break;
-      case 'FORCE_LOCK_ON_SELF':
-        card._forcedTarget = true;
-        break;
-      case 'DAMAGE_REDUCTION_MULT':
-        card._passiveDmgReductionMult = parsed.mult;
-        break;
-      case 'DAMAGE_REDUCTION_FLAT':
-        card._passiveDmgReductionFlat = (card._passiveDmgReductionFlat || 0) + parsed.value;
-        break;
+      case 'UNTARGETABLE_BY': _applyUntargetableFlag(card, parsed.spec); break;
+      case 'FORCE_LOCK_ON_SELF': card._forcedTarget = true; break;
+      case 'DAMAGE_REDUCTION_MULT': card._passiveDmgReductionMult = parsed.mult; break;
+      case 'DAMAGE_REDUCTION_FLAT': card._passiveDmgReductionFlat = (card._passiveDmgReductionFlat||0) + parsed.value; break;
+      case 'APPLY_STATE_UNBLOCKABLE': card._skillsUnblockable = true; break;
+      case 'APPLY_STATE_UNCONTESTABLE': card._skillsUncontestable = true; break;
+      case 'APPLY_STATE_INVULNERABLE': card._invulnerablePassive = true; break;
+      case 'APPLY_STATE_IMMUNE_COINFLIP': card._immuneCoinflip = true; break;
+      case 'APPLY_PRIORITY': card._priorityBonus = Math.max(card._priorityBonus||1, parsed.multiplier); break;
     }
   }
 
   function _applyUntargetableFlag(card, spec) {
-    const s = spec.toUpperCase();
-    if (s.includes('DEFENSIVE:STEAL')) card._immuneSteal = true;
-    if (s.includes('DEFENSIVE:FREEZE')) card._immuneFreeze = true;
-    if (s.includes('DEFENSIVE:BLOCK+CONTEST') || s.includes('DEFENSIVE:BLOCK')) {
-      if (s.includes('NATURE:OFFENSIVE_SKILLS') || s.includes(':NATURE:')) {
+    const su = spec.toUpperCase();
+    if (su.includes('DEFENSIVE:STEAL')) card._immuneSteal = true;
+    if (su.includes('DEFENSIVE:FREEZE')) card._immuneFreeze = true;
+    if (su.includes('NATURE:OFFENSIVE')) {
+      // "Untargetable_By:Nature:Offensive" — full immunity to offensive skills (Yao)
+      card._immuneToOffensiveSkills = true;
+    }
+    if (su.includes('DEFENSIVE:BLOCK+CONTEST') || su.includes('DEFENSIVE:BLOCK')) {
+      if (su.includes('NATURE:OFFENSIVE_SKILLS') || su.includes(':NATURE:')) {
         card._skillsUnblockable = true;
-        if (s.includes('BLOCK+CONTEST') || s.includes('CONTEST')) card._skillsUncontestable = true;
+        if (su.includes('BLOCK+CONTEST') || su.includes('CONTEST')) card._skillsUncontestable = true;
       } else {
         card._skillsUnblockable = true;
       }
     }
-    if (s.includes('DEFENSIVE:CONTEST') && s.includes('NATURE:OFFENSIVE_SKILLS')) card._skillsUncontestable = true;
-    if (s.includes('UTILITY:NULLIFY')) card._defensiveSkillsUnnullifiable = true;
-    if (s.includes('DEFENSIVE:BLOCK+CONTEST:NATURE:OFFENSIVE_SKILLS')) {
-      card._skillsUnblockable = true; card._skillsUncontestable = true;
-    }
-    // Height-gated block immunity
-    if (s.includes('DEFENSIVE:BLOCK+CONTEST:NATURE:OFFENSIVE_SKILLS') && card.Ability) {
-      const rule = card.Ability.Rules?.find(r => r.action?.includes('Block+Contest'));
-      if (rule?.condition?.attribute === 'Height') {
-        card._heightBlockImmune = true;
-        card._heightBlockThreshold = parseHeight(String(rule.condition.value));
-      }
-    }
+    if (su.includes('DEFENSIVE:CONTEST') && su.includes('NATURE:OFFENSIVE_SKILLS')) card._skillsUncontestable = true;
+    if (su.includes('UTILITY:NULLIFY')) card._defensiveSkillsUnnullifiable = true;
+    if (su.includes('DEFENSIVE:INTERCEPT')) card._immuneToIntercept = true;
   }
 
-  // ── Roster-Change Ability Checks ─────────────────────────
-  function evalRosterAbilities(card, ownTeam, prevTeam) {
-    const ability = card.Ability;
-    if (!ability || !ability.Rules) return;
-    ability.Rules.forEach(rule => {
-      const trigger = String(rule.trigger || '');
-      if (!trigger.startsWith('ON:ROSTER')) return;
-
-      const ctx = { self: card, ownTeam, enemyTeam: [] };
-      const condA = evalCondition(rule.condition, ctx);
-      const condB = rule.condition_b ? evalCondition(rule.condition_b, ctx) : true;
-
-      const allMet = rule.logic === 'AND' ? (condA && condB) : condA;
-      if (!allMet) return;
-
-      const parsed = parseActionString(rule.action);
-      _applyStatBuff(card, parsed);
-      logMsg('sys', 'System', `ABILITY: ${shortName(getCardName(card))} — ${rule.action}`);
-    });
-  }
-
+  // ── Stat Buff Application ─────────────────────────────────
   function _applyStatBuff(card, parsed) {
     switch (parsed.type) {
       case 'STAT_BUFF_MAX_HP':
@@ -665,18 +688,205 @@ const ENGINE = (() => {
         card.UI_Frontend_Data.Stats.Speed = Math.max(1, card.UI_Frontend_Data.Stats.Speed + parsed.value);
         break;
       case 'STAT_BUFF_SKILL_DMG':
-        card._skillDmgBonus = (card._skillDmgBonus || 0) + parsed.value;
+        card._skillDmgBonus = (card._skillDmgBonus||0) + parsed.value;
         break;
     }
   }
 
-  // ── Skill Engine ─────────────────────────────────────────
+  // ── Ability Passive Boot ──────────────────────────────────
+  // Processes ON:ALWAYS rules (both unconditional and conditional).
+  // Conditional ON:ALWAYS rules are STORED for dynamic re-evaluation.
+  function bootPassiveAbilities(card, ownTeam) {
+    const ability = card.Ability;
+    if (!ability?.Rules) return;
+    card._dynamicAlwaysRules = []; // store for re-eval
+    ability.Rules.forEach(rule => {
+      const pt = parseTrigger(rule.trigger);
+      if (pt.type !== 'ALWAYS') return;
+      const parsed = parseActionString(rule.action);
+      // Check condition — if unconditional, apply immediately
+      const ctx = { self:card, ownTeam, enemyTeam:[] };
+      const condMet = evalCondition(rule.condition, ctx);
+      if (condMet) {
+        // For stat buffs that are unconditional, apply directly
+        if (parsed.type.startsWith('STAT_BUFF')) {
+          _applyStatBuff(card, parsed);
+        } else {
+          applyPassiveFlag(card, parsed, rule);
+        }
+      }
+      // If conditional, store for re-evaluation
+      if (rule.condition && rule.condition !== 'always' && rule.condition !== 'ALWAYS') {
+        card._dynamicAlwaysRules.push(rule);
+      }
+      // Handle Global_Debuff actions — register them
+      if (parsed.type === 'GLOBAL_DEBUFF_CONTEST' || parsed.type === 'GLOBAL_DEBUFF_FORCE_COIN') {
+        registerGlobalDebuff(card, parsed);
+      }
+      // Handle Assist DMG as ability action (Magic, Stockton)
+      if (parsed.type === 'DEAL_ASSIST_DMG_ADD') {
+        card._passiveAssistAdd = (card._passiveAssistAdd||0) + parsed.add;
+        card._passiveAssistRef = parsed.ref;
+      }
+      if (parsed.type === 'DEAL_ASSIST_DMG_MULT') {
+        card._passiveAssistMult = (card._passiveAssistMult||1);
+        card._passiveAssistMultRef = parsed.ref;
+        // Store multiplier separately
+        card._passiveAssistMultVal = parsed.mult;
+      }
+    });
+  }
+
+  // ── Dynamic ON:ALWAYS Re-evaluation ───────────────────────
+  // Called after HP changes to check if conditional buffs should toggle.
+  function evaluateAlwaysConditional(card, ownTeam) {
+    if (!card._dynamicAlwaysRules?.length) return;
+    const ability = card.Ability;
+    card._dynamicAlwaysRules.forEach(rule => {
+      const parsed = parseActionString(rule.action);
+      const ctx = { self:card, ownTeam, enemyTeam:[] };
+      const condMet = evalCondition(rule.condition, ctx);
+      // For Stat_Buff type, we need to toggle
+      if (parsed.type === 'STAT_BUFF_BASE_DMG') {
+        const base = card.UI_Frontend_Data.Stats.Base_DMG;
+        const hasBuff = card._hasDynamicBaseBuff || false;
+        if (condMet && !hasBuff) {
+          card.UI_Frontend_Data.Stats.Base_DMG = base + parsed.value;
+          card._hasDynamicBaseBuff = true;
+        } else if (!condMet && hasBuff) {
+          card.UI_Frontend_Data.Stats.Base_DMG = Math.max(0, base - parsed.value);
+          card._hasDynamicBaseBuff = false;
+        }
+      }
+      // For Untargetable_By:Freeze
+      if (parsed.type === 'UNTARGETABLE_BY' && String(rule.action).includes('Freeze')) {
+        card._immuneFreeze = condMet;
+      }
+      // General passive flags
+      if (parsed.type === 'UNTARGETABLE_BY' || parsed.type === 'APPLY_STATE_UNBLOCKABLE' || parsed.type === 'APPLY_STATE_UNCONTESTABLE' || parsed.type === 'APPLY_STATE_IMMUNE_COINFLIP') {
+        // These are harder to toggle cleanly — for now just re-apply if met
+        if (condMet) applyPassiveFlag(card, parsed, rule);
+      }
+    });
+  }
+
+  // ── Global Debuff Registration ────────────────────────────
+  // Global debuffs (Bird's contest, Curry's forced coin flip) affect board state
+  function registerGlobalDebuff(sourceCard, parsed) {
+    const entry = {
+      id: sourceCard._instanceId,
+      sourceName: getCardName(sourceCard),
+      effect: parsed.type === 'GLOBAL_DEBUFF_CONTEST' ? 'contest' : 'force_coin',
+      natureFilter: parsed.natureFilter || '',
+      refund: parsed.refund || false,
+      active: true
+    };
+    // Store on the card for lookup
+    if (!sourceCard._globalDebuffs) sourceCard._globalDebuffs = [];
+    sourceCard._globalDebuffs.push(entry);
+  }
+
+  // Check if any global debuff affects a given attack
+  function checkGlobalDebuffs(attackerCard, attackNature, defendingTeam) {
+    let forcedCoin = false, contested = false, refund = false;
+    const allCards = [...defendingTeam];
+    for (const dc of allCards) {
+      if (!dc || dc.isDead) continue;
+      const debuffs = dc._globalDebuffs || [];
+      for (const db of debuffs) {
+        if (!db.active) continue;
+        const nLow = db.natureFilter.toLowerCase();
+        const aLow = (attackNature || '').toLowerCase();
+        if (db.effect === 'force_coin') {
+          // Check if attack nature matches the filter
+          if (nLow === 'offensive:jump_shot' && aLow.includes('jump_shot')) { forcedCoin = true; refund = refund || db.refund; }
+          if (nLow === 'offensive:close_shot' && aLow.includes('close_shot')) { forcedCoin = true; refund = refund || db.refund; }
+          if (nLow === 'offensive' && (aLow.includes('offensive'))) { forcedCoin = true; refund = refund || db.refund; }
+        }
+        if (db.effect === 'contest') {
+          if (nLow === 'jump_shot' && aLow.includes('jump_shot')) contested = true;
+        }
+      }
+    }
+    return { forcedCoin, contested, refund };
+  }
+
+  // ── ON:ENEMY_CAST Evaluation ──────────────────────────────
+  // Evaluates ENEMY_CAST triggers on all cards in a team when an action occurs.
+  // Returns any mitigation value to apply.
+  function evaluateEnemyCastTriggers(teamWithAbilities, castingEnemy, targetOfCast, castNature, castType, teamWithAbilitiesFull, enemyTeamFull) {
+    let totalMitigation = 0;
+    teamWithAbilities.forEach(card => {
+      if (!card || card.isDead) return;
+      const ability = card.Ability;
+      if (!ability?.Rules) return;
+      ability.Rules.forEach(rule => {
+        const pt = parseTrigger(rule.trigger);
+        if (pt.type !== 'ENEMY_CAST') return;
+        
+
+        // Scope check
+        if (pt.scope === 'self' && targetOfCast !== card) return;
+        if (pt.scope === 'not_self' && targetOfCast === card) return;
+
+        // Nature check
+        if (pt.nature) {
+          const nLow = pt.nature.toLowerCase();
+          const cLow = (castNature || '').toLowerCase();
+          if (nLow === 'offensive' && !cLow.includes('offensive') && castType !== 'basic') return;
+          if (nLow === 'defensive:block' && !cLow.includes('block')) return;
+          if (nLow.startsWith('offensive:') && !cLow.includes(nLow.replace('offensive:','')) && castType !== 'basic') return;
+        }
+
+        // Condition check against caster
+        const ctx = { self:card, ownTeam:teamWithAbilitiesFull, enemyTeam:enemyTeamFull, castingEnemy, targetEnemy:targetOfCast };
+        if (!evalCondition(rule.condition, ctx)) return;
+
+        // Apply action
+        const parsed = parseActionString(rule.action);
+        switch (parsed.type) {
+          case 'UNTARGETABLE_BY':
+            // For Iverson: sets flags on THIS card (the defender with the ability)
+            applyPassiveFlag(card, parsed, rule);
+            break;
+          case 'DAMAGE_REDUCTION_FLAT':
+            // For Duncan: reduce damage to the TARGET of the cast
+            totalMitigation += parsed.value;
+            break;
+                case 'APPLY_STATE_UNBLOCKABLE':
+        if (castingEnemy) castingEnemy._tempUnblockable = true;
+        break;
+          default:
+            applyPassiveFlag(card, parsed, rule);
+        }
+      });
+    });
+    return totalMitigation;
+  }
+
+  // ── Roster-Change Ability Check ───────────────────────────
+  function evalRosterAbilities(card, ownTeam) {
+    const ability = card.Ability;
+    if (!ability?.Rules) return;
+    ability.Rules.forEach(rule => {
+      const pt = parseTrigger(rule.trigger);
+      if (pt.type !== 'ROSTER') return;
+      const ctx = { self:card, ownTeam, enemyTeam:[] };
+      const condA = evalCondition(rule.condition, ctx);
+      const condB = rule.condition_b ? evalCondition(rule.condition_b, ctx) : true;
+      if (rule.logic==='AND' ? !(condA&&condB) : !condA) return;
+      const parsed = parseActionString(rule.action);
+      if (parsed.type.startsWith('STAT_BUFF')) _applyStatBuff(card, parsed);
+      else applyPassiveFlag(card, parsed, rule);
+    });
+  }
+
+  // ── Skill Parsing ─────────────────────────────────────────
   function parseSkill(skill) {
     const umParsed = parseUM(skill.UM);
-    const tdParsed = parseTD(skill.TD);
+    const tdParsed = parseTD(skill.TD || skill.TD);
     const actionParsed = parseActionString(skill.Modifiers);
     const timing = String(skill.Timing || '');
-
     return {
       ...umParsed,
       ...tdParsed,
@@ -689,7 +899,13 @@ const ENGINE = (() => {
       coinFlipCount: (() => {
         const m = String(skill.Conditions || '').match(/Coin_Flip:(\d+)/);
         return m ? parseInt(m[1]) : 0;
-      })()
+      })(),
+      // Skill Properties (from S1 Properties column — may be missing in some JSON)
+      isUnblockable: !!(skill.Properties && (skill.Properties.includes('Unblockable'))),
+      isUncontestable: !!(skill.Properties && (skill.Properties.includes('Uncontestable'))),
+      isUnnullifiable: !!(skill.Properties && (skill.Properties.includes('Unnullifiable'))),
+      isImmuneCoinFlip: !!(skill.Properties && (skill.Properties.includes('Immune_All_Coin_Flip'))),
+      isImmuneIntercept: !!(skill.Properties && (skill.Properties.includes('Immune_Interceptions')))
     };
   }
 
@@ -697,90 +913,75 @@ const ENGINE = (() => {
   function calculateDamage(action, actingCard, targetCard, ownTeamArr) {
     const { actionParsed, skillObj } = action;
     let dmg = 0;
-
     switch (actionParsed.type) {
       case 'DEAL_FLAT_DMG':
         dmg = actionParsed.value + (actingCard._skillDmgBonus || 0);
         break;
-
       case 'DEAL_ASSIST_DMG_MULT': {
-        const refCard = ownTeamArr.find(c => c && !c.isDead && actionParsed.ref.includes(c.battleRole));
+        const refCard = ownTeamArr.find(c => c && !c.isDead && actionParsed.ref.some(r => (c.battleRole||'').includes(r)));
         if (refCard) dmg = Math.floor(actionParsed.mult * getCardDMG(refCard));
+        // Add passive assist multiplier if this card has one
+        if (actingCard._passiveAssistMult && actionParsed.ref.some(r => (actingCard._passiveAssistMultRef||[]).includes(r))) {
+          dmg = Math.floor(dmg * (actingCard._passiveAssistMultVal || 1));
+        }
         break;
       }
-
       case 'DEAL_ASSIST_DMG_ADD': {
-        const refCard = ownTeamArr.find(c => c && !c.isDead && actionParsed.ref.includes(c.battleRole));
+        const refCard = ownTeamArr.find(c => c && !c.isDead && actionParsed.ref.some(r => (c.battleRole||'').includes(r)));
         if (refCard) dmg = getCardDMG(refCard) + actionParsed.add;
+        // Add passive assist add if this card has one
+        if (actingCard._passiveAssistAdd && actionParsed.ref.some(r => (actingCard._passiveAssistRef||[]).includes(r))) {
+          dmg += actingCard._passiveAssistAdd;
+        }
         break;
       }
-
-      default:
-        dmg = 0;
+      default: dmg = 0;
     }
-
-    // Apply target's passive damage reductions
+    // Target passive reductions
     if (targetCard._passiveDmgReductionMult) dmg = Math.floor(dmg * targetCard._passiveDmgReductionMult);
     if (targetCard._passiveDmgReductionFlat) dmg = Math.max(0, dmg - targetCard._passiveDmgReductionFlat);
-
     return Math.max(0, dmg);
   }
 
-  // ── Ability Check: can this action be blocked/contested/stolen? ─
+  // ── Ability Reaction Check ────────────────────────────────
   function checkAbilityReaction(attacker, defender, actionType, skillNature) {
-    // actionType: 'basic' | 'skill'
-    // skillNature: e.g. 'Offensive:Close_Shot'
     const isSkill = actionType === 'skill';
-    const isBasic = actionType === 'basic';
-
-    // Steal immunity
-    if (isBasic && defender && attacker._immuneSteal) return { blocked: false, reason: 'immune_steal' };
-
-    // Block immunity
-    if (isSkill && attacker._skillsUnblockable) return { canBlock: false };
-
-    // Contest immunity
-    if (isSkill && attacker._skillsUncontestable) return { canContest: false };
-
-    // Height-based block immunity
-    if (isSkill && attacker._heightBlockImmune && defender) {
+    // Attacker-level immunity checks
+    if (attacker._skillsUnblockable) return { canBlock: false };
+    if (attacker._skillsUncontestable) return { canContest: false };
+    if (attacker._tempUnblockable) return { canBlock: false };
+    // Height-gated block immunity
+    if (attacker._heightBlockImmune && defender) {
       const defH = parseHeight(getCardHeight(defender));
       if (defH <= attacker._heightBlockThreshold) return { canBlock: false, canContest: false };
     }
-
     return {};
   }
 
-  // ── Reactive Skill Trigger Check ─────────────────────────
+  // ── Reactive Skill Trigger Check ──────────────────────────
   function canReactiveSkillTrigger(reactiveCard, reactSkill, attackNature, attackType) {
     const timing = String(reactSkill.Timing || '');
     const nat = String(attackNature || '').toLowerCase();
-
     if (timing.includes('On_Enemy_Nature:Offensive:Close_Shot') && nat.includes('close_shot')) return true;
     if (timing.includes('On_Enemy_Nature:Offensive:Jump_Shot') && nat.includes('jump_shot')) return true;
     if (timing.includes('On_Enemy_Nature:Offensive+Base')) return true;
     if (timing.includes('On_Teammate_Action:Miss|Block|Contest')) return true;
     if (timing.includes('On_Teammate_Nature:Offensive')) return true;
-    if (timing.includes('On_Enemy_Nature:Offensive') && (nat.includes('offensive') || attackType === 'basic')) return true;
+    if (timing.includes('On_Enemy_Nature:Offensive') && (nat.includes('offensive') || attackType==='basic')) return true;
+    if (timing.includes('On_Enemy_Nature:Offensive+Base') && (nat.includes('offensive') || attackType==='basic')) return true;
+    if (timing.includes('On_Enemy_Nature:Utility:Assist') && nat.includes('assist')) return true;
     return false;
   }
 
   // ── Public API ────────────────────────────────────────────
   return {
-    parseHeight,
-    parseUM,
-    parseTD,
-    parseActionString,
-    parseSkill,
-    evalCondition,
-    bootPassiveAbilities,
-    evalRosterAbilities,
-    calculateDamage,
-    checkAbilityReaction,
-    canReactiveSkillTrigger,
-    applyPassiveFlag,
-    _applyStatBuff,
-    _applyUntargetableFlag
+    parseHeight, parseUM, parseTD, parseActionString, parseSkill,
+    parseConditionString, parseTrigger,
+    evalCondition, bootPassiveAbilities, evaluateAlwaysConditional,
+    evalRosterAbilities, calculateDamage, checkAbilityReaction,
+    canReactiveSkillTrigger, applyPassiveFlag, _applyStatBuff,
+    _applyUntargetableFlag, evaluateEnemyCastTriggers, checkGlobalDebuffs,
+    registerGlobalDebuff
   };
 })();
 
@@ -841,19 +1042,63 @@ function stopBgMusic() { if (bgMusic) { bgMusic.pause(); bgMusic.currentTime = 0
 
 // ── STAT BUFF SYSTEM ─────────────────────────────────────────
 let _statBuffs = {};
-function ensureBuff(id) { if (!_statBuffs[id]) _statBuffs[id] = {dmgBonus:0,basicBonus:0,skillBonus:0,turnsLeft:999,startTurn:0,started:true}; }
-function getBuff(id) { return _statBuffs[id] || null; }
+let _skillDisables = {};   // targetInstanceId → [{skillNameOrAll, turnsLeft, sourceName}]
+let _contestTracking = {}; // instanceId → {turnsLeft, sourceName} (for Robinson/Bird-style contest globals)
+
+function ensureBuff(id) { if (!_statBuffs[id]) _statBuffs[id] = {dmgBonus:0,basicBonus:0,skillBonus:0,turnsLeft:999,startTurn:turnCount,started:true,delay:0}; }
+function getBuff(id) { const b=_statBuffs[id]; if(!b||!b.started||b.delay>0) return null; return b; }
 function getEffectiveDMG(card, isSkill = false) {
   const base = getCardDMG(card);
   const b = getBuff(card._instanceId);
-  if (!b || !b.started) return base;
+  if (!b) return base;
   return base + (b.dmgBonus || 0) + (isSkill ? (b.skillBonus || 0) : (b.basicBonus || 0));
 }
 function tickBuffs() {
   Object.keys(_statBuffs).forEach(k => {
     const b = _statBuffs[k];
-    if (b.turnsLeft !== 999 && b.started) { b.turnsLeft--; if (b.turnsLeft <= 0) delete _statBuffs[k]; }
+    if (!b.started) return;
+    if (b.delay > 0) { b.delay--; if (b.delay <= 0) { b.started = true; logMsg('eff','Effect',`Delayed buff on ${shortName(getCardName(CARDS.find(x=>x._instanceId===k)||{UI_Frontend_Data:{Name:'?'}}))} activates!`); } return; }
+    if (b.turnsLeft !== 999) { b.turnsLeft--; if (b.turnsLeft <= 0) delete _statBuffs[k]; }
   });
+}
+function addTimedBuff(card, bonusObj, turns, delay) {
+  ensureBuff(card._instanceId);
+  const b = _statBuffs[card._instanceId];
+  Object.assign(b, bonusObj);
+  b.turnsLeft = turns || 999;
+  b.delay = delay || 0;
+  if (delay > 0) b.started = false; // don't activate until delay passes
+  else b.started = true;
+}
+function tickSkillDisables() {
+  Object.keys(_skillDisables).forEach(k => {
+    _skillDisables[k] = _skillDisables[k].filter(d => { d.turnsLeft--; return d.turnsLeft > 0; });
+    if (_skillDisables[k].length === 0) delete _skillDisables[k];
+  });
+}
+function isSkillDisabled(targetId, skillName) {
+  const dis = _skillDisables[targetId];
+  if (!dis) return false;
+  return dis.some(d => d.all || d.skillName === skillName);
+}
+function addSkillDisable(targetId, skillName, turnsLeft, sourceName, all) {
+  if (!_skillDisables[targetId]) _skillDisables[targetId] = [];
+  _skillDisables[targetId].push({ skillName, turnsLeft, sourceName, all: !!all });
+}
+function tickContestTracking() {
+  Object.keys(_contestTracking).forEach(k => {
+    _contestTracking[k].turnsLeft--;
+    if (_contestTracking[k].turnsLeft <= 0) delete _contestTracking[k];
+  });
+}
+function isGloballyContested(natureFilter) {
+  for (const k of Object.keys(_contestTracking)) {
+    const ct = _contestTracking[k];
+    const nLow = (ct.natureFilter || '').toLowerCase();
+    const aLow = (natureFilter || '').toLowerCase();
+    if (nLow && aLow.includes(nLow.replace('offensive:',''))) return true;
+  }
+  return false;
 }
 
 // ── ACTIVE EFFECTS TRACKER ───────────────────────────────────
@@ -1358,13 +1603,37 @@ async function confirmMovesPhase() {
   await handleDeadReplacements('player',playerActive,playerBench);
   await handleDeadReplacements('enemy',enemyActive,enemyBench);
 
-  tickEffects();tickBuffs();
+  tickEffects();tickBuffs();tickSkillDisables();tickContestTracking();
 
   // Clear turn-based status
   Object.keys(_frozen).forEach(k=>delete _frozen[k]);
   Object.keys(_invulnerable).forEach(k=>delete _invulnerable[k]);
   Object.keys(_screened).forEach(k=>delete _screened[k]);
-  Object.keys(_shutdown).forEach(k=>{_shutdown[k]--;if(_shutdown[k]<=0)delete _shutdown[k];});
+  // Shutdown: decrement, respect delay
+  Object.keys(_shutdown).forEach(k=>{
+    _shutdown[k]--;
+        if (!_shutdownDelays) _shutdownDelays = {};
+    const sd = _shutdownDelays[k] || 0;
+    if (_shutdown[k] <= sd) {
+      // Still in delay phase — not active yet
+    }
+    if (_shutdown[k] <= 0) { delete _shutdown[k]; if(_shutdownDelays) delete _shutdownDelays[k]; }
+  });
+  // Tick global debuff durations on cards
+  [...playerActive,...enemyActive,...playerBench,...enemyBench].forEach(c=>{
+    if(!c||!c._globalDebuffs) return;
+    c._globalDebuffs.forEach(db=>{
+      if(!db.active) return;
+      if(db.turnsLeft!==undefined){
+        if(db.delay>0){db.delay--;}
+        else{db.turnsLeft--;if(db.turnsLeft<=0)db.active=false;}
+      }
+    });
+  });
+  // Re-evaluate all ON:ALWAYS conditional abilities after turn changes
+  [...playerActive,...enemyActive].forEach(c=>{
+    if(c&&!c.isDead) ENGINE.evaluateAlwaysConditional(c, c===playerActive[0]?playerActive:enemyActive);
+  });
 
   [...playerActive,...enemyActive,...playerBench,...enemyBench].forEach(c=>{if(c)(c.Skills||[]).forEach(sk=>{if(sk)sk._usesThisTurn=0;});});
 
@@ -1406,98 +1675,330 @@ async function executeAction(act) {
     atks[act.actorIdx] = incoming; bArr[act.targetIdx] = atkC;
     logMsg('sys', whoLabel, `Swap: ${shortName(getCardName(atkC))} → ${shortName(getCardName(incoming))}`);
     ENGINE.bootPassiveAbilities(incoming, atks);
-    ENGINE.evalRosterAbilities(incoming, atks);
+    // Re-evaluate roster abilities for all teammates (synergy may change)
+    atks.forEach(tc => { if (tc && !tc.isDead) ENGINE.evalRosterAbilities(tc, [...atks,...(isP?playerBench:enemyBench)]); });
     renderArena(); renderBenchStacks(); await delay(700); return;
   }
 
   let sk = null;
   if (act.actionType === 'skill' && act.skillIdx != null) { sk = atkC.Skills[act.skillIdx]; }
 
-  // ── FREEZE SKILL ──
-  if (sk && (String(sk.Nature||'').includes('Freeze') || String(sk.Nature||'').includes('Dribble'))) {
-    const tIdx = act.targetIdx;
-    const frozenC = defs[tIdx];
-    if (frozenC && !frozenC.isDead && !frozenC._immuneFreeze) {
-      _frozen[frozenC._instanceId] = true;
-      logMsg(isP?'atk':'def', whoLabel, `${shortName(getCardName(atkC))} freezes ${shortName(getCardName(frozenC))}!`);
-      addTrackedEffect(shortName(getCardName(atkC)), frozenC._instanceId, shortName(getCardName(frozenC)), 'freeze', 'Frozen — cannot act this turn', 1);
-    }
-    if(sk._usesLeft!==undefined) sk._usesLeft--; sk._usesThisTurn++;
-    renderArena(); return;
+  // ── Skill Properties: Unblockable/Uncontestable/ImmuneCoinFlip ──
+  if (sk && sk._parsed) {
+    if (sk._parsed.isUnblockable) atkC._tempUnblockable = true;
+    if (sk._parsed.isUncontestable) atkC._tempUncontestable = true;
+    if (sk._parsed.isImmuneCoinFlip) atkC._tempImmuneCoin = true;
   }
 
-  // ── STAT BUFF SKILL ──
-  if (sk && String(sk.Modifiers||'').startsWith('Stat_Buff')) {
-    const parsed = ENGINE.parseActionString(sk.Modifiers);
-    const tIdx = act.targetIdx;
-    const targetC = tIdx != null ? (isP ? playerActive : enemyActive)[tIdx] : atkC;
-    if (targetC) {
-      ENGINE._applyStatBuff(targetC, parsed);
-      await showBuffAnimation(shortName(getCardName(atkC)), `${sk.Modifiers}`);
-      addTrackedEffect(shortName(getCardName(atkC)), targetC._instanceId, shortName(getCardName(targetC)), 'buff', sk.Modifiers, 3);
-    }
-    if(sk._usesLeft!==undefined) sk._usesLeft--; sk._usesThisTurn++;
+  // ── Check skill disables ──
+  if (sk && isSkillDisabled(ack, sk.Name)) {
+    logMsg('sys', whoLabel, `${sk.Name} is disabled!`);
     return;
+  }
+
+  // ── FREEZE SKILL (Apply_State:Freeze or plain Freeze) ──
+  if (sk) {
+    const modStr = String(sk.Modifiers || '');
+    const parsedMod = ENGINE.parseActionString(modStr);
+     if (parsedMod.type === 'FREEZE' || parsedMod.type === 'APPLY_STATE_FREEZE' ||
+        String(sk.Nature||'').includes('Freeze') || String(sk.Number||'').includes('Dribble') || modStr === 'Freeze') {
+      const tIdx = act.targetIdx;
+      const frozenC = defs[tIdx];
+      if (frozenC && !frozenC.isDead && !frozenC._immuneFreeze) {
+        _frozen[frozenC._instanceId] = true;
+        logMsg(isP?'atk':'def', whoLabel, `${shortName(getCardName(atkC))} freezes ${shortName(getCardName(frozenC))}!`);
+        addTrackedEffect(shortName(getCardName(atkC)), frozenC._instanceId, shortName(getCardName(frozenC)), 'freeze', 'Frozen — cannot act this turn', 1);
+      } else if (frozenC && frozenC._immuneFreeze) {
+        logMsg('sys','System',`${shortName(getCardName(frozenC))} is immune to freeze!`);
+      }
+      if(sk._usesLeft!==undefined) sk._usesLeft--; sk._usesThisTurn++;
+      delete atkC._tempUnblockable; delete atkC._tempUncontestable; delete atkC._tempImmuneCoin;
+      renderArena(); return;
+    }
+  }
+
+  // ── STAT BUFF SKILL (routed through _statBuffs for duration) ──
+  if (sk) {
+    const modStr = String(sk.Modifiers || '');
+    const parsedMod = ENGINE.parseActionString(modStr);
+    if (parsedMod.type && parsedMod.type.startsWith('STAT_BUFF')) {
+      const td = ENGINE.parseTD(sk.TD || 'DEFAULT');
+      const delay = td.delay || 0;
+      const turns = td.turns || 999;
+      if (turns !== 999 || delay > 0) {
+        // Use timed buff system
+        const bonusObj = {};
+        if (parsedMod.type === 'STAT_BUFF_BASE_DMG') bonusObj.basicBonus = parsedMod.value;
+        else if (parsedMod.type === 'STAT_BUFF_SKILL_DMG') bonusObj.skillBonus = parsedMod.value;
+        else if (parsedMod.type === 'STAT_BUFF_SPD') { /* SPD is direct mutation */ ENGINE._applyStatBuff(atkC, parsedMod); }
+        else if (parsedMod.type === 'STAT_BUFF_HP') { ENGINE._applyStatBuff(atkC, parsedMod); }
+        if (Object.keys(bonusObj).length) addTimedBuff(atkC, bonusObj, turns, delay);
+        const desc = delay > 0 ? `${modStr} (starts in ${delay} turn, lasts ${turns})` : `${modStr} (lasts ${turns} turns)`;
+        await showBuffAnimation(shortName(getCardName(atkC)), desc);
+        addTrackedEffect(shortName(getCardName(atkC)), ack, shortName(getCardName(atkC)), 'buff', desc, turns + delay);
+      } else {
+        // Permanent — apply directly
+        ENGINE._applyStatBuff(atkC, parsedMod);
+        await showBuffAnimation(shortName(getCardName(atkC)), modStr);
+        addTrackedEffect(shortName(getCardName(atkC)), ack, shortName(getCardName(atkC)), 'buff', modStr, 999);
+      }
+      if(sk._usesLeft!==undefined) sk._usesLeft--; sk._usesThisTurn++;
+      delete atkC._tempUnblockable; delete atkC._tempUncontestable; delete atkC._tempImmuneCoin;
+      return;
+    }
+  }
+
+  // ── GRANT_EXTRA_MOVE skills ──
+  if (sk) {
+    const parsedMod = ENGINE.parseActionString(String(sk.Modifiers || ''));
+    if (parsedMod.type === 'GRANT_EXTRA_MOVE' || parsedMod.type === 'GRANT_EXTRA_MOVE_BASE_ONLY') {
+      // Find target teammate
+      const mTarget = String(sk.Modifier_Target || '');
+      let tCard = null;
+      if (mTarget.includes('Selected_Teammate')) {
+        // For now, pick a random alive teammate
+        const allies = atks.filter((c,i) => c && !c.isDead && i !== act.actorIdx);
+        if (allies.length) tCard = allies[Math.floor(Math.random()*allies.length)];
+      } else { tCard = atkC; }
+      if (tCard) {
+        logMsg('sys', whoLabel, `${shortName(getCardName(atkC))} grants extra move to ${shortName(getCardName(tCard))}!`);
+        if (parsedMod.type === 'GRANT_EXTRA_MOVE_BASE_ONLY') tCard._nextMoveBaseOnly = true;
+        // Grant extra move is handled by the action queue — not fully implemented for AI
+      }
+      if(sk._usesLeft!==undefined) sk._usesLeft--; sk._usesThisTurn++;
+      delete atkC._tempUnblockable; delete atkC._tempUncontestable; delete atkC._tempImmuneCoin;
+      return;
+    }
+  }
+
+  // ── HARD_DISABLE_SHUTDOWN skills (Draymond Death Lineup, Payton) ──
+  if (sk) {
+    const parsedMod = ENGINE.parseActionString(String(sk.Modifiers || ''));
+    if (parsedMod.type === 'HARD_DISABLE_SHUTDOWN_ALL' || parsedMod.type === 'HARD_DISABLE_SHUTDOWN_SKILL') {
+      const tIdx = act.targetIdx;
+      const tC = defs[tIdx];
+      if (tC && !tC.isDead) {
+        const td = ENGINE.parseTD(sk.TD || 'DEFAULT');
+        const delay = td.delay || 0;
+        const turns = td.turns || 2;
+        const startTurn = turnCount + delay;
+        if (parsedMod.type === 'HARD_DISABLE_SHUTDOWN_ALL') {
+          // Full shutdown — handled via _shutdown flag with delay
+          const shutdownKey = tC._instanceId;
+          // Schedule shutdown: start after delay, last for turns
+          _shutdown[shutdownKey] = turns + delay; // Will be decremented each turn; effective when > delay
+          // Store original delay for checking
+          if (!_shutdownDelays) _shutdownDelays = {};
+          _shutdownDelays[shutdownKey] = delay;
+          logMsg('sys', whoLabel, `${shortName(getCardName(tC))} will be SHUTDOWN for ${turns} turns${delay?' (starting next turn)':''}!`);
+          // Deal flat damage if any (Draymond deals 100)
+          const dmgPart = String(sk.Modifiers || '').match(/Deal_Flat_DMG:(\d+)/);
+          if (dmgPart) {
+            const d = parseInt(dmgPart[1]);
+            tC.currentHp = Math.max(0, tC.currentHp - d);
+            logMsg('hp','HP',`${shortName(getCardName(tC))} takes ${d} shutdown damage → ${tC.currentHp}/${getCardHP(tC)}`);
+            if (tC.currentHp <= 0) handleKO(tC, isP?'enemy':'player', tIdx);
+          }
+        } else {
+          // Disable a specific skill
+          addSkillDisable(tC._instanceId, null, turns + delay, shortName(getCardName(atkC)), false);
+          logMsg('sys', whoLabel, `${shortName(getCardName(tC))} has a skill disabled for ${turns} turns!`);
+        }
+      }
+      if(sk._usesLeft!==undefined) sk._usesLeft--; sk._usesThisTurn++;
+      delete atkC._tempUnblockable; delete atkC._tempUncontestable; delete atkC._tempImmuneCoin;
+      renderArena(); return;
+    }
+  }
+
+  // ── SCREEN_GUARANTEE_HIT (Draymond Death Lineup S2) ──
+  if (sk) {
+    const parsedMod = ENGINE.parseActionString(String(sk.Modifiers || ''));
+    if (parsedMod.type === 'SCREEN_GUARANTEE_HIT') {
+      // Find the casting teammate (the one who just attacked)
+      // This is reactive — it should fire when a teammate uses an offensive skill
+      // Mark the most recent teammate attacker as screened
+      const mTarget = String(sk.Modifier_Target || '');
+      if (mTarget.includes('Casting_Teammate')) {
+        // In reactive context, the "casting teammate" is whoever triggered this
+        // We'll set a flag that the next teammate attack can't miss
+        logMsg('sys', whoLabel, `${shortName(getCardName(atkC))} sets a screen!`);
+        // Store screen flag — applied when a teammate attacks next
+        atks.forEach(tc => { if (tc && !tc.isDead && tc !== atkC) tc._screened = true; });
+      }
+      if(sk._usesLeft!==undefined) sk._usesLeft--; sk._usesThisTurn++;
+      delete atkC._tempUnblockable; delete atkC._tempUncontestable; delete atkC._tempImmuneCoin;
+      return;
+    }
+  }
+
+  // ── GLOBAL_DEBUFF skills (Robinson's contest, Draymond/Mutombo forced coin) ──
+  if (sk) {
+    const parsedMod = ENGINE.parseActionString(String(sk.Modifiers || ''));
+    if (parsedMod.type === 'GLOBAL_DEBUFF_CONTEST') {
+      const td = ENGINE.parseTD(sk.TD || 'DEFAULT');
+      const turns = td.turns || 3;
+      const delay = td.delay || 0;
+      _contestTracking[ack] = { turnsLeft: turns + delay, delay, sourceName: shortName(getCardName(atkC)), natureFilter: parsedMod.natureFilter };
+      logMsg('sys', whoLabel, `${shortName(getCardName(atkC))} activates global contest debuff for ${turns} turns!`);
+      if(sk._usesLeft!==undefined) sk._usesLeft--; sk._usesThisTurn++;
+      delete atkC._tempUnblockable; delete atkC._tempUncontestable; delete atkC._tempImmuneCoin;
+      return;
+    }
+    if (parsedMod.type === 'GLOBAL_DEBUFF_FORCE_COIN') {
+      const td = ENGINE.parseTD(sk.TD || 'DEFAULT');
+      const turns = td.turns || 3;
+      const delay = td.delay || 0;
+      const refund = parsedMod.refund || false;
+      // Register as a global debuff on this card
+      if (!atkC._globalDebuffs) atkC._globalDebuffs = [];
+      atkC._globalDebuffs.push({
+        id: ack + '_gdc_' + Date.now(),
+        sourceName: shortName(getCardName(atkC)),
+        effect: 'force_coin',
+        natureFilter: parsedMod.natureFilter,
+        refund: refund,
+        active: true,
+        turnsLeft: turns + delay,
+        delay: delay
+      });
+      logMsg('sys', whoLabel, `${shortName(getCardName(atkC))} forces coin flips on ${parsedMod.natureFilter} for ${turns} turns!`);
+      if(sk._usesLeft!==undefined) sk._usesLeft--; sk._usesThisTurn++;
+      delete atkC._tempUnblockable; delete atkC._tempUncontestable; delete atkC._tempImmuneCoin;
+      return;
+    }
   }
 
   // ── DAMAGING SKILLS & BASIC ATTACKS ──
   let defC = defs[act.targetIdx], dIdx = act.targetIdx;
   if (!defC || defC.isDead) {
     const vt = getValidTargets(atkC, defs);
-    if (!vt.length) return;
+    if (!vt.length) { delete atkC._tempUnblockable; delete atkC._tempUncontestable; delete atkC._tempImmuneCoin; return; }
     defC = vt[0].c; dIdx = vt[0].i;
   }
-  if (_invulnerable[defC._instanceId]) { logMsg('sys','System',`${shortName(getCardName(defC))} is invulnerable!`); return; }
+  if (_invulnerable[defC._instanceId]) { logMsg('sys','System',`${shortName(getCardName(defC))} is invulnerable!`); delete atkC._tempUnblockable; delete atkC._tempUncontestable; delete atkC._tempImmuneCoin; return; }
+  // Shutdown check on target
+  const dck = defC._instanceId;
+  if (_shutdown[dck]) {
+    const sd = (_shutdownDelays && _shutdownDelays[dck]) || 0;
+    if (_shutdown[dck] > sd) { logMsg('sys','System',`${shortName(getCardName(defC))} is shutdown — cannot be targeted.`); delete atkC._tempUnblockable; delete atkC._tempUncontestable; delete atkC._tempImmuneCoin; return; }
+  }
 
-  // Compute raw damage
+  // Check target's offensive skill immunity (Yao)
+  if (defC._immuneToOffensiveSkills && act.actionType === 'skill') {
+    logMsg('sys','System',`${shortName(getCardName(defC))} is immune to offensive skills!`);
+    if(sk){if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;}
+    delete atkC._tempUnblockable; delete atkC._tempUncontestable; delete atkC._tempImmuneCoin;
+    return;
+  }
+
+  // ── Compute raw damage ──
   let dmgRaw;
+  const skillNature = sk ? (sk.Nature || '') : 'Offensive:Base';
   if (act.actionType === 'basic') {
     dmgRaw = getEffectiveDMG(atkC, false);
   } else if (sk) {
     const parsedMod = ENGINE.parseActionString(sk.Modifiers);
-    // Assist DMG uses own team ref
     const ownTeamArr = isP ? playerActive : enemyActive;
-    dmgRaw = ENGINE.calculateDamage({ actionParsed: parsedMod }, atkC, defC, ownTeamArr) + (atkC._skillDmgBonus || 0);
-    // Coin flip check
-    if (sk._parsed?.hasCoinFlip && !atkC._immuneCoinflip) {
-      const flip = Math.random() < 0.5;
-      logMsg('coin','Coin',`Flip for ${sk.Name}: ${flip?'HEADS':'TAILS'}`);
-      await animateCoinFlip(shortName(getCardName(atkC)), sk.Name, flip);
-      if (!flip) {
-        logMsg('sys','System',`${sk.Name} missed!`);
-        if(sk._usesLeft!==undefined) sk._usesLeft--; sk._usesThisTurn++;
-        await checkReboundTriggers(act, atkC, isP ? playerActive : enemyActive, isP);
-        return;
-      }
-    }
-  } else return;
+    dmgRaw = ENGINE.calculateDamage({ actionParsed: parsedMod, skillObj: sk }, atkC, defC, ownTeamArr) + (atkC._skillDmgBonus || 0);
+  } else { delete atkC._tempUnblockable; delete atkC._tempUncontestable; delete atkC._tempImmuneCoin; return; }
 
-  // Ability reactions check (block/contest immunity)
-  const skillNature = sk ? sk.Nature : 'Offensive:Base';
+  // ── ON:ENEMY_CAST trigger evaluation (Iverson, Yao, Duncan, Shaq) ──
+  // Check defending team's abilities against this attack
+  let abilityMitigation = 0;
+  abilityMitigation += ENGINE.evaluateEnemyCastTriggers(defs, atkC, defC, skillNature, act.actionType, defs, atks);
+  // Also check attacking team for Shaq-style "when enemy blocks" triggers
+  ENGINE.evaluateEnemyCastTriggers(atks, null, atkC, 'Defensive:Block', 'defensive', atks, defs);
+
+  // ── Check Global Debuffs (Bird's contest, Curry/Mutombo forced coin) ──
+  const gDebuff = ENGINE.checkGlobalDebuffs(atkC, skillNature, defs);
+  let globallyContested = gDebuff.contested || isGloballyContested(skillNature);
+  let forcedByGlobal = gDebuff.forcedCoin;
+  let globalRefund = gDebuff.refund;
+
+  // ── Coin flip check (skill-level + global debuff) ──
+  let needsCoin = sk?._parsed?.hasCoinFlip || forcedByGlobal || false;
+  let extraFlips = 0;
+  if (forcedByGlobal) extraFlips = 1; // Mutombo: if skill already has coin flip, 2 consecutive
+  if (atkC._tempImmuneCoin || atkC._immuneCoinflip) needsCoin = false;
+
+  if (needsCoin) {
+    const totalFlips = 1 + extraFlips;
+    let allHeads = true;
+    for (let f = 0; f < totalFlips; f++) {
+      const flip = Math.random() < 0.5;
+      logMsg('coin','Coin',`Flip ${f+1}/${totalFlips} for ${sk?.Name||'Global Debuff'}: ${flip?'HEADS':'TAILS'}`);
+      await animateCoinFlip(shortName(getCardName(atkC)), sk?.Name || 'Forced Miss', flip);
+      if (!flip) allHeads = false;
+    }
+    if (!allHeads) {
+      logMsg('sys','System',`${sk?.Name||'Attack'} missed!`);
+      // Refund use if global debuff says so (Draymond: Refund:True means don't count the miss)
+      if (globalRefund && forcedByGlobal && sk) { /* don't decrement uses */ }
+      else { if(sk){if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;} }
+      await checkReboundTriggers(act, atkC, isP?playerActive:enemyActive, isP);
+      delete atkC._tempUnblockable; delete atkC._tempUncontestable; delete atkC._tempImmuneCoin;
+      return;
+    }
+  }
+
+  // ── Ability reactions check (block/contest immunity) ──
   const abilityCheck = ENGINE.checkAbilityReaction(atkC, defC, act.actionType, skillNature);
 
-  // Prompt defensive reactive skills (for player side)
+  // ── Screen check (Draymond) ──
+  const isScreened = !!_screened[ack];
+  if (isScreened) { delete _screened[ack]; logMsg('sys','System',`Screen guarantees the hit!`); }
+
+  // ── Prompt defensive reactive skills (only if not screened) ──
   let blocked = false;
-  if (!_screened[atkC._instanceId]) {
-    blocked = await promptReactiveSkills(act, sk, atkC, defC, dIdx, isP, defs, abilityCheck);
+  if (!isScreened && !_screened[ack]) {
+    blocked = await promptReactiveSkills(act, sk, atkC, defC, dIdx, isP, defs, abilityCheck, globallyContested);
   }
-  if (blocked) { if(sk){if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;} await checkReboundTriggers(act, atkC, isP?playerActive:enemyActive, isP); return; }
+  if (blocked) {
+    if(globalRefund && forcedByGlobal) { /* don't decrement */ }
+    else { if(sk){if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;} }
+    await checkReboundTriggers(act, atkC, isP?playerActive:enemyActive, isP);
+    delete atkC._tempUnblockable; delete atkC._tempUncontestable; delete atkC._tempImmuneCoin;
+    return;
+  }
 
-  // Apply damage reduction from target passive ability
-  if (defC._passiveDmgReductionMult && !sk) dmgRaw = Math.floor(dmgRaw * defC._passiveDmgReductionMult);
+  // ── Global contest: force coin flip on the attacker ──
+  if (globallyContested && !isScreened) {
+    const contestFlip = Math.random() < 0.5;
+    logMsg('coin','Coin',`Contest flip: ${contestFlip?'HEADS — Hit!':'TAILS — Missed!'}`);
+    await animateCoinFlip('Contest', 'Contested Shot', contestFlip);
+    if (!contestFlip) {
+      logMsg('sys','System',`Shot contested and missed!`);
+      if(sk){if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;}
+      delete atkC._tempUnblockable; delete atkC._tempUncontestable; delete atkC._tempImmuneCoin;
+      return;
+    }
+  }
+
+  // ── Apply damage reduction from target passive + ability mitigation ──
+  if (defC._passiveDmgReductionMult && act.actionType === 'skill') dmgRaw = Math.floor(dmgRaw * defC._passiveDmgReductionMult);
   if (defC._passiveDmgReductionFlat) dmgRaw = Math.max(0, dmgRaw - defC._passiveDmgReductionFlat);
+  if (abilityMitigation > 0) dmgRaw = Math.max(0, dmgRaw - abilityMitigation);
 
+  // ── Apply damage ──
   logMsg(isP?'atk':'def', whoLabel, `[${atkC.battleRole}] ${shortName(getCardName(atkC))} → ${sk?.Name||'Basic'} on [${defC.battleRole}] ${shortName(getCardName(defC))} — ${dmgRaw} DMG`);
   await playCombatAnimation(`${isP?'player':'enemy'}-${act.actorIdx}`, `${isP?'enemy':'player'}-${dIdx}`, dmgRaw, defC, dIdx, isP?'enemy':'player');
 
   if(sk){if(sk._usesLeft!==undefined)sk._usesLeft--;sk._usesThisTurn++;}
   logMsg('hp','HP',`${shortName(getCardName(defC))}: ${defC.currentHp}/${getCardHP(defC)}`);
   if(defC.currentHp<=0) handleKO(defC, isP?'enemy':'player', dIdx);
+
+  // ── Dynamic ON:ALWAYS re-evaluation after HP change (Jordan's Flu Game) ──
+  ENGINE.evaluateAlwaysConditional(defC, defs);
+  ENGINE.evaluateAlwaysConditional(atkC, atks);
+
+  // Cleanup temp flags
+  delete atkC._tempUnblockable; delete atkC._tempUncontestable; delete atkC._tempImmuneCoin;
   renderArena();
 }
 
 // ── REACTIVE SKILLS ───────────────────────────────────────────
-async function promptReactiveSkills(act, sk, atkC, defC, dIdx, isP, defs, abilityCheck) {
+async function promptReactiveSkills(act, sk, atkC, defC, dIdx, isP, defs, abilityCheck, globallyContested) {
   const defTeam = isP ? enemyActive : playerActive;
   const nat = sk ? String(sk.Nature||'').toLowerCase() : 'basic';
   let valids = [];
@@ -1534,19 +2035,50 @@ async function promptReactiveSkills(act, sk, atkC, defC, dIdx, isP, defs, abilit
   logMsg('block', reactWho, `${shortName(getCardName(reactCard))} reacts: ${rsk.Name}!`);
 
   const modKey = String(rsk.Modifiers||'').toUpperCase();
-  if (modKey === 'BLOCK') {
+    if (modKey === 'BLOCK') {
+    // Check if attacker is unblockable (skill property or ability flag)
+    if (atkC._tempUnblockable || atkC._skillsUnblockable) {
+      logMsg('block', reactWho, `Block attempted but ${shortName(getCardName(atkC))} is UNBLOCKABLE!`);
+      return false;
+    }
     logMsg('block', reactWho, 'Complete block!');
     return true;
   }
   if (modKey.startsWith('REACTIONARY_DMG_REDUCTION')) {
     const parsed = ENGINE.parseActionString(rsk.Modifiers);
     if (parsed.type === 'REACTIONARY_DMG_REDUCTION') {
-      // Apply mitigation — we'll subtract from defC's incoming dmg by storing it
       defC._mitigate = (defC._mitigate || 0) + parsed.value;
+      logMsg('block', reactWho, `Damage reduced by ${parsed.value}!`);
     }
+    return false;
+  }
+  if (modKey === 'CONTEST') {
+    // Check if attacker is uncontestable
+    if (atkC._tempUncontestable || atkC._skillsUncontestable) {
+      logMsg('block', reactWho, `Contest attempted but ${shortName(getCardName(atkC))} is UNCONTESTABLE!`);
+      return false;
+    }
+    // Contest forces a coin flip on the attack
+    const contestFlip = Math.random() < 0.5;
+    logMsg('coin','Coin',`Contest flip by ${shortName(getCardName(reactCard))}: ${contestFlip?'HEADS — Hit!':'TAILS — Missed!'}`);
+    await animateCoinFlip(shortName(getCardName(reactCard)), 'Contest', contestFlip);
+    if (!contestFlip) {
+      logMsg('block', reactWho, `Contest successful — shot missed!`);
+      return true; // counts as "blocked" (action fails)
+    }
+    logMsg('block', reactWho, `Contest failed — shot still lands!`);
+    return false;
+  }
+  if (modKey === 'INTERCEPT') {
+    // Check if attacker is immune to intercept
+    if (atkC._immuneToIntercept) {
+      logMsg('block', reactWho, `Intercept attempted but ${shortName(getCardName(atkC))} is immune!`);
+      return false;
+    }
+    logMsg('block', reactWho, `${shortName(getCardName(reactCard))} intercepts the action!`);
+    return true; // action cancelled
   }
   if (modKey === 'GRANT_EXTRA_MOVE') {
-    // Rebound: teammate gets another attack
     const failedAtk = defs[act.actorIdx];
     if (failedAtk) {
       const vt2 = getValidTargets(failedAtk, isP ? playerActive : enemyActive);
@@ -1557,6 +2089,7 @@ async function promptReactiveSkills(act, sk, atkC, defC, dIdx, isP, defs, abilit
         if (tgt2.c.currentHp <= 0) handleKO(tgt2.c, isP?'player':'enemy', tgt2.i);
       }
     }
+    return false;
   }
   return false;
 }
@@ -1654,8 +2187,8 @@ async function handleDeadReplacements(teamStr, activeArr, benchArr) {
       benchArr[r.idx] = outgoing;
       activeArr[i].battleRole = dR;
       if (!activeArr[i].currentHp) activeArr[i].currentHp = getCardHP(activeArr[i]);
-      applyPassiveAbility(activeArr[i]);
-      applySynergyAbilities(activeArr[i], activeArr);
+      ENGINE.bootPassiveAbilities(activeArr[i], [...activeArr,...benchArr]);
+      ENGINE.evalRosterAbilities(activeArr[i], [...activeArr,...benchArr]);
       renderArena(); renderBenchStacks(); await delay(600);
     }
   }
