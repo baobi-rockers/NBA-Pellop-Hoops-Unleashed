@@ -1125,16 +1125,12 @@ if (typeof module !== 'undefined' && module.exports) {
 //   };
 //
 // ============================================================
-
-
 // ============================================================
 // ============================================================
 const ABILITY_ENGINE = (() => {
 
   // ============================================================
   // SECTION 1 — INTERNAL UTILITY WRAPPERS
-  // Thin wrappers around card data accessors.
-  // All card data lives in c.UI_Frontend_Data per JSON schema.
   // ============================================================
 
   function _getHP(c)     { return c?.currentHp ?? c?.UI_Frontend_Data?.Stats?.HP ?? 0; }
@@ -1154,20 +1150,8 @@ const ABILITY_ENGINE = (() => {
 
   // ============================================================
   // SECTION 2 — CONDITION CONTEXT BUILDER
-  // Builds the ctx object that PARSER.evalCondition expects.
   // ============================================================
 
-  /**
-   * buildCondCtx
-   * Assembles the evaluation context for PARSER.evalCondition.
-   *
-   * @param {object} self          – the card owning the ability rule
-   * @param {object[]} ownTeam     – active + bench of owner's side
-   * @param {object[]} enemyTeam   – active + bench of enemy side
-   * @param {object} extras        – optional overrides:
-   *   castingEnemy, selectedEnemy, castNature, gameRound,
-   *   ownTeamLead, ownGrave
-   */
   function buildCondCtx(self, ownTeam, enemyTeam, extras = {}) {
     return {
       self,
@@ -1179,24 +1163,16 @@ const ABILITY_ENGINE = (() => {
       gameRound: extras.gameRound ?? 1,
       ownTeamLead: extras.ownTeamLead ?? false,
       ownGrave: extras.ownGrave ?? [],
-      target: self,                 // default condition target = self
+      target: self,
     };
   }
 
   // ============================================================
   // SECTION 3 — RULE CONDITION EVALUATOR
-  // Evaluates a single rule's Condition field using PARSER.
-  // Handles string conditions, object conditions, and null.
   // ============================================================
 
-  /**
-   * evalRuleCondition
-   * Returns true if the condition passes for the given context.
-   * Null/empty condition = unconditional pass.
-   */
   function evalRuleCondition(condition, ctx) {
     if (!condition) return true;
-    // Condition may be a string or pre-parsed object
     const condStr = typeof condition === 'string' ? condition : JSON.stringify(condition);
     if (!condStr.trim()) return true;
     try {
@@ -1209,15 +1185,8 @@ const ABILITY_ENGINE = (() => {
 
   // ============================================================
   // SECTION 4 — ACTION EXECUTOR
-  // Applies a parsed action to the given target card(s).
-  // Returns a descriptor object for the caller (turn loop) to log.
   // ============================================================
 
-  /**
-   * _executeAction
-   * Takes a PARSER.parseAction result and applies it to targetCards.
-   * Returns array of { card, type, detail } for logging.
-   */
   function _executeAction(action, targetCards, sourceCard, td, context) {
     if (!action || !targetCards) return [];
     const targets = Array.isArray(targetCards) ? targetCards : [targetCards];
@@ -1231,24 +1200,17 @@ const ABILITY_ENGINE = (() => {
     return results;
   }
 
-  /**
-   * _applyActionToCard
-   * Core switch that applies one parsed action to one card.
-   */
   function _applyActionToCard(action, card, sourceCard, td, context) {
     if (!action || !card) return null;
     const tdParsed = td ? PARSER.parseTD(td) : { turns: 1, delay: 0, special: null };
 
     switch (action.type) {
 
-      // ── STAT BUFFS ──────────────────────────────────────────
       case 'STAT_BUFF': {
         const { operation, value, stat, nature, stackMode, stackLimit } = action.params;
         const amt = operation === '-' ? -(value || 0) : (value || 0);
 
         if (stackMode) {
-          // Stacking buff (Klay, T-Mac, Larry Bird)
-          // ⭐ Stack_Per_Hit / Stack_Per_Miss :Permanent — never expires
           if (!card._stackBuffs) card._stackBuffs = {};
           const key = `${sourceCard?._instanceId}_${stat}`;
           if (!card._stackBuffs[key]) card._stackBuffs[key] = { total: 0, count: 0, stat, stackMode, permanent: stackMode.includes('Permanent'), limit: stackLimit || Infinity };
@@ -1261,14 +1223,12 @@ const ABILITY_ENGINE = (() => {
           return { card, type: 'STAT_BUFF_STACK', detail: `${_getName(card)} stacked +${amt} ${stat} (×${sb.count})` };
         }
 
-        // ⭐ THIS_ATTACK — only for current attack resolution
         if (tdParsed.special === 'THIS_ATTACK') {
           if (!card._thisAttackBuffs) card._thisAttackBuffs = {};
           card._thisAttackBuffs[stat] = (card._thisAttackBuffs[stat] || 0) + amt;
           return { card, type: 'STAT_BUFF_THIS_ATTACK', detail: `${_getName(card)} +${amt} ${stat} this attack` };
         }
 
-        // Timed buff
         if (!card._timedBuffs) card._timedBuffs = [];
         card._timedBuffs.push({
           stat, amount: amt, nature: nature || null,
@@ -1281,14 +1241,12 @@ const ABILITY_ENGINE = (() => {
         return { card, type: 'STAT_BUFF', detail: `${_getName(card)} ${operation}${value} ${stat} for ${tdParsed.turns}T` };
       }
 
-      // ── DEAL FLAT DAMAGE ────────────────────────────────────
       case 'DEAL_FLAT_DMG': {
         const dmg = action.params.damage || 0;
         card.currentHp = Math.max(0, (card.currentHp ?? _getMaxHP(card)) - dmg);
         return { card, type: 'DEAL_FLAT_DMG', detail: `${_getName(card)} takes ${dmg} flat DMG` };
       }
 
-      // ── DEAL ASSIST DAMAGE ──────────────────────────────────
       case 'DEAL_ASSIST_DMG': {
         const refPos = action.params.referencePos;
         const refCard = context?.ownTeam?.find(c => _getPos(c).includes(refPos));
@@ -1299,34 +1257,33 @@ const ABILITY_ENGINE = (() => {
         return { card, type: 'DEAL_ASSIST_DMG', detail: `Assist DMG ${dmg} on ${_getName(card)} (ref: ${refPos})` };
       }
 
-      // ── APPLY AURA ──────────────────────────────────────────
       case 'APPLY_AURA': {
-        // ⭐ Auras persist until source leaves; tracked by auraId
         if (!card._auras) card._auras = new Map();
+        // FIX: Access params correctly
         const auraId = action.params.auraId;
+        const effect = action.params.effect;
+        
         if (!card._auras.has(auraId)) {
           card._auras.set(auraId, {
             auraId,
-            effect: action.params.effect,
+            effect: effect,
             sourceCardId: sourceCard?._instanceId || null,
             sourceName: _getName(sourceCard),
             tdParsed,
           });
-          // Parse and immediately apply the aura's effect
-          const auraEffect = PARSER.parseAction(action.params.effect);
+          const auraEffect = PARSER.parseAction(effect);
           if (auraEffect) _applyActionToCard(auraEffect, card, sourceCard, td, context);
         }
         return { card, type: 'APPLY_AURA', detail: `Aura ${auraId} applied to ${_getName(card)}` };
       }
 
-      // ── REMOVE AURA ─────────────────────────────────────────
       case 'REMOVE_AURA': {
         if (card._auras) {
+          // FIX: Access params correctly
           const auraId = action.params.auraId;
           if (card._auras.has(auraId)) {
             const aura = card._auras.get(auraId);
             card._auras.delete(auraId);
-            // Reverse the aura effect
             const auraEffect = PARSER.parseAction(aura.effect);
             if (auraEffect) _reverseActionOnCard(auraEffect, card, context);
             return { card, type: 'REMOVE_AURA', detail: `Aura ${auraId} removed from ${_getName(card)}` };
@@ -1335,23 +1292,18 @@ const ABILITY_ENGINE = (() => {
         return null;
       }
 
-      // ── UNTARGETABLE BY ─────────────────────────────────────
       case 'UNTARGETABLE_BY': {
         const { defensiveTypes, nature } = action.params;
         if (!card._untargetableBy) card._untargetableBy = [];
-        // ⭐ Per-attack vs persistent — tracked by tdParsed.special
         const entry = { defensiveTypes: defensiveTypes || [], nature: nature || null, special: tdParsed.special, turnsLeft: tdParsed.turns || 999 };
         card._untargetableBy.push(entry);
-        // Set quick-access immunity flags
         _recomputeUntargetableFlags(card);
         return { card, type: 'UNTARGETABLE_BY', detail: `${_getName(card)} untargetable by ${defensiveTypes?.join('/')}` };
       }
 
-      // ── APPLY PROPERTY ──────────────────────────────────────
       case 'APPLY_PROPERTY': {
         const prop = action.params.property || '';
         if (prop.startsWith('Stat_Lock:')) {
-          // ⭐ Stat_Lock:HP+DMG+SPD+Skills — full freeze of listed stats
           if (!card._statLock) card._statLock = new Set();
           prop.replace('Stat_Lock:', '').split('+').forEach(s => card._statLock.add(s.trim()));
           return { card, type: 'STAT_LOCK', detail: `${_getName(card)} stat-locked: ${prop}` };
@@ -1363,26 +1315,20 @@ const ABILITY_ENGINE = (() => {
         }
         if (prop === 'Untargetable') {
           card._fullyUntargetable = true;
-          if (tdParsed.special === 'REST_OF_TURN') {
-            card._untargetableUntilTurnEnd = true;
-          }
+          if (tdParsed.special === 'REST_OF_TURN') card._untargetableUntilTurnEnd = true;
           return { card, type: 'UNTARGETABLE', detail: `${_getName(card)} fully untargetable` };
         }
         if (prop === 'Survive_At_1HP') {
-          // ⭐ Survive_At_1HP — checked before KO is processed
           card._surviveProp = true;
           return { card, type: 'SURVIVE_AT_1HP', detail: `${_getName(card)} will survive at 1 HP` };
         }
-        // Generic property
         if (!card._properties) card._properties = new Set();
         card._properties.add(prop);
         return { card, type: 'APPLY_PROPERTY', detail: `${_getName(card)} property: ${prop}` };
       }
 
-      // ── APPLY STATE ─────────────────────────────────────────
       case 'APPLY_STATE': {
         const stateStr = action.params.state || '';
-        // ⭐ Sixth_Man:Priority:-10:Targetable_Via_Teammate
         if (stateStr.startsWith('Sixth_Man')) {
           const parts = stateStr.split(':');
           card._state = 'Sixth_Man';
@@ -1394,40 +1340,32 @@ const ABILITY_ENGINE = (() => {
         return { card, type: 'APPLY_STATE', detail: `${_getName(card)} state: ${stateStr}` };
       }
 
-      // ── APPLY MODIFIER ──────────────────────────────────────
       case 'APPLY_MODIFIER': {
         return _applyModifier(action.params, card, sourceCard, tdParsed, context);
       }
 
-      // ── GLOBAL DEBUFF ───────────────────────────────────────
       case 'GLOBAL_DEBUFF': {
-        // ⭐ Global_Debuff with Refund:True — if miss, refund skill use
         const { debuffType, targetNature, refund } = action.params;
         if (!card._globalDebuffs) card._globalDebuffs = [];
-        card._globalDebuffs.push({ debuffType, targetNature, refund: !!refund, turnsLeft: tdParsed.turns || 1, sourceId: sourceCard?._instanceId });
+        card._globalDebuffs.push({ debuffType, targetNature, refund: !!refund, turnsLeft: tdParsed.turns || 1, sourceCard });
         return { card, type: 'GLOBAL_DEBUFF', detail: `${_getName(card)} global debuff: ${debuffType} on ${targetNature}` };
       }
 
-      // ── GRANT EXTRA MOVE ────────────────────────────────────
       case 'GRANT_EXTRA_MOVE': {
-        // ⭐ Grant_Extra_Move — must be guarded by caller against infinite loops
         card._grantedExtraMove = true;
         card._extraMoveNature = action.params.nature || null;
         return { card, type: 'GRANT_EXTRA_MOVE', detail: `${_getName(card)} granted extra move` };
       }
 
-      // ── SCREEN GUARANTEE HIT ────────────────────────────────
       case 'SCREEN_GUARANTEE_HIT': {
         card._screened = true;
         return { card, type: 'SCREEN_GUARANTEE_HIT', detail: `${_getName(card)} next shot cannot miss` };
       }
 
-      // ── HARD DISABLE SHUTDOWN ───────────────────────────────
       case 'HARD_DISABLE_SHUTDOWN': {
-        // ⭐ Ref_Skill disables a specific named skill
         if (!card._skillDisables) card._skillDisables = [];
         card._skillDisables.push({
-          refSkill: action.params.refSkill || null,   // null = ALL skills
+          refSkill: action.params.refSkill || null,
           nature: action.params.nature || null,
           turnsLeft: tdParsed.turns || 1,
           sourceId: sourceCard?._instanceId,
@@ -1435,7 +1373,6 @@ const ABILITY_ENGINE = (() => {
         return { card, type: 'HARD_DISABLE_SHUTDOWN', detail: `${_getName(card)} skill shutdown: ${action.params.refSkill || 'ALL'}` };
       }
 
-      // ── APPLY PRIORITY ──────────────────────────────────────
       case 'APPLY_PRIORITY': {
         const multiplier = action.params.priority || 1;
         if (!card._priorityModifiers) card._priorityModifiers = [];
@@ -1448,7 +1385,6 @@ const ABILITY_ENGINE = (() => {
         return { card, type: 'APPLY_PRIORITY', detail: `${_getName(card)} ${multiplier}x priority` };
       }
 
-      // ── REACTIONARY DMG REDUCTION ───────────────────────────
       case 'REACTIONARY_DMG_REDUCTION': {
         if (!card._reactionaryReductions) card._reactionaryReductions = [];
         card._reactionaryReductions.push({
@@ -1461,29 +1397,17 @@ const ABILITY_ENGINE = (() => {
         return { card, type: 'REACTIONARY_DMG_REDUCTION', detail: `${_getName(card)} reactionary DMG reduction` };
       }
 
-      // ── BLOCK / CONTEST / INTERCEPT / FREEZE / NULLIFY / STEAL ─
-      case 'BLOCK':
-        card._blocking = true;
-        return { card, type: 'BLOCK', detail: `${_getName(card)} blocking` };
-      case 'CONTEST':
-        card._contesting = true;
-        return { card, type: 'CONTEST', detail: `${_getName(card)} contesting` };
-      case 'INTERCEPT':
-        card._intercepting = true;
-        return { card, type: 'INTERCEPT', detail: `${_getName(card)} intercepting` };
+      case 'BLOCK': card._blocking = true; return { card, type: 'BLOCK', detail: `${_getName(card)} blocking` };
+      case 'CONTEST': card._contesting = true; return { card, type: 'CONTEST', detail: `${_getName(card)} contesting` };
+      case 'INTERCEPT': card._intercepting = true; return { card, type: 'INTERCEPT', detail: `${_getName(card)} intercepting` };
       case 'FREEZE':
         card._frozen = true;
         card._frozenTurnsLeft = tdParsed.turns || 1;
-        // ⭐ Freeze also disables skill usage
         card._skillsFrozen = true;
         return { card, type: 'FREEZE', detail: `${_getName(card)} frozen for ${tdParsed.turns || 1}T` };
-      case 'NULLIFY':
-        card._nullified = true;
-        return { card, type: 'NULLIFY', detail: `${_getName(card)} nullified` };
-      case 'STEAL_SKILL':
-        return { card, type: 'STEAL_SKILL', detail: `Steal skill from ${_getName(card)}` };
+      case 'NULLIFY': card._nullified = true; return { card, type: 'NULLIFY', detail: `${_getName(card)} nullified` };
+      case 'STEAL_SKILL': return { card, type: 'STEAL_SKILL', detail: `Steal skill from ${_getName(card)}` };
 
-      // ── BEHAVIOR MODIFIER ───────────────────────────────────
       case 'BEHAVIOR_MODIFIER':
       case 'UNKNOWN':
       default:
@@ -1491,7 +1415,6 @@ const ABILITY_ENGINE = (() => {
     }
   }
 
-  // ── MODIFIER SUB-ROUTER ─────────────────────────────────────
   function _applyModifier(params, card, sourceCard, tdParsed, context) {
     switch (params.modifier) {
       case 'DAMAGE_REDUCTION': {
@@ -1515,28 +1438,23 @@ const ABILITY_ENGINE = (() => {
         return { card, type: 'BONUS_DAMAGE', detail: `+${params.bonus} bonus DMG on ${_getName(card)}` };
       }
       case 'RETALIATORY_DAMAGE': {
-        // ⭐ Dealt back to attacker after block (Harden, Embiid)
         if (!card._retaliations) card._retaliations = [];
         card._retaliations.push({ damage: params.bonus || params.damage || 0, turnsLeft: 1 });
         return { card, type: 'RETALIATORY_DAMAGE', detail: `${_getName(card)} retaliates ${params.bonus || 0}` };
       }
       case 'REBOUND_AND_DEAL_BASE_DMG': {
-        // ⭐ After a miss, another card shoots with base DMG
         card._reboundAndDeal = true;
         return { card, type: 'REBOUND_AND_DEAL_BASE_DMG', detail: `${_getName(card)} can rebound and deal base DMG` };
       }
       case 'LBJ_PUTBACK': {
-        // ⭐ LeBron-style putback: teammate failure triggers extra attack
         card._lbjPutback = true;
         return { card, type: 'LBJ_PUTBACK', detail: `${_getName(card)} LBJ Putback active` };
       }
       case 'DMG_REDIRECTION': {
-        // ⭐ Damage meant for one card goes to another (Jokic redirect)
         card._dmgRedirectionTarget = params.target || null;
         return { card, type: 'DMG_REDIRECTION', detail: `DMG redirection active on ${_getName(card)}` };
       }
       case 'FORCED_COIN_FLIP_ON': {
-        // ⭐ Defender forces attacker to flip coin for specific nature
         if (!card._forcedCoinFlips) card._forcedCoinFlips = [];
         card._forcedCoinFlips.push({ targetNature: params.targetNature, turnsLeft: tdParsed.turns || 1, refund: params.refund ?? false });
         return { card, type: 'FORCED_COIN_FLIP_ON', detail: `Forced coin flip on ${params.targetNature}` };
@@ -1546,9 +1464,7 @@ const ABILITY_ENGINE = (() => {
     }
   }
 
-  // ── STAT DELTA HELPER ───────────────────────────────────────
   function _applyStatDelta(card, stat, amount) {
-    // ⭐ Stat_Lock check — locked stats cannot be altered
     if (card._statLock && card._statLock.has(stat)) return;
     switch (stat) {
       case 'DMG': case 'DMG:Nature:Base': case 'DMG:Nature:Offensive':
@@ -1573,7 +1489,6 @@ const ABILITY_ENGINE = (() => {
     }
   }
 
-  // ── REVERSE ACTION (for aura removal) ──────────────────────
   function _reverseActionOnCard(action, card, context) {
     if (!action) return;
     switch (action.type) {
@@ -1596,9 +1511,7 @@ const ABILITY_ENGINE = (() => {
     }
   }
 
-  // ── UNTARGETABLE FLAG RECOMPUTE ─────────────────────────────
   function _recomputeUntargetableFlags(card) {
-    // Reset derived quick flags
     delete card._immuneAllOffensive;
     delete card._immuneCloseShot;
     delete card._immuneJumpShot;
@@ -1633,21 +1546,8 @@ const ABILITY_ENGINE = (() => {
 
   // ============================================================
   // SECTION 5 — TRIGGER DISPATCHER
-  // The main event bus. Game events call fireEvent(), which
-  // checks all ability rules across all active cards and fires
-  // matching rules.
   // ============================================================
 
-  /**
-   * fireEvent
-   * Central event bus. Call this whenever a game event occurs.
-   *
-   * @param {string}   eventType  – canonical event type (see trigger types)
-   * @param {object}   payload    – event-specific data
-   * @param {object[]} allCards   – all active cards (both teams)
-   * @param {object}   gameState  – { ownTeam, enemyTeam, ownGrave, ownTeamLead, gameRound }
-   * @returns {object[]} list of applied effects for logging
-   */
   function fireEvent(eventType, payload, allCards, gameState) {
     const effects = [];
     for (const card of allCards) {
@@ -1673,14 +1573,11 @@ const ABILITY_ENGINE = (() => {
           }
         );
 
-        // ⭐ Condition must pass before executing action
         if (!evalRuleCondition(rule.condition || rule.Condition || null, ctx)) continue;
 
-        // Resolve action target
         const actionTargetStr = rule.action_target || rule.Action_Target || 'Self';
         const resolvedTargets = _resolveActionTargets(actionTargetStr, card, gameState?.ownTeam ?? [], gameState?.enemyTeam ?? [], payload);
 
-        // Parse and execute the action
         const actionStr = rule.action_string || rule.Action_String || '';
         if (!actionStr) continue;
         const action = PARSER.parseAction(actionStr);
@@ -1694,15 +1591,12 @@ const ABILITY_ENGINE = (() => {
     return effects;
   }
 
-  // ── TRIGGER MATCHER ─────────────────────────────────────────
   function _triggerMatches(trigger, eventType, payload, ownerCard) {
     if (!trigger || trigger.type === 'UNKNOWN') return false;
-    if (trigger.type === 'AND_PAIR') return false; // handled by AND_PAIR logic
+    if (trigger.type === 'AND_PAIR') return false;
 
-    // ── ALWAYS ──────────────────────────────────────────────
     if (trigger.type === 'ALWAYS') return true;
 
-    // ── DEPLOY ──────────────────────────────────────────────
     if (trigger.type === 'DEPLOY_POS_MATCH' && eventType === 'DEPLOY') {
       return _getPos(ownerCard).some(p => p === payload.position);
     }
@@ -1710,26 +1604,22 @@ const ABILITY_ENGINE = (() => {
       return payload.isSixthMan === true;
     }
 
-    // ── ENTER ACTIVE LINEUP ─────────────────────────────────
     if (trigger.type === 'ENTER_ACTIVE_LINEUP' && eventType === 'ENTER_ACTIVE_LINEUP') {
       return payload.cardId === ownerCard._instanceId;
     }
 
-    // ── HP EVENTS ────────────────────────────────────────────
     if (trigger.type === 'HP_THRESHOLD_ONCE' && eventType === 'HP_CHANGE') {
       if (payload.cardId !== ownerCard._instanceId) return false;
-      if (ownerCard._hpThresholdFired) return false;  // ⭐ fires ONCE
+      if (ownerCard._hpThresholdFired) return false;
       return true;
     }
     if (trigger.type === 'HP_STATE' && eventType === 'HP_CHANGE') {
-      // ⭐ HP_STATE fires every time HP matches condition (not once)
       return payload.cardId === ownerCard._instanceId;
     }
     if (trigger.type === 'TURN_START_AFTER_SURVIVE' && eventType === 'TURN_START') {
       return ownerCard._survivedLastTurn === true;
     }
 
-    // ── ROSTER EVENTS ────────────────────────────────────────
     if (trigger.type === 'ROSTER_JOIN' && eventType === 'ROSTER_JOIN') {
       if (trigger.side === 'enemy' && payload.side !== 'enemy') return false;
       if (trigger.side !== 'enemy' && payload.side === 'enemy') return false;
@@ -1740,38 +1630,30 @@ const ABILITY_ENGINE = (() => {
       return _rosterMatchCheck(trigger, payload, ownerCard);
     }
     if (trigger.type === 'ROSTER_LEAVE_LAST' && eventType === 'ROSTER_LEAVE_LAST') {
-      // ⭐ Only fires when the LAST matching card leaves
       if (trigger.side === 'enemy' && payload.side !== 'enemy') return false;
       return _rosterMatchCheck(trigger, payload, ownerCard);
     }
 
-    // ── CARD EXIT ────────────────────────────────────────────
     if (trigger.type === 'CARD_EXIT' && eventType === 'CARD_EXIT') {
       return trigger.cardId === payload.exitingCardId;
     }
 
-    // ── SELF CAST ────────────────────────────────────────────
     if (trigger.type === 'SELF_CAST' && eventType === 'SELF_CAST') {
       if (payload.castingCardId !== ownerCard._instanceId) return false;
       if (trigger.nature && !PARSER.natureMatches(trigger.nature, payload.castNature, payload.castType)) return false;
       if (trigger.skillId && trigger.skillId !== payload.skillId) return false;
-      // Subtype: HIT or FAIL — must match if specified
       if (trigger.subtype && trigger.subtype !== payload.subtype) return false;
       if (!trigger.subtype && payload.subtype) return false;
       return true;
     }
 
-    // ── ENEMY CAST ───────────────────────────────────────────
     if (trigger.type === 'ENEMY_CAST' && eventType === 'ENEMY_CAST') {
-      // Nature filter
       if (trigger.nature && !PARSER.natureMatches(trigger.nature, payload.castNature, payload.castType)) return false;
-      // Scope: [Self] = targeted at ownerCard, [!Self] = not targeted at ownerCard
       if (trigger.scope === 'self'     && payload.targetId !== ownerCard._instanceId) return false;
       if (trigger.scope === 'not_self' && payload.targetId === ownerCard._instanceId) return false;
       return true;
     }
 
-    // ── ENEMY RESOLVE ────────────────────────────────────────
     if (trigger.type === 'ENEMY_RESOLVE' && eventType === 'ENEMY_RESOLVE') {
       if (trigger.nature && !PARSER.natureMatches(trigger.nature, payload.castNature, payload.castType)) return false;
       if (trigger.scope === 'self'     && payload.targetId !== ownerCard._instanceId) return false;
@@ -1779,16 +1661,12 @@ const ABILITY_ENGINE = (() => {
       return true;
     }
 
-    // ── ENEMY RETALIATE ──────────────────────────────────────
     if (trigger.type === 'ENEMY_RETALIATE' && eventType === 'ENEMY_RETALIATE') {
-      // ⭐ After successful block, deal bonus damage back (Harden, Embiid)
       if (payload.attackerCardId !== ownerCard._instanceId) return false;
       return true;
     }
 
-    // ── TEAMMATE FAIL ────────────────────────────────────────
     if (trigger.type === 'TEAMMATE_FAIL' && eventType === 'TEAMMATE_FAIL') {
-      // ⭐ LBJ Putback — fires when teammate's offensive move fails
       if (!trigger.actorSpec) return false;
       return _actorSpecMatches(trigger.actorSpec, payload.failedCard);
     }
@@ -1796,14 +1674,11 @@ const ABILITY_ENGINE = (() => {
     return false;
   }
 
-  // ── ROSTER MATCH CHECK ──────────────────────────────────────
   function _rosterMatchCheck(trigger, payload, ownerCard) {
     if (trigger.matchMode === 'TEAM_MATCH') {
-      // Team synergy: joined card must share teamId with ownerCard
       return payload.joiningTeamId && _getTeam(ownerCard) === payload.joiningTeamId;
     }
     if (trigger.matchMode === 'CARD_MATCH') {
-      // Duo synergy: specific playerId
       return payload.joiningPlayerId && (
         ownerCard._duoPartners?.includes(payload.joiningPlayerId) ?? false
       );
@@ -1811,10 +1686,8 @@ const ABILITY_ENGINE = (() => {
     return false;
   }
 
-  // ── ACTOR SPEC MATCHER (for TEAMMATE_FAIL) ──────────────────
   function _actorSpecMatches(actorSpec, failedCard) {
     if (!actorSpec || !failedCard) return false;
-    // Format: "Actor:ID:GSW_KDU_G01" or "Position:SF"
     const parts = actorSpec.split(':');
     if (parts[0] === 'Actor' && parts[1] === 'ID') {
       return _getPlayer(failedCard) === parts[2];
@@ -1825,7 +1698,6 @@ const ABILITY_ENGINE = (() => {
     return false;
   }
 
-  // ── ACTION TARGET RESOLVER ──────────────────────────────────
   function _resolveActionTargets(targetStr, self, ownTeam, enemyTeam, payload) {
     if (!targetStr) return [self];
     const t = String(targetStr).trim();
@@ -1836,21 +1708,18 @@ const ABILITY_ENGINE = (() => {
     if (t === 'Original_Target') return payload?.originalTarget ? [payload.originalTarget] : [];
     if (t === 'Targeted_Ally') return payload?.targetedAlly ? [payload.targetedAlly] : [];
 
-    // Teammates:Pos:PG/SG
     const tPosM = t.match(/^Teammates:Pos:(.+)$/);
     if (tPosM) {
       const positions = tPosM[1].split('/');
       return (ownTeam || []).filter(c => c && !c.isDead && positions.some(p => _getPos(c).includes(p)));
     }
 
-    // Enemy:Pos:C
     const ePosM = t.match(/^Enemy:Pos:(.+)$/);
     if (ePosM) {
       const positions = ePosM[1].split('/');
       return (enemyTeam || []).filter(c => c && !c.isDead && positions.some(p => _getPos(c).includes(p)));
     }
 
-    // All_Enemy
     if (t === 'All_Enemy') return (enemyTeam || []).filter(c => c && !c.isDead);
 
     return [self];
@@ -1858,15 +1727,8 @@ const ABILITY_ENGINE = (() => {
 
   // ============================================================
   // SECTION 6 — TRIGGER-SPECIFIC FIRE HELPERS
-  // Convenient wrappers over fireEvent() for common game events.
   // ============================================================
 
-  //--- 6A: ON:ALWAYS — Boot passive abilities on card init ----
-  /**
-   * bootPassiveAbilities
-   * Called when a card is cloned and placed on the field.
-   * Evaluates all ON:ALWAYS rules immediately.
-   */
   function bootPassiveAbilities(card, ownTeam, deployPosition) {
     const rules = card.Ability?.Rules || card.Ability?.rules || [];
     for (const rule of rules) {
@@ -1885,7 +1747,6 @@ const ABILITY_ENGINE = (() => {
       _executeAction(action, targets, card, rule.td || null, ctx);
     }
 
-    // ⭐ ON:DEPLOY:POS_MATCH
     if (deployPosition) {
       for (const rule of rules) {
         const trigger = PARSER.parseTrigger(rule.trigger || '');
@@ -1902,18 +1763,12 @@ const ABILITY_ENGINE = (() => {
     }
   }
 
-  //--- 6B: ON:ALWAYS conditional re-evaluation ---------------
-  /**
-   * evaluateAlwaysConditional
-   * ⭐ Re-evaluate conditional ON:ALWAYS rules after HP/state changes.
-   * E.g. Jordan's +300 DMG when HP ≤ 960.
-   */
   function evaluateAlwaysConditional(card, ownTeam) {
     const rules = card.Ability?.Rules || card.Ability?.rules || [];
     for (const rule of rules) {
       const trigger = PARSER.parseTrigger(rule.trigger || '');
       if (trigger.type !== 'ALWAYS') continue;
-      if (!(rule.condition || rule.Condition)) continue; // skip unconditional
+      if (!(rule.condition || rule.Condition)) continue;
 
       const ctx = buildCondCtx(card, ownTeam || [], [], {});
       const nowPasses = evalRuleCondition(rule.condition || rule.Condition, ctx);
@@ -1926,24 +1781,16 @@ const ABILITY_ENGINE = (() => {
       const wasActive = card[ruleKey] === true;
 
       if (nowPasses && !wasActive) {
-        // Apply the effect
         const targets = _resolveActionTargets(rule.action_target || 'Self', card, ownTeam || [], [], {});
         _executeAction(action, targets, card, rule.td || null, ctx);
         card[ruleKey] = true;
       } else if (!nowPasses && wasActive) {
-        // Reverse the effect
         _reverseActionOnCard(action, card, ctx);
         card[ruleKey] = false;
       }
     }
   }
 
-  //--- 6C: ON:ENTER_ACTIVE_LINEUP ----------------------------
-  /**
-   * bootEnterActiveLineup
-   * ⭐ Fires when a card moves from bench to active lineup.
-   * Returns list of { targetCard, action, td } for the caller to apply.
-   */
   function bootEnterActiveLineup(card, ownTeam, fullRoster) {
     const results = [];
     const rules = card.Ability?.Rules || card.Ability?.rules || [];
@@ -1967,11 +1814,6 @@ const ABILITY_ENGINE = (() => {
     return results;
   }
 
-  //--- 6D: ON:HP_THRESHOLD_ONCE / ON:HP_STATE ----------------
-  /**
-   * checkHPThreshold
-   * ⭐ Fires ONCE when HP drops at or below condition value.
-   */
   function checkHPThreshold(card, ownTeam) {
     if (card._hpThresholdFired) return null;
     const rules = card.Ability?.Rules || card.Ability?.rules || [];
@@ -1983,7 +1825,7 @@ const ABILITY_ENGINE = (() => {
       ctx.target = card;
       if (!evalRuleCondition(rule.condition || null, ctx)) continue;
 
-      card._hpThresholdFired = true;  // fire ONCE
+      card._hpThresholdFired = true;
       const actionStr = rule.action_string || '';
       if (!actionStr) return null;
       return PARSER.parseAction(actionStr);
@@ -1991,10 +1833,6 @@ const ABILITY_ENGINE = (() => {
     return null;
   }
 
-  /**
-   * checkHPState
-   * ⭐ Fires every time HP matches condition (can trigger multiple times, e.g. Luka at 1 HP).
-   */
   function checkHPState(card, ownTeam) {
     const results = [];
     const rules = card.Ability?.Rules || card.Ability?.rules || [];
@@ -2014,20 +1852,10 @@ const ABILITY_ENGINE = (() => {
     return results;
   }
 
-  /**
-   * checkSurviveAbility
-   * Returns true if the card has an active Survive_At_1HP property.
-   */
   function checkSurviveAbility(card) {
     return card._surviveProp === true && !card._surviveUsed;
   }
 
-  //--- 6E: ON:ROSTER_JOIN / LEAVE / LEAVE_LAST ---------------
-  /**
-   * evalRosterEvent
-   * ⭐ Fires when a card joins or leaves the active roster.
-   * Also handles LEAVE_LAST — only fires when last matching card leaves.
-   */
   function evalRosterEvent(eventSubtype, matchMode, side, joiningCard, ownTeam, fullRoster) {
     const results = [];
     const payload = {
@@ -2037,9 +1865,8 @@ const ABILITY_ENGINE = (() => {
       joiningCardId: joiningCard._instanceId,
     };
 
-    const eventType = `ROSTER_${eventSubtype}`; // ROSTER_JOIN, ROSTER_LEAVE, ROSTER_LEAVE_LAST
+    const eventType = `ROSTER_${eventSubtype}`;
 
-    // ⭐ LEAVE_LAST: only fire if no other matching card remains
     if (eventSubtype === 'LEAVE_LAST') {
       const aliveMatches = (ownTeam || []).filter(c =>
         c && !c.isDead && c._instanceId !== joiningCard._instanceId &&
@@ -2047,7 +1874,7 @@ const ABILITY_ENGINE = (() => {
           ? _getTeam(c) === payload.joiningTeamId
           : c._duoPartners?.includes(payload.joiningPlayerId))
       );
-      if (aliveMatches.length > 0) return results; // still some left, don't fire
+      if (aliveMatches.length > 0) return results;
     }
 
     for (const card of (fullRoster || [])) {
@@ -2076,12 +1903,6 @@ const ABILITY_ENGINE = (() => {
     return results;
   }
 
-  //--- 6F: ON:SELF_CAST — pre-attack flags & stacking ---------
-  /**
-   * evalSelfCastAbilities
-   * Called before the attack resolves. Returns a flags object:
-   * { noMiss, thisAttackBaseDmgBonus, thisAttackSkillDmgBonus, priorityBoost }
-   */
   function evalSelfCastAbilities(card, castNature, castType, subtype, skillId, ownTeam) {
     const flags = { noMiss: false, thisAttackBaseDmgBonus: 0, thisAttackSkillDmgBonus: 0, priorityBoost: 1 };
     const rules = card.Ability?.Rules || card.Ability?.rules || [];
@@ -2109,12 +1930,10 @@ const ABILITY_ENGINE = (() => {
         case 'STAT_BUFF': {
           const { stat, value, operation, stackMode } = action.params;
           const amt = operation === '-' ? -(value || 0) : (value || 0);
-          // ⭐ THIS_ATTACK buffs
           if ((rule.td || '').includes('THIS_ATTACK')) {
             if (stat.includes('Base')) flags.thisAttackBaseDmgBonus += amt;
             else flags.thisAttackSkillDmgBonus += amt;
           }
-          // ⭐ Stack_Per_Hit:Permanent — call separately via evalSelfCastStackingAbilities
           break;
         }
         case 'APPLY_PRIORITY':
@@ -2130,11 +1949,6 @@ const ABILITY_ENGINE = (() => {
     return flags;
   }
 
-  /**
-   * evalSelfCastStackingAbilities
-   * ⭐ Stack_Per_Hit / Stack_Per_Miss :Permanent — called AFTER HIT or FAIL.
-   * Permanently increments a stacking buff on the card.
-   */
   function evalSelfCastStackingAbilities(card, castNature, castType, subtype, skillId, ownTeam) {
     const rules = card.Ability?.Rules || card.Ability?.rules || [];
     for (const rule of rules) {
@@ -2160,12 +1974,6 @@ const ABILITY_ENGINE = (() => {
     }
   }
 
-  //--- 6G: ON:ENEMY_CAST — defensive reactions ----------------
-  /**
-   * evaluateEnemyCastTriggers
-   * Called when an enemy declares an attack.
-   * Returns { mitigationFlat, mitigationMult } for the damage calc.
-   */
   function evaluateEnemyCastTriggers(defendingTeam, attackerCard, targetCard, castNature, castType, ownTeam, enemyTeam) {
     let mitigationFlat = 0;
     let mitigationMult = 1;
@@ -2178,7 +1986,6 @@ const ABILITY_ENGINE = (() => {
         if (trigger.type !== 'ENEMY_CAST' && trigger.type !== 'ENEMY_RESOLVE') continue;
         if (trigger.nature && !PARSER.natureMatches(trigger.nature, castNature, castType)) continue;
 
-        // Scope checks
         const cardIsTarget = targetCard._instanceId === card._instanceId;
         if (trigger.scope === 'self'     && !cardIsTarget) continue;
         if (trigger.scope === 'not_self' && cardIsTarget)  continue;
@@ -2195,7 +2002,6 @@ const ABILITY_ENGINE = (() => {
         const action = PARSER.parseAction(actionStr);
         if (!action) continue;
 
-        // Extract mitigation values rather than blindly applying
         if (action.type === 'APPLY_MODIFIER' && action.params.modifier === 'DAMAGE_REDUCTION') {
           if (action.params.mode === 'flat') mitigationFlat += action.params.reduction || 0;
           if (action.params.mode === 'multiply') mitigationMult = Math.min(mitigationMult, action.params.multiplier || 1);
@@ -2211,12 +2017,6 @@ const ABILITY_ENGINE = (() => {
     return { mitigationFlat, mitigationMult };
   }
 
-  //--- 6H: ON:ENEMY_RETALIATE --------------------------------
-  /**
-   * evaluateRetaliateAbilities
-   * ⭐ After a successful block, deal bonus retaliatory damage back to attacker.
-   * Returns total retaliation damage.
-   */
   function evaluateRetaliateAbilities(attackerCard, defenseType, castNature) {
     let totalBonus = 0;
     const rules = attackerCard?.Ability?.Rules || attackerCard?.Ability?.rules || [];
@@ -2233,12 +2033,6 @@ const ABILITY_ENGINE = (() => {
     return totalBonus;
   }
 
-  //--- 6I: ON:TEAMMATE_FAIL ----------------------------------
-  /**
-   * evalTeammateFail
-   * ⭐ LeBron Heatlemania putback — fires when a teammate's offensive move fails.
-   * Returns the action to execute (LBJ_PUTBACK) or null.
-   */
   function evalTeammateFail(reactCard, failedCard, castNature, ownTeam) {
     const rules = reactCard?.Ability?.Rules || reactCard?.Ability?.rules || [];
     for (const rule of rules) {
@@ -2256,12 +2050,6 @@ const ABILITY_ENGINE = (() => {
     return null;
   }
 
-  //--- 6J: ON:AND_PAIR ---------------------------------------
-  /**
-   * checkAndPair
-   * ⭐ Two specific cards present in lineup trigger an effect.
-   * Returns effects array from the pair trigger.
-   */
   function checkAndPair(card, ownTeam, fullRoster) {
     const results = [];
     const rules = card.Ability?.Rules || card.Ability?.rules || [];
@@ -2270,12 +2058,10 @@ const ABILITY_ENGINE = (() => {
       const rule = rules[i];
       const trigger = PARSER.parseTrigger(rule.trigger || '');
 
-      // AND_PAIR marker means the PREVIOUS rule pairs with this one
       if (trigger.type === 'AND_PAIR' && i > 0) {
         const primaryRule = rules[i - 1];
         const primaryTrigger = PARSER.parseTrigger(primaryRule.trigger || '');
 
-        // Both conditions must pass
         const ctx = buildCondCtx(card, ownTeam || [], [], {});
         const primaryPass = evalRuleCondition(primaryRule.condition || null, ctx);
         const pairPass    = evalRuleCondition(rule.condition || null, ctx);
@@ -2294,11 +2080,6 @@ const ABILITY_ENGINE = (() => {
     return results;
   }
 
-  //--- 6K: ON:CARD_EXIT / ON:[CARD_ID]:EXIT ------------------
-  /**
-   * evalCardExitTriggers
-   * Fires when a specific card ID exits the active lineup.
-   */
   function evalCardExitTriggers(exitingCardId, affectedCards, teamSnapshot) {
     const results = [];
     for (const card of (affectedCards || [])) {
@@ -2323,11 +2104,6 @@ const ABILITY_ENGINE = (() => {
     return results;
   }
 
-  //--- 6L: ON:TURN_START_AFTER_SURVIVE -----------------------
-  /**
-   * evalTurnStartAfterSurvive
-   * ⭐ Fires at start of next turn after card survived at 1 HP.
-   */
   function evalTurnStartAfterSurvive(card, ownTeam) {
     if (!card._survivedLastTurn) return [];
     const results = [];
@@ -2346,40 +2122,24 @@ const ABILITY_ENGINE = (() => {
       const applied = _executeAction(action, targets, card, rule.td || null, ctx);
       results.push(...applied);
     }
-    // ⭐ Clear the survived flag after firing
     delete card._survivedLastTurn;
     return results;
   }
 
   // ============================================================
   // SECTION 7 — AURA MANAGEMENT
-  // Auras are persistent effects tied to their source card.
-  // When source leaves, all its auras on other cards are removed.
   // ============================================================
 
-  /**
-   * applyAura
-   * Applies a named aura to a target card from a source card.
-   */
   function applyAura(targetCard, auraId, effectStr, sourceCard, tdParsed) {
     const action = PARSER.parseAction(`Apply_Aura:${auraId}:${effectStr}`);
     if (action) _applyActionToCard(action, targetCard, sourceCard, null, {});
   }
 
-  /**
-   * removeAura
-   * Removes a specific aura from a target card.
-   */
   function removeAura(targetCard, auraId) {
     const action = PARSER.parseAction(`Remove_Aura:${auraId}`);
     if (action) _applyActionToCard(action, targetCard, null, null, {});
   }
 
-  /**
-   * gcAuras
-   * ⭐ Garbage-collect all auras sourced from leavingCard across all cards.
-   * Must be called whenever a card leaves the field (KO or swap).
-   */
   function gcAuras(leavingCard, allCards) {
     if (!leavingCard) return;
     const sourceId = leavingCard._instanceId;
@@ -2400,29 +2160,17 @@ const ABILITY_ENGINE = (() => {
     }
   }
 
-  /**
-   * clearCardAuras
-   * Removes all auras FROM a card (when the card dies).
-   */
   function clearCardAuras(card) {
     if (card._auras) card._auras.clear();
-    // Also clear derived flags
     delete card._untargetableBy;
     _recomputeUntargetableFlags(card);
   }
 
   // ============================================================
   // SECTION 8 — TURN TICK & EXPIRY HELPERS
-  // Called at end of each turn to tick down timed effects.
   // ============================================================
 
-  /**
-   * tickCardEffects
-   * Decrement all timed effects on a card, remove expired ones.
-   * Call for every active card at end-of-turn.
-   */
   function tickCardEffects(card) {
-    // Tick timed buffs
     if (card._timedBuffs) {
       card._timedBuffs = card._timedBuffs.filter(buff => {
         if (!buff.started) {
@@ -2430,7 +2178,6 @@ const ABILITY_ENGINE = (() => {
           if (buff.delay <= 0) { buff.started = true; _applyStatDelta(card, buff.stat, buff.amount); }
           return true;
         }
-        // REST_OF_TURN (0.5) expires immediately
         if (buff.turnsLeft <= 0.5) {
           _applyStatDelta(card, buff.stat, -buff.amount);
           return false;
@@ -2444,7 +2191,6 @@ const ABILITY_ENGINE = (() => {
       });
     }
 
-    // Tick _untargetableBy entries
     if (card._untargetableBy) {
       const before = card._untargetableBy.length;
       card._untargetableBy = card._untargetableBy.filter(e => {
@@ -2455,7 +2201,6 @@ const ABILITY_ENGINE = (() => {
       if (card._untargetableBy.length !== before) _recomputeUntargetableFlags(card);
     }
 
-    // Tick _skillDisables
     if (card._skillDisables) {
       card._skillDisables = card._skillDisables.filter(d => {
         d.turnsLeft--;
@@ -2463,7 +2208,6 @@ const ABILITY_ENGINE = (() => {
       });
     }
 
-    // Tick _priorityModifiers
     if (card._priorityModifiers) {
       card._priorityModifiers = card._priorityModifiers.filter(m => {
         if (m.turnsLeft <= 0.5) return false;
@@ -2472,7 +2216,6 @@ const ABILITY_ENGINE = (() => {
       });
     }
 
-    // Tick _dmgReductions
     if (card._dmgReductions) {
       card._dmgReductions = card._dmgReductions.filter(r => {
         if (!r.started) { r.delay--; if (r.delay <= 0) r.started = true; return true; }
@@ -2481,7 +2224,6 @@ const ABILITY_ENGINE = (() => {
       });
     }
 
-    // Tick _globalDebuffs
     if (card._globalDebuffs) {
       card._globalDebuffs = card._globalDebuffs.filter(d => {
         d.turnsLeft--;
@@ -2489,7 +2231,6 @@ const ABILITY_ENGINE = (() => {
       });
     }
 
-    // Tick frozen
     if (card._frozen) {
       if (card._frozenTurnsLeft !== undefined) {
         card._frozenTurnsLeft--;
@@ -2501,24 +2242,17 @@ const ABILITY_ENGINE = (() => {
       }
     }
 
-    // Clear per-turn flags
     delete card._grantedExtraMove;
     delete card._thisAttackBuffs;
     delete card._noMissThisAttack;
     delete card._untargetableUntilTurnEnd;
 
-    // Survive: if the card survived last turn, mark for TURN_START_AFTER_SURVIVE
     if (card._justSurvived) {
       card._survivedLastTurn = true;
       delete card._justSurvived;
     }
   }
 
-  /**
-   * clearRestOfTurnFlags
-   * ⭐ REST_OF_TURN effects expire after current turn, not after each action.
-   * Call at end of full turn resolution.
-   */
   function clearRestOfTurnFlags(allCards) {
     for (const card of (allCards || [])) {
       if (!card) continue;
@@ -2528,52 +2262,33 @@ const ABILITY_ENGINE = (() => {
       }
       delete card._thisAttackBuffs;
       delete card._noMissThisAttack;
-      // Re-derive immunity flags after clearing
       _recomputeUntargetableFlags(card);
     }
   }
 
   // ============================================================
   // SECTION 9 — REACTIVE SKILL HELPERS
-  // Utility functions for skill engine's reactive checks.
   // ============================================================
 
-  /**
-   * canReactiveSkillTrigger
-   * Returns true if a reactive skill's nature matches the incoming attack.
-   */
   function canReactiveSkillTrigger(reactiveSkill, castNature, castType) {
     const timing = reactiveSkill.Timing || reactiveSkill.timing || '';
     if (!timing.includes('Reactive')) return false;
 
-    // Parse the nature scope from timing string
-    // Format: Reactive_Free:On_Enemy:Nature:Offensive:Close_Shot
     const nMatch = timing.match(/Nature:([^:]+(?::[^:]+)*)/);
-    if (!nMatch) return true; // no nature filter = matches all
+    if (!nMatch) return true;
     const allowedNature = nMatch[1];
     return PARSER.natureMatches(allowedNature, castNature, castType);
   }
 
-  /**
-   * isSkillDisabled
-   * Returns true if the named skill is disabled on the card.
-   */
   function isSkillDisabled(card, skillName) {
     if (!card._skillDisables || card._skillDisables.length === 0) return false;
-    // ⭐ Ref_Skill can disable a specific skill name or ALL skills
     return card._skillDisables.some(d => d.refSkill === null || d.refSkill === skillName);
   }
 
-  /**
-   * getEffectiveDMG
-   * Returns the card's current effective damage for the given attack type,
-   * incorporating all active buffs and modifiers.
-   */
   function getEffectiveDMG(card, isSkill, castNature) {
     let base = card.UI_Frontend_Data?.Stats?.Base_DMG ?? 0;
     base += card._dmgModifiers ?? 0;
 
-    // Stack buffs
     if (card._stackBuffs) {
       for (const sb of Object.values(card._stackBuffs)) {
         if (sb.stat === 'DMG' || (castNature && sb.stat.includes(castNature.split(':')[0]))) {
@@ -2582,7 +2297,6 @@ const ABILITY_ENGINE = (() => {
       }
     }
 
-    // Timed buffs
     if (card._timedBuffs) {
       for (const buff of card._timedBuffs) {
         if (!buff.started) continue;
@@ -2592,7 +2306,6 @@ const ABILITY_ENGINE = (() => {
       }
     }
 
-    // THIS_ATTACK buffs
     if (card._thisAttackBuffs) {
       base += card._thisAttackBuffs['DMG'] ?? 0;
       if (isSkill) base += card._thisAttackBuffs['DMG:Skill'] ?? 0;
@@ -2601,11 +2314,6 @@ const ABILITY_ENGINE = (() => {
     return Math.max(0, base);
   }
 
-  /**
-   * getPriorityBoost
-   * ⭐ Returns the priority multiplier for a given cast nature.
-   * Used by turn order sorter.
-   */
   function getPriorityBoost(card, castNature) {
     let boost = card._priorityMult ?? 1;
     if (card._priorityModifiers) {
@@ -2618,10 +2326,6 @@ const ABILITY_ENGINE = (() => {
     return boost;
   }
 
-  /**
-   * applyPassiveFlag
-   * Generic fallback for flags not handled above.
-   */
   function applyPassiveFlag(card, action) {
     if (!action) return;
     _applyActionToCard(action, card, null, null, {});
@@ -2631,23 +2335,19 @@ const ABILITY_ENGINE = (() => {
   // PUBLIC API
   // ============================================================
   return {
-    // Boot / initialization
     bootPassiveAbilities,
     bootEnterActiveLineup,
     evaluateAlwaysConditional,
 
-    // Roster events
     evalRosterEvent,
     evalCardExitTriggers,
     checkAndPair,
 
-    // Aura system
     applyAura,
     removeAura,
     gcAuras,
     clearCardAuras,
 
-    // Combat triggers
     evaluateEnemyCastTriggers,
     evaluateRetaliateAbilities,
     evalSelfCastAbilities,
@@ -2655,43 +2355,34 @@ const ABILITY_ENGINE = (() => {
     evalTeammateFail,
     canReactiveSkillTrigger,
 
-    // HP events
     checkHPThreshold,
     checkHPState,
     checkSurviveAbility,
 
-    // Turn lifecycle
     evalTurnStartAfterSurvive,
     tickCardEffects,
     clearRestOfTurnFlags,
 
-    // Damage / stat helpers
     getEffectiveDMG,
     getPriorityBoost,
     isSkillDisabled,
     applyPassiveFlag,
 
-    // Internal helpers exposed for skill engine
     _applyActionToCard,
     _applyStatBuff: (card, action) => _applyActionToCard(action, card, null, null, {}),
     _applyUntargetableFlags: (card, spec) => _recomputeUntargetableFlags(card),
     _resolveActionTargets,
     _recomputeUntargetableFlags,
 
-    // Context builder
     buildCondCtx,
 
-    // Central event bus
     fireEvent,
   };
 
 })();
 
-// ── BACKWARDS-COMPAT ALIAS ──────────────────────────────────
-// The old HTML used ENGINE.xxx — keep the alias so the rest of
-// the code continues to work unchanged.
 const ENGINE = ABILITY_ENGINE;
-   
+
 // ============================================================
 // ============================================================
 //
