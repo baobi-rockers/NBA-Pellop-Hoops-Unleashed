@@ -5317,22 +5317,6 @@ function buildCardDetailHTML(card) {
   }
 }
 
-        return `<div class="ec-skill-wrap"><div class="ec-skill-header"><span class="ec-skill-name">${s.Name || 'Skill'}</span><span class="ec-skill-dmg">${displayDmg}</span></div><div class="ec-skill-desc">${desc}</div></div>`;
-      } catch (e) {
-        console.error("Error rendering skill:", s.Name, e);
-        return ''; // Skip this skill if it errors
-      }
-    }).join('');
-
-    return `<div class="ec-header"><div class="ec-title">${n}</div><div class="ec-team">${team} · ${p}</div></div>
-<div class="ec-stats-row"><div class="ec-stat">${hp} <span>HP</span></div><div class="ec-stat">${dmg} <span>DMG</span></div><div class="ec-stat">${spd} <span>SPD</span></div></div>
- ${abHtml}<div style="font-size:.68rem;color:var(--text-muted);font-weight:700;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">Skills</div>${sHtml}`;
-  } catch (e) {
-    console.error("CRITICAL Error in buildCardDetailHTML:", e);
-    return `<div style="padding:20px; color:red;">Error loading card details. Check console (F12).</div>`;
-  }
-}
-
 // ============================================================
 // §14 — UI: DRAFT SCREEN
 // ============================================================
