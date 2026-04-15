@@ -5512,37 +5512,29 @@ function _getPlayerId(card) {
  * Renders the card detail panel used in both Catalogue and Draft panels.
  */
 function buildCardDetailHTML(card) {
-  if (!card) return '';
-  
-  const n = getCardName(card), hp = getCardHP(card), dmg = getCardDMG(card), spd = getCardSPD(card);
-  const p = getCardPosStr(card), team = card.BasicInfo?.Team || card.Team || '';
-  const ab = getAbility(card);
-  
+  const n=getCardName(card), hp=getCardHP(card), dmg=getCardDMG(card), spd=getCardSPD(card);
+  const p=getCardPosStr(card), team=card.BasicInfo?.Team||'';
+  const ab=getAbility(card);
   const abHtml = ab
-    ? `<div class="ec-ability-block"><div class="ec-ability-name">${ab.Name || 'Ability'}</div><div class="ec-ability-desc">${ab.Description_UI || ''}</div></div>`
+    ? `<div class="ec-ability-block"><div class="ec-ability-name">${ab.Name}</div><div class="ec-ability-desc">${ab.Description_UI||''}</div></div>`
     : '';
-
-  // FIX: Robust skill unwrapping
+  
+  // FIX: Robust unwrap
   const sHtml = getCardSkills(card).map(raw => {
-    // 1. Handle the { Skill: {...} } wrapper
-    let s = raw.Skill || raw;
-    
-    // 2. Safety check: ensure s is an object
-    if (!s || typeof s !== 'object') return '';
-
-    // 3. Fallbacks for missing fields
-    const name = s.Name || 'Skill';
-    const dmgVal = s.Display_DMG || '';
-    const desc = s.Description_UI || s.Description || '';
-
+    const s = raw.Skill || raw; 
     return `<div class="ec-skill-wrap">
               <div class="ec-skill-header">
-                <span class="ec-skill-name">${name}</span>
-                <span class="ec-skill-dmg">${dmgVal}</span>
+                <span class="ec-skill-name">${s.Name||'Skill'}</span>
+                <span class="ec-skill-dmg">${s.Display_DMG||''}</span>
               </div>
-              <div class="ec-skill-desc">${desc}</div>
+              <div class="ec-skill-desc">${s.Description_UI||s.Description||''}</div>
             </div>`;
   }).join('');
+
+  return `<div class="ec-header"><div class="ec-title">${n}</div><div class="ec-team">${team} · ${p}</div></div>
+<div class="ec-stats-row"><div class="ec-stat">${hp} <span>HP</span></div><div class="ec-stat">${dmg} <span>DMG</span></div><div class="ec-stat">${spd} <span>SPD</span></div></div>
+ ${abHtml}<div style="font-size:.68rem;color:var(--text-muted);font-weight:700;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">Skills</div>${sHtml}`;
+}
 
   return `<div class="ec-header"><div class="ec-title">${n}</div><div class="ec-team">${team} · ${p}</div></div>
 <div class="ec-stats-row"><div class="ec-stat">${hp} <span>HP</span></div><div class="ec-stat">${dmg} <span>DMG</span></div><div class="ec-stat">${spd} <span>SPD</span></div></div>
