@@ -5142,7 +5142,23 @@ function showTooltip(e, name) {
   const c=CARDS.find(x=>getCardName(x)===name); if(!c) return;
   const ab=getAbility(c);
   const abHtml=ab?`<div class="tt-ability">${ab.Name}</div><div style="color:rgba(255,255,255,.4);font-size:.6rem;">${ab.Description_UI||''}</div>`:'';
-  const sHtml=getCardSkills(c).map(s=>`<div class="tt-skill"><span class="tt-skill-name">${s.Name}</span> <span class="tt-skill-dmg">${s.Display_DMG}</span><div class="tt-skill-desc">${s.Description_UI}</div></div>`).join('');
+  
+  // FIX: Robust DMG extraction for tooltip
+  const getDmgLabel = (sk) => {
+      if(sk.Display_DMG) return sk.Display_DMG;
+      const findDmg = (mods) => {
+          if(!Array.isArray(mods)) return null;
+          const m = mods.find(x => typeof x.action_string === 'string' && x.action_string.includes('Deal_Flat_DMG'));
+          return m ? m.action_string.match(/Deal_Flat_DMG:(\d+)/)?.[1] : null;
+      };
+      let dmg = findDmg(sk.Modifiers);
+      if(!dmg && Array.isArray(sk.Phases)) {
+          for(const p of sk.Phases) { if(dmg) break; dmg = findDmg(p.Modifiers); }
+      }
+      return dmg || '';
+  };
+
+  const sHtml=getCardSkills(c).map(s=>`<div class="tt-skill"><span class="tt-skill-name">${s.Name}</span> <span class="tt-skill-dmg">${getDmgLabel(s)}</span><div class="tt-skill-desc">${s.Description_UI || s.Description || ''}</div></div>`).join('');
   tt.innerHTML=`<div class="tt-name">${shortName(name)}</div>${abHtml}${sHtml}`;
   tt.classList.add('visible'); positionTooltip(e);
 }
@@ -5507,10 +5523,9 @@ function showActionPanel(card, actorIdx) {
   nameEl.textContent = `[${card.battleRole}] ${shortName(getCardName(card))}`;
   btnsEl.innerHTML = '';
 
-  // --- Context for Condition Checks ---
+  // Context for condition checks
   const ownTeam = playerActive;
   const enemyTeam = enemyActive;
-  // FIX: Check variable existence safely (window.playerScore is undefined)
   const ownScore = (typeof playerScore !== 'undefined') ? playerScore : 0;
   const enemyScore = (typeof enemyScore !== 'undefined') ? enemyScore : 0;
   const ownTeamLead = ownScore > enemyScore;
@@ -5524,7 +5539,7 @@ function showActionPanel(card, actorIdx) {
       ownGrave: []
   };
 
-  // ── BASIC ATTACK ──
+  // --- BASIC ATTACK ---
   if (!frozen) {
     const basicBtn = document.createElement('button');
     basicBtn.className='action-btn action-btn-basic';
@@ -5538,83 +5553,91 @@ function showActionPanel(card, actorIdx) {
     btnsEl.appendChild(basicBtn);
   }
 
-  // ── SKILLS ──
+  // --- SKILLS ---
   if (!frozen) {
     (card.Skills||[]).forEach((sk, si) => {
-      const exhausted = sk._usesLeft <= 0;
-      const turnCapped = isFinite(sk._usesPerTurn) && sk._usesThisTurn >= sk._usesPerTurn;
-      
-      const isReactive = (sk.Timing || '').startsWith('Reactive');
-      if (isReactive && !(sk.Timing || '').includes('Standard')) {
-          return; // Skip purely reactive skills
-      }
+      try {
+        const exhausted = sk._usesLeft <= 0;
+        const turnCapped = isFinite(sk._usesPerTurn) && sk._usesThisTurn >= sk._usesPerTurn;
+        
+        // 1. FILTER: Hide purely Reactive skills
+        const timing = sk.Timing || '';
+        const isReactive = timing.startsWith('Reactive');
+        // If it's reactive but NOT Standard (hybrid), hide it from the action menu
+        if (isReactive && !timing.includes('Standard')) {
+            return; 
+        }
 
-      // 2. Check Conditions
-      let conditionsMet = true;
-      let conditionTooltip = "";
-      
-      // Helper to check conditions inside modifiers
-      const checkConds = (mods) => {
-          if (!Array.isArray(mods)) return true;
-          for (const mod of mods) {
-              if (mod.condition) {
-                  try {
-                      if (!PARSER.evalCondition(mod.condition, context)) return false;
-                  } catch(e) { console.error("Cond Err", e); }
-              }
-          }
-          return true;
-      };
-      
-      if (!checkConds(sk.Modifiers)) conditionsMet = false;
-      if (conditionsMet && Array.isArray(sk.Phases)) {
-          for (const phase of sk.Phases) {
-              if (!checkConds(phase.Modifiers)) { conditionsMet = false; break; }
-          }
-      }
+        // 2. CONDITION CHECK: Enable if at least one branch condition is met
+        let conditionsMet = false;
+        const checkConds = (mods) => {
+            if (!Array.isArray(mods) || mods.length === 0) return true; // No conditions = always usable
+            let anyMet = false;
+            for (const mod of mods) {
+                if (!mod.condition) anyMet = true; // Branch with no condition is always available
+                else {
+                    try {
+                        if (PARSER.evalCondition(mod.condition, context)) anyMet = true;
+                    } catch (e) { /* ignore parse errors */ }
+                }
+            }
+            return anyMet;
+        };
 
-      if (sk.Conditions && sk.Conditions.includes('Own_Team_Lead') && !ownTeamLead) {
-          conditionsMet = false;
-          conditionTooltip = "Requires: Team Lead";
-      }
+        // Check Legacy Modifiers
+        if (Array.isArray(sk.Modifiers)) {
+            if (checkConds(sk.Modifiers)) conditionsMet = true;
+        }
+        // Check New Phases
+        if (!conditionsMet && Array.isArray(sk.Phases)) {
+            for (const phase of sk.Phases) {
+                if (conditionsMet) break;
+                // We check modifiers inside phases. 
+                // Note: Phase timing is handled by engine, here we just check if the skill CAN do something.
+                if (checkConds(phase.Modifiers)) conditionsMet = true;
+            }
+        }
+        // If no conditions found anywhere, default to true
+        if (!sk.Modifiers && !sk.Phases) conditionsMet = true;
 
-      const disabled = exhausted || turnCapped || !conditionsMet;
+        const disabled = exhausted || turnCapped || !conditionsMet;
 
-      const btn = document.createElement('button');
-      btn.className='action-btn action-btn-skill';
-      btn.disabled=disabled;
-      
-      // Display Logic - Robust DMG extraction
-      let dmgLabel = sk.Display_DMG || '';
-      const findDmg = (mods) => {
-          if (!Array.isArray(mods)) return null;
-          const m = mods.find(x => typeof x.action_string === 'string' && x.action_string.includes('Deal_Flat_DMG'));
-          return m ? m.action_string.match(/Deal_Flat_DMG:(\d+)/)?.[1] : null;
-      };
-      
-      if (!dmgLabel) dmgLabel = findDmg(sk.Modifiers);
-      if (!dmgLabel && Array.isArray(sk.Phases)) {
-          for (const p of sk.Phases) { if(dmgLabel) break; dmgLabel = findDmg(p.Modifiers); }
-      }
-      
-      btn.innerHTML=`${sk.Name} <span class="action-btn-dmg">${dmgLabel}</span>`;
-      
-      if (!disabled) {
-          btn.onclick=()=>{
-              pendingAction={actionType:'skill',actorIdx,skillIdx:si,targetIdx:null,execTeam:'player'};
-              uiState='AWAITING_TARGET';
-              $('action-panels-wrapper').classList.remove('visible');
-              renderArena();
-          };
-      } else {
-          btn.title = conditionTooltip || "Cannot use this skill right now.";
-      }
-      
-      btnsEl.appendChild(btn);
+        const btn = document.createElement('button');
+        btn.className='action-btn action-btn-skill';
+        btn.disabled=disabled;
+        
+        // Display Logic - Robust DMG extraction
+        let dmgLabel = sk.Display_DMG || '';
+        const findDmg = (mods) => {
+            if (!Array.isArray(mods)) return null;
+            const m = mods.find(x => typeof x.action_string === 'string' && x.action_string.includes('Deal_Flat_DMG'));
+            return m ? m.action_string.match(/Deal_Flat_DMG:(\d+)/)?.[1] : null;
+        };
+        
+        if (!dmgLabel) dmgLabel = findDmg(sk.Modifiers);
+        if (!dmgLabel && Array.isArray(sk.Phases)) {
+            for (const p of sk.Phases) { if(dmgLabel) break; dmgLabel = findDmg(p.Modifiers); }
+        }
+        
+        btn.innerHTML=`${sk.Name} <span class="action-btn-dmg">${dmgLabel}</span>`;
+        
+        if (!disabled) {
+            btn.onclick=()=>{
+                pendingAction={actionType:'skill',actorIdx,skillIdx:si,targetIdx:null,execTeam:'player'};
+                uiState='AWAITING_TARGET';
+                $('action-panels-wrapper').classList.remove('visible');
+                renderArena();
+            };
+        } else {
+            btn.title = !conditionsMet ? "Conditions not met" : "No uses left";
+        }
+        
+        btnsEl.appendChild(btn);
+      } catch(e) { console.error("Error rendering skill button", sk, e); }
     });
   }
 
-  // ── SWAP / PASS ──
+  // --- SWAP / PASS ---
   const aliveBench = playerBench.filter(c=>c&&!c.isDead);
   if (aliveBench.length) {
     const swapBtn = document.createElement('button');
