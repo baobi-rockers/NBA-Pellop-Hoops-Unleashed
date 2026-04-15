@@ -5498,10 +5498,25 @@ let expandedCardCat = null;
 function goCat() { showScreen('catalogue-screen'); filterCat(); }
 function filterCat() {
   const q=($('cs')?.value||'').toLowerCase(), posF=$('cp')?.value||'', sort=$('csort')?.value||'name';
-  let list=CARDS.filter(c=>c?.UI_Frontend_Data);
-  list=list.filter(c=>{const txt=getSearchText(c);return(!q||txt.includes(q))&&(!posF||getCardPos(c).includes(posF));});
-  if(sort==='hp')list.sort((a,b)=>getCardHP(b)-getCardHP(a));else if(sort==='dmg')list.sort((a,b)=>getCardDMG(b)-getCardDMG(a));else if(sort==='spd')list.sort((a,b)=>getCardSPD(b)-getCardSPD(a));else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
-  $('cgrid').innerHTML=list.map(c=>{const n=getCardName(c),safeN=escapeJS(n),isSel=(n===expandedCardCat);return`<div class="compact-card ${isSel?'selected-panel':''}" onclick="toggleCatExpand('${safeN}')" onmousemove="handleTooltipHover(event,'${safeN}',this)" onmouseleave="hideTooltip()"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),n)}" onerror="handleImgError(this,'${safeN}')"></div></div>`;}).join('');
+  
+  // FIX: Check for BasicInfo OR UI_Frontend_Data
+  let list=CARDS.filter(c=>c?.BasicInfo || c?.UI_Frontend_Data);
+  
+  list=list.filter(c=>{
+    const txt=getSearchText(c);
+    const pos = getCardPos(c);
+    return(!q||txt.includes(q))&&(!posF||pos.includes(posF));
+  });
+  
+  if(sort==='hp')list.sort((a,b)=>getCardHP(b)-getCardHP(a));
+  else if(sort==='dmg')list.sort((a,b)=>getCardDMG(b)-getCardDMG(a));
+  else if(sort==='spd')list.sort((a,b)=>getCardSPD(b)-getCardSPD(a));
+  else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
+  
+  $('cgrid').innerHTML=list.map(c=>{
+    const n=getCardName(c),safeN=escapeJS(n),isSel=(n===expandedCardCat);
+    return`<div class="compact-card ${isSel?'selected-panel':''}" onclick="toggleCatExpand('${safeN}')" onmousemove="handleTooltipHover(event,'${safeN}',this)" onmouseleave="hideTooltip()"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),n)}" onerror="handleImgError(this,'${safeN}')"></div></div>`;
+  }).join('');
 }
 function closeCatLeftPanel(){expandedCardCat=null;$('cat-left-panel').classList.remove('open');filterCat();}
 function toggleCatExpand(name){const card=CARDS.find(c=>getCardName(c)===name);if(!card)return;hideTooltip();expandedCardCat=(expandedCardCat===name)?null:name;if(expandedCardCat)openCatLeftPanel(card);else closeCatLeftPanel();filterCat();}
@@ -5529,18 +5544,49 @@ let draftSquad={PG:[null,null],SG:[null,null],SF:[null,null],PF:[null,null],C:[n
 
 function goDraft(){draftSquad={PG:[null,null],SG:[null,null],SF:[null,null],PF:[null,null],C:[null,null]};expandedCardCat=null;currentDraftPanelCard=null;showScreen('draft-screen');$('draft-side-panel').classList.remove('open');populateDraftFilters();renderDraftSlots();filterDraftGrid();}
 function populateDraftFilters(){
-  const teams=[...new Set(CARDS.map(c=>c.UI_Frontend_Data?.Team||'').filter(Boolean))].sort();
+  // Use accessors instead of direct property access
+  const teams=[...new Set(CARDS.map(c=>getCardTeam(c)).filter(Boolean))].sort();
   const tiers=[...new Set(CARDS.map(c=>getCardTier(c)).filter(Boolean))].sort();
   $('draft-team').innerHTML='<option value="">All Teams</option>'+teams.map(t=>`<option value="${t}">${t}</option>`).join('');
   $('draft-tier').innerHTML='<option value="">All Tiers</option>'+tiers.map(t=>`<option value="${t}">${t}</option>`).join('');
 }
 function filterDraftGrid(){
   const q=($('draft-search')?.value||'').toLowerCase(),posF=$('draft-pos')?.value||'',teamF=$('draft-team')?.value||'',tierF=$('draft-tier')?.value||'',sort=$('draft-sort')?.value||'name';
-  let list=CARDS.filter(c=>c?.UI_Frontend_Data);
-  list=list.filter(c=>{const txt=getSearchText(c);return(!q||txt.includes(q))&&(!posF||getCardPos(c).includes(posF))&&(!teamF||(c.UI_Frontend_Data?.Team||'')===teamF)&&(!tierF||getCardTier(c)===tierF);});
-  if(sort==='hp')list.sort((a,b)=>getCardHP(b)-getCardHP(a));else if(sort==='dmg')list.sort((a,b)=>getCardDMG(b)-getCardDMG(a));else if(sort==='spd')list.sort((a,b)=>getCardSPD(b)-getCardSPD(a));else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
+  
+  // FIX: Check for BasicInfo OR UI_Frontend_Data
+  let list=CARDS.filter(c=>c?.BasicInfo || c?.UI_Frontend_Data);
+  
+  // FIX: Use accessors for Team, Tier, and Pos
+  list=list.filter(c=>{
+    const txt=getSearchText(c);
+    const team = getCardTeam(c);
+    const tier = getCardTier(c);
+    const pos  = getCardPos(c);
+    return(!q||txt.includes(q))&&(!posF||pos.includes(posF))&&(!teamF||team===teamF)&&(!tierF||tier===tierF);
+  });
+  
+  if(sort==='hp')list.sort((a,b)=>getCardHP(b)-getCardHP(a));
+  else if(sort==='dmg')list.sort((a,b)=>getCardDMG(b)-getCardDMG(a));
+  else if(sort==='spd')list.sort((a,b)=>getCardSPD(b)-getCardSPD(a));
+  else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
+  
   const grid=$('draft-grid');grid.innerHTML='';
-  list.forEach(c=>{const n=getCardName(c),inD=isCardInDraft(c),isSel=(n===currentDraftPanelCard),imgSrc=getImgUrl(getCardImg(c),n);const div=document.createElement('div');div.className=`compact-card ${inD?'in-draft':''} ${isSel?'selected-panel':''}`;if(!inD){div.onclick=(e)=>{if(_drag.suppressClick){_drag.suppressClick=false;return;}openDraftPanel(n);};initDraftDrag(div,n,imgSrc);}div.onmousemove=ev=>handleTooltipHover(ev,n,div);div.onmouseleave=hideTooltip;div.innerHTML=`<div class="card-img-sm"><img src="${imgSrc}" onerror="handleImgError(this,'${escapeJS(n)}')"></div>`;grid.appendChild(div);});
+  list.forEach(c=>{
+    const n=getCardName(c),inD=isCardInDraft(c),isSel=(n===currentDraftPanelCard),imgSrc=getImgUrl(getCardImg(c),n);
+    const div=document.createElement('div');
+    div.className=`compact-card ${inD?'in-draft':''} ${isSel?'selected-panel':''}`;
+    if(!inD){
+      div.onclick=(e)=>{
+        if(_drag.suppressClick){_drag.suppressClick=false;return;}
+        openDraftPanel(n);
+      };
+      initDraftDrag(div,n,imgSrc);
+    }
+    div.onmousemove=ev=>handleTooltipHover(ev,n,div);
+    div.onmouseleave=hideTooltip;
+    div.innerHTML=`<div class="card-img-sm"><img src="${imgSrc}" onerror="handleImgError(this,'${escapeJS(n)}')"></div>`;
+    grid.appendChild(div);
+  });
 }
 function isCardInDraft(c){const n=getCardName(c);return POSITIONS.some(p=>getCardName(draftSquad[p][0])===n||getCardName(draftSquad[p][1])===n);}
 function renderDraftSlots(){
