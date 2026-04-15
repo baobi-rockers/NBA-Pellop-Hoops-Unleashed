@@ -5254,47 +5254,55 @@ function closeCatLeftPanel(){expandedCardCat=null;$('cat-left-panel').classList.
 function toggleCatExpand(name){const card=CARDS.find(c=>getCardName(c)===name);if(!card)return;hideTooltip();expandedCardCat=(expandedCardCat===name)?null:name;if(expandedCardCat)openCatLeftPanel(card);else closeCatLeftPanel();filterCat();}
 function openCatLeftPanel(card){const n=getCardName(card),imgEl=$('cat-left-img-el'),imgWrap=$('cat-left-img-wrap');imgEl.src=getImgUrl(getCardImg(card),n);imgEl.onerror=()=>handleImgError(imgEl,n);imgWrap.classList.remove('animating');void imgWrap.offsetWidth;imgWrap.classList.add('animating');$('cat-left-content').innerHTML=buildCardDetailHTML(card);$('cat-left-panel').classList.add('open');}
 function buildCardDetailHTML(card) {
-  const n = getCardName(card), hp = getCardHP(card), dmg = getCardDMG(card), spd = getCardSPD(card);
-  const p = getCardPosStr(card), team = card.UI_Frontend_Data?.Team || card.BasicInfo?.Team || '';
-  const ab = getAbility(card);
-  
-  const abHtml = ab ? `<div class="ec-ability-block"><div class="ec-ability-name">${ab.Name}</div><div class="ec-ability-desc">${ab.Description_UI || ab.description || ''}</div></div>` : '';
-  
-  const sHtml = getCardSkills(card).map(s => {
-    // 1. Get Description
-    let desc = s.Description_UI || s.Description || '';
+  try {
+    const n = getCardName(card), hp = getCardHP(card), dmg = getCardDMG(card), spd = getCardSPD(card);
+    const p = getCardPosStr(card), team = card.UI_Frontend_Data?.Team || card.BasicInfo?.Team || '';
+    const ab = getAbility(card);
     
-    // 2. Get Damage (Robust checks)
-    let displayDmg = s.Display_DMG || '';
+    const abHtml = ab ? `<div class="ec-ability-block"><div class="ec-ability-name">${ab.Name || ''}</div><div class="ec-ability-desc">${ab.Description_UI || ab.description || ''}</div></div>` : '';
     
-    // Check Modifiers (Array check for safety)
-    if (!displayDmg && Array.isArray(s.Modifiers)) {
-        const dmgMod = s.Modifiers.find(m => (m.action_string || '').includes('Deal_Flat_DMG'));
-        if (dmgMod) {
-            const match = dmgMod.action_string.match(/Deal_Flat_DMG:(\d+)/);
-            if (match) displayDmg = match[1];
-        }
-    }
-    // Check Phases (Array check for safety)
-    if (!displayDmg && Array.isArray(s.Phases)) {
-        for (const phase of s.Phases) {
-            if (displayDmg) break;
-            if (Array.isArray(phase.Modifiers)) {
-                const dmgMod = phase.Modifiers.find(m => (m.action_string || '').includes('Deal_Flat_DMG'));
-                if (dmgMod) {
-                    const match = dmgMod.action_string.match(/Deal_Flat_DMG:(\d+)/);
-                    if (match) displayDmg = match[1];
-                }
+    const sHtml = getCardSkills(card).map(s => {
+      try {
+        // 1. Get Description
+        let desc = s.Description_UI || s.Description || '';
+        
+        // 2. Get Damage (Safely)
+        let displayDmg = s.Display_DMG || '';
+        
+        // Helper to extract damage from a modifiers array
+        const findDmg = (mods) => {
+          if (!Array.isArray(mods)) return null;
+          const mod = mods.find(m => typeof m.action_string === 'string' && m.action_string.includes('Deal_Flat_DMG'));
+          if (!mod) return null;
+          const match = mod.action_string.match(/Deal_Flat_DMG:(\d+)/);
+          return match ? match[1] : null;
+        };
+
+        // Check Legacy Modifiers
+        if (!displayDmg) displayDmg = findDmg(s.Modifiers);
+
+        // Check New Phases
+        if (!displayDmg && Array.isArray(s.Phases)) {
+            for (const phase of s.Phases) {
+              if (displayDmg) break;
+              displayDmg = findDmg(phase.Modifiers);
             }
         }
-    }
 
-    return `<div class="ec-skill-wrap"><div class="ec-skill-header"><span class="ec-skill-name">${s.Name}</span><span class="ec-skill-dmg">${displayDmg}</span></div><div class="ec-skill-desc">${desc}</div></div>`;
-  }).join('');
+        return `<div class="ec-skill-wrap"><div class="ec-skill-header"><span class="ec-skill-name">${s.Name || 'Skill'}</span><span class="ec-skill-dmg">${displayDmg}</span></div><div class="ec-skill-desc">${desc}</div></div>`;
+      } catch (e) {
+        console.error("Error rendering skill:", s.Name, e);
+        return ''; // Skip this skill if it errors
+      }
+    }).join('');
 
-  return `<div class="ec-header"><div class="ec-title">${n}</div><div class="ec-team">${team} · ${p}</div></div>
+    return `<div class="ec-header"><div class="ec-title">${n}</div><div class="ec-team">${team} · ${p}</div></div>
 <div class="ec-stats-row"><div class="ec-stat">${hp} <span>HP</span></div><div class="ec-stat">${dmg} <span>DMG</span></div><div class="ec-stat">${spd} <span>SPD</span></div></div>
  ${abHtml}<div style="font-size:.68rem;color:var(--text-muted);font-weight:700;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">Skills</div>${sHtml}`;
+  } catch (e) {
+    console.error("CRITICAL Error in buildCardDetailHTML:", e);
+    return `<div style="padding:20px; color:red;">Error loading card details. Check console (F12).</div>`;
+  }
 }
 
 // ============================================================
