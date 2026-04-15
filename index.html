@@ -5249,41 +5249,38 @@ function buildCardDetailHTML(card) {
   const abHtml = ab ? `<div class="ec-ability-block"><div class="ec-ability-name">${ab.Name}</div><div class="ec-ability-desc">${ab.Description_UI || ab.description || ''}</div></div>` : '';
   
   const sHtml = getCardSkills(card).map(s => {
-    // 1. Determine Description
-    // Try Description_UI, then Description, then look in Phases
+    // 1. Get Description
     let desc = s.Description_UI || s.Description || '';
-    if (!desc && s.Phases && s.Phases.length > 0) {
-        // Try to find a description in phases if top level is missing
-        desc = s.Phases[0].Description || '';
-    }
-
-    // 2. Determine Display Damage
-    // Try Display_DMG, then look inside Modifiers
+    
+    // 2. Get Damage (Check flat property, then Modifiers, then Phases)
     let displayDmg = s.Display_DMG || '';
-    if (!displayDmg) {
-        if (s.Modifiers && s.Modifiers.length > 0) {
-            // Look for "Deal_Flat_DMG:XXX" in the modifiers
-            const dmgMod = s.Modifiers.find(m => (m.action_string || '').includes('Deal_Flat_DMG'));
-            if (dmgMod) {
-                const match = dmgMod.action_string.match(/Deal_Flat_DMG:(\d+)/);
-                if (match) displayDmg = match[1];
-            }
+    if (!displayDmg && s.Modifiers) {
+        const dmgMod = s.Modifiers.find(m => (m.action_string || '').includes('Deal_Flat_DMG'));
+        if (dmgMod) {
+            const match = dmgMod.action_string.match(/Deal_Flat_DMG:(\d+)/);
+            if (match) displayDmg = match[1];
         }
-        // Fallback: Check Phases -> Modifiers (New JSON structure)
-        if (!displayDmg && s.Phases) {
-            for (const phase of s.Phases) {
-                if (displayDmg) break;
-                if (phase.Modifiers) {
-                    const dmgMod = phase.Modifiers.find(m => (m.action_string || '').includes('Deal_Flat_DMG'));
-                    if (dmgMod) {
-                        const match = dmgMod.action_string.match(/Deal_Flat_DMG:(\d+)/);
-                        if (match) displayDmg = match[1];
-                    }
+    }
+    if (!displayDmg && s.Phases) {
+        for (const phase of s.Phases) {
+            if (displayDmg) break;
+            if (phase.Modifiers) {
+                const dmgMod = phase.Modifiers.find(m => (m.action_string || '').includes('Deal_Flat_DMG'));
+                if (dmgMod) {
+                    const match = dmgMod.action_string.match(/Deal_Flat_DMG:(\d+)/);
+                    if (match) displayDmg = match[1];
                 }
             }
         }
     }
 
+    return `<div class="ec-skill-wrap"><div class="ec-skill-header"><span class="ec-skill-name">${s.Name}</span><span class="ec-skill-dmg">${displayDmg}</span></div><div class="ec-skill-desc">${desc}</div></div>`;
+  }).join('');
+
+  return `<div class="ec-header"><div class="ec-title">${n}</div><div class="ec-team">${team} · ${p}</div></div>
+<div class="ec-stats-row"><div class="ec-stat">${hp} <span>HP</span></div><div class="ec-stat">${dmg} <span>DMG</span></div><div class="ec-stat">${spd} <span>SPD</span></div></div>
+ ${abHtml}<div style="font-size:.68rem;color:var(--text-muted);font-weight:700;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">Skills</div>${sHtml}`;
+}
     return `<div class="ec-skill-wrap"><div class="ec-skill-header"><span class="ec-skill-name">${s.Name}</span><span class="ec-skill-dmg">${displayDmg}</span></div><div class="ec-skill-desc">${desc}</div></div>`;
   }).join('');
 
