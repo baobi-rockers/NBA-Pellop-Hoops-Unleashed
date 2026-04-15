@@ -4775,6 +4775,7 @@ function getSearchText(c) {
     getCardTeam(c).toLowerCase()
   ];
   getCardSkills(c).forEach(sk => { 
+    // Handle both {Skill: {...}} and flat {Name: ...}
     const skillObj = sk.Skill || sk;
     parts.push((skillObj.Name || '').toLowerCase()); 
     parts.push((skillObj.Description_UI || skillObj.Description || '').toLowerCase()); 
@@ -4789,6 +4790,7 @@ function getSearchText(c) {
 
 //--- cloneCard: deep-copy, normalize, and wire up ENGINE counters ---
 function cloneCard(c, team) {
+  if (!c) return null;
   const cc = JSON.parse(JSON.stringify(c));
   
   // NORMALIZE PROPERTIES: Flatten BasicInfo to root
@@ -4798,7 +4800,12 @@ function cloneCard(c, team) {
   
   // NORMALIZE SKILLS: Ensure cc.Skills is a flat array
   if (cc.Skills && Array.isArray(cc.Skills)) {
-    cc.Skills = cc.Skills.map(s => s.Skill || s);
+    cc.Skills = cc.Skills.map(s => {
+      // If wrapped in {Skill: ...}, unwrap it. Otherwise keep as is.
+      return s.Skill || s;
+    });
+  } else {
+    cc.Skills = []; // Ensure skills is always an array
   }
 
   cc.currentHp      = getCardHP(cc);
@@ -4808,26 +4815,32 @@ function cloneCard(c, team) {
   cc._activeRound   = 0;
 
   // Boot passive ability flags
-  ENGINE.bootPassiveAbilities(cc, [], null);
+  try {
+    if (typeof ENGINE !== 'undefined') ENGINE.bootPassiveAbilities(cc, [], null);
+  } catch(e) { console.warn("Boot passive error", e); }
 
   // Init skill use counters
   (cc.Skills || []).forEach(sk => {
-    // FIX: Use PARSER directly because ENGINE does not expose parseUM/parseTD
-    const um = PARSER.parseUM(sk.UM || '');
-    sk._usesLeft      = isFinite(um.maxUses)    ? um.maxUses    : Infinity;
-    sk._usesThisTurn  = 0;
-    sk._priority      = um.priority || 1;
-    sk._usesPerTurn   = isFinite(um.usesPerTurn)? um.usesPerTurn: Infinity;
-    
-    // FIX: Use PARSER directly
-    sk._td            = PARSER.parseTD(sk.TD || sk.td || 'DEFAULT');
-    
-    sk._isReactive    = (sk.Timing || '').startsWith('Reactive');
-    sk._isFree        = (sk.Timing || '').includes('_Free');
-    
-    // Ensure Name/Description are available for UI
-    sk.Name = sk.Name || 'Unknown Skill';
-    sk.Description_UI = sk.Description_UI || sk.Description || '';
+    try {
+      // FIX: Use PARSER directly
+      const um = (typeof PARSER !== 'undefined') ? PARSER.parseUM(sk.UM || '') : {usesPerTurn: 1, maxUses: 0, priority: 1};
+      sk._usesLeft      = isFinite(um.maxUses)    ? um.maxUses    : Infinity;
+      sk._usesThisTurn  = 0;
+      sk._priority      = um.priority || 1;
+      sk._usesPerTurn   = isFinite(um.usesPerTurn)? um.usesPerTurn: Infinity;
+      
+      // FIX: Use PARSER directly
+      sk._td            = (typeof PARSER !== 'undefined') ? PARSER.parseTD(sk.TD || sk.td || 'DEFAULT') : {};
+      
+      sk._isReactive    = (sk.Timing || '').startsWith('Reactive');
+      sk._isFree        = (sk.Timing || '').includes('_Free');
+      
+      // Ensure Name/Description are available for UI
+      sk.Name = sk.Name || 'Unknown Skill';
+      sk.Description_UI = sk.Description_UI || sk.Description || '';
+    } catch(err) {
+      console.warn("Error init skill counters", err);
+    }
   });
   
   return cc;
@@ -5495,27 +5508,40 @@ function _getPlayerId(card) {
   return parts[1] || '';
 }
 
-/**
+  /**
  * buildCardDetailHTML(card)
  * Renders the card detail panel used in both Catalogue and Draft panels.
  */
 function buildCardDetailHTML(card) {
-  const n=getCardName(card), hp=getCardHP(card), dmg=getCardDMG(card), spd=getCardSPD(card);
-  const p=getCardPosStr(card), team=card.BasicInfo?.Team||'';
-  const ab=getAbility(card);
-  const abHtml = ab
-    ? `<div class="ec-ability-block"><div class="ec-ability-name">${ab.Name}</div><div class="ec-ability-desc">${ab.Description_UI||''}</div></div>`
-    : '';
+  if (!card) return '';
   
-  // FIX: Unwrap {Skill: {...}} if present
+  const n = getCardName(card), hp = getCardHP(card), dmg = getCardDMG(card), spd = getCardSPD(card);
+  const p = getCardPosStr(card), team = card.BasicInfo?.Team || card.Team || '';
+  const ab = getAbility(card);
+  
+  const abHtml = ab
+    ? `<div class="ec-ability-block"><div class="ec-ability-name">${ab.Name || 'Ability'}</div><div class="ec-ability-desc">${ab.Description_UI || ''}</div></div>`
+    : '';
+
+  // FIX: Robust skill unwrapping
   const sHtml = getCardSkills(card).map(raw => {
-    const s = raw.Skill || raw; // Handle the wrapper
+    // 1. Handle the { Skill: {...} } wrapper
+    let s = raw.Skill || raw;
+    
+    // 2. Safety check: ensure s is an object
+    if (!s || typeof s !== 'object') return '';
+
+    // 3. Fallbacks for missing fields
+    const name = s.Name || 'Skill';
+    const dmgVal = s.Display_DMG || '';
+    const desc = s.Description_UI || s.Description || '';
+
     return `<div class="ec-skill-wrap">
               <div class="ec-skill-header">
-                <span class="ec-skill-name">${s.Name||'Skill'}</span>
-                <span class="ec-skill-dmg">${s.Display_DMG||''}</span>
+                <span class="ec-skill-name">${name}</span>
+                <span class="ec-skill-dmg">${dmgVal}</span>
               </div>
-              <div class="ec-skill-desc">${s.Description_UI||s.Description||''}</div>
+              <div class="ec-skill-desc">${desc}</div>
             </div>`;
   }).join('');
 
