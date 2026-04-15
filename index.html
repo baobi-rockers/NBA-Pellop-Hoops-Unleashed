@@ -4669,16 +4669,16 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
 // §2 — DATA LAYER & CARD CLONING
 // ============================================================
 
-//--- Card accessors (Updated to read RAW JSON properties first) ---
+//--- Card accessors (Updated to handle BasicInfo wrapper) ---
 function getCardName(c) {
-  // 1. Check RAW properties (from your CARDS database)
-  // 2. Check Parsed properties (from PARSER)
-  // 3. Check Nested properties (from UI_Frontend_Data)
-  return c?.FormattedName || c?.PlayerName || c?.formattedName || c?.name || c?.UI_Frontend_Data?.Formatted_Name || 'Unknown';
+  // 1. Check BasicInfo (Your JSON structure)
+  // 2. Check Flat properties (Fallback)
+  // 3. Check Nested UI (Fallback)
+  return c?.BasicInfo?.FormattedName || c?.BasicInfo?.PlayerName || c?.FormattedName || c?.PlayerName || c?.name || c?.UI_Frontend_Data?.Formatted_Name || 'Unknown';
 }
 
 function getCardRawName(c) {
-  return c?.PlayerName || c?.name || c?.UI_Frontend_Data?.Name || '';
+  return c?.BasicInfo?.PlayerName || c?.PlayerName || c?.name || '';
 }
 
 function getCardVariant(c) { 
@@ -4688,47 +4688,46 @@ function getCardVariant(c) {
 }
 
 function getCardImg(c) { 
-  // Checks RAW 'ImageFilePath' first
-  return c?.ImageFilePath || c?.imagePath || c?.UI_Frontend_Data?.Image_File || ''; 
+  // Checks BasicInfo.ImageFilePath first
+  return c?.BasicInfo?.ImageFilePath || c?.ImageFilePath || c?.imagePath || c?.UI_Frontend_Data?.Image_File || ''; 
 }
 
 function getCardHP(c) { 
-  // Checks RAW 'HP' first
-  return c?.HP || c?.hp || c?.UI_Frontend_Data?.Stats?.HP || 0; 
+  // Checks BasicInfo.HP first
+  return c?.BasicInfo?.HP || c?.HP || c?.hp || c?.UI_Frontend_Data?.Stats?.HP || 0; 
 }
 
 function getCardDMG(c) { 
-  // Checks RAW 'BasicDMG' first
-  return c?.BasicDMG || c?.basicDmg || c?.UI_Frontend_Data?.Stats?.Base_DMG || 0; 
+  return c?.BasicInfo?.Base_DMG || c?.BasicDMG || c?.basicDmg || c?.UI_Frontend_Data?.Stats?.Base_DMG || 0; 
 }
 
 function getCardSPD(c) { 
-  // Checks RAW 'SPD' first
-  return c?.SPD || c?.spd || c?.UI_Frontend_Data?.Stats?.Speed || 0; 
+  return c?.BasicInfo?.SPD || c?.SPD || c?.spd || c?.UI_Frontend_Data?.Stats?.Speed || 0; 
 }
 
 function getCardHeight(c) { 
-  return c?.DisplayHeight || c?.heightRaw || c?.UI_Frontend_Data?.Height || ''; 
+  return c?.BasicInfo?.DisplayHeight || c?.DisplayHeight || c?.heightRaw || c?.UI_Frontend_Data?.Height || ''; 
 }
 
 function getCardTeam(c) { 
-  return c?.Team || c?.teamId || c?.UI_Frontend_Data?.Team_ID || c?.UI_Frontend_Data?.Team || ''; 
+  return c?.BasicInfo?.Team || c?.Team || c?.teamId || c?.UI_Frontend_Data?.Team_ID || ''; 
 }
 
 function getCardTier(c) { 
+  // BasicInfo doesn't seem to have Tier explicitly in your snippet, but checking root
   return c?.Tier || c?.tierId || c?.UI_Frontend_Data?.Tier || ''; 
 }
 
 function getCardPos(c) { 
-  // Handles RAW properties: PrimaryPos, SecondaryPos
+  // Checks BasicInfo properties
+  if (c?.BasicInfo?.PrimaryPos) {
+    return [c.BasicInfo.PrimaryPos, c.BasicInfo.SecondaryPos].filter(Boolean);
+  }
+  // Checks Flat properties
   if (c?.PrimaryPos) {
-    return [c.PrimaryPos, c.SecondaryPos, c.ThirdPos].filter(Boolean);
+    return [c.PrimaryPos, c.SecondaryPos].filter(Boolean);
   }
-  // Handles Parsed properties
-  if (c?.primaryPos) {
-    return [c.primaryPos, c.secondaryPos].filter(Boolean);
-  }
-  // Handles Nested
+  // Fallback
   const p = c?.UI_Frontend_Data?.Positions; 
   return p ? [p.Primary, p.Secondary, p.Third].filter(Boolean) : []; 
 }
@@ -4738,7 +4737,11 @@ function getCardPosStr(c) {
   return pos.length ? pos[0] + (pos[1] ? '/' + pos[1] : '') : 'N/A'; 
 }
 
-function getCardSkills(c) { return c?.Skills || c?.skills || []; }
+function getCardSkills(c) { 
+  // Returns the array. Note: cloneCard normalizes these.
+  return c?.Skills || c?.skills || []; 
+}
+
 function getAbility(c) { return c?.Ability || c?.abilities?.[0] || null; }
 
 function shortName(n) { return n ? n.replace(/ \(.+?\)$/, '') : 'Unknown'; }
@@ -4782,20 +4785,35 @@ function getSearchText(c) {
     getCardTeam(c).toLowerCase()
   ];
   getCardSkills(c).forEach(sk => { 
-    parts.push((sk.Name || sk.name || '').toLowerCase()); 
-    parts.push((sk.Description_UI || sk.description || '').toLowerCase()); 
+    // Handle both normalized and raw skill names
+    const skillObj = sk.Skill || sk;
+    parts.push((skillObj.Name || '').toLowerCase()); 
+    parts.push((skillObj.Description_UI || skillObj.Description || '').toLowerCase()); 
   });
   const ab = getAbility(c);
   if (ab) { 
-    parts.push((ab.Name || ab.name || '').toLowerCase()); 
-    parts.push((ab.Description_UI || ab.description || '').toLowerCase()); 
+    parts.push((ab.Name || '').toLowerCase()); 
+    parts.push((ab.Description_UI || ab.Description || '').toLowerCase()); 
   }
   return parts.join(' ');
 }
 
-//--- cloneCard: deep-copy a card and wire up ENGINE counters ---
+//--- cloneCard: deep-copy, normalize, and wire up ENGINE counters ---
 function cloneCard(c, team) {
   const cc = JSON.parse(JSON.stringify(c));
+  
+  // NORMALIZE PROPERTIES: Flatten BasicInfo to root for easier access by Engine
+  if (cc.BasicInfo) {
+    Object.assign(cc, cc.BasicInfo);
+    // delete cc.BasicInfo; // Optional: keep or delete
+  }
+  
+  // NORMALIZE SKILLS: Ensure cc.Skills is a flat array of skill objects
+  // Input: [{Skill: {Name:...}}, ...] -> Output: [{Name:...}, ...]
+  if (cc.Skills && Array.isArray(cc.Skills)) {
+    cc.Skills = cc.Skills.map(s => s.Skill || s);
+  }
+
   cc.currentHp      = getCardHP(cc);
   cc.isDead         = false;
   cc._instanceId    = mkId(team, getCardName(cc));
@@ -4807,15 +4825,20 @@ function cloneCard(c, team) {
 
   // Init skill use counters from UM string
   (cc.Skills || []).forEach(sk => {
-    const um = ENGINE.parseUM(sk.UM);
+    const um = ENGINE.parseUM(sk.UM || '');
     sk._usesLeft      = isFinite(um.maxUses)    ? um.maxUses    : Infinity;
     sk._usesThisTurn  = 0;
-    sk._priority      = um.priority;
+    sk._priority      = um.priority || 1;
     sk._usesPerTurn   = isFinite(um.usesPerTurn)? um.usesPerTurn: Infinity;
     sk._td            = ENGINE.parseTD(sk.TD || sk.td || 'DEFAULT');
     sk._isReactive    = (sk.Timing || '').startsWith('Reactive');
     sk._isFree        = (sk.Timing || '').includes('_Free');
+    
+    // FIX: Ensure Name/Description are available for UI
+    sk.Name = sk.Name || 'Unknown Skill';
+    sk.Description_UI = sk.Description_UI || sk.Description || '';
   });
+  
   return cc;
 }
 // ============================================================
