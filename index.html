@@ -1271,9 +1271,10 @@ const ABILITY_ENGINE = (() => {
         return { card, type: 'STAT_BUFF', detail: `${_getName(card)} ${operation}${value} ${stat} for ${tdParsed.turns}T` };
       }
 
-      case 'DEAL_FLAT_DMG': {
-        const dmg = action.params.damage || 0;
-        card.currentHp = Math.max(0, (card.currentHp ?? _getMaxHP(card)) - dmg);
+         case 'DEAL_FLAT_DMG':
+        dmg = (action.params && action.params.damage) || action.value || 0;
+        // Flat DMG bypasses all mitigation
+        return Math.max(0, dmg);
         return { card, type: 'DEAL_FLAT_DMG', detail: `${_getName(card)} takes ${dmg} flat DMG` };
       }
 
@@ -3884,10 +3885,26 @@ function _reactiveSkillCanFire(rSk, castNature, attackSk) {
       assisterCard = ownTeam.find(c => c && !c.isDead && c.battleRole === firstMod.action.refPosition);
     }
 
-    const primaryAction = firstMod?.action || { type: 'NONE' };
-    const primaryTD = firstMod?.td || { turns: 0, delay: 0, special: null };
+ // Find first damage-dealing modifier across all phases
+    let primaryAction = { type: 'NONE' };
+    let primaryTD = { turns: 0, delay: 0, special: null };
+    const allMods = [];
+    if (Array.isArray(sk.Phases)) {
+      for (const ph of sk.Phases) {
+        for (const m of (ph.Modifiers || [])) {
+          const act = PARSER.parseAction(m.action_string || '');
+          allMods.push({ action: act, target: m.action_target || 'Self', td: PARSER.parseTD(m.TD || m.td || ''), raw: m.action_string });
+        }
+      }
+    } else {
+      for (const m of (sk.Modifiers || [])) {
+        const act = PARSER.parseAction(m.action_string || '');
+        allMods.push({ action: act, target: m.action_target || 'Self', td: PARSER.parseTD(m.TD || m.td || ''), raw: m.action_string });
+      }
+    }
+    const damageMod = allMods.find(m => m.action.type === 'DEAL_FLAT_DMG' || m.action.type === 'DEAL_ASSIST_DMG');
+    if (damageMod) { primaryAction = damageMod.action; primaryTD = damageMod.td; }
     const rawDmg = computeSkillDamage(primaryAction, atkC, assisterCard, mitigationFlat, mitigationMult, selfCastFlags);
-
     // Apply DMG redirection
     const { finalTarget: realTarget } = resolveRedirection(defC, rawDmg, context);
 
@@ -3903,9 +3920,10 @@ function _reactiveSkillCanFire(rSk, castNature, attackSk) {
       await playCombatAnimation(`${aSide}-${act.actorIdx}`, `${dSide}-${dIdx}`, rawDmg, realTarget, dIdx, dSide);
     }
 
-    // ── Apply all other modifiers (non-damage) ──
-    for (let mi = 1; mi < resolved.modifiers.length; mi++) {
-      const modEntry = resolved.modifiers[mi];
+   // ── Apply all other modifiers (non-damage) ──
+    for (let mi = 0; mi < allMods.length; mi++) {
+      const modEntry = allMods[mi];
+      if (modEntry.action.type === 'DEAL_FLAT_DMG' || modEntry.action.type === 'DEAL_ASSIST_DMG') continue;
       const modTargetStr = modEntry.target || 'Self';
       const modTargetCard = _resolveModifierTarget(modTargetStr, atkC, defC, ownTeam, enemyTeam, context);
       await executeModifier(modEntry, atkC, modTargetCard, castNature, {
@@ -5479,10 +5497,9 @@ function onCardClick(side, idx, event) {
   event.stopPropagation();
   if (isAnimating) return;
 
-  if (side === 'player') {
+if (side === 'player') {
     const card = playerActive[idx];
     if (!card || card.isDead) return;
-    if (stagedActions.some(a => a.actorIdx === idx)) return;
     showActionPanel(card, idx);
   } else {
     if (uiState === 'AWAITING_TARGET' && pendingAction) {
@@ -5523,31 +5540,63 @@ function showActionPanel(card, actorIdx) {
   nameEl.textContent = `[${card.battleRole}] ${shortName(getCardName(card))}`;
   btnsEl.innerHTML = '';
 
-  // Context for condition checks
   const ownTeam = playerActive;
   const enemyTeam = enemyActive;
-  const ownScore = (typeof playerScore !== 'undefined') ? playerScore : 0;
-  const enemyScore = (typeof enemyScore !== 'undefined') ? enemyScore : 0;
-  const ownTeamLead = ownScore > enemyScore;
-  
+  const curPlayerScore = (typeof playerScore !== 'undefined') ? playerScore : 0;
+  const curEnemyScore  = (typeof enemyScore  !== 'undefined') ? enemyScore  : 0;
+  const ownTeamLead = curPlayerScore > curEnemyScore;
+
   const context = {
-      self: card,
-      ownTeam: ownTeam,
-      enemyTeam: enemyTeam,
-      ownTeamLead: ownTeamLead,
-      gameRound: (typeof turnCount !== 'undefined') ? turnCount : 1,
-      ownGrave: []
+    self: card,
+    ownTeam,
+    enemyTeam,
+    ownTeamLead,
+    gameRound: (typeof turnCount !== 'undefined') ? turnCount : 1,
+    ownGrave: []
   };
+
+  // Helper: get the primary timing string for a skill (works for both legacy and Phases format)
+  function getSkillTiming(sk) {
+    if (sk.Timing) return sk.Timing;
+    if (Array.isArray(sk.Phases) && sk.Phases[0] && sk.Phases[0].Timing) return sk.Phases[0].Timing;
+    return '';
+  }
+
+  // Helper: robust DMG extraction
+  function findDmgInMods(mods) {
+    if (!Array.isArray(mods)) return null;
+    const m = mods.find(x => typeof x.action_string === 'string' && x.action_string.includes('Deal_Flat_DMG'));
+    return m ? (m.action_string.match(/Deal_Flat_DMG:(\d+)/)?.[1] || null) : null;
+  }
+  function getSkillDmgLabel(sk) {
+    if (sk.Display_DMG) return sk.Display_DMG;
+    let dmg = findDmgInMods(sk.Modifiers);
+    if (!dmg && Array.isArray(sk.Phases)) {
+      for (const p of sk.Phases) { if (dmg) break; dmg = findDmgInMods(p.Modifiers); }
+    }
+    return dmg || '';
+  }
+
+  // Helper: check if any modifier branch has its condition met (capital C and lowercase c)
+  function checkModConditions(mods) {
+    if (!Array.isArray(mods) || mods.length === 0) return true;
+    for (const mod of mods) {
+      const cond = mod.Condition || mod.condition || null;
+      if (!cond) return true; // unconditional branch always available
+      try { if (PARSER.evalCondition(cond, context)) return true; } catch(e) {}
+    }
+    return false;
+  }
 
   // --- BASIC ATTACK ---
   if (!frozen) {
     const basicBtn = document.createElement('button');
-    basicBtn.className='action-btn action-btn-basic';
-    basicBtn.innerHTML=`⚡ BASIC <span class="action-btn-dmg">${getEffectiveDMG(card,false)} DMG</span>`;
-    basicBtn.onclick=()=>{
-      pendingAction={actionType:'basic',actorIdx,targetIdx:null,execTeam:'player'};
-      uiState='AWAITING_TARGET';
-      $('action-panels-wrapper').classList.remove('visible');
+    basicBtn.className = 'action-btn action-btn-basic';
+    basicBtn.innerHTML = `⚡ BASIC <span class="action-btn-dmg">${getEffectiveDMG(card, false)} DMG</span>`;
+    basicBtn.onclick = () => {
+      pendingAction = { actionType:'basic', actorIdx, targetIdx:null, execTeam:'player' };
+      uiState = 'AWAITING_TARGET';
+      wrapper.classList.remove('visible');
       renderArena();
     };
     btnsEl.appendChild(basicBtn);
@@ -5555,104 +5604,87 @@ function showActionPanel(card, actorIdx) {
 
   // --- SKILLS ---
   if (!frozen) {
-    (card.Skills||[]).forEach((sk, si) => {
+    (card.Skills || []).forEach((sk, si) => {
       try {
-        const exhausted = sk._usesLeft <= 0;
-        const turnCapped = isFinite(sk._usesPerTurn) && sk._usesThisTurn >= sk._usesPerTurn;
-        
-        // 1. FILTER: Hide purely Reactive skills
-        const timing = sk.Timing || '';
+        // 1. TIMING FILTER: hide purely reactive skills (not shown in action menu)
+        const timing = getSkillTiming(sk);
         const isReactive = timing.startsWith('Reactive');
-        // If it's reactive but NOT Standard (hybrid), hide it from the action menu
-        if (isReactive && !timing.includes('Standard')) {
-            return; 
-        }
+        if (isReactive && !timing.includes('Standard')) return;
 
-        // 2. CONDITION CHECK: Enable if at least one branch condition is met
+        // 2. USE LIMITS
+        const exhausted = isFinite(sk._usesLeft) && sk._usesLeft <= 0;
+        const turnCapped = isFinite(sk._usesPerTurn) && sk._usesThisTurn >= sk._usesPerTurn;
+
+        // 3. CONDITION CHECK across all modifier sources
         let conditionsMet = false;
-        const checkConds = (mods) => {
-            if (!Array.isArray(mods) || mods.length === 0) return true; // No conditions = always usable
-            let anyMet = false;
-            for (const mod of mods) {
-                if (!mod.condition) anyMet = true; // Branch with no condition is always available
-                else {
-                    try {
-                        if (PARSER.evalCondition(mod.condition, context)) anyMet = true;
-                    } catch (e) { /* ignore parse errors */ }
-                }
-            }
-            return anyMet;
-        };
-
-        // Check Legacy Modifiers
-        if (Array.isArray(sk.Modifiers)) {
-            if (checkConds(sk.Modifiers)) conditionsMet = true;
+        if (Array.isArray(sk.Modifiers) && sk.Modifiers.length > 0) {
+          if (checkModConditions(sk.Modifiers)) conditionsMet = true;
         }
-        // Check New Phases
         if (!conditionsMet && Array.isArray(sk.Phases)) {
-            for (const phase of sk.Phases) {
-                if (conditionsMet) break;
-                // We check modifiers inside phases. 
-                // Note: Phase timing is handled by engine, here we just check if the skill CAN do something.
-                if (checkConds(phase.Modifiers)) conditionsMet = true;
-            }
+          for (const phase of sk.Phases) {
+            if (conditionsMet) break;
+            if (checkModConditions(phase.Modifiers)) conditionsMet = true;
+          }
         }
-        // If no conditions found anywhere, default to true
         if (!sk.Modifiers && !sk.Phases) conditionsMet = true;
+        if (Array.isArray(sk.Phases) && sk.Phases.length > 0 &&
+            (!sk.Phases[0].Modifiers || sk.Phases[0].Modifiers.length === 0)) {
+          conditionsMet = true;
+        }
 
         const disabled = exhausted || turnCapped || !conditionsMet;
 
         const btn = document.createElement('button');
-        btn.className='action-btn action-btn-skill';
-        btn.disabled=disabled;
-        
-        // Display Logic - Robust DMG extraction
-        let dmgLabel = sk.Display_DMG || '';
-        const findDmg = (mods) => {
-            if (!Array.isArray(mods)) return null;
-            const m = mods.find(x => typeof x.action_string === 'string' && x.action_string.includes('Deal_Flat_DMG'));
-            return m ? m.action_string.match(/Deal_Flat_DMG:(\d+)/)?.[1] : null;
-        };
-        
-        if (!dmgLabel) dmgLabel = findDmg(sk.Modifiers);
-        if (!dmgLabel && Array.isArray(sk.Phases)) {
-            for (const p of sk.Phases) { if(dmgLabel) break; dmgLabel = findDmg(p.Modifiers); }
-        }
-        
-        btn.innerHTML=`${sk.Name} <span class="action-btn-dmg">${dmgLabel}</span>`;
-        
+        btn.className = 'action-btn action-btn-skill';
+        btn.disabled = disabled;
+
+        const dmgLabel = getSkillDmgLabel(sk);
+        // Check if skill uses assist damage (needs ref label)
+        const isAssist = (function() {
+          const checkAssist = (mods) => Array.isArray(mods) && mods.some(m =>
+            typeof m.action_string === 'string' && m.action_string.includes('Deal_Assist_Dmg'));
+          if (checkAssist(sk.Modifiers)) return true;
+          if (Array.isArray(sk.Phases)) {
+            for (const p of sk.Phases) { if (checkAssist(p.Modifiers)) return true; }
+          }
+          return false;
+        })();
+
+        btn.innerHTML = `${sk.Name}${isAssist ? ' <span style="font-size:.65rem;opacity:.7">ASSIST</span>' : ''} <span class="action-btn-dmg">${dmgLabel}</span>`;
+
         if (!disabled) {
-            btn.onclick=()=>{
-                pendingAction={actionType:'skill',actorIdx,skillIdx:si,targetIdx:null,execTeam:'player'};
-                uiState='AWAITING_TARGET';
-                $('action-panels-wrapper').classList.remove('visible');
-                renderArena();
-            };
+          btn.onclick = () => {
+            pendingAction = { actionType:'skill', actorIdx, skillIdx:si, targetIdx:null, execTeam:'player' };
+            uiState = 'AWAITING_TARGET';
+            wrapper.classList.remove('visible');
+            renderArena();
+          };
         } else {
-            btn.title = !conditionsMet ? "Conditions not met" : "No uses left";
+          btn.title = exhausted || turnCapped ? 'No uses left' : 'Conditions not met';
         }
-        
+
         btnsEl.appendChild(btn);
-      } catch(e) { console.error("Error rendering skill button", sk, e); }
+      } catch(e) { console.error('Error rendering skill button', sk, e); }
     });
   }
 
-  // --- SWAP / PASS ---
-  const aliveBench = playerBench.filter(c=>c&&!c.isDead);
+  // --- SWAP ---
+  const aliveBench = playerBench.filter(c => c && !c.isDead);
   if (aliveBench.length) {
     const swapBtn = document.createElement('button');
-    swapBtn.className='action-btn action-btn-alt';
-    swapBtn.textContent='⇄ SWAP';
-    swapBtn.onclick=()=>openBenchFan(actorIdx);
+    swapBtn.className = 'action-btn action-btn-alt';
+    swapBtn.textContent = '⇄ SWAP';
+    swapBtn.onclick = () => openBenchFan(actorIdx);
     btnsEl.appendChild(swapBtn);
   }
 
+  // --- PASS ---
   const passBtn = document.createElement('button');
-  passBtn.className='action-btn action-btn-pass';
-  passBtn.textContent='PASS';
-  passBtn.onclick=()=>{
-    stageAction({actionType:'pass',actorIdx,targetIdx:null,execTeam:'player'});
-    $('action-panels-wrapper').classList.remove('visible');
+  passBtn.className = 'action-btn action-btn-pass';
+  passBtn.textContent = 'PASS';
+  passBtn.onclick = () => {
+    stageAction({ actionType:'pass', actorIdx, targetIdx:null, execTeam:'player' });
+    wrapper.classList.remove('visible');
   };
   btnsEl.appendChild(passBtn);
 
