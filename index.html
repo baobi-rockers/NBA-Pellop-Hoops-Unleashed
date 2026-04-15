@@ -4704,12 +4704,12 @@ function getCardHeight(c) {
   return c?.BasicInfo?.DisplayHeight || c?.DisplayHeight || c?.heightRaw || c?.UI_Frontend_Data?.Height || ''; 
 }
 
-function getCardTeam(c) { 
-  return c?.BasicInfo?.Team || c?.Team || c?.teamId || c?.UI_Frontend_Data?.Team_ID || ''; 
+function getCardTeam(c) {
+  return c?.BasicInfo?.Team || c?.Team || c?.teamId || c?.UI_Frontend_Data?.Team_ID || '';
 }
 
-function getCardTier(c) { 
-  return c?.Tier || c?.tierId || c?.UI_Frontend_Data?.Tier || ''; 
+function getCardTier(c) {
+  return c?.BasicInfo?.Tier || c?.Tier || c?.tierId || c?.UI_Frontend_Data?.Tier || 'GOAT';
 }
 
 function getCardPos(c) { 
@@ -4728,20 +4728,22 @@ function getCardPosStr(c) {
   return pos.length ? pos[0] + (pos[1] ? '/' + pos[1] : '') : 'N/A'; 
 }
 
-function getCardSkills(c) { 
-  const skills = c?.Skills || c?.skills || [];
-  // Unwrap each skill if needed
-  return skills.map(s => s?.Skill || s).filter(Boolean);
+function getCardSkills(c) {
+  const raw = c?.Skills || c?.skills || [];
+  return raw.map(s => {
+    // Handle both {Skill: {...}} wrapper and flat skill objects
+    const sk = (s && typeof s === 'object' && s.Skill) ? s.Skill : s;
+    if (!sk || typeof sk !== 'object') return null;
+    // Normalise field names
+    if (!sk.Name && sk.SkillName) sk.Name = sk.SkillName;
+    if (!sk.Display_DMG && sk.DisplayDMG) sk.Display_DMG = sk.DisplayDMG;
+    if (!sk.Description_UI) sk.Description_UI = sk.Description || '';
+    return sk;
+  }).filter(Boolean);
 }
 
-  function getSearchText(card) {
-  if (!card) return '';
-  const name = getCardName(card).toLowerCase();
-  const variant = getCardVariant(card).toLowerCase();
-  const skills = getCardSkills(card);
-  const skillNames = skills.map(s => (s.Name || s.SkillName || '').toLowerCase()).join(' ');
-  return `${name} ${variant} ${skillNames}`;
-}
+const teams=[...new Set(CARDS.map(c=>getCardTeam(c)).filter(Boolean))].sort();
+const tiers=[...new Set(CARDS.map(c=>getCardTier(c)).filter(Boolean))].sort();
 
 function getAbility(c) { return c?.Ability || c?.abilities?.[0] || null; }
 
@@ -5559,6 +5561,27 @@ const sHtml = skills.map(s => {
  ${abHtml}<div style="font-size:.68rem;color:var(--text-muted);font-weight:700;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">Skills</div>${sHtml}`;
 }
 
+  function buildEnemyRoster() {
+  const shuf = [...CARDS].sort(() => Math.random() - .5);
+  const st = [], be = [];
+  POSITIONS.forEach(pos => {
+    const match = shuf.find(c => getCardPos(c).includes(pos) && !st.some(x => getCardName(x) === getCardName(c)));
+    if (match) {
+      const cc = cloneCard(match, 'enemy');
+      cc.battleRole = pos;
+      cc._activeRound = 1;
+      cc._teamRef = 'enemy';
+      st.push(cc);
+    }
+  });
+  shuf.forEach(c => {
+    if (st.length + be.length >= 10) return;
+    if (!st.some(x => getCardName(x) === getCardName(c)) && !be.some(x => getCardName(x) === getCardName(c))) {
+      be.push(cloneCard(c, 'enemy'));
+    }
+  });
+  return { st, be };
+}
 
 // ============================================================
 // §9 — UI: BATTLE LOG, EFFECTS PANEL, TOOLTIP, AUDIO
