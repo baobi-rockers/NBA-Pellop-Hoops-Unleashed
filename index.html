@@ -948,50 +948,50 @@ const PARSER = (() => {
     }));
   }
 
-function parseSkill(rawSkill) {
-  if (!rawSkill || !rawSkill.Name) return null;
-  const skill = {
-    id: rawSkill.SkillID || null,
-    name: rawSkill.Name,
-    description: rawSkill.Description_UI || rawSkill.Description || '',
-    um: parseUM(rawSkill.UM),
-    phases: []
-  };
+  function parseSkill(rawSkill) {
+    if (!rawSkill || !rawSkill.Name) return null;
+    const skill = {
+      id: rawSkill.SkillID || null,
+      name: rawSkill.Name,
+      description: rawSkill.Description_UI || rawSkill.Description || '',
+      um: parseUM(rawSkill.UM),
+      phases: []
+    };
 
-  // Handle legacy format (Modifiers directly on skill)
-  if (rawSkill.Modifiers) {
-    skill.phases.push({
-      timing: rawSkill.Timing || 'Standard:On_Cast',
-      nature: rawSkill.Nature ? [rawSkill.Nature] : [],
-      properties: rawSkill.Properties || [],
-      modifiers: (rawSkill.Modifiers || []).map(m => ({
-        condition: m.Condition || null,
-        coinFlip: m.Coin_Flip ? parseFloat(m.Coin_Flip) : 0,
-        actionString: m.action_string || null,
-        actionTarget: m.action_target || 'Self',
-        td: m.TD || null
-      }))
-    });
-  }
+    // Handle Legacy Modifiers
+    if (rawSkill.Modifiers) {
+      skill.phases.push({
+        timing: rawSkill.Timing || 'Standard:On_Cast',
+        nature: rawSkill.Nature ? [rawSkill.Nature] : [],
+        properties: rawSkill.Properties || [],
+        modifiers: (rawSkill.Modifiers || []).map(m => ({
+          condition: m.Condition || null,
+          coinFlip: m.Coin_Flip ? parseFloat(m.Coin_Flip) : 0,
+          actionString: m.action_string || null,
+          actionTarget: m.action_target || 'Self',
+          td: m.TD || null
+        }))
+      });
+    }
 
-  // Handle new format (Phases array)
-  if (rawSkill.Phases && Array.isArray(rawSkill.Phases)) {
-    skill.phases = rawSkill.Phases.map(p => ({
-      timing: p.Timing || 'Standard:On_Cast',
-      nature: p.Nature || [],
-      properties: p.Properties || [],
-      modifiers: (p.Modifiers || []).map(m => ({
-        condition: m.Condition || null,
-        coinFlip: m.Coin_Flip ? parseFloat(m.Coin_Flip) : 0,
-        actionString: m.action_string || null,
-        actionTarget: m.action_target || 'Self',
-        td: m.TD || null
-      }))
-    }));
+    // Handle New Phases
+    if (rawSkill.Phases && Array.isArray(rawSkill.Phases)) {
+      skill.phases = rawSkill.Phases.map(p => ({
+        timing: p.Timing || 'Standard:On_Cast',
+        nature: p.Nature || [],
+        properties: p.Properties || [],
+        modifiers: (p.Modifiers || []).map(m => ({
+          condition: m.Condition || null,
+          coinFlip: m.Coin_Flip ? parseFloat(m.Coin_Flip) : 0,
+          actionString: m.action_string || null,
+          actionTarget: m.action_target || 'Self',
+          td: m.TD || null
+        }))
+      }));
+    }
+    
+    return skill;
   }
-  
-  return skill;
-}
 
   function parseAbility(rawAbility) {
     if (!rawAbility || !rawAbility.Name) return null;
@@ -4703,10 +4703,15 @@ function _endOfTurnCleanup() {
   tickEffects();
   
   const all = [...playerActive, ...playerBench, ...enemyActive, ...enemyBench];
+  
+  // Safe iteration
   all.forEach(c => { 
-    if (c && !c.isDead && ENGINE.tickCardEffects) {
-        // This wrapper prevents a single card crash from stopping the whole game
-        try { ENGINE.tickCardEffects(c); } catch (e) { console.error("Tick Error on " + _getName(c), e); }
+    if (c && !c.isDead) {
+       try {
+          if (ENGINE.tickCardEffects) ENGINE.tickCardEffects(c);
+       } catch (e) {
+          console.warn("Cleanup error on " + _getName(c), e);
+       }
     } 
   });
   
