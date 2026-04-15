@@ -4665,29 +4665,172 @@ const mkId = (team, name) => `${team}_${(name||'card').replace(/\s+/g,'_')}_${++
 const delay = ms => new Promise(r => setTimeout(r, ms));
 
 
-function buildCardDetailHTML(card) {
-  const n=getCardName(card), hp=getCardHP(card), dmg=getCardDMG(card), spd=getCardSPD(card);
-  const p=getCardPosStr(card), team=card.UI_Frontend_Data?.Team||card.BasicInfo?.Team||'';
-  const ab=getAbility(card);
-  const abHtml = ab
-    ? `<div class="ec-ability-block"><div class="ec-ability-name">${ab.Name}</div><div class="ec-ability-desc">${ab.Description_UI||''}</div></div>`
-    : '';
-  
-  // FIX: Unwrap {Skill: {...}} if present
-  const sHtml = getCardSkills(card).map(raw => {
-    const s = raw.Skill || raw; // Handle the wrapper
-    return `<div class="ec-skill-wrap">
-              <div class="ec-skill-header">
-                <span class="ec-skill-name">${s.Name||'Skill'}</span>
-                <span class="ec-skill-dmg">${s.Display_DMG||''}</span>
-              </div>
-              <div class="ec-skill-desc">${s.Description_UI||s.Description||''}</div>
-            </div>`;
-  }).join('');
+// ============================================================
+// §2 — DATA LAYER & CARD CLONING
+// ============================================================
 
-  return `<div class="ec-header"><div class="ec-title">${n}</div><div class="ec-team">${team} · ${p}</div></div>
-<div class="ec-stats-row"><div class="ec-stat">${hp} <span>HP</span></div><div class="ec-stat">${dmg} <span>DMG</span></div><div class="ec-stat">${spd} <span>SPD</span></div></div>
- ${abHtml}<div style="font-size:.68rem;color:var(--text-muted);font-weight:700;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">Skills</div>${sHtml}`;
+//--- Card accessors (Handles BasicInfo wrapper) ---
+function getCardName(c) {
+  return c?.BasicInfo?.FormattedName || c?.BasicInfo?.PlayerName || c?.FormattedName || c?.PlayerName || c?.name || c?.UI_Frontend_Data?.Formatted_Name || 'Unknown';
+}
+
+function getCardRawName(c) {
+  return c?.BasicInfo?.PlayerName || c?.PlayerName || c?.name || '';
+}
+
+function getCardVariant(c) { 
+  const fn = getCardName(c); 
+  const m = fn.match(/\((.+)\)$/); 
+  return m ? m[1] : ''; 
+}
+
+function getCardImg(c) { 
+  return c?.BasicInfo?.ImageFilePath || c?.ImageFilePath || c?.imagePath || c?.UI_Frontend_Data?.Image_File || ''; 
+}
+
+function getCardHP(c) { 
+  return c?.BasicInfo?.HP || c?.HP || c?.hp || c?.UI_Frontend_Data?.Stats?.HP || 0; 
+}
+
+function getCardDMG(c) { 
+  return c?.BasicInfo?.Base_DMG || c?.BasicDMG || c?.basicDmg || c?.UI_Frontend_Data?.Stats?.Base_DMG || 0; 
+}
+
+function getCardSPD(c) { 
+  return c?.BasicInfo?.SPD || c?.SPD || c?.spd || c?.UI_Frontend_Data?.Stats?.Speed || 0; 
+}
+
+function getCardHeight(c) { 
+  return c?.BasicInfo?.DisplayHeight || c?.DisplayHeight || c?.heightRaw || c?.UI_Frontend_Data?.Height || ''; 
+}
+
+function getCardTeam(c) { 
+  return c?.BasicInfo?.Team || c?.Team || c?.teamId || c?.UI_Frontend_Data?.Team_ID || ''; 
+}
+
+function getCardTier(c) { 
+  return c?.Tier || c?.tierId || c?.UI_Frontend_Data?.Tier || ''; 
+}
+
+function getCardPos(c) { 
+  if (c?.BasicInfo?.PrimaryPos) {
+    return [c.BasicInfo.PrimaryPos, c.BasicInfo.SecondaryPos].filter(Boolean);
+  }
+  if (c?.PrimaryPos) {
+    return [c.PrimaryPos, c.SecondaryPos].filter(Boolean);
+  }
+  const p = c?.UI_Frontend_Data?.Positions; 
+  return p ? [p.Primary, p.Secondary, p.Third].filter(Boolean) : []; 
+}
+
+function getCardPosStr(c) { 
+  const pos = getCardPos(c);
+  return pos.length ? pos[0] + (pos[1] ? '/' + pos[1] : '') : 'N/A'; 
+}
+
+function getCardSkills(c) { 
+  return c?.Skills || c?.skills || []; 
+}
+
+function getAbility(c) { return c?.Ability || c?.abilities?.[0] || null; }
+
+function shortName(n) { return n ? n.replace(/ \(.+?\)$/, '') : 'Unknown'; }
+
+function getTruncatedName(fullName) {
+  if (!fullName) return '';
+  const clean = fullName.replace(/ \(.+?\)$/, '').trim();
+  const parts = clean.split(' ');
+  if (parts.length > 1) return parts[0][0] + '. ' + parts.slice(1).join(' ');
+  return clean;
+}
+
+function getImgUrl(f, n) { 
+  return (!f || f.length < 3) 
+    ? `https://placehold.co/400x560/1a1a2e/FFD166?text=${encodeURIComponent(shortName(n))}` 
+    : GITHUB + encodeURI(f); 
+}
+
+function handleImgError(el, n) { 
+  el.onerror = null; 
+  el.src = `https://placehold.co/400x560/1a1a2e/FFD166?text=${encodeURIComponent(shortName(n))}`; 
+}
+
+function escapeJS(s) { 
+  return s ? s.toString().replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/`/g,'\\`') : ''; 
+}
+
+function getDBShortName(f) { 
+  if(!f) return 'Unknown'; 
+  const clean = f.replace(/ \(.+?\)$/, '').trim(); 
+  const p = clean.split(' '); 
+  if(p.length > 1) { const fi = p.shift(); return fi[0] + '. ' + p.join(' '); } 
+  return clean; 
+}
+
+function getSearchText(c) {
+  const parts = [
+    getCardRawName(c).toLowerCase(), 
+    getCardName(c).toLowerCase(), 
+    getCardVariant(c).toLowerCase(), 
+    getCardTeam(c).toLowerCase()
+  ];
+  getCardSkills(c).forEach(sk => { 
+    const skillObj = sk.Skill || sk;
+    parts.push((skillObj.Name || '').toLowerCase()); 
+    parts.push((skillObj.Description_UI || skillObj.Description || '').toLowerCase()); 
+  });
+  const ab = getAbility(c);
+  if (ab) { 
+    parts.push((ab.Name || '').toLowerCase()); 
+    parts.push((ab.Description_UI || ab.Description || '').toLowerCase()); 
+  }
+  return parts.join(' ');
+}
+
+//--- cloneCard: deep-copy, normalize, and wire up ENGINE counters ---
+function cloneCard(c, team) {
+  const cc = JSON.parse(JSON.stringify(c));
+  
+  // NORMALIZE PROPERTIES: Flatten BasicInfo to root
+  if (cc.BasicInfo) {
+    Object.assign(cc, cc.BasicInfo);
+  }
+  
+  // NORMALIZE SKILLS: Ensure cc.Skills is a flat array
+  if (cc.Skills && Array.isArray(cc.Skills)) {
+    cc.Skills = cc.Skills.map(s => s.Skill || s);
+  }
+
+  cc.currentHp      = getCardHP(cc);
+  cc.isDead         = false;
+  cc._instanceId    = mkId(team, getCardName(cc));
+  cc._priorityMult  = 1;
+  cc._activeRound   = 0;
+
+  // Boot passive ability flags
+  ENGINE.bootPassiveAbilities(cc, [], null);
+
+  // Init skill use counters
+  (cc.Skills || []).forEach(sk => {
+    // FIX: Use PARSER directly because ENGINE does not expose parseUM/parseTD
+    const um = PARSER.parseUM(sk.UM || '');
+    sk._usesLeft      = isFinite(um.maxUses)    ? um.maxUses    : Infinity;
+    sk._usesThisTurn  = 0;
+    sk._priority      = um.priority || 1;
+    sk._usesPerTurn   = isFinite(um.usesPerTurn)? um.usesPerTurn: Infinity;
+    
+    // FIX: Use PARSER directly
+    sk._td            = PARSER.parseTD(sk.TD || sk.td || 'DEFAULT');
+    
+    sk._isReactive    = (sk.Timing || '').startsWith('Reactive');
+    sk._isFree        = (sk.Timing || '').includes('_Free');
+    
+    // Ensure Name/Description are available for UI
+    sk.Name = sk.Name || 'Unknown Skill';
+    sk.Description_UI = sk.Description_UI || sk.Description || '';
+  });
+  
+  return cc;
 }
 // ============================================================
 // §3 — BATTLE STATE VARIABLES
@@ -5358,17 +5501,27 @@ function _getPlayerId(card) {
  */
 function buildCardDetailHTML(card) {
   const n=getCardName(card), hp=getCardHP(card), dmg=getCardDMG(card), spd=getCardSPD(card);
-  const p=getCardPosStr(card), team=card.UI_Frontend_Data?.Team||'';
+  const p=getCardPosStr(card), team=card.BasicInfo?.Team||'';
   const ab=getAbility(card);
   const abHtml = ab
     ? `<div class="ec-ability-block"><div class="ec-ability-name">${ab.Name}</div><div class="ec-ability-desc">${ab.Description_UI||''}</div></div>`
     : '';
-  const sHtml = getCardSkills(card).map(s =>
-    `<div class="ec-skill-wrap"><div class="ec-skill-header"><span class="ec-skill-name">${s.Name}</span><span class="ec-skill-dmg">${s.Display_DMG}</span></div><div class="ec-skill-desc">${s.Description_UI}</div></div>`
-  ).join('');
+  
+  // FIX: Unwrap {Skill: {...}} if present
+  const sHtml = getCardSkills(card).map(raw => {
+    const s = raw.Skill || raw; // Handle the wrapper
+    return `<div class="ec-skill-wrap">
+              <div class="ec-skill-header">
+                <span class="ec-skill-name">${s.Name||'Skill'}</span>
+                <span class="ec-skill-dmg">${s.Display_DMG||''}</span>
+              </div>
+              <div class="ec-skill-desc">${s.Description_UI||s.Description||''}</div>
+            </div>`;
+  }).join('');
+
   return `<div class="ec-header"><div class="ec-title">${n}</div><div class="ec-team">${team} · ${p}</div></div>
 <div class="ec-stats-row"><div class="ec-stat">${hp} <span>HP</span></div><div class="ec-stat">${dmg} <span>DMG</span></div><div class="ec-stat">${spd} <span>SPD</span></div></div>
-${abHtml}<div style="font-size:.68rem;color:var(--text-muted);font-weight:700;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">Skills</div>${sHtml}`;
+ ${abHtml}<div style="font-size:.68rem;color:var(--text-muted);font-weight:700;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">Skills</div>${sHtml}`;
 }
 
 
