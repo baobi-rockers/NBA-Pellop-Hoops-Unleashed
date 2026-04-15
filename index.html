@@ -4701,8 +4701,15 @@ function _endOfTurnCleanup() {
   tickSkillDisables();
   tickContestTracking();
   tickEffects();
-  const all = [...playerActive, ...enemyActive];
-  all.forEach(c => { if (c && !c.isDead && ENGINE.tickCardEffects) ENGINE.tickCardEffects(c); });
+  
+  const all = [...playerActive, ...playerBench, ...enemyActive, ...enemyBench];
+  all.forEach(c => { 
+    if (c && !c.isDead && ENGINE.tickCardEffects) {
+        // This wrapper prevents a single card crash from stopping the whole game
+        try { ENGINE.tickCardEffects(c); } catch (e) { console.error("Tick Error on " + _getName(c), e); }
+    } 
+  });
+  
   if (ENGINE.clearRestOfTurnFlags) ENGINE.clearRestOfTurnFlags(all);
   if (SKILL_ENGINE.resetExtraMoveGuards) SKILL_ENGINE.resetExtraMoveGuards();
   if (currentLogTab === 'effects') renderEffectsPanel();
@@ -5252,19 +5259,22 @@ function buildCardDetailHTML(card) {
     // 1. Get Description
     let desc = s.Description_UI || s.Description || '';
     
-    // 2. Get Damage (Check flat property, then Modifiers, then Phases)
+    // 2. Get Damage (Robust checks)
     let displayDmg = s.Display_DMG || '';
-    if (!displayDmg && s.Modifiers) {
+    
+    // Check Modifiers (Array check for safety)
+    if (!displayDmg && Array.isArray(s.Modifiers)) {
         const dmgMod = s.Modifiers.find(m => (m.action_string || '').includes('Deal_Flat_DMG'));
         if (dmgMod) {
             const match = dmgMod.action_string.match(/Deal_Flat_DMG:(\d+)/);
             if (match) displayDmg = match[1];
         }
     }
-    if (!displayDmg && s.Phases) {
+    // Check Phases (Array check for safety)
+    if (!displayDmg && Array.isArray(s.Phases)) {
         for (const phase of s.Phases) {
             if (displayDmg) break;
-            if (phase.Modifiers) {
+            if (Array.isArray(phase.Modifiers)) {
                 const dmgMod = phase.Modifiers.find(m => (m.action_string || '').includes('Deal_Flat_DMG'));
                 if (dmgMod) {
                     const match = dmgMod.action_string.match(/Deal_Flat_DMG:(\d+)/);
@@ -5274,13 +5284,6 @@ function buildCardDetailHTML(card) {
         }
     }
 
-    return `<div class="ec-skill-wrap"><div class="ec-skill-header"><span class="ec-skill-name">${s.Name}</span><span class="ec-skill-dmg">${displayDmg}</span></div><div class="ec-skill-desc">${desc}</div></div>`;
-  }).join('');
-
-  return `<div class="ec-header"><div class="ec-title">${n}</div><div class="ec-team">${team} · ${p}</div></div>
-<div class="ec-stats-row"><div class="ec-stat">${hp} <span>HP</span></div><div class="ec-stat">${dmg} <span>DMG</span></div><div class="ec-stat">${spd} <span>SPD</span></div></div>
- ${abHtml}<div style="font-size:.68rem;color:var(--text-muted);font-weight:700;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">Skills</div>${sHtml}`;
-}
     return `<div class="ec-skill-wrap"><div class="ec-skill-header"><span class="ec-skill-name">${s.Name}</span><span class="ec-skill-dmg">${displayDmg}</span></div><div class="ec-skill-desc">${desc}</div></div>`;
   }).join('');
 
@@ -5479,6 +5482,32 @@ function showActionPanel(card, actorIdx) {
   nameEl.textContent = `[${card.battleRole}] ${shortName(getCardName(card))}`;
   btnsEl.innerHTML = '';
 
+function showActionPanel(card, actorIdx) {
+  const ck = card._instanceId;
+  const frozen = !!_frozen[ck];
+  const wrapper = $('action-panels-wrapper');
+  const nameEl  = $('action-card-name');
+  const btnsEl  = $('action-btns-row');
+  nameEl.textContent = `[${card.battleRole}] ${shortName(getCardName(card))}`;
+  btnsEl.innerHTML = '';
+
+  // --- Context for Condition Checks ---
+  // We need to know if we are winning to check conditions
+  const ownTeam = playerActive;
+  const enemyTeam = enemyActive;
+  const ownScore = window.playerScore || 0;
+  const enemyScore = window.enemyScore || 0;
+  const ownTeamLead = ownScore > enemyScore;
+  // Build a basic context for PARSER
+  const context = {
+      self: card,
+      ownTeam: ownTeam,
+      enemyTeam: enemyTeam,
+      ownTeamLead: ownTeamLead,
+      gameRound: window.turnCount || 1,
+      ownGrave: [], // Simplified
+  };
+
   // ── BASIC ATTACK ──
   if (!frozen) {
     const basicBtn = document.createElement('button');
@@ -5498,27 +5527,83 @@ function showActionPanel(card, actorIdx) {
     (card.Skills||[]).forEach((sk, si) => {
       const exhausted = sk._usesLeft <= 0;
       const turnCapped = isFinite(sk._usesPerTurn) && sk._usesThisTurn >= sk._usesPerTurn;
-      const disabled  = exhausted || turnCapped || (ENGINE.isSkillDisabled && ENGINE.isSkillDisabled(ck, sk.Name));
+      
+      // 1. Hide Reactionary Skills unless we want them shown (They are handled by prompts usually)
+      //    If a skill is purely Reactive, we skip adding it to the main action bar.
+      //    EXCEPTION: If it is also "Free" or has a "Standard" branch.
+      const isReactive = (sk.Timing || '').startsWith('Reactive');
+      // If it's ONLY reactive (no standard branch), hide it.
+      if (isReactive && !(sk.Timing || '').includes('Standard')) {
+          return; // Skip this button
+      }
 
-      // Reactive-only skills are defensive — don't show as active option unless free
-      if (sk._isReactive && !sk._isFree) return;
+      // 2. Check Conditions (The logic you asked for)
+      //    We look into the phases/modifiers for conditions.
+      let conditionsMet = true;
+      let conditionTooltip = "";
+      
+      // Check parsed phases for conditions
+      if (sk._parsed && sk._parsed.phases) {
+          for (const phase of sk._parsed.phases) {
+              if (!phase.modifiers) continue;
+              for (const mod of phase.modifiers) {
+                  if (mod.condition) {
+                      // Use PARSER to check the condition string
+                      try {
+                          if (!PARSER.evalCondition(mod.condition, context)) {
+                              conditionsMet = false;
+                              conditionTooltip = `Requires: ${mod.condition}`; // Simple tooltip
+                          }
+                      } catch(e) {
+                          console.error("Condition Check Error", e);
+                      }
+                  }
+              }
+          }
+      }
+      // Also check root condition if exists (Legacy)
+      if (sk.Conditions && sk.Conditions.includes('Own_Team_Lead') && !ownTeamLead) {
+          conditionsMet = false;
+          conditionTooltip = "Requires: Team Lead";
+      }
+
+      // Determine Disabled State
+      const disabled = exhausted || turnCapped || !conditionsMet;
 
       const btn = document.createElement('button');
       btn.className='action-btn action-btn-skill';
       btn.disabled=disabled;
-      btn.innerHTML=`${sk.Name} <span class="action-btn-dmg">${sk.Display_DMG||''}</span>`;
-      btn.title=sk.Description_UI||'';
-      btn.onclick=()=>{
-        pendingAction={actionType:'skill',actorIdx,skillIdx:si,targetIdx:null,execTeam:'player'};
-        uiState='AWAITING_TARGET';
-        $('action-panels-wrapper').classList.remove('visible');
-        renderArena();
-      };
+      
+      // Display Logic
+      // Try to find damage for the button label
+      let dmgLabel = sk.Display_DMG || '';
+      if (!dmgLabel && sk.Modifiers) {
+          const m = sk.Modifiers[0]?.action_string?.match(/Deal_Flat_DMG:(\d+)/);
+          if (m) dmgLabel = m[1];
+      }
+      
+      btn.innerHTML=`${sk.Name} <span class="action-btn-dmg">${dmgLabel}</span>`;
+      
+      if (!disabled) {
+          btn.onclick=()=>{
+              pendingAction={actionType:'skill',actorIdx,skillIdx:si,targetIdx:null,execTeam:'player'};
+              uiState='AWAITING_TARGET';
+              $('action-panels-wrapper').classList.remove('visible');
+              renderArena();
+          };
+      } else {
+          btn.title = conditionTooltip || "Cannot use this skill right now.";
+      }
+      
       btnsEl.appendChild(btn);
     });
   }
 
-  // ── SWAP ──
+  // ── SWAP / PASS (Same as before) ──
+  // ... (Keep your existing Swap/Pass logic here) ...
+  // (I am truncating this part for brevity, copy your Swap/Pass code from your file)
+  
+    // ── SWAP ──
   const aliveBench = playerBench.filter(c=>c&&!c.isDead);
   if (aliveBench.length) {
     const swapBtn = document.createElement('button');
@@ -5537,6 +5622,7 @@ function showActionPanel(card, actorIdx) {
     $('action-panels-wrapper').classList.remove('visible');
   };
   btnsEl.appendChild(passBtn);
+
 
   wrapper.classList.add('visible');
 }
