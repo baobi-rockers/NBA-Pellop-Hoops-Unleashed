@@ -1125,1995 +1125,1573 @@ if (typeof module !== 'undefined' && module.exports) {
 //   };
 //
 // ============================================================
+
+
 // ============================================================
-// SKILL ENGINE — COMPLETE IMPLEMENTATION
 // ============================================================
-// Sections:
-//   1.  Skill Use Counters & UM Enforcement
-//   2.  Skill Phase Resolution
-//   3.  Nature Matching & Property Checks
-//   4.  Coin Flip System (standard + forced)
-//   5.  Damage Computation (Deal_Flat_DMG, Deal_Assist_Dmg, etc.)
-//   6.  Defensive Skill Resolver (Block/Contest/Intercept/Freeze/Nullify/Steal)
-//   7.  Modifier Executor (all Apply_* actions)
-//   8.  Global Debuff System
-//   9.  Reactive Skill Prompting
-//   10. Stack-Per-Hit / Stack-Per-Miss (Permanent stacking)
-//   11. Dual-Use Skill Branching
-//   12. Grant_Extra_Move (loop-safe)
-//   13. Screen_Guarantee_Hit
-//   14. DMG_Redirection
-//   15. LBJ_Putback & Rebound_And_Deal_Base_DMG
-//   16. Hard_Disable_Shutdown (by skill name or nature)
-//   17. Apply_Priority (priority multiplier mid-turn)
-//   18. Steal_Skill
-//   19. executeSkillAction  — main entry point
-//   20. executeBasicAction  — basic attack entry point
-//   21. AI Skill Chooser    — bot skill selection logic
-// ============================================================
+const ABILITY_ENGINE = (() => {
 
-const SKILL_ENGINE = (() => {
+  // ============================================================
+  // SECTION 1 — INTERNAL UTILITY WRAPPERS
+  // Thin wrappers around card data accessors.
+  // All card data lives in c.UI_Frontend_Data per JSON schema.
+  // ============================================================
 
-  // ─────────────────────────────────────────────────────────────
-  // INTERNAL STATE
-  // ─────────────────────────────────────────────────────────────
-
-  // Global debuffs applied by skills { instanceId → [{debuffType, targetNature, turnsLeft, sourceCard, refund}] }
-  const _globalDebuffs = {};
-
-  // Active skill disables (by skill name or nature) { instanceId → [{skillName|null, nature|null, turnsLeft}] }
-  const _skillDisables = {};
-
-  // Persistent stacking buffs (Stack_Per_Hit / Stack_Per_Miss) stored separately so they never expire
-  const _permanentStacks = {}; // { instanceId → { dmg: 0, baseDmg: 0 } }
-
-  // Extra-move grant guard (prevent infinite Grant_Extra_Move loops)
-  const _extraMoveUsedThisTurn = new Set();
-
-  // Screen guarantee registry { instanceId → true }  (cleared after use)
-  const _screenGuarantee = {};
-
-  // Skill-level conditions evaluated before phase execution
-  // (tracks per-skill-slot activation branch for OR/DUAL_USE skills)
-  const _activeBranch = {}; // { `${instanceId}_${skillIdx}` → 'GROUP_A' | 'GROUP_B' | null }
-
-  // ─────────────────────────────────────────────────────────────
-  // SECTION 1 — SKILL USE COUNTERS & UM ENFORCEMENT
-  // ─────────────────────────────────────────────────────────────
-
-  /**
-   * initSkillCounters(card)
-   * Boot per-turn and game-max counters for every skill on a card.
-   * Called by cloneCard in OTHER.html.
-   */
-  function initSkillCounters(card) {
-    if (!card || !card.Skills) return;
-    card.Skills.forEach((sk, idx) => {
-      const um = PARSER.parseUM(sk.UM || '');
-      sk._usesPerTurn  = um.usesPerTurn  || 1;
-      sk._maxUses      = um.maxUses      || 0; // 0 = unlimited
-      sk._priority     = um.priority     || 1;
-      sk._usesLeft     = um.maxUses      || 999; // remaining game uses
-      sk._usesThisTurn = 0;
-      sk._parsed       = PARSER.parseSkill(sk); // cache parsed phases
-    });
+  function _getHP(c)     { return c?.currentHp ?? c?.UI_Frontend_Data?.Stats?.HP ?? 0; }
+  function _getMaxHP(c)  { return c?.UI_Frontend_Data?.Stats?.HP ?? 0; }
+  function _getDMG(c)    { return c?.UI_Frontend_Data?.Stats?.Base_DMG ?? 0; }
+  function _getSPD(c)    { return c?.UI_Frontend_Data?.Stats?.Speed ?? 0; }
+  function _getTeam(c)   { return c?.UI_Frontend_Data?.Team_ID ?? c?.UI_Frontend_Data?.Team ?? ''; }
+  function _getPlayer(c) { return c?.UI_Frontend_Data?.Player_ID ?? ''; }
+  function _getHeight(c) { return c?.UI_Frontend_Data?.Height ?? ''; }
+  function _getWeight(c) { return c?.UI_Frontend_Data?.Weight ?? 0; }
+  function _getPos(c)    {
+    const p = c?.UI_Frontend_Data?.Positions;
+    return p ? [p.Primary, p.Secondary, p.Third].filter(Boolean) : [];
   }
+  function _getState(c)  { return c?._state ?? null; }
+  function _getName(c)   { return c?.UI_Frontend_Data?.Formatted_Name ?? c?.UI_Frontend_Data?.Name ?? 'Unknown'; }
+
+  // ============================================================
+  // SECTION 2 — CONDITION CONTEXT BUILDER
+  // Builds the ctx object that PARSER.evalCondition expects.
+  // ============================================================
 
   /**
-   * resetSkillTurnCounters(card)
-   * Call at the start of each new turn for every active card.
-   */
-  function resetSkillTurnCounters(card) {
-    if (!card || !card.Skills) return;
-    card.Skills.forEach(sk => {
-      sk._usesThisTurn = 0;
-    });
-  }
-
-  /**
-   * canUseSkill(card, skillIdx) → boolean
-   * Checks per-turn limit, game max, freeze, and name/nature disable.
-   */
-  function canUseSkill(card, skillIdx) {
-    if (!card || !card.Skills) return false;
-    const sk = card.Skills[skillIdx];
-    if (!sk) return false;
-    const ck = card._instanceId;
-
-    // Frozen check
-    if (_frozen && _frozen[ck]) return false;
-
-    // Per-turn uses
-    if (sk._usesPerTurn > 0 && sk._usesThisTurn >= sk._usesPerTurn) return false;
-
-    // Game max uses (0 = unlimited)
-    if (sk._maxUses > 0 && sk._usesLeft <= 0) return false;
-
-    // Hard disable by skill name or nature
-    if (isSkillDisabled(ck, sk.Name, getSkillNature(sk))) return false;
-
-    return true;
-  }
-
-  /**
-   * consumeSkillUse(card, skillIdx)
-   * Decrement both per-turn and game counters.
-   * For DUAL_USE, this is called once regardless of branch chosen.
-   */
-  function consumeSkillUse(card, skillIdx) {
-    if (!card?.Skills?.[skillIdx]) return;
-    const sk = card.Skills[skillIdx];
-    sk._usesThisTurn++;
-    if (sk._maxUses > 0) sk._usesLeft--;
-  }
-
-  /**
-   * refundSkillUse(card, skillIdx)
-   * Used when Refund:True is set (Global_Debuff forced coin flip miss).
-   */
-  function refundSkillUse(card, skillIdx) {
-    if (!card?.Skills?.[skillIdx]) return;
-    const sk = card.Skills[skillIdx];
-    if (sk._usesThisTurn > 0) sk._usesThisTurn--;
-    if (sk._maxUses > 0 && sk._usesLeft < sk._maxUses) sk._usesLeft++;
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // SECTION 2 — SKILL PHASE RESOLUTION
-  // ─────────────────────────────────────────────────────────────
-
-  /**
-   * resolveSkillPhases(skill, context)
-   * Steps through each Phase of a skill and picks the relevant
-   * Modifier blocks. Returns { nature, properties, modifiers[] }.
+   * buildCondCtx
+   * Assembles the evaluation context for PARSER.evalCondition.
    *
-   * context: { card, ownTeam, enemyTeam, selectedTarget,
-   *            selectedTeammate, gameRound, ownGrave,
-   *            ownTeamLead, branch }
+   * @param {object} self          – the card owning the ability rule
+   * @param {object[]} ownTeam     – active + bench of owner's side
+   * @param {object[]} enemyTeam   – active + bench of enemy side
+   * @param {object} extras        – optional overrides:
+   *   castingEnemy, selectedEnemy, castNature, gameRound,
+   *   ownTeamLead, ownGrave
    */
-  function resolveSkillPhases(skill, context) {
-    const parsed = skill._parsed || PARSER.parseSkill(skill);
-    if (!parsed || !parsed.phases || !parsed.phases.length) {
-      // Fallback: legacy flat skill format
-      return _resolveLegacySkill(skill, context);
-    }
-
-    const result = { nature: [], properties: [], modifiers: [] };
-
-    for (const phase of parsed.phases) {
-      // Timing gate: reactive phases are handled by promptReactiveSkills, skip here
-      if (phase.timing && phase.timing.includes('Reactive') && !context.isReactive) continue;
-
-      // Collect natures
-      if (phase.nature && phase.nature.length) {
-        result.nature.push(...phase.nature);
-      }
-
-      // Collect properties
-      if (phase.properties && phase.properties.length) {
-        result.properties.push(...phase.properties);
-      }
-
-      // Evaluate each modifier
-      for (const mod of (phase.modifiers || [])) {
-        // Skill-level condition (e.g. Own_Team_Lead, coin flip)
-        if (mod.condition) {
-          const condCtx = {
-            self: context.card,
-            ownTeam: context.ownTeam,
-            enemyTeam: context.enemyTeam,
-            selectedEnemy: context.selectedTarget,
-            ownTeamLead: context.ownTeamLead,
-            ownGrave: context.ownGrave,
-            gameRound: context.gameRound,
-          };
-          const condStr = mod.condition;
-          if (!_evalSkillCondition(condStr, condCtx)) continue;
-        }
-
-        // Coin flip at modifier level
-        if (mod.coinFlip && mod.coinFlip > 0) {
-          // coinFlip is stored as probability (e.g. 0.5)
-          if (Math.random() >= mod.coinFlip) continue; // failed flip, skip this mod
-        }
-
-        // Parse the action string
-        const action = PARSER.parseAction ? PARSER.parseAction(mod.actionString || '') :
-                       _parseAction(mod.actionString || '');
-        const tdParsed = mod.td ? PARSER.parseTD(mod.td) : { turns: 0, delay: 0, special: null };
-
-        result.modifiers.push({
-          action,
-          target: mod.actionTarget || 'Self',
-          td: tdParsed,
-          raw: mod.actionString,
-        });
-      }
-    }
-    return result;
-  }
-
-  /**
-   * _resolveLegacySkill — handles flat (non-phase) skill JSON format.
-   * Reads directly from sk.Modifiers, sk.Nature, sk.Properties, sk.TD
-   */
-  function _resolveLegacySkill(sk, context) {
-    const nature = _parseNatureArray(sk.Nature || sk.nature || '');
-    const properties = _parsePropertiesArray(sk.Properties || sk.properties || '');
-    const modStr = sk.Modifiers || sk.modifiers || '';
-    const modTarget = sk.Modifier_Target || sk.modifierTarget || 'Self';
-    const tdParsed = PARSER.parseTD(sk.TD || sk.td || '');
-    const action = _parseAction(modStr);
+  function buildCondCtx(self, ownTeam, enemyTeam, extras = {}) {
     return {
-      nature,
-      properties,
-      modifiers: action.type !== 'NONE' ? [{ action, target: modTarget, td: tdParsed, raw: modStr }] : [],
+      self,
+      ownTeam: ownTeam || [],
+      enemyTeam: enemyTeam || [],
+      castingEnemy: extras.castingEnemy ?? null,
+      selectedEnemy: extras.selectedEnemy ?? null,
+      castNature: extras.castNature ?? '',
+      gameRound: extras.gameRound ?? 1,
+      ownTeamLead: extras.ownTeamLead ?? false,
+      ownGrave: extras.ownGrave ?? [],
+      target: self,                 // default condition target = self
     };
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // SECTION 3 — NATURE MATCHING & PROPERTY CHECKS
-  // ─────────────────────────────────────────────────────────────
-
-  function getSkillNature(sk) {
-    if (!sk) return 'Offensive';
-    const parsed = sk._parsed;
-    if (parsed?.phases?.[0]?.nature?.[0]) return parsed.phases[0].nature[0];
-    return sk.Nature || sk.nature || 'Offensive';
-  }
-
-  function skillHasProperty(sk, prop) {
-    const props = _parsePropertiesArray(sk.Properties || sk.properties || '');
-    return props.some(p => p.toUpperCase() === prop.toUpperCase());
-  }
-
-  function _parseNatureArray(raw) {
-    if (!raw) return [];
-    if (Array.isArray(raw)) return raw;
-    return raw.split(/[;\n]/).map(s => s.trim()).filter(Boolean);
-  }
-
-  function _parsePropertiesArray(raw) {
-    if (!raw) return [];
-    if (Array.isArray(raw)) return raw;
-    return raw.split(/[;\n]/).map(s => s.trim()).filter(Boolean);
-  }
+  // ============================================================
+  // SECTION 3 — RULE CONDITION EVALUATOR
+  // Evaluates a single rule's Condition field using PARSER.
+  // Handles string conditions, object conditions, and null.
+  // ============================================================
 
   /**
-   * natureMatchesFilter(attackNature, filter)
-   * Uses PARSER.natureMatches if available, otherwise inline.
+   * evalRuleCondition
+   * Returns true if the condition passes for the given context.
+   * Null/empty condition = unconditional pass.
    */
-  function natureMatchesFilter(attackNature, filter) {
-    if (typeof PARSER !== 'undefined' && PARSER.natureMatches) {
-      return PARSER.natureMatches(filter, attackNature, null);
-    }
-    if (!attackNature || !filter) return false;
-    const filterParts = filter.split('/');
-    return filterParts.some(part => {
-      if (part === attackNature) return true;
-      if (attackNature.startsWith(part + ':')) return true;
-      if (part === attackNature.split(':')[0]) return true;
+  function evalRuleCondition(condition, ctx) {
+    if (!condition) return true;
+    // Condition may be a string or pre-parsed object
+    const condStr = typeof condition === 'string' ? condition : JSON.stringify(condition);
+    if (!condStr.trim()) return true;
+    try {
+      return PARSER.evalCondition(condStr, ctx);
+    } catch (e) {
+      console.warn('[ABILITY_ENGINE] evalRuleCondition error:', e, condition);
       return false;
-    });
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // SECTION 4 — COIN FLIP SYSTEM
-  // ─────────────────────────────────────────────────────────────
-
-  /**
-   * runCoinFlip(cardName, skillName, forced)
-   * Returns true = hit, false = miss.
-   * Shows animation via global animateCoinFlip().
-   */
-  async function runCoinFlip(cardName, skillName, forced = false) {
-    const win = Math.random() < 0.5;
-    if (typeof animateCoinFlip === 'function') {
-      await animateCoinFlip(cardName, skillName, win);
     }
-    return win;
   }
 
-  /**
-   * checkForcedCoinFlip(attackerCard, sk, castNature, attackerTeam)
-   * Returns true if attacker must flip and flip was lost.
-   * Called after standard coin flip resolved (so stacks properly).
-   */
-  async function checkForcedCoinFlip(attackerCard, sk, castNature, defenderTeam) {
-    const ck = attackerCard._instanceId;
-    if (attackerCard._noMiss || attackerCard._immuneForcedCoin) return false;
-    if (sk && skillHasProperty(sk, 'Immune_All_Coin_Flip')) return false;
+  // ============================================================
+  // SECTION 4 — ACTION EXECUTOR
+  // Applies a parsed action to the given target card(s).
+  // Returns a descriptor object for the caller (turn loop) to log.
+  // ============================================================
 
-    // Check global debuffs on defending team side that forced coin flip
-    const defs = defenderTeam || [];
-    for (const defCard of defs) {
-      if (!defCard || defCard.isDead) continue;
-      const dck = defCard._instanceId;
-      const debuffs = _globalDebuffs[dck] || [];
-      for (const db of debuffs) {
-        if (db.debuffType !== 'FORCED_COIN_FLIP') continue;
-        if (db.targetNature && !natureMatchesFilter(castNature, db.targetNature)) continue;
-        // Flip!
-        const win = await runCoinFlip(shortName(getCardName(attackerCard)), sk?.Name || 'Attack', true);
-        if (typeof logMsg === 'function') {
-          logMsg('coin', 'Coin', `Forced flip for ${shortName(getCardName(attackerCard))}: ${win ? 'HEADS — Hit!' : 'TAILS — Miss!'}`);
-        }
-        if (!win) return { missed: true, refund: db.refund, sourceCard: defCard };
-      }
+  /**
+   * _executeAction
+   * Takes a PARSER.parseAction result and applies it to targetCards.
+   * Returns array of { card, type, detail } for logging.
+   */
+  function _executeAction(action, targetCards, sourceCard, td, context) {
+    if (!action || !targetCards) return [];
+    const targets = Array.isArray(targetCards) ? targetCards : [targetCards];
+    const results = [];
+
+    for (const target of targets) {
+      if (!target || target.isDead) continue;
+      const r = _applyActionToCard(action, target, sourceCard, td, context);
+      if (r) results.push(r);
     }
-    return false;
+    return results;
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // SECTION 5 — DAMAGE COMPUTATION
-  // ─────────────────────────────────────────────────────────────
-
   /**
-   * computeSkillDamage(action, attackerCard, assisterCard, mitigationFlat, mitigationMult, selfCastFlags)
-   * Returns final damage integer after all modifiers.
+   * _applyActionToCard
+   * Core switch that applies one parsed action to one card.
    */
-  function computeSkillDamage(action, attackerCard, assisterCard, mitigationFlat, mitigationMult, selfCastFlags) {
-    let dmg = 0;
-    selfCastFlags = selfCastFlags || {};
-    mitigationFlat = mitigationFlat || 0;
-    mitigationMult = mitigationMult != null ? mitigationMult : 1.0;
+  function _applyActionToCard(action, card, sourceCard, td, context) {
+    if (!action || !card) return null;
+    const tdParsed = td ? PARSER.parseTD(td) : { turns: 1, delay: 0, special: null };
 
     switch (action.type) {
-      //--- Deal_Flat_DMG:VALUE (unmitigated)
-      case 'DEAL_FLAT_DMG':
-        dmg = action.value || 0;
-        // Flat DMG bypasses all mitigation
-        return Math.max(0, dmg);
 
-      //--- Deal_Assist_Dmg:MULTx_Nature:Ref(POS)
+      // ── STAT BUFFS ──────────────────────────────────────────
+      case 'STAT_BUFF': {
+        const { operation, value, stat, nature, stackMode, stackLimit } = action.params;
+        const amt = operation === '-' ? -(value || 0) : (value || 0);
+
+        if (stackMode) {
+          // Stacking buff (Klay, T-Mac, Larry Bird)
+          // ⭐ Stack_Per_Hit / Stack_Per_Miss :Permanent — never expires
+          if (!card._stackBuffs) card._stackBuffs = {};
+          const key = `${sourceCard?._instanceId}_${stat}`;
+          if (!card._stackBuffs[key]) card._stackBuffs[key] = { total: 0, count: 0, stat, stackMode, permanent: stackMode.includes('Permanent'), limit: stackLimit || Infinity };
+          const sb = card._stackBuffs[key];
+          if (sb.count < sb.limit) {
+            sb.total += amt;
+            sb.count++;
+            _applyStatDelta(card, stat, amt);
+          }
+          return { card, type: 'STAT_BUFF_STACK', detail: `${_getName(card)} stacked +${amt} ${stat} (×${sb.count})` };
+        }
+
+        // ⭐ THIS_ATTACK — only for current attack resolution
+        if (tdParsed.special === 'THIS_ATTACK') {
+          if (!card._thisAttackBuffs) card._thisAttackBuffs = {};
+          card._thisAttackBuffs[stat] = (card._thisAttackBuffs[stat] || 0) + amt;
+          return { card, type: 'STAT_BUFF_THIS_ATTACK', detail: `${_getName(card)} +${amt} ${stat} this attack` };
+        }
+
+        // Timed buff
+        if (!card._timedBuffs) card._timedBuffs = [];
+        card._timedBuffs.push({
+          stat, amount: amt, nature: nature || null,
+          turnsLeft: tdParsed.special === 'REST_OF_TURN' ? 0.5 : (tdParsed.turns || 1),
+          delay: tdParsed.delay || 0,
+          started: (tdParsed.delay || 0) <= 0,
+          sourceId: sourceCard?._instanceId || null,
+        });
+        if ((tdParsed.delay || 0) <= 0) _applyStatDelta(card, stat, amt);
+        return { card, type: 'STAT_BUFF', detail: `${_getName(card)} ${operation}${value} ${stat} for ${tdParsed.turns}T` };
+      }
+
+      // ── DEAL FLAT DAMAGE ────────────────────────────────────
+      case 'DEAL_FLAT_DMG': {
+        const dmg = action.params.damage || 0;
+        card.currentHp = Math.max(0, (card.currentHp ?? _getMaxHP(card)) - dmg);
+        return { card, type: 'DEAL_FLAT_DMG', detail: `${_getName(card)} takes ${dmg} flat DMG` };
+      }
+
+      // ── DEAL ASSIST DAMAGE ──────────────────────────────────
       case 'DEAL_ASSIST_DMG': {
-        const refCard = assisterCard;
-        if (!refCard) { dmg = 0; break; }
-        const mult   = action.mult   || 1.0;
-        const addVal  = action.addValue || 0;
-        // Base on the ref card's effective DMG
-        const refDmg = typeof getEffectiveDMG === 'function' ? getEffectiveDMG(refCard, false) : (refCard.basicDmg || 0);
-        dmg = Math.floor(refDmg * mult) + addVal;
-        break;
+        const refPos = action.params.referencePos;
+        const refCard = context?.ownTeam?.find(c => _getPos(c).includes(refPos));
+        let dmg = refCard ? _getDMG(refCard) : 0;
+        if (action.params.mode === 'multiply') dmg = Math.floor(dmg * (action.params.multiplier || 1));
+        else if (action.params.mode === 'add') dmg = dmg + (action.params.bonus || 0);
+        card.currentHp = Math.max(0, (card.currentHp ?? _getMaxHP(card)) - dmg);
+        return { card, type: 'DEAL_ASSIST_DMG', detail: `Assist DMG ${dmg} on ${_getName(card)} (ref: ${refPos})` };
       }
 
-      //--- Standard skill: numeric DMG from Display_DMG + any skill dmg buffs
-      case 'NONE':
-      default: {
-        // Try to read Display_DMG numeric from raw skill
-        const raw = String(attackerCard._currentSkillDisplayDMG || '0');
-        const numM = raw.match(/(\d+)/);
-        const base = numM ? parseInt(numM[1]) : 0;
-        dmg = base + (attackerCard._skillDmgBonus || 0) + (selfCastFlags.thisAttackSkillDmgBonus || 0);
-        break;
+      // ── APPLY AURA ──────────────────────────────────────────
+      case 'APPLY_AURA': {
+        // ⭐ Auras persist until source leaves; tracked by auraId
+        if (!card._auras) card._auras = new Map();
+        const auraId = action.params.auraId;
+        if (!card._auras.has(auraId)) {
+          card._auras.set(auraId, {
+            auraId,
+            effect: action.params.effect,
+            sourceCardId: sourceCard?._instanceId || null,
+            sourceName: _getName(sourceCard),
+            tdParsed,
+          });
+          // Parse and immediately apply the aura's effect
+          const auraEffect = PARSER.parseAction(action.params.effect);
+          if (auraEffect) _applyActionToCard(auraEffect, card, sourceCard, td, context);
+        }
+        return { card, type: 'APPLY_AURA', detail: `Aura ${auraId} applied to ${_getName(card)}` };
       }
-    }
 
-    // Apply permanent stacks
-    const stacks = _permanentStacks[attackerCard._instanceId];
-    if (stacks) {
-      dmg += (stacks.dmg || 0);
-    }
+      // ── REMOVE AURA ─────────────────────────────────────────
+      case 'REMOVE_AURA': {
+        if (card._auras) {
+          const auraId = action.params.auraId;
+          if (card._auras.has(auraId)) {
+            const aura = card._auras.get(auraId);
+            card._auras.delete(auraId);
+            // Reverse the aura effect
+            const auraEffect = PARSER.parseAction(aura.effect);
+            if (auraEffect) _reverseActionOnCard(auraEffect, card, context);
+            return { card, type: 'REMOVE_AURA', detail: `Aura ${auraId} removed from ${_getName(card)}` };
+          }
+        }
+        return null;
+      }
 
-    // Apply enemy-cast mitigation: flat first, then multiply
-    dmg = Math.floor(dmg * mitigationMult);
-    dmg = Math.max(0, dmg - mitigationFlat);
+      // ── UNTARGETABLE BY ─────────────────────────────────────
+      case 'UNTARGETABLE_BY': {
+        const { defensiveTypes, nature } = action.params;
+        if (!card._untargetableBy) card._untargetableBy = [];
+        // ⭐ Per-attack vs persistent — tracked by tdParsed.special
+        const entry = { defensiveTypes: defensiveTypes || [], nature: nature || null, special: tdParsed.special, turnsLeft: tdParsed.turns || 999 };
+        card._untargetableBy.push(entry);
+        // Set quick-access immunity flags
+        _recomputeUntargetableFlags(card);
+        return { card, type: 'UNTARGETABLE_BY', detail: `${_getName(card)} untargetable by ${defensiveTypes?.join('/')}` };
+      }
 
-    return Math.max(0, dmg);
-  }
+      // ── APPLY PROPERTY ──────────────────────────────────────
+      case 'APPLY_PROPERTY': {
+        const prop = action.params.property || '';
+        if (prop.startsWith('Stat_Lock:')) {
+          // ⭐ Stat_Lock:HP+DMG+SPD+Skills — full freeze of listed stats
+          if (!card._statLock) card._statLock = new Set();
+          prop.replace('Stat_Lock:', '').split('+').forEach(s => card._statLock.add(s.trim()));
+          return { card, type: 'STAT_LOCK', detail: `${_getName(card)} stat-locked: ${prop}` };
+        }
+        if (prop === 'No_Miss' || prop.includes('No_Miss')) {
+          card._noMiss = true;
+          if (tdParsed.special === 'THIS_ATTACK') card._noMissThisAttack = true;
+          return { card, type: 'NO_MISS', detail: `${_getName(card)} No_Miss active` };
+        }
+        if (prop === 'Untargetable') {
+          card._fullyUntargetable = true;
+          if (tdParsed.special === 'REST_OF_TURN') {
+            card._untargetableUntilTurnEnd = true;
+          }
+          return { card, type: 'UNTARGETABLE', detail: `${_getName(card)} fully untargetable` };
+        }
+        if (prop === 'Survive_At_1HP') {
+          // ⭐ Survive_At_1HP — checked before KO is processed
+          card._surviveProp = true;
+          return { card, type: 'SURVIVE_AT_1HP', detail: `${_getName(card)} will survive at 1 HP` };
+        }
+        // Generic property
+        if (!card._properties) card._properties = new Set();
+        card._properties.add(prop);
+        return { card, type: 'APPLY_PROPERTY', detail: `${_getName(card)} property: ${prop}` };
+      }
 
-  /**
-   * getEffectiveDMG — wrapper to safely call global or local version
-   */
-  function _getEffectiveDMG(card, isSkill) {
-    if (typeof getEffectiveDMG === 'function') return getEffectiveDMG(card, isSkill);
-    return card.basicDmg || 0;
-  }
+      // ── APPLY STATE ─────────────────────────────────────────
+      case 'APPLY_STATE': {
+        const stateStr = action.params.state || '';
+        // ⭐ Sixth_Man:Priority:-10:Targetable_Via_Teammate
+        if (stateStr.startsWith('Sixth_Man')) {
+          const parts = stateStr.split(':');
+          card._state = 'Sixth_Man';
+          card._sixthManPriority = parseInt(parts[2] || '-10');
+          card._targetableViaTeammate = parts.includes('Targetable_Via_Teammate');
+          return { card, type: 'APPLY_STATE_SIXTH_MAN', detail: `${_getName(card)} set as Sixth Man` };
+        }
+        card._state = stateStr;
+        return { card, type: 'APPLY_STATE', detail: `${_getName(card)} state: ${stateStr}` };
+      }
 
-  // ─────────────────────────────────────────────────────────────
-  // SECTION 6 — DEFENSIVE SKILL RESOLVER
-  // ─────────────────────────────────────────────────────────────
+      // ── APPLY MODIFIER ──────────────────────────────────────
+      case 'APPLY_MODIFIER': {
+        return _applyModifier(action.params, card, sourceCard, tdParsed, context);
+      }
 
-  /**
-   * resolveDefensiveAction(defAction, attackerCard, defenderCard, castNature, atk)
-   * Returns { blocked: boolean, contested: boolean, frozen: boolean,
-   *           nullified: boolean, intercepted: boolean, stolenSkill: boolean,
-   *           bonusDmg: 0 }
-   */
-  function resolveDefensiveAction(defAction, attackerCard, defenderCard, castNature, atk) {
-    const result = { blocked: false, contested: false, frozen: false, nullified: false, intercepted: false, stolenSkill: false, bonusDmg: 0 };
-    if (!defAction) return result;
+      // ── GLOBAL DEBUFF ───────────────────────────────────────
+      case 'GLOBAL_DEBUFF': {
+        // ⭐ Global_Debuff with Refund:True — if miss, refund skill use
+        const { debuffType, targetNature, refund } = action.params;
+        if (!card._globalDebuffs) card._globalDebuffs = [];
+        card._globalDebuffs.push({ debuffType, targetNature, refund: !!refund, turnsLeft: tdParsed.turns || 1, sourceId: sourceCard?._instanceId });
+        return { card, type: 'GLOBAL_DEBUFF', detail: `${_getName(card)} global debuff: ${debuffType} on ${targetNature}` };
+      }
 
-    switch (defAction.type) {
+      // ── GRANT EXTRA MOVE ────────────────────────────────────
+      case 'GRANT_EXTRA_MOVE': {
+        // ⭐ Grant_Extra_Move — must be guarded by caller against infinite loops
+        card._grantedExtraMove = true;
+        card._extraMoveNature = action.params.nature || null;
+        return { card, type: 'GRANT_EXTRA_MOVE', detail: `${_getName(card)} granted extra move` };
+      }
 
-      //--- BLOCK — nullifies offensive move entirely
+      // ── SCREEN GUARANTEE HIT ────────────────────────────────
+      case 'SCREEN_GUARANTEE_HIT': {
+        card._screened = true;
+        return { card, type: 'SCREEN_GUARANTEE_HIT', detail: `${_getName(card)} next shot cannot miss` };
+      }
+
+      // ── HARD DISABLE SHUTDOWN ───────────────────────────────
+      case 'HARD_DISABLE_SHUTDOWN': {
+        // ⭐ Ref_Skill disables a specific named skill
+        if (!card._skillDisables) card._skillDisables = [];
+        card._skillDisables.push({
+          refSkill: action.params.refSkill || null,   // null = ALL skills
+          nature: action.params.nature || null,
+          turnsLeft: tdParsed.turns || 1,
+          sourceId: sourceCard?._instanceId,
+        });
+        return { card, type: 'HARD_DISABLE_SHUTDOWN', detail: `${_getName(card)} skill shutdown: ${action.params.refSkill || 'ALL'}` };
+      }
+
+      // ── APPLY PRIORITY ──────────────────────────────────────
+      case 'APPLY_PRIORITY': {
+        const multiplier = action.params.priority || 1;
+        if (!card._priorityModifiers) card._priorityModifiers = [];
+        card._priorityModifiers.push({
+          nature: action.params.nature || null,
+          multiplier,
+          turnsLeft: tdParsed.special === 'REST_OF_TURN' ? 0.5 : (tdParsed.turns || 1),
+          sourceId: sourceCard?._instanceId,
+        });
+        return { card, type: 'APPLY_PRIORITY', detail: `${_getName(card)} ${multiplier}x priority` };
+      }
+
+      // ── REACTIONARY DMG REDUCTION ───────────────────────────
+      case 'REACTIONARY_DMG_REDUCTION': {
+        if (!card._reactionaryReductions) card._reactionaryReductions = [];
+        card._reactionaryReductions.push({
+          mode: action.params.mode,
+          multiplier: action.params.multiplier,
+          reduction: action.params.reduction,
+          turnsLeft: tdParsed.turns || 1,
+          sourceId: sourceCard?._instanceId,
+        });
+        return { card, type: 'REACTIONARY_DMG_REDUCTION', detail: `${_getName(card)} reactionary DMG reduction` };
+      }
+
+      // ── BLOCK / CONTEST / INTERCEPT / FREEZE / NULLIFY / STEAL ─
       case 'BLOCK':
-        if (_isBlockable(atk)) {
-          result.blocked = true;
-          if (typeof logMsg === 'function') logMsg('def', 'Defense', `🛡 ${shortName(getCardName(defenderCard))} BLOCKED the attack!`);
-        } else {
-          if (typeof logMsg === 'function') logMsg('sys', 'System', `${shortName(getCardName(defenderCard))}'s block has no effect (Unblockable).`);
-        }
-        break;
-
-      //--- CONTEST — forces coin flip for attacker
+        card._blocking = true;
+        return { card, type: 'BLOCK', detail: `${_getName(card)} blocking` };
       case 'CONTEST':
-        if (_isContestable(atk)) {
-          result.contested = true;
-          if (typeof logMsg === 'function') logMsg('def', 'Defense', `🤚 ${shortName(getCardName(defenderCard))} CONTESTED!`);
-        }
-        break;
-
-      //--- INTERCEPT — stops Utility:Assist / Offensive:Assist
+        card._contesting = true;
+        return { card, type: 'CONTEST', detail: `${_getName(card)} contesting` };
       case 'INTERCEPT':
-        if (castNature && castNature.includes('Assist')) {
-          result.intercepted = true;
-          if (typeof logMsg === 'function') logMsg('def', 'Defense', `✋ ${shortName(getCardName(defenderCard))} INTERCEPTED the assist!`);
-        }
-        break;
-
-      //--- FREEZE — defender freezes attacker for rest of turn
+        card._intercepting = true;
+        return { card, type: 'INTERCEPT', detail: `${_getName(card)} intercepting` };
       case 'FREEZE':
-        if (typeof _frozen !== 'undefined') {
-          _frozen[attackerCard._instanceId] = 1;
-        }
-        result.frozen = true;
-        if (typeof logMsg === 'function') logMsg('def', 'Defense', `❄ ${shortName(getCardName(defenderCard))} FROZE ${shortName(getCardName(attackerCard))}!`);
-        break;
-
-      //--- NULLIFY — cancels incoming defensive skill
+        card._frozen = true;
+        card._frozenTurnsLeft = tdParsed.turns || 1;
+        // ⭐ Freeze also disables skill usage
+        card._skillsFrozen = true;
+        return { card, type: 'FREEZE', detail: `${_getName(card)} frozen for ${tdParsed.turns || 1}T` };
       case 'NULLIFY':
-        result.nullified = true;
-        if (typeof logMsg === 'function') logMsg('def', 'Defense', `🚫 ${shortName(getCardName(defenderCard))} NULLIFIED the defensive move!`);
-        break;
-
-      //--- STEAL_SKILL — copies one enemy skill
+        card._nullified = true;
+        return { card, type: 'NULLIFY', detail: `${_getName(card)} nullified` };
       case 'STEAL_SKILL':
-        result.stolenSkill = true;
-        // The actual skill-swap UI is handled in resolveStealSkill()
+        return { card, type: 'STEAL_SKILL', detail: `Steal skill from ${_getName(card)}` };
+
+      // ── BEHAVIOR MODIFIER ───────────────────────────────────
+      case 'BEHAVIOR_MODIFIER':
+      case 'UNKNOWN':
+      default:
+        return { card, type: action.type, detail: `Applied ${action.type} to ${_getName(card)}` };
+    }
+  }
+
+  // ── MODIFIER SUB-ROUTER ─────────────────────────────────────
+  function _applyModifier(params, card, sourceCard, tdParsed, context) {
+    switch (params.modifier) {
+      case 'DAMAGE_REDUCTION': {
+        if (!card._dmgReductions) card._dmgReductions = [];
+        card._dmgReductions.push({
+          mode: params.mode,
+          multiplier: params.multiplier,
+          reduction: params.reduction,
+          targetNature: params.targetNature || null,
+          targetType: params.targetType || null,
+          turnsLeft: tdParsed.turns || 1,
+          delay: tdParsed.delay || 0,
+          started: (tdParsed.delay || 0) <= 0,
+          sourceId: sourceCard?._instanceId || null,
+        });
+        return { card, type: 'DAMAGE_REDUCTION', detail: `${_getName(card)} DMG reduction active` };
+      }
+      case 'BONUS_DAMAGE': {
+        if (!card._bonusDmg) card._bonusDmg = [];
+        card._bonusDmg.push({ bonus: params.bonus || 0, turnsLeft: tdParsed.turns || 1 });
+        return { card, type: 'BONUS_DAMAGE', detail: `+${params.bonus} bonus DMG on ${_getName(card)}` };
+      }
+      case 'RETALIATORY_DAMAGE': {
+        // ⭐ Dealt back to attacker after block (Harden, Embiid)
+        if (!card._retaliations) card._retaliations = [];
+        card._retaliations.push({ damage: params.bonus || params.damage || 0, turnsLeft: 1 });
+        return { card, type: 'RETALIATORY_DAMAGE', detail: `${_getName(card)} retaliates ${params.bonus || 0}` };
+      }
+      case 'REBOUND_AND_DEAL_BASE_DMG': {
+        // ⭐ After a miss, another card shoots with base DMG
+        card._reboundAndDeal = true;
+        return { card, type: 'REBOUND_AND_DEAL_BASE_DMG', detail: `${_getName(card)} can rebound and deal base DMG` };
+      }
+      case 'LBJ_PUTBACK': {
+        // ⭐ LeBron-style putback: teammate failure triggers extra attack
+        card._lbjPutback = true;
+        return { card, type: 'LBJ_PUTBACK', detail: `${_getName(card)} LBJ Putback active` };
+      }
+      case 'DMG_REDIRECTION': {
+        // ⭐ Damage meant for one card goes to another (Jokic redirect)
+        card._dmgRedirectionTarget = params.target || null;
+        return { card, type: 'DMG_REDIRECTION', detail: `DMG redirection active on ${_getName(card)}` };
+      }
+      case 'FORCED_COIN_FLIP_ON': {
+        // ⭐ Defender forces attacker to flip coin for specific nature
+        if (!card._forcedCoinFlips) card._forcedCoinFlips = [];
+        card._forcedCoinFlips.push({ targetNature: params.targetNature, turnsLeft: tdParsed.turns || 1, refund: params.refund ?? false });
+        return { card, type: 'FORCED_COIN_FLIP_ON', detail: `Forced coin flip on ${params.targetNature}` };
+      }
+      default:
+        return { card, type: `MODIFIER_${params.modifier}`, detail: `Modifier ${params.modifier} on ${_getName(card)}` };
+    }
+  }
+
+  // ── STAT DELTA HELPER ───────────────────────────────────────
+  function _applyStatDelta(card, stat, amount) {
+    // ⭐ Stat_Lock check — locked stats cannot be altered
+    if (card._statLock && card._statLock.has(stat)) return;
+    switch (stat) {
+      case 'DMG': case 'DMG:Nature:Base': case 'DMG:Nature:Offensive':
+      case 'DMG:Nature:Offensive:Close_Shot': case 'DMG:Nature:Offensive:Jump_Shot':
+        if (!card._dmgModifiers) card._dmgModifiers = 0;
+        card._dmgModifiers += amount;
+        break;
+      case 'HP':
+        card.currentHp = Math.min(_getMaxHP(card), Math.max(1, (card.currentHp ?? _getMaxHP(card)) + amount));
+        break;
+      case 'MAX_HP':
+        if (card.UI_Frontend_Data?.Stats) {
+          card.UI_Frontend_Data.Stats.HP = (card.UI_Frontend_Data.Stats.HP || 0) + amount;
+        }
+        break;
+      case 'SPD':
+        if (!card._spdModifier) card._spdModifier = 0;
+        card._spdModifier += amount;
+        break;
+      default:
         break;
     }
-    return result;
   }
 
-  function _isBlockable(sk) {
-    if (!sk) return true;
-    return !skillHasProperty(sk, 'Unblockable') && !skillHasProperty(sk, 'Invulnerable');
-  }
-  function _isContestable(sk) {
-    if (!sk) return true;
-    return !skillHasProperty(sk, 'Uncontestable') && !skillHasProperty(sk, 'Invulnerable');
-  }
-  function _isNullifiable(sk) {
-    if (!sk) return true;
-    return !skillHasProperty(sk, 'Unnullifiable');
-  }
-
-  /**
-   * resolveStealSkill(stealerCard, victimCard)
-   * Prompts player to pick a skill to steal. Called async.
-   */
-  async function resolveStealSkill(stealerCard, victimCard) {
-    if (!victimCard?.Skills?.length) return;
-    // Simple: steal first available skill
-    const victimSk = victimCard.Skills[0];
-    if (!victimSk) return;
-
-    // Add a copy to stealer's skill list (replacing the steal skill slot)
-    const stealSlot = stealerCard.Skills.findIndex(s => {
-      const parsed = _parseAction(s.Modifiers || '');
-      return parsed.type === 'STEAL_SKILL' || (s.Modifiers || '').includes('Steal_Skill');
-    });
-    if (stealSlot >= 0) {
-      stealerCard.Skills[stealSlot] = JSON.parse(JSON.stringify(victimSk));
-      initSkillCounters(stealerCard); // re-init counters
-      if (typeof logMsg === 'function') logMsg('sys', 'Skill Steal', `${shortName(getCardName(stealerCard))} stole "${victimSk.Name}" from ${shortName(getCardName(victimCard))}!`);
+  // ── REVERSE ACTION (for aura removal) ──────────────────────
+  function _reverseActionOnCard(action, card, context) {
+    if (!action) return;
+    switch (action.type) {
+      case 'STAT_BUFF': {
+        const { operation, value, stat } = action.params;
+        const amt = operation === '-' ? (value || 0) : -(value || 0);
+        _applyStatDelta(card, stat, amt);
+        break;
+      }
+      case 'UNTARGETABLE_BY':
+        _recomputeUntargetableFlags(card);
+        break;
+      case 'APPLY_PROPERTY':
+        if (action.params.property === 'No_Miss') delete card._noMiss;
+        if (action.params.property === 'Untargetable') delete card._fullyUntargetable;
+        if (action.params.property === 'Survive_At_1HP') delete card._surviveProp;
+        break;
+      default:
+        break;
     }
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // SECTION 7 — MODIFIER EXECUTOR
-  // ─────────────────────────────────────────────────────────────
+  // ── UNTARGETABLE FLAG RECOMPUTE ─────────────────────────────
+  function _recomputeUntargetableFlags(card) {
+    // Reset derived quick flags
+    delete card._immuneAllOffensive;
+    delete card._immuneCloseShot;
+    delete card._immuneJumpShot;
+    delete card._immuneSteal;
+    delete card._immuneIntercept;
+    delete card._immuneFreeze;
+    delete card._skillsUnblockable;
+    delete card._skillsUncontestable;
+    delete card._baseUnblockable;
+    delete card._baseUncontestable;
+    delete card._immuneForcedCoin;
+
+    if (!card._untargetableBy) return;
+    for (const entry of card._untargetableBy) {
+      if (entry.turnsLeft <= 0) continue;
+      for (const dt of (entry.defensiveTypes || [])) {
+        if (dt === 'Block')       card._skillsUnblockable = true;
+        if (dt === 'Block:Base')  card._baseUnblockable   = true;
+        if (dt === 'Contest')     card._skillsUncontestable = true;
+        if (dt === 'Steal')       card._immuneSteal       = true;
+        if (dt === 'Freeze')      card._immuneFreeze      = true;
+        if (dt === 'Intercept')   card._immuneIntercept   = true;
+        if (dt === 'Forced_Coin_Flip') card._immuneForcedCoin = true;
+      }
+      const n = (entry.nature || '').toLowerCase();
+      if (n.includes('offensive') && !n.includes('close') && !n.includes('jump'))
+        card._immuneAllOffensive = true;
+      if (n.includes('close_shot')) card._immuneCloseShot = true;
+      if (n.includes('jump_shot'))  card._immuneJumpShot  = true;
+    }
+  }
+
+  // ============================================================
+  // SECTION 5 — TRIGGER DISPATCHER
+  // The main event bus. Game events call fireEvent(), which
+  // checks all ability rules across all active cards and fires
+  // matching rules.
+  // ============================================================
 
   /**
-   * executeModifier(modEntry, casterCard, resolvedTarget, castNature, tdParsed, context)
-   * modEntry: { action, target (string), td, raw }
-   * resolvedTarget: actual card object or array of cards
+   * fireEvent
+   * Central event bus. Call this whenever a game event occurs.
+   *
+   * @param {string}   eventType  – canonical event type (see trigger types)
+   * @param {object}   payload    – event-specific data
+   * @param {object[]} allCards   – all active cards (both teams)
+   * @param {object}   gameState  – { ownTeam, enemyTeam, ownGrave, ownTeamLead, gameRound }
+   * @returns {object[]} list of applied effects for logging
    */
-  async function executeModifier(modEntry, casterCard, resolvedTarget, castNature, context) {
-    const action = modEntry.action;
-    const td = modEntry.td || { turns: 0, delay: 0, special: null };
-    const targets = Array.isArray(resolvedTarget) ? resolvedTarget : (resolvedTarget ? [resolvedTarget] : []);
+  function fireEvent(eventType, payload, allCards, gameState) {
+    const effects = [];
+    for (const card of allCards) {
+      if (!card || card.isDead) continue;
+      const rules = card.Ability?.Rules || card.Ability?.rules || [];
+      if (!rules.length) continue;
 
-    for (const tgt of targets) {
-      if (!tgt || (tgt.isDead && action.type !== 'STAT_BUFF_HP')) continue;
-      const tck = tgt._instanceId;
+      for (const rule of rules) {
+        const trigger = PARSER.parseTrigger(rule.trigger || rule.Trigger || '');
+        if (!_triggerMatches(trigger, eventType, payload, card)) continue;
 
-      switch (action.type) {
-
-        //--- STAT_BUFF_MAX_HP — temp ceiling raise + instant heal
-        case 'STAT_BUFF_MAX_HP':
-          _applyTimedStatBuff(tgt, 'MAX_HP', action.value, td);
-          break;
-
-        //--- STAT_BUFF_HP — instant heal, capped at max HP
-        case 'STAT_BUFF_HP':
-          tgt.currentHp = Math.min(getCardHP(tgt), (tgt.currentHp || 0) + action.value);
-          if (typeof logMsg === 'function') logMsg('sys', 'Heal', `${shortName(getCardName(tgt))} healed ${action.value} HP → ${tgt.currentHp}`);
-          break;
-
-        //--- STAT_BUFF_SPD — timed speed buff
-        case 'STAT_BUFF_SPD':
-          _applyTimedStatBuff(tgt, 'SPD', action.value, td);
-          break;
-
-        //--- STAT_BUFF_BASE_DMG — timed base dmg buff (or THIS_ATTACK)
-        case 'STAT_BUFF_BASE_DMG':
-          if (td.special === 'THIS_ATTACK') {
-            tgt._thisAttackBaseDmgBonus = (tgt._thisAttackBaseDmgBonus || 0) + action.value;
-          } else {
-            _applyTimedStatBuff(tgt, 'BASE_DMG', action.value, td);
+        const ctx = buildCondCtx(
+          card,
+          gameState?.ownTeam ?? [],
+          gameState?.enemyTeam ?? [],
+          {
+            castingEnemy:  payload.castingEnemy  ?? null,
+            selectedEnemy: payload.selectedEnemy ?? null,
+            castNature:    payload.castNature    ?? '',
+            gameRound:     gameState?.gameRound  ?? 1,
+            ownTeamLead:   gameState?.ownTeamLead ?? false,
+            ownGrave:      gameState?.ownGrave   ?? [],
           }
-          break;
+        );
 
-        //--- STAT_BUFF_SKILL_DMG — timed/permanent skill dmg buff
-        case 'STAT_BUFF_SKILL_DMG':
-          if (action.permanent && action.stacking) {
-            // Permanent stacking — never expires
-            _applyPermanentStack(tgt, 'dmg', action.value);
-            if (typeof logMsg === 'function') logMsg('sys', 'Stack', `${shortName(getCardName(tgt))} stacked +${action.value} DMG (permanent)`);
-          } else if (td.special === 'THIS_ATTACK') {
-            tgt._thisAttackSkillDmgBonus = (tgt._thisAttackSkillDmgBonus || 0) + action.value;
-          } else {
-            _applyTimedStatBuff(tgt, 'SKILL_DMG', action.value, td);
-          }
-          break;
+        // ⭐ Condition must pass before executing action
+        if (!evalRuleCondition(rule.condition || rule.Condition || null, ctx)) continue;
 
-        //--- APPLY_AURA — delegate to ENGINE
-        case 'APPLY_AURA':
-          if (typeof ENGINE !== 'undefined' && ENGINE.applyAura) {
-            ENGINE.applyAura(casterCard, action.abilityId, action.spec);
-          }
-          break;
+        // Resolve action target
+        const actionTargetStr = rule.action_target || rule.Action_Target || 'Self';
+        const resolvedTargets = _resolveActionTargets(actionTargetStr, card, gameState?.ownTeam ?? [], gameState?.enemyTeam ?? [], payload);
 
-        //--- REMOVE_AURA
-        case 'REMOVE_AURA':
-          if (typeof ENGINE !== 'undefined' && ENGINE.removeAura) {
-            ENGINE.removeAura(casterCard, action.abilityId);
-          }
-          break;
+        // Parse and execute the action
+        const actionStr = rule.action_string || rule.Action_String || '';
+        if (!actionStr) continue;
+        const action = PARSER.parseAction(actionStr);
+        if (!action) continue;
 
-        //--- UNTARGETABLE_BY
-        case 'UNTARGETABLE_BY':
-          if (td.special === 'THIS_ATTACK') {
-            tgt._tempUntargetableBy = action.spec;
-          } else {
-            if (typeof ENGINE !== 'undefined' && ENGINE._applyUntargetableFlags) {
-              ENGINE._applyUntargetableFlags(tgt, action.spec);
-            }
-          }
-          break;
-
-        //--- APPLY_PROP_NO_MISS
-        case 'APPLY_PROP_NO_MISS':
-          tgt._noMiss = true;
-          break;
-
-        //--- APPLY_PROP_UNTARGETABLE
-        case 'APPLY_PROP_UNTARGETABLE':
-          tgt._fullyUntargetable = true;
-          break;
-
-        //--- APPLY_PROP_SURVIVE_AT_1HP
-        case 'APPLY_PROP_SURVIVE_AT_1HP':
-          tgt._surviveProp = true;
-          break;
-
-        //--- APPLY_PROP_STAT_LOCK
-        case 'APPLY_PROP_STAT_LOCK':
-          tgt._statLock = action.locks || [];
-          break;
-
-        //--- DMG_REDUCTION_MULT / FLAT — reactive; applied by ENEMY_CAST evaluator
-        case 'DMG_REDUCTION_MULT':
-        case 'DMG_REDUCTION_FLAT':
-          // These are handled reactively by ENGINE.evaluateEnemyCastTriggers
-          // If a skill explicitly applies them (non-reactive), store as timed debuff
-          _applyTimedStatBuff(tgt, action.type === 'DMG_REDUCTION_MULT' ? 'DMG_REDUCE_MULT' : 'DMG_REDUCE_FLAT',
-            action.type === 'DMG_REDUCTION_MULT' ? action.mult : action.value, td);
-          break;
-
-        //--- BONUS_DAMAGE
-        case 'BONUS_DAMAGE':
-          tgt._bonusDmg = (tgt._bonusDmg || 0) + action.value;
-          if (typeof logMsg === 'function') logMsg('sys', 'Bonus DMG', `${shortName(getCardName(tgt))} +${action.value} bonus DMG`);
-          break;
-
-        //--- RETALIATORY_DAMAGE — stored for use after block
-        case 'RETALIATORY_DAMAGE':
-          casterCard._retaliatory = (casterCard._retaliatory || 0) + action.value;
-          break;
-
-        //--- REBOUND_AND_DEAL_BASE_DMG — grants rebound flag
-        case 'REBOUND_AND_DEAL_BASE_DMG':
-          casterCard._hasRebound = true;
-          break;
-
-        //--- LBJ_PUTBACK — grants putback flag
-        case 'LBJ_PUTBACK':
-          casterCard._hasPutback = true;
-          break;
-
-        //--- DMG_REDIRECTION — redirect incoming damage to self
-        case 'DMG_REDIRECTION':
-          tgt._dmgRedirectTo = casterCard;
-          if (typeof logMsg === 'function') logMsg('sys', 'Redirect', `${shortName(getCardName(casterCard))} will absorb damage for ${shortName(getCardName(tgt))}`);
-          break;
-
-        //--- FORCED_COIN_FLIP_ON — applied to attacker's next attack
-        case 'FORCED_COIN_FLIP_ON':
-          // Store as a global debuff on the caster targeting enemies
-          _addGlobalDebuff(casterCard, 'FORCED_COIN_FLIP', action.natureSpec || '', td, false);
-          break;
-
-        //--- GLOBAL_DEBUFF — see Section 8
-        case 'GLOBAL_DEBUFF':
-          _addGlobalDebuff(casterCard, action.debuffType || action.params?.debuffType,
-            action.targetNature || action.params?.targetNature,
-            td, action.refund || action.params?.refund || false);
-          break;
-
-        //--- GRANT_EXTRA_MOVE — see Section 12
-        case 'GRANT_EXTRA_MOVE':
-          await _handleGrantExtraMove(casterCard, tgt, action.nature || null, context);
-          break;
-
-        //--- SCREEN_GUARANTEE_HIT — see Section 13
-        case 'SCREEN_GUARANTEE_HIT':
-          _screenGuarantee[tgt._instanceId] = true;
-          if (typeof logMsg === 'function') logMsg('sys', 'Screen', `${shortName(getCardName(casterCard))} set a screen — next shot guaranteed!`);
-          break;
-
-        //--- HARD_DISABLE_SHUTDOWN — see Section 16
-        case 'HARD_DISABLE_SHUTDOWN':
-          _applySkillDisable(tgt, action.refSkill || null, action.nature || null, td);
-          if (typeof logMsg === 'function') logMsg('sys', 'Shutdown', `${shortName(getCardName(tgt))} has ${action.refSkill ? `"${action.refSkill}"` : `${action.nature} skills`} disabled!`);
-          break;
-
-        //--- APPLY_PRIORITY — see Section 17
-        case 'APPLY_PRIORITY':
-          tgt._priorityBonus = (tgt._priorityBonus || 1) * (action.multiplier || 1);
-          break;
-
-        //--- FREEZE (as modifier, not defensive action)
-        case 'FREEZE':
-          if (typeof _frozen !== 'undefined') {
-            _frozen[tck] = td.turns || 1;
-          }
-          if (typeof logMsg === 'function') logMsg('sys', 'Freeze', `${shortName(getCardName(tgt))} is frozen!`);
-          break;
-
-        //--- BLOCK / CONTEST / INTERCEPT / STEAL — defensive; resolved above
-        case 'BLOCK':
-        case 'CONTEST':
-        case 'INTERCEPT':
-          break;
-
-        //--- STEAL_SKILL (modifier context — pick target at execution time)
-        case 'STEAL_SKILL':
-          await resolveStealSkill(casterCard, tgt);
-          break;
-
-        //--- NULLIFY (clear debuffs on target)
-        case 'NULLIFY':
-          _clearDebuffsOnCard(tgt);
-          if (typeof logMsg === 'function') logMsg('sys', 'Nullify', `${shortName(getCardName(tgt))}'s debuffs cleared.`);
-          break;
-
-        //--- DRAIN — disables natures for duration
-        case 'DRAIN':
-          _applyDrain(tgt, action.nature || '', td);
-          break;
-
-        //--- APPLY_STATE
-        case 'APPLY_STATE':
-          _applyState(tgt, action.raw || '');
-          break;
-
-        //--- DEAL_FLAT_DMG / DEAL_ASSIST_DMG — damage dealt inline
-        case 'DEAL_FLAT_DMG':
-        case 'DEAL_ASSIST_DMG': {
-          const inlineDmg = computeSkillDamage(action, casterCard, context?.assister || null, 0, 1.0, {});
-          if (typeof playCombatAnimation === 'function') {
-            await playCombatAnimation(
-              context?.attackerSlotId || '',
-              context?.defenderSlotId || '',
-              inlineDmg, tgt, context?.defIdx || 0, context?.defSide || 'enemy'
-            );
-          } else {
-            tgt.currentHp = Math.max(0, (tgt.currentHp || 0) - inlineDmg);
-          }
-          if (typeof logMsg === 'function') logMsg('atk', 'Skill', `${shortName(getCardName(casterCard))} deals ${inlineDmg} DMG to ${shortName(getCardName(tgt))}`);
-          if (tgt.currentHp <= 0 && typeof handleKO === 'function') {
-            handleKO(tgt, context?.defSide || 'enemy', context?.defIdx || 0);
-          }
-          break;
-        }
-
-        //--- FORCE_LOCK_ON_SELF — enemy must target casterCard
-        case 'FORCE_LOCK_ON_SELF':
-          tgt._forcedTarget = casterCard;
-          break;
-
-        default:
-          // Unknown modifier — delegate to ENGINE passive flag handler
-          if (typeof ENGINE !== 'undefined' && ENGINE.applyPassiveFlag) {
-            ENGINE.applyPassiveFlag(tgt, action);
-          }
-          break;
+        const td = rule.td || rule.TD || null;
+        const applied = _executeAction(action, resolvedTargets, card, td, ctx);
+        effects.push(...applied);
       }
     }
+    return effects;
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // SECTION 8 — GLOBAL DEBUFF SYSTEM
-  // ─────────────────────────────────────────────────────────────
+  // ── TRIGGER MATCHER ─────────────────────────────────────────
+  function _triggerMatches(trigger, eventType, payload, ownerCard) {
+    if (!trigger || trigger.type === 'UNKNOWN') return false;
+    if (trigger.type === 'AND_PAIR') return false; // handled by AND_PAIR logic
 
-  /**
-   * _addGlobalDebuff(sourceCard, debuffType, targetNature, td, refund)
-   * Stores a global debuff associated with a source card.
-   * debuffType: 'FORCED_COIN_FLIP' | 'HARD_DISABLE_SHUTDOWN' | 'FORCE_COIN_FLIP' | etc.
-   */
-  function _addGlobalDebuff(sourceCard, debuffType, targetNature, td, refund) {
-    const ck = sourceCard._instanceId;
-    if (!_globalDebuffs[ck]) _globalDebuffs[ck] = [];
-    _globalDebuffs[ck].push({
-      debuffType: debuffType || '',
-      targetNature: targetNature || '',
-      turnsLeft: td?.turns || 1,
-      refund: !!refund,
-      sourceCard,
-    });
-    if (typeof logMsg === 'function') {
-      logMsg('sys', 'Global Debuff', `${shortName(getCardName(sourceCard))} applies ${debuffType} debuff`);
+    // ── ALWAYS ──────────────────────────────────────────────
+    if (trigger.type === 'ALWAYS') return true;
+
+    // ── DEPLOY ──────────────────────────────────────────────
+    if (trigger.type === 'DEPLOY_POS_MATCH' && eventType === 'DEPLOY') {
+      return _getPos(ownerCard).some(p => p === payload.position);
     }
-  }
-
-  /**
-   * tickGlobalDebuffs()
-   * Called at end of each turn. Decrements turnsLeft; removes expired debuffs.
-   */
-  function tickGlobalDebuffs() {
-    for (const ck of Object.keys(_globalDebuffs)) {
-      _globalDebuffs[ck] = _globalDebuffs[ck].filter(db => {
-        db.turnsLeft--;
-        return db.turnsLeft > 0;
-      });
-      if (!_globalDebuffs[ck].length) delete _globalDebuffs[ck];
-    }
-  }
-
-  /**
-   * gcGlobalDebuffsForCard(card)
-   * Called when a card leaves the active lineup — removes all its debuffs.
-   */
-  function gcGlobalDebuffsForCard(card) {
-    const ck = card._instanceId;
-    delete _globalDebuffs[ck];
-  }
-
-  /**
-   * applyGlobalDebuffEffects(attackerCard, sk, castNature, ownTeam, skillIdx)
-   * Check if any global debuffs on the team affect this attacker+nature.
-   * Returns { forced_coin_flip_miss: false } etc.
-   */
-  async function applyGlobalDebuffEffects(attackerCard, sk, castNature, opponentTeam, skillIdx) {
-    const result = { forcedCoinFlipMiss: false, refundSkill: false };
-    for (const defCard of (opponentTeam || [])) {
-      if (!defCard || defCard.isDead) continue;
-      const dck = defCard._instanceId;
-      for (const db of (_globalDebuffs[dck] || [])) {
-        if (!natureMatchesFilter(castNature, db.targetNature)) continue;
-        if (db.debuffType === 'FORCED_COIN_FLIP' || db.debuffType === 'FORCE_COIN_FLIP') {
-          if (attackerCard._noMiss || attackerCard._immuneForcedCoin) continue;
-          if (sk && skillHasProperty(sk, 'Immune_All_Coin_Flip')) continue;
-          const win = await runCoinFlip(shortName(getCardName(attackerCard)), sk?.Name || 'Attack', true);
-          if (typeof logMsg === 'function') {
-            logMsg('coin', 'Forced Flip', `${shortName(getCardName(defCard))} forced a coin flip — ${win ? 'Hit!' : 'Miss!'}`);
-          }
-          if (!win) {
-            result.forcedCoinFlipMiss = true;
-            result.refundSkill = db.refund;
-            break;
-          }
-        }
-      }
-      if (result.forcedCoinFlipMiss) break;
-    }
-    return result;
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // SECTION 9 — REACTIVE SKILL PROMPTING
-  // ─────────────────────────────────────────────────────────────
-
-  /**
-   * promptReactiveSkills(act, sk, atkC, defC, dIdx, isPlayer, defs, castNature)
-   * Shows the reactive skill popup to the defending side.
-   * Returns true if the attack was blocked / intercepted.
-   * This is async — waits for player input or resolves AI choice.
-   */
-  async function promptReactiveSkills(act, sk, atkC, defC, dIdx, isPlayer, defs, castNature) {
-    // Find all reactive skills on the defending team that can fire
-    const reactors = [];
-    const defTeam  = defs || [];
-    const ownSide  = isPlayer ? 'enemy' : 'player';
-
-    for (let i = 0; i < defTeam.length; i++) {
-      const defCard = defTeam[i];
-      if (!defCard || defCard.isDead) continue;
-      const ck = defCard._instanceId;
-      if (_frozen && _frozen[ck]) continue;
-
-      (defCard.Skills || []).forEach((rSk, rIdx) => {
-        if (!_isReactiveTiming(rSk)) return;
-        if (!canUseSkill(defCard, rIdx)) return;
-        if (!_reactiveSkillCanFire(rSk, castNature, sk)) return;
-        reactors.push({ card: defCard, cardIdx: i, sk: rSk, skIdx: rIdx });
-      });
+    if (trigger.type === 'DEPLOY_SIXTH_MAN' && eventType === 'DEPLOY') {
+      return payload.isSixthMan === true;
     }
 
-    if (!reactors.length) return false;
-
-    let chosen = null;
-
-    if (!isPlayer) {
-      // Enemy side (human) gets to react
-      chosen = await _showReactivePrompt(reactors, atkC, defC, castNature, act);
-    } else {
-      // Bot reacts automatically — pick first available
-      chosen = _botChooseReactive(reactors, castNature);
+    // ── ENTER ACTIVE LINEUP ─────────────────────────────────
+    if (trigger.type === 'ENTER_ACTIVE_LINEUP' && eventType === 'ENTER_ACTIVE_LINEUP') {
+      return payload.cardId === ownerCard._instanceId;
     }
 
-    if (!chosen) return false;
-
-    // Execute the reactive skill
-    consumeSkillUse(chosen.card, chosen.skIdx);
-    const defNature = getSkillNature(chosen.sk);
-    const defResult = resolveDefensiveAction(
-      _parseAction(chosen.sk.Modifiers || ''),
-      atkC, chosen.card, castNature, sk
-    );
-
-    if (typeof logMsg === 'function') {
-      logMsg('def', ownSide === 'player' ? 'You' : 'Bot', `${shortName(getCardName(chosen.card))} uses ${chosen.sk.Name}!`);
-    }
-
-    // Retaliatory damage after block
-    if (defResult.blocked) {
-      const retDmg = typeof ENGINE !== 'undefined' && ENGINE.evaluateRetaliateAbilities
-        ? ENGINE.evaluateRetaliateAbilities(atkC, 'Block', castNature)
-        : (atkC._retaliatory || 0);
-      if (retDmg > 0 && defC && !defC.isDead) {
-        if (typeof logMsg === 'function') logMsg('atk', 'Retaliate', `${shortName(getCardName(atkC))} retaliates for ${retDmg}!`);
-        if (typeof playCombatAnimation === 'function') {
-          const aSide = isPlayer ? 'player' : 'enemy';
-          const dSide = isPlayer ? 'enemy' : 'player';
-          await playCombatAnimation(`${aSide}-${act.actorIdx}`, `${dSide}-${dIdx}`, retDmg, defC, dIdx, dSide);
-          if (defC.currentHp <= 0 && typeof handleKO === 'function') handleKO(defC, dSide, dIdx);
-        }
-      }
-    }
-
-    return defResult.blocked || defResult.intercepted;
-  }
-
-  /**
-   * _isReactiveTiming(sk) — true if skill has Reactive or Reactive_Free timing.
-   */
-  function _isReactiveTiming(sk) {
-    if (!sk) return false;
-    const timing = String(sk.Timing || sk.timing || '');
-    return timing.includes('Reactive');
-  }
-
-  /**
-   * _reactiveSkillCanFire(rSk, castNature, attackSk)
-   * Returns true if the reactive skill's timing matches the incoming attack nature.
-   */
-  function _reactiveSkillCanFire(rSk, castNature, attackSk) {
-    const timing = String(rSk.Timing || rSk.timing || '');
-    if (!timing) return true; // no filter = always fires
-
-    // Extract nature from timing string e.g. "Reactive_Free:On_Enemy:Nature:Offensive:Close_Shot"
-    const natMatch = timing.match(/Nature:([^\s:]+(?::[^\s:]+)*)/);
-    if (natMatch) {
-      const filter = natMatch[1].replace(/_/g, ':');
-      if (!natureMatchesFilter(castNature, filter)) return false;
-    }
-    // Property-level immunity on incoming attack
-    if (timing.includes('Unblockable') && attackSk && skillHasProperty(attackSk, 'Unblockable')) return false;
-    if (timing.includes('Uncontestable') && attackSk && skillHasProperty(attackSk, 'Uncontestable')) return false;
-    return true;
-  }
-
-  /**
-   * _showReactivePrompt(reactors, atkC, defC, castNature, act)
-   * Shows the in-game reactive skill prompt. Returns chosen { card, sk, skIdx } or null.
-   */
-  async function _showReactivePrompt(reactors, atkC, defC, castNature, act) {
-    return new Promise(resolve => {
-      const overlay = document.createElement('div');
-      overlay.className = 'reactive-overlay';
-      overlay.innerHTML = `
-        <div class="reactive-popup">
-          <div class="reactive-title">⚡ Incoming: <span>${atkC ? shortName(getCardName(atkC)) : 'Enemy'}</span></div>
-          <div class="reactive-sub">Nature: <b>${castNature}</b> — Use a reactive skill?</div>
-          <div class="reactive-options">
-            ${reactors.map((r, i) => `
-              <button class="game-btn game-btn-blue reactive-choice-btn" data-idx="${i}">
-                <span class="reactive-card-name">${shortName(getCardName(r.card))}</span>
-                <span class="reactive-sk-name">${r.sk.Name}</span>
-                <span class="reactive-sk-dmg">${r.sk.Display_DMG || ''}</span>
-              </button>
-            `).join('')}
-          </div>
-          <button class="game-btn game-btn-ghost reactive-pass-btn">Pass (Don't React)</button>
-        </div>
-      `;
-
-      overlay.querySelectorAll('.reactive-choice-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-          const idx = parseInt(btn.dataset.idx);
-          document.body.removeChild(overlay);
-          resolve(reactors[idx]);
-        });
-      });
-      overlay.querySelector('.reactive-pass-btn').addEventListener('click', () => {
-        document.body.removeChild(overlay);
-        resolve(null);
-      });
-
-      document.body.appendChild(overlay);
-    });
-  }
-
-  /**
-   * _botChooseReactive(reactors, castNature)
-   * Simple bot heuristic: prefer Block > Contest > Freeze > others.
-   */
-  function _botChooseReactive(reactors, castNature) {
-    const priority = ['BLOCK', 'CONTEST', 'FREEZE', 'INTERCEPT', 'DMG_REDUCTION_MULT', 'DMG_REDUCTION_FLAT'];
-    for (const pType of priority) {
-      const found = reactors.find(r => {
-        const a = _parseAction(r.sk.Modifiers || '');
-        return a.type === pType;
-      });
-      if (found) return found;
-    }
-    return reactors[0] || null;
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // SECTION 10 — STACK-PER-HIT / STACK-PER-MISS (Permanent stacking)
-  // ─────────────────────────────────────────────────────────────
-
-  /**
-   * processStackingTriggers(card, subtype, castNature, castType, skillId, ownTeam)
-   * subtype: 'HIT' or 'FAIL'
-   * Called after attack resolves. Delegates to ENGINE for ON:SELF_CAST rules,
-   * then checks parsed skill modifiers for Stack_Per_Hit / Stack_Per_Miss.
-   */
-  function processStackingTriggers(card, subtype, castNature, castType, skillId, ownTeam) {
-    // Ability-level stacking (T-Mac, Larry Bird) — via ENGINE
-    if (typeof ENGINE !== 'undefined' && ENGINE.evalSelfCastStackingAbilities) {
-      ENGINE.evalSelfCastStackingAbilities(card, castNature, castType, subtype, skillId, ownTeam);
-    }
-
-    // Skill-level stacking modifiers
-    (card.Skills || []).forEach(sk => {
-      if (sk.Name !== skillId && (sk._parsed?.id || sk.SkillID) !== skillId) return;
-      const phases = sk._parsed?.phases || [];
-      for (const phase of phases) {
-        for (const mod of (phase.modifiers || [])) {
-          const action = _parseAction(mod.actionString || '');
-          if (action.stacking === 'HIT' && subtype === 'HIT') {
-            _applyPermanentStack(card, 'dmg', action.value || 0);
-          }
-          if (action.stacking === 'MISS' && subtype === 'FAIL') {
-            _applyPermanentStack(card, 'dmg', action.value || 0);
-          }
-        }
-      }
-    });
-  }
-
-  function _applyPermanentStack(card, stat, value) {
-    const ck = card._instanceId;
-    if (!_permanentStacks[ck]) _permanentStacks[ck] = { dmg: 0, baseDmg: 0 };
-    _permanentStacks[ck][stat] = (_permanentStacks[ck][stat] || 0) + value;
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // SECTION 11 — DUAL-USE SKILL BRANCHING
-  // ─────────────────────────────────────────────────────────────
-
-  /**
-   * resolveDualUseBranch(sk, context)
-   * Returns the resolved modifiers for the chosen branch.
-   * For player-controlled: prompts with a choice popup.
-   * For bot: picks offensive branch.
-   */
-  async function resolveDualUseBranch(sk, context) {
-    const isPlayerControlled = context.isPlayer;
-    let branch = 'GROUP_A'; // default = offensive
-
-    if (isPlayerControlled) {
-      branch = await _promptDualUseChoice(sk, context);
-    } else {
-      // Bot: prefer offensive branch
-      branch = 'GROUP_A';
-    }
-
-    _activeBranch[`${context.card._instanceId}_${context.skillIdx}`] = branch;
-    return branch;
-  }
-
-  async function _promptDualUseChoice(sk, context) {
-    return new Promise(resolve => {
-      const overlay = document.createElement('div');
-      overlay.className = 'reactive-overlay';
-      overlay.innerHTML = `
-        <div class="reactive-popup">
-          <div class="reactive-title">⚡ ${sk.Name} — Choose Mode</div>
-          <div class="reactive-options">
-            <button class="game-btn game-btn-orange dual-choice" data-branch="GROUP_A">⚔ Offensive</button>
-            <button class="game-btn game-btn-blue dual-choice" data-branch="GROUP_B">🛡 Defensive</button>
-          </div>
-        </div>
-      `;
-      overlay.querySelectorAll('.dual-choice').forEach(btn => {
-        btn.addEventListener('click', () => {
-          document.body.removeChild(overlay);
-          resolve(btn.dataset.branch);
-        });
-      });
-      document.body.appendChild(overlay);
-    });
-  }
-
-  /**
-   * isDualUseSkill(sk) — checks parsed phases for DUAL_USE tag.
-   */
-  function isDualUseSkill(sk) {
-    if (!sk) return false;
-    const parsed = sk._parsed || PARSER.parseSkill(sk);
-    if (!parsed?.phases) return false;
-    return parsed.phases.some(p => p.timing && p.timing.includes('DUAL_USE'));
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // SECTION 12 — GRANT_EXTRA_MOVE (loop-safe)
-  // ─────────────────────────────────────────────────────────────
-
-  async function _handleGrantExtraMove(casterCard, targetCard, nature, context) {
-    const ck = (targetCard || casterCard)._instanceId;
-    if (_extraMoveUsedThisTurn.has(ck)) {
-      if (typeof logMsg === 'function') logMsg('sys', 'Extra Move', `${shortName(getCardName(targetCard || casterCard))} already used extra move this turn.`);
-      return;
-    }
-    _extraMoveUsedThisTurn.add(ck);
-    if (typeof logMsg === 'function') {
-      logMsg('sys', 'Extra Move', `${shortName(getCardName(targetCard || casterCard))} gets an extra ${nature || 'any'} action!`);
-    }
-    // The actual extra action is handled in the turn flow (OTHER.html → executeAction)
-    // We signal it by setting a flag on the card
-    (targetCard || casterCard)._grantedExtraMove = nature || 'ANY';
-  }
-
-  /**
-   * resetExtraMoveGuards() — called at end of each turn
-   */
-  function resetExtraMoveGuards() {
-    _extraMoveUsedThisTurn.clear();
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // SECTION 13 — SCREEN_GUARANTEE_HIT
-  // ─────────────────────────────────────────────────────────────
-
-  /**
-   * consumeScreenGuarantee(card) → boolean
-   * Returns true and clears the flag if the card has a screen guarantee.
-   */
-  function consumeScreenGuarantee(card) {
-    const ck = card._instanceId;
-    if (_screenGuarantee[ck]) {
-      delete _screenGuarantee[ck];
+    // ── HP EVENTS ────────────────────────────────────────────
+    if (trigger.type === 'HP_THRESHOLD_ONCE' && eventType === 'HP_CHANGE') {
+      if (payload.cardId !== ownerCard._instanceId) return false;
+      if (ownerCard._hpThresholdFired) return false;  // ⭐ fires ONCE
       return true;
+    }
+    if (trigger.type === 'HP_STATE' && eventType === 'HP_CHANGE') {
+      // ⭐ HP_STATE fires every time HP matches condition (not once)
+      return payload.cardId === ownerCard._instanceId;
+    }
+    if (trigger.type === 'TURN_START_AFTER_SURVIVE' && eventType === 'TURN_START') {
+      return ownerCard._survivedLastTurn === true;
+    }
+
+    // ── ROSTER EVENTS ────────────────────────────────────────
+    if (trigger.type === 'ROSTER_JOIN' && eventType === 'ROSTER_JOIN') {
+      if (trigger.side === 'enemy' && payload.side !== 'enemy') return false;
+      if (trigger.side !== 'enemy' && payload.side === 'enemy') return false;
+      return _rosterMatchCheck(trigger, payload, ownerCard);
+    }
+    if (trigger.type === 'ROSTER_LEAVE' && eventType === 'ROSTER_LEAVE') {
+      if (trigger.side === 'enemy' && payload.side !== 'enemy') return false;
+      return _rosterMatchCheck(trigger, payload, ownerCard);
+    }
+    if (trigger.type === 'ROSTER_LEAVE_LAST' && eventType === 'ROSTER_LEAVE_LAST') {
+      // ⭐ Only fires when the LAST matching card leaves
+      if (trigger.side === 'enemy' && payload.side !== 'enemy') return false;
+      return _rosterMatchCheck(trigger, payload, ownerCard);
+    }
+
+    // ── CARD EXIT ────────────────────────────────────────────
+    if (trigger.type === 'CARD_EXIT' && eventType === 'CARD_EXIT') {
+      return trigger.cardId === payload.exitingCardId;
+    }
+
+    // ── SELF CAST ────────────────────────────────────────────
+    if (trigger.type === 'SELF_CAST' && eventType === 'SELF_CAST') {
+      if (payload.castingCardId !== ownerCard._instanceId) return false;
+      if (trigger.nature && !PARSER.natureMatches(trigger.nature, payload.castNature, payload.castType)) return false;
+      if (trigger.skillId && trigger.skillId !== payload.skillId) return false;
+      // Subtype: HIT or FAIL — must match if specified
+      if (trigger.subtype && trigger.subtype !== payload.subtype) return false;
+      if (!trigger.subtype && payload.subtype) return false;
+      return true;
+    }
+
+    // ── ENEMY CAST ───────────────────────────────────────────
+    if (trigger.type === 'ENEMY_CAST' && eventType === 'ENEMY_CAST') {
+      // Nature filter
+      if (trigger.nature && !PARSER.natureMatches(trigger.nature, payload.castNature, payload.castType)) return false;
+      // Scope: [Self] = targeted at ownerCard, [!Self] = not targeted at ownerCard
+      if (trigger.scope === 'self'     && payload.targetId !== ownerCard._instanceId) return false;
+      if (trigger.scope === 'not_self' && payload.targetId === ownerCard._instanceId) return false;
+      return true;
+    }
+
+    // ── ENEMY RESOLVE ────────────────────────────────────────
+    if (trigger.type === 'ENEMY_RESOLVE' && eventType === 'ENEMY_RESOLVE') {
+      if (trigger.nature && !PARSER.natureMatches(trigger.nature, payload.castNature, payload.castType)) return false;
+      if (trigger.scope === 'self'     && payload.targetId !== ownerCard._instanceId) return false;
+      if (trigger.scope === 'teammate' && payload.targetId === ownerCard._instanceId) return false;
+      return true;
+    }
+
+    // ── ENEMY RETALIATE ──────────────────────────────────────
+    if (trigger.type === 'ENEMY_RETALIATE' && eventType === 'ENEMY_RETALIATE') {
+      // ⭐ After successful block, deal bonus damage back (Harden, Embiid)
+      if (payload.attackerCardId !== ownerCard._instanceId) return false;
+      return true;
+    }
+
+    // ── TEAMMATE FAIL ────────────────────────────────────────
+    if (trigger.type === 'TEAMMATE_FAIL' && eventType === 'TEAMMATE_FAIL') {
+      // ⭐ LBJ Putback — fires when teammate's offensive move fails
+      if (!trigger.actorSpec) return false;
+      return _actorSpecMatches(trigger.actorSpec, payload.failedCard);
+    }
+
+    return false;
+  }
+
+  // ── ROSTER MATCH CHECK ──────────────────────────────────────
+  function _rosterMatchCheck(trigger, payload, ownerCard) {
+    if (trigger.matchMode === 'TEAM_MATCH') {
+      // Team synergy: joined card must share teamId with ownerCard
+      return payload.joiningTeamId && _getTeam(ownerCard) === payload.joiningTeamId;
+    }
+    if (trigger.matchMode === 'CARD_MATCH') {
+      // Duo synergy: specific playerId
+      return payload.joiningPlayerId && (
+        ownerCard._duoPartners?.includes(payload.joiningPlayerId) ?? false
+      );
     }
     return false;
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // SECTION 14 — DMG_REDIRECTION
-  // ─────────────────────────────────────────────────────────────
-
-  /**
-   * resolveRedirection(originalTarget, incomingDmg, context)
-   * If the target has a _dmgRedirectTo flag, redirect damage.
-   * Returns { finalTarget, finalDmg }.
-   */
-  function resolveRedirection(originalTarget, incomingDmg, context) {
-    if (originalTarget._dmgRedirectTo && !originalTarget._dmgRedirectTo.isDead) {
-      const redirect = originalTarget._dmgRedirectTo;
-      if (typeof logMsg === 'function') {
-        logMsg('sys', 'Redirect', `${shortName(getCardName(redirect))} absorbs ${incomingDmg} DMG intended for ${shortName(getCardName(originalTarget))}`);
-      }
-      return { finalTarget: redirect, finalDmg: incomingDmg };
+  // ── ACTOR SPEC MATCHER (for TEAMMATE_FAIL) ──────────────────
+  function _actorSpecMatches(actorSpec, failedCard) {
+    if (!actorSpec || !failedCard) return false;
+    // Format: "Actor:ID:GSW_KDU_G01" or "Position:SF"
+    const parts = actorSpec.split(':');
+    if (parts[0] === 'Actor' && parts[1] === 'ID') {
+      return _getPlayer(failedCard) === parts[2];
     }
-    return { finalTarget: originalTarget, finalDmg: incomingDmg };
-  }
-
-  /**
-   * clearRedirectionFlag(card) — clear after use
-   */
-  function clearRedirectionFlag(card) {
-    delete card._dmgRedirectTo;
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // SECTION 15 — LBJ_PUTBACK & REBOUND_AND_DEAL_BASE_DMG
-  // ─────────────────────────────────────────────────────────────
-
-  /**
-   * checkReboundTriggers(act, failedCard, ownTeam, isPlayer)
-   * After a miss/block — check if any teammate has the rebound modifier.
-   */
-  async function checkReboundTriggers(act, failedCard, ownTeam, isPlayer) {
-    const atks = ownTeam || [];
-    for (const teammate of atks) {
-      if (!teammate || teammate.isDead || teammate === failedCard) continue;
-      if (!teammate._hasRebound) continue;
-      // Teammate rebounds and shoots with base DMG
-      delete teammate._hasRebound;
-      const reboundDmg = _getEffectiveDMG(teammate, false);
-      const defs = isPlayer ? (typeof enemyActive !== 'undefined' ? enemyActive : []) : (typeof playerActive !== 'undefined' ? playerActive : []);
-      const vt = typeof getValidTargets === 'function' ? getValidTargets(teammate, defs) : [];
-      if (!vt.length) continue;
-      const tgt = vt[0].c;
-      const tIdx = vt[0].i;
-      if (typeof logMsg === 'function') logMsg('sys', 'Rebound', `${shortName(getCardName(teammate))} rebounds and shoots for ${reboundDmg}!`);
-      if (typeof playCombatAnimation === 'function') {
-        const aSide = isPlayer ? 'player' : 'enemy';
-        const dSide = isPlayer ? 'enemy' : 'player';
-        const tIdx2 = atks.indexOf(teammate);
-        await playCombatAnimation(`${aSide}-${tIdx2}`, `${dSide}-${tIdx}`, reboundDmg, tgt, tIdx, dSide);
-        if (tgt.currentHp <= 0 && typeof handleKO === 'function') handleKO(tgt, dSide, tIdx);
-      }
+    if (parts[0] === 'Position') {
+      return _getPos(failedCard).includes(parts[1]);
     }
+    return false;
   }
 
-  /**
-   * checkTeammateFail(act, failedCard, enemyTeam, ownTeam, isPlayer)
-   * LeBron-style putback: after teammate fails, fire ON:TEAMMATE_FAIL.
-   */
-  async function checkTeammateFail(act, failedCard, enemyTeam, ownTeam, isPlayer) {
-    const atks = ownTeam || [];
-    const failNature = failedCard?._lastCastNature || 'Offensive';
+  // ── ACTION TARGET RESOLVER ──────────────────────────────────
+  function _resolveActionTargets(targetStr, self, ownTeam, enemyTeam, payload) {
+    if (!targetStr) return [self];
+    const t = String(targetStr).trim();
 
-    for (const teammate of atks) {
-      if (!teammate || teammate.isDead || teammate === failedCard) continue;
-      const action = typeof ENGINE !== 'undefined' && ENGINE.evalTeammateFail
-        ? ENGINE.evalTeammateFail(teammate, failedCard, failNature, ownTeam)
-        : null;
+    if (t === 'Self') return [self];
+    if (t === 'All_Ally:All') return (ownTeam || []).filter(c => c && !c.isDead);
+    if (t === 'Casting_Enemy') return payload?.castingEnemy ? [payload.castingEnemy] : [];
+    if (t === 'Original_Target') return payload?.originalTarget ? [payload.originalTarget] : [];
+    if (t === 'Targeted_Ally') return payload?.targetedAlly ? [payload.targetedAlly] : [];
+
+    // Teammates:Pos:PG/SG
+    const tPosM = t.match(/^Teammates:Pos:(.+)$/);
+    if (tPosM) {
+      const positions = tPosM[1].split('/');
+      return (ownTeam || []).filter(c => c && !c.isDead && positions.some(p => _getPos(c).includes(p)));
+    }
+
+    // Enemy:Pos:C
+    const ePosM = t.match(/^Enemy:Pos:(.+)$/);
+    if (ePosM) {
+      const positions = ePosM[1].split('/');
+      return (enemyTeam || []).filter(c => c && !c.isDead && positions.some(p => _getPos(c).includes(p)));
+    }
+
+    // All_Enemy
+    if (t === 'All_Enemy') return (enemyTeam || []).filter(c => c && !c.isDead);
+
+    return [self];
+  }
+
+  // ============================================================
+  // SECTION 6 — TRIGGER-SPECIFIC FIRE HELPERS
+  // Convenient wrappers over fireEvent() for common game events.
+  // ============================================================
+
+  //--- 6A: ON:ALWAYS — Boot passive abilities on card init ----
+  /**
+   * bootPassiveAbilities
+   * Called when a card is cloned and placed on the field.
+   * Evaluates all ON:ALWAYS rules immediately.
+   */
+  function bootPassiveAbilities(card, ownTeam, deployPosition) {
+    const rules = card.Ability?.Rules || card.Ability?.rules || [];
+    for (const rule of rules) {
+      const trigger = PARSER.parseTrigger(rule.trigger || '');
+      if (trigger.type !== 'ALWAYS') continue;
+
+      const ctx = buildCondCtx(card, ownTeam || [], [], {});
+      if (!evalRuleCondition(rule.condition || null, ctx)) continue;
+
+      const actionStr = rule.action_string || rule.Action_String || '';
+      if (!actionStr) continue;
+      const action = PARSER.parseAction(actionStr);
       if (!action) continue;
 
-      if (action.type === 'LBJ_PUTBACK') {
-        const defs = isPlayer ? (typeof enemyActive !== 'undefined' ? enemyActive : []) : (typeof playerActive !== 'undefined' ? playerActive : []);
-        const vt = typeof getValidTargets === 'function' ? getValidTargets(teammate, defs) : [];
-        if (!vt.length) continue;
-        const tgt = vt[0].c;
-        const tIdx = vt[0].i;
-        const putbackDmg = _getEffectiveDMG(teammate, false);
-        if (typeof logMsg === 'function') logMsg('atk', 'LBJ Putback', `${shortName(getCardName(teammate))} throws down a putback for ${putbackDmg}!`);
-        if (typeof playCombatAnimation === 'function') {
-          const aSide = isPlayer ? 'player' : 'enemy';
-          const dSide = isPlayer ? 'enemy' : 'player';
-          const tmIdx = atks.indexOf(teammate);
-          await playCombatAnimation(`${aSide}-${tmIdx}`, `${dSide}-${tIdx}`, putbackDmg, tgt, tIdx, dSide);
-          if (tgt.currentHp <= 0 && typeof handleKO === 'function') handleKO(tgt, dSide, tIdx);
+      const targets = _resolveActionTargets(rule.action_target || 'Self', card, ownTeam || [], [], {});
+      _executeAction(action, targets, card, rule.td || null, ctx);
+    }
+
+    // ⭐ ON:DEPLOY:POS_MATCH
+    if (deployPosition) {
+      for (const rule of rules) {
+        const trigger = PARSER.parseTrigger(rule.trigger || '');
+        if (trigger.type !== 'DEPLOY_POS_MATCH') continue;
+        if (!_getPos(card).some(p => p === deployPosition)) continue;
+        const ctx = buildCondCtx(card, ownTeam || [], [], {});
+        if (!evalRuleCondition(rule.condition || null, ctx)) continue;
+        const action = PARSER.parseAction(rule.action_string || '');
+        if (action) {
+          const targets = _resolveActionTargets(rule.action_target || 'Self', card, ownTeam || [], [], {});
+          _executeAction(action, targets, card, rule.td || null, ctx);
         }
       }
     }
   }
 
-  // ─────────────────────────────────────────────────────────────
-  // SECTION 16 — HARD_DISABLE_SHUTDOWN (by skill name or nature)
-  // ─────────────────────────────────────────────────────────────
+  //--- 6B: ON:ALWAYS conditional re-evaluation ---------------
+  /**
+   * evaluateAlwaysConditional
+   * ⭐ Re-evaluate conditional ON:ALWAYS rules after HP/state changes.
+   * E.g. Jordan's +300 DMG when HP ≤ 960.
+   */
+  function evaluateAlwaysConditional(card, ownTeam) {
+    const rules = card.Ability?.Rules || card.Ability?.rules || [];
+    for (const rule of rules) {
+      const trigger = PARSER.parseTrigger(rule.trigger || '');
+      if (trigger.type !== 'ALWAYS') continue;
+      if (!(rule.condition || rule.Condition)) continue; // skip unconditional
+
+      const ctx = buildCondCtx(card, ownTeam || [], [], {});
+      const nowPasses = evalRuleCondition(rule.condition || rule.Condition, ctx);
+      const actionStr = rule.action_string || '';
+      if (!actionStr) continue;
+      const action = PARSER.parseAction(actionStr);
+      if (!action) continue;
+
+      const ruleKey = `_alwaysActive_${actionStr}`;
+      const wasActive = card[ruleKey] === true;
+
+      if (nowPasses && !wasActive) {
+        // Apply the effect
+        const targets = _resolveActionTargets(rule.action_target || 'Self', card, ownTeam || [], [], {});
+        _executeAction(action, targets, card, rule.td || null, ctx);
+        card[ruleKey] = true;
+      } else if (!nowPasses && wasActive) {
+        // Reverse the effect
+        _reverseActionOnCard(action, card, ctx);
+        card[ruleKey] = false;
+      }
+    }
+  }
+
+  //--- 6C: ON:ENTER_ACTIVE_LINEUP ----------------------------
+  /**
+   * bootEnterActiveLineup
+   * ⭐ Fires when a card moves from bench to active lineup.
+   * Returns list of { targetCard, action, td } for the caller to apply.
+   */
+  function bootEnterActiveLineup(card, ownTeam, fullRoster) {
+    const results = [];
+    const rules = card.Ability?.Rules || card.Ability?.rules || [];
+    for (const rule of rules) {
+      const trigger = PARSER.parseTrigger(rule.trigger || '');
+      if (trigger.type !== 'ENTER_ACTIVE_LINEUP') continue;
+
+      const ctx = buildCondCtx(card, ownTeam || [], [], { gameRound: card._activeRound || 1 });
+      if (!evalRuleCondition(rule.condition || null, ctx)) continue;
+
+      const actionStr = rule.action_string || '';
+      if (!actionStr) continue;
+      const action = PARSER.parseAction(actionStr);
+      if (!action) continue;
+
+      const td = rule.td || null;
+      const tdParsed = PARSER.parseTD(td || 'DEFAULT');
+      const targets = _resolveActionTargets(rule.action_target || 'Self', card, ownTeam || [], [], {});
+      results.push(...targets.map(t => ({ targetCard: t, action, td: tdParsed })));
+    }
+    return results;
+  }
+
+  //--- 6D: ON:HP_THRESHOLD_ONCE / ON:HP_STATE ----------------
+  /**
+   * checkHPThreshold
+   * ⭐ Fires ONCE when HP drops at or below condition value.
+   */
+  function checkHPThreshold(card, ownTeam) {
+    if (card._hpThresholdFired) return null;
+    const rules = card.Ability?.Rules || card.Ability?.rules || [];
+    for (const rule of rules) {
+      const trigger = PARSER.parseTrigger(rule.trigger || '');
+      if (trigger.type !== 'HP_THRESHOLD_ONCE') continue;
+
+      const ctx = buildCondCtx(card, ownTeam || [], [], {});
+      ctx.target = card;
+      if (!evalRuleCondition(rule.condition || null, ctx)) continue;
+
+      card._hpThresholdFired = true;  // fire ONCE
+      const actionStr = rule.action_string || '';
+      if (!actionStr) return null;
+      return PARSER.parseAction(actionStr);
+    }
+    return null;
+  }
 
   /**
-   * _applySkillDisable(card, skillName, nature, td)
-   * skillName: specific skill name (e.g. "Logo Three") — null if by nature
-   * nature: nature string — null if by specific name
+   * checkHPState
+   * ⭐ Fires every time HP matches condition (can trigger multiple times, e.g. Luka at 1 HP).
    */
-  function _applySkillDisable(card, skillName, nature, td) {
-    const ck = card._instanceId;
-    if (!_skillDisables[ck]) _skillDisables[ck] = [];
-    _skillDisables[ck].push({
-      skillName: skillName || null,
-      nature: nature || null,
-      turnsLeft: td?.turns || 1,
-    });
-    if (typeof _shutdown !== 'undefined' && !skillName && !nature) {
-      _shutdown[ck] = (_shutdown[ck] || 0) + (td?.turns || 1);
+  function checkHPState(card, ownTeam) {
+    const results = [];
+    const rules = card.Ability?.Rules || card.Ability?.rules || [];
+    for (const rule of rules) {
+      const trigger = PARSER.parseTrigger(rule.trigger || '');
+      if (trigger.type !== 'HP_STATE') continue;
+
+      const ctx = buildCondCtx(card, ownTeam || [], [], {});
+      ctx.target = card;
+      if (!evalRuleCondition(rule.condition || null, ctx)) continue;
+
+      const actionStr = rule.action_string || '';
+      if (!actionStr) continue;
+      const action = PARSER.parseAction(actionStr);
+      if (action) results.push(action);
+    }
+    return results;
+  }
+
+  /**
+   * checkSurviveAbility
+   * Returns true if the card has an active Survive_At_1HP property.
+   */
+  function checkSurviveAbility(card) {
+    return card._surviveProp === true && !card._surviveUsed;
+  }
+
+  //--- 6E: ON:ROSTER_JOIN / LEAVE / LEAVE_LAST ---------------
+  /**
+   * evalRosterEvent
+   * ⭐ Fires when a card joins or leaves the active roster.
+   * Also handles LEAVE_LAST — only fires when last matching card leaves.
+   */
+  function evalRosterEvent(eventSubtype, matchMode, side, joiningCard, ownTeam, fullRoster) {
+    const results = [];
+    const payload = {
+      joiningTeamId: _getTeam(joiningCard),
+      joiningPlayerId: _getPlayer(joiningCard),
+      side,
+      joiningCardId: joiningCard._instanceId,
+    };
+
+    const eventType = `ROSTER_${eventSubtype}`; // ROSTER_JOIN, ROSTER_LEAVE, ROSTER_LEAVE_LAST
+
+    // ⭐ LEAVE_LAST: only fire if no other matching card remains
+    if (eventSubtype === 'LEAVE_LAST') {
+      const aliveMatches = (ownTeam || []).filter(c =>
+        c && !c.isDead && c._instanceId !== joiningCard._instanceId &&
+        (matchMode === 'TEAM_MATCH'
+          ? _getTeam(c) === payload.joiningTeamId
+          : c._duoPartners?.includes(payload.joiningPlayerId))
+      );
+      if (aliveMatches.length > 0) return results; // still some left, don't fire
+    }
+
+    for (const card of (fullRoster || [])) {
+      if (!card || card.isDead || card._instanceId === joiningCard._instanceId) continue;
+      const rules = card.Ability?.Rules || card.Ability?.rules || [];
+      for (const rule of rules) {
+        const trigger = PARSER.parseTrigger(rule.trigger || '');
+        if (trigger.type !== eventType) continue;
+        if (trigger.matchMode !== matchMode) continue;
+        if (trigger.side === 'enemy' && side !== 'enemy') continue;
+        if (!_rosterMatchCheck(trigger, payload, card)) continue;
+
+        const ctx = buildCondCtx(card, ownTeam || [], [], {});
+        if (!evalRuleCondition(rule.condition || null, ctx)) continue;
+
+        const actionStr = rule.action_string || '';
+        if (!actionStr) continue;
+        const action = PARSER.parseAction(actionStr);
+        if (!action) continue;
+
+        const targets = _resolveActionTargets(rule.action_target || 'Self', card, ownTeam || [], [], payload);
+        const applied = _executeAction(action, targets, card, rule.td || null, ctx);
+        results.push(...applied);
+      }
+    }
+    return results;
+  }
+
+  //--- 6F: ON:SELF_CAST — pre-attack flags & stacking ---------
+  /**
+   * evalSelfCastAbilities
+   * Called before the attack resolves. Returns a flags object:
+   * { noMiss, thisAttackBaseDmgBonus, thisAttackSkillDmgBonus, priorityBoost }
+   */
+  function evalSelfCastAbilities(card, castNature, castType, subtype, skillId, ownTeam) {
+    const flags = { noMiss: false, thisAttackBaseDmgBonus: 0, thisAttackSkillDmgBonus: 0, priorityBoost: 1 };
+    const rules = card.Ability?.Rules || card.Ability?.rules || [];
+
+    for (const rule of rules) {
+      const trigger = PARSER.parseTrigger(rule.trigger || '');
+      if (trigger.type !== 'SELF_CAST') continue;
+      if (trigger.nature && !PARSER.natureMatches(trigger.nature, castNature, castType)) continue;
+      if (trigger.skillId && trigger.skillId !== skillId) continue;
+      if (trigger.subtype && trigger.subtype !== subtype) continue;
+      if (!trigger.subtype && subtype) continue;
+
+      const ctx = buildCondCtx(card, ownTeam || [], [], { castNature });
+      if (!evalRuleCondition(rule.condition || null, ctx)) continue;
+
+      const actionStr = rule.action_string || '';
+      if (!actionStr) continue;
+      const action = PARSER.parseAction(actionStr);
+      if (!action) continue;
+
+      switch (action.type) {
+        case 'APPLY_PROPERTY':
+          if (action.params.property === 'No_Miss') flags.noMiss = true;
+          break;
+        case 'STAT_BUFF': {
+          const { stat, value, operation, stackMode } = action.params;
+          const amt = operation === '-' ? -(value || 0) : (value || 0);
+          // ⭐ THIS_ATTACK buffs
+          if ((rule.td || '').includes('THIS_ATTACK')) {
+            if (stat.includes('Base')) flags.thisAttackBaseDmgBonus += amt;
+            else flags.thisAttackSkillDmgBonus += amt;
+          }
+          // ⭐ Stack_Per_Hit:Permanent — call separately via evalSelfCastStackingAbilities
+          break;
+        }
+        case 'APPLY_PRIORITY':
+          flags.priorityBoost = Math.max(flags.priorityBoost, action.params.priority || 1);
+          break;
+        case 'UNTARGETABLE_BY':
+          _applyActionToCard(action, card, card, rule.td, ctx);
+          break;
+        default:
+          break;
+      }
+    }
+    return flags;
+  }
+
+  /**
+   * evalSelfCastStackingAbilities
+   * ⭐ Stack_Per_Hit / Stack_Per_Miss :Permanent — called AFTER HIT or FAIL.
+   * Permanently increments a stacking buff on the card.
+   */
+  function evalSelfCastStackingAbilities(card, castNature, castType, subtype, skillId, ownTeam) {
+    const rules = card.Ability?.Rules || card.Ability?.rules || [];
+    for (const rule of rules) {
+      const trigger = PARSER.parseTrigger(rule.trigger || '');
+      if (trigger.type !== 'SELF_CAST') continue;
+      if (!trigger.subtype) continue;
+      if (trigger.subtype !== subtype) continue;
+      if (trigger.nature && !PARSER.natureMatches(trigger.nature, castNature, castType)) continue;
+      if (trigger.skillId && trigger.skillId !== skillId) continue;
+
+      const actionStr = rule.action_string || '';
+      if (!actionStr) continue;
+      const action = PARSER.parseAction(actionStr);
+      if (!action || action.type !== 'STAT_BUFF') continue;
+      if (!action.params.stackMode) continue;
+
+      const ctx = buildCondCtx(card, ownTeam || [], [], { castNature });
+      if (!evalRuleCondition(rule.condition || null, ctx)) continue;
+
+      const { stat, value, operation } = action.params;
+      const amt = operation === '-' ? -(value || 0) : (value || 0);
+      _applyActionToCard(action, card, card, rule.td || null, ctx);
+    }
+  }
+
+  //--- 6G: ON:ENEMY_CAST — defensive reactions ----------------
+  /**
+   * evaluateEnemyCastTriggers
+   * Called when an enemy declares an attack.
+   * Returns { mitigationFlat, mitigationMult } for the damage calc.
+   */
+  function evaluateEnemyCastTriggers(defendingTeam, attackerCard, targetCard, castNature, castType, ownTeam, enemyTeam) {
+    let mitigationFlat = 0;
+    let mitigationMult = 1;
+
+    for (const card of (defendingTeam || [])) {
+      if (!card || card.isDead) continue;
+      const rules = card.Ability?.Rules || card.Ability?.rules || [];
+      for (const rule of rules) {
+        const trigger = PARSER.parseTrigger(rule.trigger || '');
+        if (trigger.type !== 'ENEMY_CAST' && trigger.type !== 'ENEMY_RESOLVE') continue;
+        if (trigger.nature && !PARSER.natureMatches(trigger.nature, castNature, castType)) continue;
+
+        // Scope checks
+        const cardIsTarget = targetCard._instanceId === card._instanceId;
+        if (trigger.scope === 'self'     && !cardIsTarget) continue;
+        if (trigger.scope === 'not_self' && cardIsTarget)  continue;
+        if (trigger.scope === 'teammate' && cardIsTarget)  continue;
+
+        const ctx = buildCondCtx(card, ownTeam || [], enemyTeam || [], {
+          castingEnemy: attackerCard,
+          castNature,
+        });
+        if (!evalRuleCondition(rule.condition || null, ctx)) continue;
+
+        const actionStr = rule.action_string || '';
+        if (!actionStr) continue;
+        const action = PARSER.parseAction(actionStr);
+        if (!action) continue;
+
+        // Extract mitigation values rather than blindly applying
+        if (action.type === 'APPLY_MODIFIER' && action.params.modifier === 'DAMAGE_REDUCTION') {
+          if (action.params.mode === 'flat') mitigationFlat += action.params.reduction || 0;
+          if (action.params.mode === 'multiply') mitigationMult = Math.min(mitigationMult, action.params.multiplier || 1);
+        } else if (action.type === 'REACTIONARY_DMG_REDUCTION') {
+          if (action.params.mode === 'flat') mitigationFlat += action.params.reduction || 0;
+          if (action.params.mode === 'multiply') mitigationMult = Math.min(mitigationMult, action.params.multiplier || 1);
+        } else {
+          const targets = _resolveActionTargets(rule.action_target || 'Self', card, ownTeam || [], enemyTeam || [], { castingEnemy: attackerCard });
+          _executeAction(action, targets, card, rule.td || null, ctx);
+        }
+      }
+    }
+    return { mitigationFlat, mitigationMult };
+  }
+
+  //--- 6H: ON:ENEMY_RETALIATE --------------------------------
+  /**
+   * evaluateRetaliateAbilities
+   * ⭐ After a successful block, deal bonus retaliatory damage back to attacker.
+   * Returns total retaliation damage.
+   */
+  function evaluateRetaliateAbilities(attackerCard, defenseType, castNature) {
+    let totalBonus = 0;
+    const rules = attackerCard?.Ability?.Rules || attackerCard?.Ability?.rules || [];
+    for (const rule of rules) {
+      const trigger = PARSER.parseTrigger(rule.trigger || '');
+      if (trigger.type !== 'ENEMY_RETALIATE') continue;
+      const ctx = buildCondCtx(attackerCard, [], [], { castNature });
+      if (!evalRuleCondition(rule.condition || null, ctx)) continue;
+      const action = PARSER.parseAction(rule.action_string || '');
+      if (action?.type === 'APPLY_MODIFIER' && action.params.modifier === 'RETALIATORY_DAMAGE') {
+        totalBonus += action.params.bonus || 0;
+      }
+    }
+    return totalBonus;
+  }
+
+  //--- 6I: ON:TEAMMATE_FAIL ----------------------------------
+  /**
+   * evalTeammateFail
+   * ⭐ LeBron Heatlemania putback — fires when a teammate's offensive move fails.
+   * Returns the action to execute (LBJ_PUTBACK) or null.
+   */
+  function evalTeammateFail(reactCard, failedCard, castNature, ownTeam) {
+    const rules = reactCard?.Ability?.Rules || reactCard?.Ability?.rules || [];
+    for (const rule of rules) {
+      const trigger = PARSER.parseTrigger(rule.trigger || '');
+      if (trigger.type !== 'TEAMMATE_FAIL') continue;
+      if (trigger.nature && !PARSER.natureMatches(trigger.nature, castNature, 'skill')) continue;
+      if (trigger.actorSpec && !_actorSpecMatches(trigger.actorSpec, failedCard)) continue;
+
+      const ctx = buildCondCtx(reactCard, ownTeam || [], [], {});
+      if (!evalRuleCondition(rule.condition || null, ctx)) continue;
+
+      const action = PARSER.parseAction(rule.action_string || '');
+      if (action) return action;
+    }
+    return null;
+  }
+
+  //--- 6J: ON:AND_PAIR ---------------------------------------
+  /**
+   * checkAndPair
+   * ⭐ Two specific cards present in lineup trigger an effect.
+   * Returns effects array from the pair trigger.
+   */
+  function checkAndPair(card, ownTeam, fullRoster) {
+    const results = [];
+    const rules = card.Ability?.Rules || card.Ability?.rules || [];
+    let i = 0;
+    while (i < rules.length) {
+      const rule = rules[i];
+      const trigger = PARSER.parseTrigger(rule.trigger || '');
+
+      // AND_PAIR marker means the PREVIOUS rule pairs with this one
+      if (trigger.type === 'AND_PAIR' && i > 0) {
+        const primaryRule = rules[i - 1];
+        const primaryTrigger = PARSER.parseTrigger(primaryRule.trigger || '');
+
+        // Both conditions must pass
+        const ctx = buildCondCtx(card, ownTeam || [], [], {});
+        const primaryPass = evalRuleCondition(primaryRule.condition || null, ctx);
+        const pairPass    = evalRuleCondition(rule.condition || null, ctx);
+
+        if (primaryPass && pairPass) {
+          const action = PARSER.parseAction(rule.action_string || primaryRule.action_string || '');
+          if (action) {
+            const targets = _resolveActionTargets(rule.action_target || 'Self', card, ownTeam || [], [], {});
+            const applied = _executeAction(action, targets, card, rule.td || null, ctx);
+            results.push(...applied);
+          }
+        }
+      }
+      i++;
+    }
+    return results;
+  }
+
+  //--- 6K: ON:CARD_EXIT / ON:[CARD_ID]:EXIT ------------------
+  /**
+   * evalCardExitTriggers
+   * Fires when a specific card ID exits the active lineup.
+   */
+  function evalCardExitTriggers(exitingCardId, affectedCards, teamSnapshot) {
+    const results = [];
+    for (const card of (affectedCards || [])) {
+      if (!card || card.isDead) continue;
+      const rules = card.Ability?.Rules || card.Ability?.rules || [];
+      for (const rule of rules) {
+        const trigger = PARSER.parseTrigger(rule.trigger || '');
+        if (trigger.type !== 'CARD_EXIT') continue;
+        if (trigger.cardId !== exitingCardId) continue;
+
+        const ctx = buildCondCtx(card, teamSnapshot || [], [], {});
+        if (!evalRuleCondition(rule.condition || null, ctx)) continue;
+
+        const action = PARSER.parseAction(rule.action_string || '');
+        if (!action) continue;
+
+        const targets = _resolveActionTargets(rule.action_target || 'Self', card, teamSnapshot || [], [], { exitingCardId });
+        const applied = _executeAction(action, targets, card, rule.td || null, ctx);
+        results.push(...applied);
+      }
+    }
+    return results;
+  }
+
+  //--- 6L: ON:TURN_START_AFTER_SURVIVE -----------------------
+  /**
+   * evalTurnStartAfterSurvive
+   * ⭐ Fires at start of next turn after card survived at 1 HP.
+   */
+  function evalTurnStartAfterSurvive(card, ownTeam) {
+    if (!card._survivedLastTurn) return [];
+    const results = [];
+    const rules = card.Ability?.Rules || card.Ability?.rules || [];
+    for (const rule of rules) {
+      const trigger = PARSER.parseTrigger(rule.trigger || '');
+      if (trigger.type !== 'TURN_START_AFTER_SURVIVE') continue;
+
+      const ctx = buildCondCtx(card, ownTeam || [], [], {});
+      if (!evalRuleCondition(rule.condition || null, ctx)) continue;
+
+      const action = PARSER.parseAction(rule.action_string || '');
+      if (!action) continue;
+
+      const targets = _resolveActionTargets(rule.action_target || 'Self', card, ownTeam || [], [], {});
+      const applied = _executeAction(action, targets, card, rule.td || null, ctx);
+      results.push(...applied);
+    }
+    // ⭐ Clear the survived flag after firing
+    delete card._survivedLastTurn;
+    return results;
+  }
+
+  // ============================================================
+  // SECTION 7 — AURA MANAGEMENT
+  // Auras are persistent effects tied to their source card.
+  // When source leaves, all its auras on other cards are removed.
+  // ============================================================
+
+  /**
+   * applyAura
+   * Applies a named aura to a target card from a source card.
+   */
+  function applyAura(targetCard, auraId, effectStr, sourceCard, tdParsed) {
+    const action = PARSER.parseAction(`Apply_Aura:${auraId}:${effectStr}`);
+    if (action) _applyActionToCard(action, targetCard, sourceCard, null, {});
+  }
+
+  /**
+   * removeAura
+   * Removes a specific aura from a target card.
+   */
+  function removeAura(targetCard, auraId) {
+    const action = PARSER.parseAction(`Remove_Aura:${auraId}`);
+    if (action) _applyActionToCard(action, targetCard, null, null, {});
+  }
+
+  /**
+   * gcAuras
+   * ⭐ Garbage-collect all auras sourced from leavingCard across all cards.
+   * Must be called whenever a card leaves the field (KO or swap).
+   */
+  function gcAuras(leavingCard, allCards) {
+    if (!leavingCard) return;
+    const sourceId = leavingCard._instanceId;
+    for (const card of (allCards || [])) {
+      if (!card || !card._auras) continue;
+      const toRemove = [];
+      for (const [auraId, aura] of card._auras.entries()) {
+        if (aura.sourceCardId === sourceId) toRemove.push(auraId);
+      }
+      for (const auraId of toRemove) {
+        const aura = card._auras.get(auraId);
+        if (aura) {
+          const effect = PARSER.parseAction(aura.effect);
+          if (effect) _reverseActionOnCard(effect, card, {});
+        }
+        card._auras.delete(auraId);
+      }
     }
   }
 
   /**
-   * isSkillDisabled(instanceId, skillName, skillNature) → boolean
-   * Called by canUseSkill to gate activation.
+   * clearCardAuras
+   * Removes all auras FROM a card (when the card dies).
    */
-  function isSkillDisabled(instanceId, skillName, skillNature) {
-    const disables = _skillDisables[instanceId] || [];
-    return disables.some(d => {
-      if (d.turnsLeft <= 0) return false;
-      if (d.skillName && skillName && d.skillName.toLowerCase() === skillName.toLowerCase()) return true;
-      if (d.nature && skillNature && natureMatchesFilter(skillNature, d.nature)) return true;
-      return false;
-    });
+  function clearCardAuras(card) {
+    if (card._auras) card._auras.clear();
+    // Also clear derived flags
+    delete card._untargetableBy;
+    _recomputeUntargetableFlags(card);
   }
 
+  // ============================================================
+  // SECTION 8 — TURN TICK & EXPIRY HELPERS
+  // Called at end of each turn to tick down timed effects.
+  // ============================================================
+
   /**
-   * tickSkillDisables() — called at end of each turn.
+   * tickCardEffects
+   * Decrement all timed effects on a card, remove expired ones.
+   * Call for every active card at end-of-turn.
    */
-  function tickSkillDisables() {
-    for (const ck of Object.keys(_skillDisables)) {
-      _skillDisables[ck] = _skillDisables[ck].filter(d => {
+  function tickCardEffects(card) {
+    // Tick timed buffs
+    if (card._timedBuffs) {
+      card._timedBuffs = card._timedBuffs.filter(buff => {
+        if (!buff.started) {
+          buff.delay--;
+          if (buff.delay <= 0) { buff.started = true; _applyStatDelta(card, buff.stat, buff.amount); }
+          return true;
+        }
+        // REST_OF_TURN (0.5) expires immediately
+        if (buff.turnsLeft <= 0.5) {
+          _applyStatDelta(card, buff.stat, -buff.amount);
+          return false;
+        }
+        buff.turnsLeft--;
+        if (buff.turnsLeft <= 0) {
+          _applyStatDelta(card, buff.stat, -buff.amount);
+          return false;
+        }
+        return true;
+      });
+    }
+
+    // Tick _untargetableBy entries
+    if (card._untargetableBy) {
+      const before = card._untargetableBy.length;
+      card._untargetableBy = card._untargetableBy.filter(e => {
+        if (e.special === 'REST_OF_TURN') return false;
+        e.turnsLeft--;
+        return e.turnsLeft > 0;
+      });
+      if (card._untargetableBy.length !== before) _recomputeUntargetableFlags(card);
+    }
+
+    // Tick _skillDisables
+    if (card._skillDisables) {
+      card._skillDisables = card._skillDisables.filter(d => {
         d.turnsLeft--;
         return d.turnsLeft > 0;
       });
-      if (!_skillDisables[ck].length) delete _skillDisables[ck];
-    }
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // SECTION 17 — APPLY_PRIORITY
-  // ─────────────────────────────────────────────────────────────
-
-  /**
-   * applyPriorityMultiplier(card, nature, multiplier)
-   * Applies a turn-scoped priority boost. Cleared at end of turn.
-   */
-  function applyPriorityMultiplier(card, nature, multiplier) {
-    card._priorityBonus = (card._priorityBonus || 1) * (multiplier || 1);
-  }
-
-  /**
-   * getEffectivePriority(card, sk)
-   * Returns SPD + (skill base priority) * _priorityBonus.
-   */
-  function getEffectivePriority(card, sk) {
-    const spd  = getCardSPD(card);
-    const skP  = sk?._priority || 1;
-    const mult = card._priorityBonus || 1;
-    return spd + (skP * mult);
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // SECTION 18 — STEAL_SKILL (already in Section 6 — see resolveStealSkill)
-  // ─────────────────────────────────────────────────────────────
-
-  // ─────────────────────────────────────────────────────────────
-  // SECTION 19 — executeSkillAction (MAIN ENTRY POINT)
-  // ─────────────────────────────────────────────────────────────
-
-  /**
-   * executeSkillAction(act, isPlayer)
-   * Main skill execution pipeline. Called by OTHER.html's executeAction().
-   *
-   * act: { actorIdx, skillIdx, targetIdx, execTeam, actionType: 'skill' }
-   */
-  async function executeSkillAction(act, isPlayer) {
-    const atks = isPlayer ? playerActive : enemyActive;
-    const defs = isPlayer ? enemyActive  : playerActive;
-    const atkC = atks[act.actorIdx];
-
-    if (!atkC || atkC.isDead) return;
-    if (!canUseSkill(atkC, act.skillIdx)) {
-      if (typeof logMsg === 'function') logMsg('sys', 'Skill', `${shortName(getCardName(atkC))}'s skill is unavailable!`);
-      return;
     }
 
-    const sk = atkC.Skills[act.skillIdx];
-    if (!sk) return;
-
-    const whoLabel = isPlayer ? 'You' : 'Bot';
-    const ownTeam  = atks;
-    const enemyTeam = defs;
-
-    // ── Dual-use branch selection ──
-    let branch = null;
-    if (isDualUseSkill(sk)) {
-      branch = await resolveDualUseBranch(sk, {
-        card: atkC, isPlayer, skillIdx: act.skillIdx,
-        ownTeam, enemyTeam,
+    // Tick _priorityModifiers
+    if (card._priorityModifiers) {
+      card._priorityModifiers = card._priorityModifiers.filter(m => {
+        if (m.turnsLeft <= 0.5) return false;
+        m.turnsLeft--;
+        return m.turnsLeft > 0;
       });
     }
 
-    // ── Resolve skill phases ──
-    const context = {
-      card: atkC,
-      ownTeam,
-      enemyTeam,
-      selectedTarget: defs[act.targetIdx] || null,
-      selectedTeammate: atks.find((c, i) => i !== act.actorIdx && !c?.isDead),
-      gameRound: typeof turnCount !== 'undefined' ? turnCount : 1,
-      ownGrave: typeof playerScore !== 'undefined' ? [] : [],
-      ownTeamLead: typeof playerScore !== 'undefined' && typeof enemyScore !== 'undefined'
-        ? (isPlayer ? playerScore > enemyScore : enemyScore > playerScore) : false,
-      isReactive: false,
-      isPlayer,
-      branch,
-      skillIdx: act.skillIdx,
-    };
-
-    const resolved = resolveSkillPhases(sk, context);
-    const castNature = resolved.nature?.[0] || getSkillNature(sk);
-    atkC._lastCastNature = castNature;
-
-    // ── Store Display_DMG for damage computation ──
-    atkC._currentSkillDisplayDMG = sk.Display_DMG || '0';
-
-    // ── ON:SELF_CAST pre-attack ability flags ──
-    const selfCastFlags = typeof ENGINE !== 'undefined' && ENGINE.evalSelfCastAbilities
-      ? ENGINE.evalSelfCastAbilities(atkC, castNature, 'skill', null, sk.Name, ownTeam)
-      : {};
-
-    // ── Consume use (for DUAL_USE: once, before branching) ──
-    consumeSkillUse(atkC, act.skillIdx);
-
-    // ── Standard coin flip (on skill itself) ──
-    const needsCoin  = String(sk.Conditions || sk.Coin_Flip || '').includes('Coin_Flip') || String(sk.Coin_Flip || '') === '1';
-    const screenGuarantee = consumeScreenGuarantee(atkC);
-    const noMiss = atkC._noMiss || selfCastFlags.noMiss || screenGuarantee;
-
-    if (needsCoin && !noMiss) {
-      const win = await runCoinFlip(shortName(getCardName(atkC)), sk.Name);
-      if (typeof logMsg === 'function') logMsg('coin', 'Coin', `${win ? 'HEADS — Hit!' : 'TAILS — Miss!'}`);
-      if (!win) {
-        processStackingTriggers(atkC, 'FAIL', castNature, 'skill', sk.Name, ownTeam);
-        await checkReboundTriggers(act, atkC, ownTeam, isPlayer);
-        await checkTeammateFail(act, atkC, enemyTeam, ownTeam, isPlayer);
-        if (typeof ENGINE !== 'undefined' && ENGINE.clearTempAttackFlags) ENGINE.clearTempAttackFlags(atkC);
-        return;
-      }
-    }
-
-    // ── Forced coin flip from global debuffs ──
-    if (!noMiss) {
-      const forcedResult = await applyGlobalDebuffEffects(atkC, sk, castNature, enemyTeam, act.skillIdx);
-      if (forcedResult.forcedCoinFlipMiss) {
-        if (!forcedResult.refundSkill) {
-          // Use was already consumed — leave it
-        } else {
-          refundSkillUse(atkC, act.skillIdx);
-        }
-        processStackingTriggers(atkC, 'FAIL', castNature, 'skill', sk.Name, ownTeam);
-        await checkReboundTriggers(act, atkC, ownTeam, isPlayer);
-        await checkTeammateFail(act, atkC, enemyTeam, ownTeam, isPlayer);
-        if (typeof ENGINE !== 'undefined' && ENGINE.clearTempAttackFlags) ENGINE.clearTempAttackFlags(atkC);
-        return;
-      }
-    }
-
-    // ── Target resolution ──
-    let defC = defs[act.targetIdx];
-    let dIdx  = act.targetIdx;
-    if (!defC || defC.isDead) {
-      const vt = typeof getValidTargets === 'function' ? getValidTargets(atkC, defs) : [];
-      if (!vt.length) {
-        if (typeof ENGINE !== 'undefined' && ENGINE.clearTempAttackFlags) ENGINE.clearTempAttackFlags(atkC);
-        return;
-      }
-      defC = vt[0].c; dIdx = vt[0].i;
-    }
-
-    // ── DMG Redirection check ──
-    const { finalTarget, finalDmg: _ } = resolveRedirection(defC, 0, context);
-    if (finalTarget !== defC) {
-      defC = finalTarget;
-    }
-
-    // ── Immunity checks ──
-    if (defC._fullyUntargetable) {
-      if (typeof logMsg === 'function') logMsg('sys', 'System', `${shortName(getCardName(defC))} is completely untargetable!`);
-      if (typeof ENGINE !== 'undefined' && ENGINE.clearTempAttackFlags) ENGINE.clearTempAttackFlags(atkC);
-      return;
-    }
-
-    const natL = castNature.toLowerCase();
-    if (defC._immuneAllOffensive && natL.includes('offensive')) {
-      if (typeof logMsg === 'function') logMsg('sys', 'System', `${shortName(getCardName(defC))} is immune to offensive skills!`);
-      if (typeof ENGINE !== 'undefined' && ENGINE.clearTempAttackFlags) ENGINE.clearTempAttackFlags(atkC);
-      return;
-    }
-    if (defC._immuneCloseShot && natL.includes('close_shot')) {
-      if (typeof logMsg === 'function') logMsg('sys', 'System', `${shortName(getCardName(defC))} is immune to close shots!`);
-      if (typeof ENGINE !== 'undefined' && ENGINE.clearTempAttackFlags) ENGINE.clearTempAttackFlags(atkC);
-      return;
-    }
-    if (defC._immuneJumpShot && natL.includes('jump_shot')) {
-      if (typeof logMsg === 'function') logMsg('sys', 'System', `${shortName(getCardName(defC))} is immune to jump shots!`);
-      if (typeof ENGINE !== 'undefined' && ENGINE.clearTempAttackFlags) ENGINE.clearTempAttackFlags(atkC);
-      return;
-    }
-
-    // ── ON:ENEMY_CAST triggers (mitigation from defending team) ──
-    let mitigationFlat = 0;
-    let mitigationMult = 1.0;
-    if (typeof ENGINE !== 'undefined' && ENGINE.evaluateEnemyCastTriggers) {
-      const mit = ENGINE.evaluateEnemyCastTriggers(defs, atkC, defC, castNature, 'skill', defs, atks);
-      mitigationFlat = mit.mitigationFlat || 0;
-      mitigationMult = mit.mitigationMult != null ? mit.mitigationMult : 1.0;
-    }
-
-    // ── Prompt reactive (defensive) skills ──
-    const blocked = await promptReactiveSkills(act, sk, atkC, defC, dIdx, isPlayer, defs, castNature);
-    if (blocked) {
-      processStackingTriggers(atkC, 'FAIL', castNature, 'skill', sk.Name, ownTeam);
-      await checkReboundTriggers(act, atkC, ownTeam, isPlayer);
-      await checkTeammateFail(act, atkC, enemyTeam, ownTeam, isPlayer);
-      if (typeof ENGINE !== 'undefined' && ENGINE.clearTempAttackFlags) ENGINE.clearTempAttackFlags(atkC);
-      return;
-    }
-
-    // ── Compute damage ──
-    // Find assister card if needed (Deal_Assist_Dmg)
-    const firstMod = resolved.modifiers?.[0];
-    let assisterCard = null;
-    if (firstMod?.action?.type === 'DEAL_ASSIST_DMG' && firstMod.action.refPosition) {
-      assisterCard = ownTeam.find(c => c && !c.isDead && c.battleRole === firstMod.action.refPosition);
-    }
-
-    const primaryAction = firstMod?.action || { type: 'NONE' };
-    const primaryTD = firstMod?.td || { turns: 0, delay: 0, special: null };
-    const rawDmg = computeSkillDamage(primaryAction, atkC, assisterCard, mitigationFlat, mitigationMult, selfCastFlags);
-
-    // Apply DMG redirection
-    const { finalTarget: realTarget } = resolveRedirection(defC, rawDmg, context);
-
-    // ── Log & animate ──
-    if (typeof logMsg === 'function') {
-      logMsg(isPlayer ? 'atk' : 'def', whoLabel,
-        `[${atkC.battleRole}] ${shortName(getCardName(atkC))} → ${sk.Name} on [${realTarget.battleRole}] ${shortName(getCardName(realTarget))} — ${rawDmg} DMG`);
-    }
-
-    const aSide = isPlayer ? 'player' : 'enemy';
-    const dSide = isPlayer ? 'enemy' : 'player';
-    if (typeof playCombatAnimation === 'function') {
-      await playCombatAnimation(`${aSide}-${act.actorIdx}`, `${dSide}-${dIdx}`, rawDmg, realTarget, dIdx, dSide);
-    }
-
-    // ── Apply all other modifiers (non-damage) ──
-    for (let mi = 1; mi < resolved.modifiers.length; mi++) {
-      const modEntry = resolved.modifiers[mi];
-      const modTargetStr = modEntry.target || 'Self';
-      const modTargetCard = _resolveModifierTarget(modTargetStr, atkC, defC, ownTeam, enemyTeam, context);
-      await executeModifier(modEntry, atkC, modTargetCard, castNature, {
-        ...context,
-        attackerSlotId: `${aSide}-${act.actorIdx}`,
-        defenderSlotId: `${dSide}-${dIdx}`,
-        defIdx: dIdx,
-        defSide: dSide,
-        assister: assisterCard,
+    // Tick _dmgReductions
+    if (card._dmgReductions) {
+      card._dmgReductions = card._dmgReductions.filter(r => {
+        if (!r.started) { r.delay--; if (r.delay <= 0) r.started = true; return true; }
+        r.turnsLeft--;
+        return r.turnsLeft > 0;
       });
     }
 
-    // ── KO check ──
-    if (realTarget.currentHp <= 0 && typeof handleKO === 'function') {
-      handleKO(realTarget, dSide, dIdx);
+    // Tick _globalDebuffs
+    if (card._globalDebuffs) {
+      card._globalDebuffs = card._globalDebuffs.filter(d => {
+        d.turnsLeft--;
+        return d.turnsLeft > 0;
+      });
     }
 
-    // ── HP threshold / state triggers on damaged card ──
-    if (typeof ENGINE !== 'undefined') {
-      if (ENGINE.checkHPThreshold) {
-        const threshAction = ENGINE.checkHPThreshold(realTarget, defs);
-        if (threshAction && typeof ENGINE.applyPassiveFlag === 'function') ENGINE.applyPassiveFlag(realTarget, threshAction);
-      }
-      if (ENGINE.checkHPState) {
-        const stateActions = ENGINE.checkHPState(realTarget, defs);
-        stateActions.forEach(a => ENGINE.applyPassiveFlag && ENGINE.applyPassiveFlag(realTarget, a));
-      }
-    }
-
-    // ── ON:SELF_CAST HIT stacking ──
-    processStackingTriggers(atkC, 'HIT', castNature, 'skill', sk.Name, ownTeam);
-
-    // ── Clear THIS_ATTACK flags ──
-    if (typeof ENGINE !== 'undefined' && ENGINE.clearTempAttackFlags) ENGINE.clearTempAttackFlags(atkC);
-    clearRedirectionFlag(defC);
-
-    // ── Extra Move grant ──
-    if (atkC._grantedExtraMove) {
-      await _processGrantedExtraMove(atkC, act, isPlayer);
-    }
-
-    if (typeof renderArena === 'function') renderArena();
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // SECTION 20 — executeBasicAction (BASIC ATTACK ENTRY POINT)
-  // ─────────────────────────────────────────────────────────────
-
-  /**
-   * executeBasicAction(act, isPlayer)
-   * Runs a basic (Nature:Base) attack through the full pipeline.
-   */
-  async function executeBasicAction(act, isPlayer) {
-    const atks = isPlayer ? playerActive : enemyActive;
-    const defs = isPlayer ? enemyActive  : playerActive;
-    const atkC = atks[act.actorIdx];
-
-    if (!atkC || atkC.isDead) return;
-    const ck = atkC._instanceId;
-    if (_frozen && _frozen[ck]) {
-      if (typeof logMsg === 'function') logMsg('sys', isPlayer ? 'You' : 'Bot', `${shortName(getCardName(atkC))} is frozen and cannot act!`);
-      return;
-    }
-
-    const castNature = 'Base';
-    const whoLabel   = isPlayer ? 'You' : 'Bot';
-    atkC._lastCastNature = castNature;
-
-    // ON:SELF_CAST flags
-    const selfCastFlags = typeof ENGINE !== 'undefined' && ENGINE.evalSelfCastAbilities
-      ? ENGINE.evalSelfCastAbilities(atkC, castNature, 'basic', null, null, atks)
-      : {};
-
-    // No coin flip for basic attacks unless a forced flip debuff applies
-    const screenGuarantee = consumeScreenGuarantee(atkC);
-    const noMiss = atkC._noMiss || selfCastFlags.noMiss || screenGuarantee;
-
-    if (!noMiss) {
-      const forcedResult = await applyGlobalDebuffEffects(atkC, null, castNature, defs, -1);
-      if (forcedResult.forcedCoinFlipMiss) {
-        processStackingTriggers(atkC, 'FAIL', castNature, 'basic', null, atks);
-        await checkReboundTriggers(act, atkC, atks, isPlayer);
-        await checkTeammateFail(act, atkC, defs, atks, isPlayer);
-        if (typeof ENGINE !== 'undefined' && ENGINE.clearTempAttackFlags) ENGINE.clearTempAttackFlags(atkC);
-        return;
-      }
-    }
-
-    // Target resolution
-    let defC = defs[act.targetIdx];
-    let dIdx = act.targetIdx;
-    if (!defC || defC.isDead) {
-      const vt = typeof getValidTargets === 'function' ? getValidTargets(atkC, defs) : [];
-      if (!vt.length) { if (typeof ENGINE !== 'undefined' && ENGINE.clearTempAttackFlags) ENGINE.clearTempAttackFlags(atkC); return; }
-      defC = vt[0].c; dIdx = vt[0].i;
-    }
-
-    // DMG Redirection
-    const { finalTarget } = resolveRedirection(defC, 0, { card: atkC });
-    if (finalTarget !== defC) defC = finalTarget;
-
-    // Immunity checks
-    if (defC._fullyUntargetable) {
-      if (typeof logMsg === 'function') logMsg('sys', 'System', `${shortName(getCardName(defC))} is untargetable!`);
-      if (typeof ENGINE !== 'undefined' && ENGINE.clearTempAttackFlags) ENGINE.clearTempAttackFlags(atkC);
-      return;
-    }
-
-    // ON:ENEMY_CAST mitigation
-    let mitigationFlat = 0;
-    let mitigationMult = 1.0;
-    if (typeof ENGINE !== 'undefined' && ENGINE.evaluateEnemyCastTriggers) {
-      const mit = ENGINE.evaluateEnemyCastTriggers(defs, atkC, defC, castNature, 'basic', defs, atks);
-      mitigationFlat = mit.mitigationFlat || 0;
-      mitigationMult = mit.mitigationMult != null ? mit.mitigationMult : 1.0;
-    }
-
-    // Reactive skills prompt
-    const blocked = await promptReactiveSkills(act, null, atkC, defC, dIdx, isPlayer, defs, castNature);
-    if (blocked) {
-      processStackingTriggers(atkC, 'FAIL', castNature, 'basic', null, atks);
-      await checkReboundTriggers(act, atkC, atks, isPlayer);
-      await checkTeammateFail(act, atkC, defs, atks, isPlayer);
-      if (typeof ENGINE !== 'undefined' && ENGINE.clearTempAttackFlags) ENGINE.clearTempAttackFlags(atkC);
-      return;
-    }
-
-    // Compute basic DMG
-    let dmgRaw = _getEffectiveDMG(atkC, false);
-    if (selfCastFlags.thisAttackBaseDmgBonus) dmgRaw += selfCastFlags.thisAttackBaseDmgBonus;
-    const stacks = _permanentStacks[ck];
-    if (stacks?.baseDmg) dmgRaw += stacks.baseDmg;
-    dmgRaw = Math.floor(dmgRaw * mitigationMult);
-    dmgRaw = Math.max(0, dmgRaw - mitigationFlat);
-
-    const { finalTarget: realTarget } = resolveRedirection(defC, dmgRaw, { card: atkC });
-
-    if (typeof logMsg === 'function') {
-      logMsg(isPlayer ? 'atk' : 'def', whoLabel,
-        `[${atkC.battleRole}] ${shortName(getCardName(atkC))} → Basic Attack on [${realTarget.battleRole}] ${shortName(getCardName(realTarget))} — ${dmgRaw} DMG`);
-    }
-
-    const aSide = isPlayer ? 'player' : 'enemy';
-    const dSide = isPlayer ? 'enemy' : 'player';
-    if (typeof playCombatAnimation === 'function') {
-      await playCombatAnimation(`${aSide}-${act.actorIdx}`, `${dSide}-${dIdx}`, dmgRaw, realTarget, dIdx, dSide);
-    }
-
-    if (realTarget.currentHp <= 0 && typeof handleKO === 'function') {
-      handleKO(realTarget, dSide, dIdx);
-    }
-
-    // HP triggers on damaged card
-    if (typeof ENGINE !== 'undefined') {
-      if (ENGINE.checkHPThreshold) {
-        const a = ENGINE.checkHPThreshold(realTarget, defs);
-        if (a && ENGINE.applyPassiveFlag) ENGINE.applyPassiveFlag(realTarget, a);
-      }
-      if (ENGINE.checkHPState) {
-        ENGINE.checkHPState(realTarget, defs).forEach(a => ENGINE.applyPassiveFlag && ENGINE.applyPassiveFlag(realTarget, a));
-      }
-    }
-
-    processStackingTriggers(atkC, 'HIT', castNature, 'basic', null, atks);
-    if (typeof ENGINE !== 'undefined' && ENGINE.clearTempAttackFlags) ENGINE.clearTempAttackFlags(atkC);
-    clearRedirectionFlag(defC);
-
-    if (atkC._grantedExtraMove) await _processGrantedExtraMove(atkC, act, isPlayer);
-    if (typeof renderArena === 'function') renderArena();
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // SECTION 21 — AI SKILL CHOOSER
-  // ─────────────────────────────────────────────────────────────
-
-  /**
-   * botChooseSkill(card, ownTeam, enemyTeam)
-   * Returns { skillIdx, targetIdx } for the bot's action, or null for basic.
-   * Prefers highest priority usable offensive skill.
-   */
-  function botChooseSkill(card, ownTeam, enemyTeam) {
-    const vt = typeof getValidTargets === 'function' ? getValidTargets(card, enemyTeam) : [];
-    if (!vt.length) return null;
-
-    let bestSkill = null;
-    let bestPriority = -Infinity;
-
-    (card.Skills || []).forEach((sk, idx) => {
-      if (!canUseSkill(card, idx)) return;
-      const nature = getSkillNature(sk);
-      // Bot only uses offensive / utility skills proactively
-      if (nature.includes('Defensive')) return;
-      const p = getEffectivePriority(card, sk);
-      if (p > bestPriority) { bestPriority = p; bestSkill = { skillIdx: idx, targetIdx: vt[0].i }; }
-    });
-
-    return bestSkill;
-  }
-
-  // ─────────────────────────────────────────────────────────────
-  // INTERNAL HELPERS
-  // ─────────────────────────────────────────────────────────────
-
-  /**
-   * _resolveModifierTarget(targetStr, caster, selectedEnemy, ownTeam, enemyTeam, context)
-   * Returns a card or array of cards.
-   */
-  function _resolveModifierTarget(targetStr, caster, selectedEnemy, ownTeam, enemyTeam, context) {
-    if (!targetStr) return caster;
-    const parts = targetStr.split(':');
-    const subject = parts[0];
-
-    switch (subject) {
-      case 'Self':             return caster;
-      case 'All_Ally':         return ownTeam.filter(c => c && !c.isDead);
-      case 'All_Teammate':     return ownTeam.filter(c => c && !c.isDead && c !== caster);
-      case 'All_Enemy':        return enemyTeam.filter(c => c && !c.isDead);
-      case 'Selected_Enemy':   return selectedEnemy;
-      case 'Casting_Teammate': return context?.castingTeammate || null;
-      case 'Casting_Enemy':    return context?.castingEnemy    || null;
-      case 'Targeted_Ally':    return context?.targetedAlly    || null;
-      case 'Selected_Ally':    return caster; // fallback — requires UI selection
-      case 'Selected_Teammate': {
-        // Look for a position filter
-        const posFilter = parts.find(p => p.startsWith('Active_Position:'));
-        if (posFilter) {
-          const pos = posFilter.split(':')[1];
-          return ownTeam.find(c => c && !c.isDead && c !== caster && getCardPos(c).includes(pos)) || null;
+    // Tick frozen
+    if (card._frozen) {
+      if (card._frozenTurnsLeft !== undefined) {
+        card._frozenTurnsLeft--;
+        if (card._frozenTurnsLeft <= 0) {
+          delete card._frozen;
+          delete card._frozenTurnsLeft;
+          delete card._skillsFrozen;
         }
-        return ownTeam.find(c => c && !c.isDead && c !== caster) || null;
       }
-      default:
-        return caster;
     }
-  }
 
-  /**
-   * _evalSkillCondition(condStr, ctx)
-   * Evaluates a skill-level condition string.
-   */
-  function _evalSkillCondition(condStr, ctx) {
-    if (!condStr) return true;
-    const lower = condStr.toLowerCase().trim();
-    if (lower === 'always' || lower === '') return true;
-
-    // Own_Team_Lead
-    if (lower.includes('own_team_lead')) return ctx.ownTeamLead === true;
-    // Coin_Flip handled at modifier level
-    if (lower.includes('coin_flip')) return true;
-
-    // Delegate to PARSER if available
-    if (typeof PARSER !== 'undefined' && PARSER.evalCondition) {
-      return PARSER.evalCondition(condStr, ctx);
-    }
-    return true;
-  }
-
-  /**
-   * _parseAction(raw) — alias for PARSER.parseAction or inline fallback
-   */
-  function _parseAction(raw) {
-    if (!raw || raw.trim() === '') return { type: 'NONE' };
-    if (typeof PARSER !== 'undefined' && PARSER.parseAction) return PARSER.parseAction(raw);
-    // Inline minimal fallback
-    if (raw.startsWith('Deal_Flat_DMG:')) {
-      return { type: 'DEAL_FLAT_DMG', value: parseInt(raw.split(':')[1]) || 0 };
-    }
-    if (raw === 'Block')    return { type: 'BLOCK' };
-    if (raw === 'Contest')  return { type: 'CONTEST' };
-    if (raw === 'Intercept') return { type: 'INTERCEPT' };
-    if (raw === 'Freeze')   return { type: 'FREEZE' };
-    if (raw === 'Nullify')  return { type: 'NULLIFY' };
-    if (raw === 'Steal_Skill') return { type: 'STEAL_SKILL' };
-    if (raw === 'Grant_Extra_Move') return { type: 'GRANT_EXTRA_MOVE', nature: null };
-    if (raw.startsWith('Grant_Extra_Move:')) return { type: 'GRANT_EXTRA_MOVE', nature: raw.split(':')[1] };
-    if (raw === 'Screen_Guarantee_Hit') return { type: 'SCREEN_GUARANTEE_HIT' };
-    return { type: 'UNKNOWN', raw };
-  }
-
-  /**
-   * _applyTimedStatBuff(card, stat, value, td)
-   * Stores a timed buff. Respected by OTHER.html's endOfTurnCleanup().
-   */
-  function _applyTimedStatBuff(card, stat, value, td) {
-    const ck = card._instanceId;
-    if (typeof _statBuffs === 'undefined') return;
-    if (!_statBuffs[ck]) _statBuffs[ck] = {};
-    const existing = _statBuffs[ck][stat];
-    if (existing) {
-      existing.value += value;
-      existing.turnsLeft = Math.max(existing.turnsLeft, td?.turns || 1);
-    } else {
-      _statBuffs[ck][stat] = {
-        value,
-        turnsLeft: td?.turns || 1,
-        delay: td?.delay || 0,
-        started: !td?.delay,
-      };
-    }
-    if (typeof logMsg === 'function') {
-      logMsg('sys', 'Stat Buff', `${shortName(getCardName(card))} +${value} ${stat} for ${td?.turns || 1} turns`);
-    }
-  }
-
-  /**
-   * _applyDrain(card, nature, td)
-   * Stores a drain effect (disables specific natures for turns).
-   */
-  function _applyDrain(card, nature, td) {
-    const ck = card._instanceId;
-    if (!_skillDisables[ck]) _skillDisables[ck] = [];
-    _skillDisables[ck].push({
-      skillName: null,
-      nature: nature,
-      turnsLeft: td?.turns || 1,
-    });
-    if (typeof logMsg === 'function') logMsg('sys', 'Drain', `${shortName(getCardName(card))} ${nature} skills drained for ${td?.turns || 1} turns!`);
-  }
-
-  /**
-   * _applyState(card, raw)
-   * Handles Apply_State:Sixth_Man:Priority:-10:Targetable_Via_Teammate etc.
-   */
-  function _applyState(card, raw) {
-    const parts = raw.split(':');
-    const stateName = parts[0];
-    switch (stateName) {
-      case 'Sixth_Man':
-        card._state = 'SIXTH_MAN';
-        // Parse priority modifier
-        const prIdx = parts.indexOf('Priority');
-        if (prIdx >= 0) card._priorityBonus = (card._priorityBonus || 1) + (parseInt(parts[prIdx + 1]) || 0);
-        // Targetable via teammate flag
-        if (raw.includes('Targetable_Via_Teammate')) card._sixthManTargetViaTeammate = true;
-        break;
-      default:
-        card._state = stateName;
-    }
-  }
-
-  /**
-   * _clearDebuffsOnCard(card) — nullify removes all global debuffs on target
-   */
-  function _clearDebuffsOnCard(card) {
-    const ck = card._instanceId;
-    delete _globalDebuffs[ck];
-    delete _skillDisables[ck];
-    if (typeof _frozen !== 'undefined') delete _frozen[ck];
-    if (typeof _drained !== 'undefined') delete _drained[ck];
-    if (typeof _shutdown !== 'undefined') delete _shutdown[ck];
-  }
-
-  /**
-   * _processGrantedExtraMove(card, act, isPlayer)
-   * Handles the extra move flag set by Grant_Extra_Move.
-   */
-  async function _processGrantedExtraMove(card, act, isPlayer) {
-    const extraNature = card._grantedExtraMove;
+    // Clear per-turn flags
     delete card._grantedExtraMove;
-    const ck = card._instanceId;
+    delete card._thisAttackBuffs;
+    delete card._noMissThisAttack;
+    delete card._untargetableUntilTurnEnd;
 
-    // Loop guard — already used
-    if (_extraMoveUsedThisTurn.has(ck)) return;
-    _extraMoveUsedThisTurn.add(ck);
-
-    if (typeof logMsg === 'function') logMsg('sys', 'Extra Move', `${shortName(getCardName(card))} gets an extra move!`);
-
-    // For bots, choose a skill or basic
-    if (!isPlayer) {
-      const atks = enemyActive;
-      const defs = playerActive;
-      const chosen = botChooseSkill(card, atks, defs);
-      if (chosen) {
-        await executeSkillAction({ ...act, skillIdx: chosen.skillIdx, targetIdx: chosen.targetIdx, actionType: 'skill' }, isPlayer);
-      } else {
-        const vt = typeof getValidTargets === 'function' ? getValidTargets(card, defs) : [];
-        if (vt.length) await executeBasicAction({ ...act, targetIdx: vt[0].i, actionType: 'basic' }, isPlayer);
-      }
+    // Survive: if the card survived last turn, mark for TURN_START_AFTER_SURVIVE
+    if (card._justSurvived) {
+      card._survivedLastTurn = true;
+      delete card._justSurvived;
     }
-    // For player: the UI in OTHER.html will re-open the action panel flagged with extraNature filter
-    // (flag is set via card._grantedExtraMove before deletion; UI checks it before deletion)
   }
 
-  // ─────────────────────────────────────────────────────────────
+  /**
+   * clearRestOfTurnFlags
+   * ⭐ REST_OF_TURN effects expire after current turn, not after each action.
+   * Call at end of full turn resolution.
+   */
+  function clearRestOfTurnFlags(allCards) {
+    for (const card of (allCards || [])) {
+      if (!card) continue;
+      if (card._fullyUntargetable && card._untargetableUntilTurnEnd) {
+        delete card._fullyUntargetable;
+        delete card._untargetableUntilTurnEnd;
+      }
+      delete card._thisAttackBuffs;
+      delete card._noMissThisAttack;
+      // Re-derive immunity flags after clearing
+      _recomputeUntargetableFlags(card);
+    }
+  }
+
+  // ============================================================
+  // SECTION 9 — REACTIVE SKILL HELPERS
+  // Utility functions for skill engine's reactive checks.
+  // ============================================================
+
+  /**
+   * canReactiveSkillTrigger
+   * Returns true if a reactive skill's nature matches the incoming attack.
+   */
+  function canReactiveSkillTrigger(reactiveSkill, castNature, castType) {
+    const timing = reactiveSkill.Timing || reactiveSkill.timing || '';
+    if (!timing.includes('Reactive')) return false;
+
+    // Parse the nature scope from timing string
+    // Format: Reactive_Free:On_Enemy:Nature:Offensive:Close_Shot
+    const nMatch = timing.match(/Nature:([^:]+(?::[^:]+)*)/);
+    if (!nMatch) return true; // no nature filter = matches all
+    const allowedNature = nMatch[1];
+    return PARSER.natureMatches(allowedNature, castNature, castType);
+  }
+
+  /**
+   * isSkillDisabled
+   * Returns true if the named skill is disabled on the card.
+   */
+  function isSkillDisabled(card, skillName) {
+    if (!card._skillDisables || card._skillDisables.length === 0) return false;
+    // ⭐ Ref_Skill can disable a specific skill name or ALL skills
+    return card._skillDisables.some(d => d.refSkill === null || d.refSkill === skillName);
+  }
+
+  /**
+   * getEffectiveDMG
+   * Returns the card's current effective damage for the given attack type,
+   * incorporating all active buffs and modifiers.
+   */
+  function getEffectiveDMG(card, isSkill, castNature) {
+    let base = card.UI_Frontend_Data?.Stats?.Base_DMG ?? 0;
+    base += card._dmgModifiers ?? 0;
+
+    // Stack buffs
+    if (card._stackBuffs) {
+      for (const sb of Object.values(card._stackBuffs)) {
+        if (sb.stat === 'DMG' || (castNature && sb.stat.includes(castNature.split(':')[0]))) {
+          base += sb.total;
+        }
+      }
+    }
+
+    // Timed buffs
+    if (card._timedBuffs) {
+      for (const buff of card._timedBuffs) {
+        if (!buff.started) continue;
+        if (buff.stat === 'DMG') base += buff.amount;
+        if (isSkill && buff.stat === 'DMG:Nature:Offensive') base += buff.amount;
+        if (!isSkill && buff.stat === 'DMG:Nature:Base') base += buff.amount;
+      }
+    }
+
+    // THIS_ATTACK buffs
+    if (card._thisAttackBuffs) {
+      base += card._thisAttackBuffs['DMG'] ?? 0;
+      if (isSkill) base += card._thisAttackBuffs['DMG:Skill'] ?? 0;
+    }
+
+    return Math.max(0, base);
+  }
+
+  /**
+   * getPriorityBoost
+   * ⭐ Returns the priority multiplier for a given cast nature.
+   * Used by turn order sorter.
+   */
+  function getPriorityBoost(card, castNature) {
+    let boost = card._priorityMult ?? 1;
+    if (card._priorityModifiers) {
+      for (const m of card._priorityModifiers) {
+        if (!m.nature || PARSER.natureMatches(m.nature, castNature, 'skill')) {
+          boost = Math.max(boost, m.multiplier);
+        }
+      }
+    }
+    return boost;
+  }
+
+  /**
+   * applyPassiveFlag
+   * Generic fallback for flags not handled above.
+   */
+  function applyPassiveFlag(card, action) {
+    if (!action) return;
+    _applyActionToCard(action, card, null, null, {});
+  }
+
+  // ============================================================
   // PUBLIC API
-  // ─────────────────────────────────────────────────────────────
-
+  // ============================================================
   return {
-    // Lifecycle
-    initSkillCounters,
-    resetSkillTurnCounters,
-    resetExtraMoveGuards,
+    // Boot / initialization
+    bootPassiveAbilities,
+    bootEnterActiveLineup,
+    evaluateAlwaysConditional,
 
-    // Use gate
-    canUseSkill,
-    consumeSkillUse,
-    refundSkillUse,
+    // Roster events
+    evalRosterEvent,
+    evalCardExitTriggers,
+    checkAndPair,
+
+    // Aura system
+    applyAura,
+    removeAura,
+    gcAuras,
+    clearCardAuras,
+
+    // Combat triggers
+    evaluateEnemyCastTriggers,
+    evaluateRetaliateAbilities,
+    evalSelfCastAbilities,
+    evalSelfCastStackingAbilities,
+    evalTeammateFail,
+    canReactiveSkillTrigger,
+
+    // HP events
+    checkHPThreshold,
+    checkHPState,
+    checkSurviveAbility,
+
+    // Turn lifecycle
+    evalTurnStartAfterSurvive,
+    tickCardEffects,
+    clearRestOfTurnFlags,
+
+    // Damage / stat helpers
+    getEffectiveDMG,
+    getPriorityBoost,
     isSkillDisabled,
+    applyPassiveFlag,
 
-    // Core execution
-    executeSkillAction,
-    executeBasicAction,
+    // Internal helpers exposed for skill engine
+    _applyActionToCard,
+    _applyStatBuff: (card, action) => _applyActionToCard(action, card, null, null, {}),
+    _applyUntargetableFlags: (card, spec) => _recomputeUntargetableFlags(card),
+    _resolveActionTargets,
+    _recomputeUntargetableFlags,
 
-    // Phase / nature helpers
-    resolveSkillPhases,
-    getSkillNature,
-    skillHasProperty,
-    getEffectivePriority,
-    isDualUseSkill,
-    resolveDualUseBranch,
+    // Context builder
+    buildCondCtx,
 
-    // Damage
-    computeSkillDamage,
-
-    // Reactions
-    promptReactiveSkills,
-    resolveDefensiveAction,
-    resolveStealSkill,
-    checkReboundTriggers,
-    checkTeammateFail,
-
-    // Stacking
-    processStackingTriggers,
-
-    // Modifiers
-    executeModifier,
-    consumeScreenGuarantee,
-    resolveRedirection,
-    clearRedirectionFlag,
-
-    // Global debuffs
-    applyGlobalDebuffEffects,
-    tickGlobalDebuffs,
-    gcGlobalDebuffsForCard,
-
-    // Disables
-    tickSkillDisables,
-
-    // AI
-    botChooseSkill,
-
-    // End-of-turn cleanup delegates (called by OTHER.html's endOfTurnCleanup)
-    tickAll() {
-      tickGlobalDebuffs();
-      tickSkillDisables();
-      resetExtraMoveGuards();
-    },
-
-    // Expose internal state for OTHER.html's renderArena status badges
-    get globalDebuffs() { return _globalDebuffs; },
-    get skillDisables() { return _skillDisables; },
-    get screenGuarantees() { return _screenGuarantee; },
-    get permanentStacks() { return _permanentStacks; },
+    // Central event bus
+    fireEvent,
   };
 
 })();
 
-// ============================================================
-// REACTIVE SKILL UI STYLES
-// Injected here so the popup renders correctly when SKILL_ENGINE
-// is dropped into the page without separate CSS.
-// ============================================================
-(function injectSkillEngineStyles() {
-  const style = document.createElement('style');
-  style.textContent = `
-    .reactive-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,.72);
-      backdrop-filter: blur(10px);
-      z-index: 9000;
-      display: flex; align-items: center; justify-content: center;
-    }
-    .reactive-popup {
-      background: rgba(10,15,26,.96);
-      border: 1.5px solid rgba(255,255,255,.2);
-      border-radius: 14px;
-      padding: 22px 24px;
-      min-width: 320px; max-width: 460px;
-      box-shadow: 0 20px 60px rgba(0,0,0,.8);
-      display: flex; flex-direction: column; gap: 12px;
-    }
-    .reactive-title {
-      font-family: 'Orbitron', sans-serif;
-      font-size: 1rem; font-weight: 900;
-      color: #FFD166; letter-spacing: 1px;
-    }
-    .reactive-title span { color: #FF8C42; }
-    .reactive-sub {
-      font-size: .78rem; color: rgba(255,255,255,.6);
-    }
-    .reactive-sub b { color: rgba(255,255,255,.9); }
-    .reactive-options {
-      display: flex; flex-direction: column; gap: 8px;
-    }
-    .reactive-choice-btn {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 10px 14px; border-radius: 8px;
-      font-size: .8rem; text-align: left;
-    }
-    .reactive-card-name { font-weight: 700; color: #fff; }
-    .reactive-sk-name   { flex: 1; padding: 0 10px; color: #80CFFF; }
-    .reactive-sk-dmg    { color: #FF8C8C; font-size: .72rem; }
-    .reactive-pass-btn  { margin-top: 4px; font-size: .78rem; }
-    .dual-choice { flex: 1; font-size: .9rem; padding: 12px; }
-  `;
-  document.head.appendChild(style);
-})();
-// ============================================================
-//
-// ============================================================
-
-
-
-// ============================================================
-// ============================================================
-// ★★★ SKILL ENGINE — INSERT HERE ★★★
+// ── BACKWARDS-COMPAT ALIAS ──────────────────────────────────
+// The old HTML used ENGINE.xxx — keep the alias so the rest of
+// the code continues to work unchanged.
+const ENGINE = ABILITY_ENGINE;
+   
 // ============================================================
 // ============================================================
 //
@@ -5123,18 +4701,51 @@ const SKILL_ENGINE = (() => {
 // §2 — DATA LAYER & CARD ACCESSORS
 // ============================================================
 
-function getCardName(c) { return c?.UI_Frontend_Data?.Formatted_Name || c?.UI_Frontend_Data?.Name || 'Unknown'; }
-function getCardRawName(c) { return c?.UI_Frontend_Data?.Name || ''; }
-function getCardVariant(c) { const fn = getCardName(c); const m = fn.match(/\((.+)\)$/); return m ? m[1] : ''; }
-function getCardImg(c) { return c?.UI_Frontend_Data?.Image_File || ''; }
-function getCardHP(c) { return c?.UI_Frontend_Data?.Stats?.HP || 0; }
-function getCardDMG(c) { return c?.UI_Frontend_Data?.Stats?.Base_DMG || 0; }
-function getCardSPD(c) { return c?.UI_Frontend_Data?.Stats?.Speed || 0; }
-function getCardHeight(c) { return c?.UI_Frontend_Data?.Height || ''; }
-function getCardTeam(c) { return c?.UI_Frontend_Data?.Team_ID || c?.UI_Frontend_Data?.Team || ''; }
-function getCardTier(c) { return c?.UI_Frontend_Data?.Tier || ''; }
-function getCardPos(c) { const p = c?.UI_Frontend_Data?.Positions; return p ? [p.Primary, p.Secondary, p.Third].filter(Boolean) : []; }
-function getCardPosStr(c) { const p = c?.UI_Frontend_Data?.Positions; return p ? p.Primary + (p.Secondary ? '/' + p.Secondary : '') : 'N/A'; }
+function getCardName(c) {
+  // Try UI_Frontend_Data first, then fallback to BasicInfo
+  return c?.UI_Frontend_Data?.Formatted_Name || c?.BasicInfo?.FormattedName || c?.UI_Frontend_Data?.Name || c?.BasicInfo?.PlayerName || 'Unknown';
+}
+function getCardRawName(c) {
+  return c?.UI_Frontend_Data?.Name || c?.BasicInfo?.PlayerName || '';
+}
+function getCardVariant(c) {
+  const fn = getCardName(c);
+  const m = fn.match(/\((.+)\)$/);
+  return m ? m[1] : (c?.BasicInfo?.Variant || '');
+}
+function getCardImg(c) {
+  return c?.UI_Frontend_Data?.Image_File || c?.BasicInfo?.ImageFilePath || '';
+}
+function getCardHP(c) {
+  return c?.UI_Frontend_Data?.Stats?.HP || c?.BasicInfo?.HP || 0;
+}
+function getCardDMG(c) {
+  return c?.UI_Frontend_Data?.Stats?.Base_DMG || c?.BasicInfo?.Base_DMG || 0;
+}
+function getCardSPD(c) {
+  return c?.UI_Frontend_Data?.Stats?.Speed || c?.BasicInfo?.SPD || 0;
+}
+function getCardHeight(c) {
+  return c?.UI_Frontend_Data?.Height || c?.BasicInfo?.DisplayHeight || '';
+}
+function getCardTeam(c) {
+  return c?.UI_Frontend_Data?.Team_ID || c?.BasicInfo?.Team || '';
+}
+function getCardTier(c) {
+  return c?.UI_Frontend_Data?.Tier || c?.BasicInfo?.Tier || '';
+}
+function getCardPos(c) {
+  const p = c?.UI_Frontend_Data?.Positions || c?.BasicInfo;
+  if (p && p.Primary) return [p.Primary, p.Secondary, p.Third].filter(Boolean);
+  if (c?.BasicInfo?.PrimaryPos) return [c.BasicInfo.PrimaryPos, c.BasicInfo.SecondaryPos].filter(Boolean);
+  return [];
+}
+function getCardPosStr(c) {
+  const p = c?.UI_Frontend_Data?.Positions || c?.BasicInfo;
+  if (p && p.Primary) return p.Primary + (p.Secondary ? '/' + p.Secondary : '');
+  if (c?.BasicInfo?.PrimaryPos) return c.BasicInfo.PrimaryPos + (c.BasicInfo.SecondaryPos ? '/' + c.BasicInfo.SecondaryPos : '');
+  return 'N/A';
+}
 function getCardSkills(c) { return c?.Skills || []; }
 function getAbility(c) { return c?.Ability || null; }
 
@@ -5146,7 +4757,9 @@ function getTruncatedName(fullName) {
   if (parts.length > 1) return parts[0][0] + '. ' + parts.slice(1).join(' ');
   return clean;
 }
-function getImgUrl(f, n) { return (!f || f.length < 3) ? `https://placehold.co/400x560/1a1a2e/FFD166?text=${encodeURIComponent(shortName(n))}` : GITHUB + encodeURI(f); }
+function getImgUrl(f, n) {
+  return (!f || f.length < 3) ? `https://placehold.co/400x560/1a1a2e/FFD166?text=${encodeURIComponent(shortName(n))}` : GITHUB + encodeURI(f);
+}
 function handleImgError(el, n) { el.onerror = null; el.src = `https://placehold.co/400x560/1a1a2e/FFD166?text=${encodeURIComponent(shortName(n))}`; }
 function escapeJS(s) { return s ? s.toString().replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"').replace(/`/g,'\\`') : ''; }
 function getDBShortName(f) { if(!f)return'Unknown'; const clean=f.replace(/ \(.+?\)$/, '').trim(); const p=clean.split(' '); if(p.length>1){const fi=p.shift();return fi[0]+'. '+p.join(' ');} return clean; }
@@ -5161,7 +4774,7 @@ function getSearchText(c) {
 
 function _getPlayerId(card) {
   if (!card) return '';
-  const pid = card.UI_Frontend_Data?.Player_ID;
+  const pid = card.UI_Frontend_Data?.Player_ID || card.BasicInfo?.Player_ID;
   if (pid) return pid;
   const parts = (card._instanceId || '').split('_');
   return parts[1] || '';
