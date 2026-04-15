@@ -916,6 +916,9 @@ const PARSER = (() => {
     const skill = {
       id: rawSkill.SkillID || null,
       name: rawSkill.Name,
+      // FIX: Preserve UI specific fields for the tooltip
+      Display_DMG: rawSkill.Display_DMG || '',
+      Description_UI: rawSkill.Description_UI || rawSkill.Description || '',
       description: rawSkill.Description || '',
       um: parseUM(rawSkill.UM),
       phases: []
@@ -4667,21 +4670,59 @@ const delay = ms => new Promise(r => setTimeout(r, ms));
 // ============================================================
 
 //--- Card accessors ---
-function getCardName(c) { return c?.UI_Frontend_Data?.Formatted_Name || c?.UI_Frontend_Data?.Name || 'Unknown'; }
-function getCardRawName(c) { return c?.UI_Frontend_Data?.Name || ''; }
-function getCardVariant(c) { const fn = getCardName(c); const m = fn.match(/\((.+)\)$/); return m ? m[1] : ''; }
-function getCardImg(c) { return c?.UI_Frontend_Data?.Image_File || ''; }
-function getCardHP(c) { return c?.UI_Frontend_Data?.Stats?.HP || 0; }
-function getCardDMG(c) { return c?.UI_Frontend_Data?.Stats?.Base_DMG || 0; }
-function getCardSPD(c) { return c?.UI_Frontend_Data?.Stats?.Speed || 0; }
-function getCardHeight(c) { return c?.UI_Frontend_Data?.Height || ''; }
-function getCardTeam(c) { return c?.UI_Frontend_Data?.Team_ID || c?.UI_Frontend_Data?.Team || ''; }
-function getCardTier(c) { return c?.UI_Frontend_Data?.Tier || ''; }
-function getCardPos(c) { const p = c?.UI_Frontend_Data?.Positions; return p ? [p.Primary, p.Secondary, p.Third].filter(Boolean) : []; }
-function getCardPosStr(c) { const p = c?.UI_Frontend_Data?.Positions; return p ? p.Primary + (p.Secondary ? '/' + p.Secondary : '') : 'N/A'; }
-function getCardSkills(c) { return c?.Skills || []; }
-function getAbility(c) { return c?.Ability || null; }
+// ============================================================
+// §2 — DATA LAYER & CARD CLONING
+// ============================================================
 
+//--- Card accessors (Updated to handle both Flat and Nested data) ---
+function getCardName(c) {
+  // Checks Flat (Parser) -> Nested (JSON) -> Fallback
+  return c?.formattedName || c?.name || c?.UI_Frontend_Data?.Formatted_Name || c?.UI_Frontend_Data?.Name || 'Unknown';
+}
+function getCardRawName(c) {
+  return c?.name || c?.UI_Frontend_Data?.Name || '';
+}
+function getCardVariant(c) { 
+  const fn = getCardName(c); 
+  const m = fn.match(/\((.+)\)$/); 
+  return m ? m[1] : ''; 
+}
+function getCardImg(c) { 
+  return c?.imagePath || c?.UI_Frontend_Data?.Image_File || ''; 
+}
+function getCardHP(c) { 
+  // Checks Flat (Parser) -> Nested -> 0
+  return c?.hp || c?.UI_Frontend_Data?.Stats?.HP || 0; 
+}
+function getCardDMG(c) { 
+  return c?.basicDmg || c?.UI_Frontend_Data?.Stats?.Base_DMG || 0; 
+}
+function getCardSPD(c) { 
+  return c?.spd || c?.UI_Frontend_Data?.Stats?.Speed || 0; 
+}
+function getCardHeight(c) { 
+  return c?.heightRaw || c?.UI_Frontend_Data?.Height || ''; 
+}
+function getCardTeam(c) { 
+  return c?.teamId || c?.UI_Frontend_Data?.Team_ID || c?.UI_Frontend_Data?.Team || ''; 
+}
+function getCardTier(c) { 
+  return c?.tierId || c?.UI_Frontend_Data?.Tier || ''; 
+}
+function getCardPos(c) { 
+  // Handles both Flat array [Primary, Secondary] and Nested Object {Primary, Secondary}
+  if (c?.primaryPos) {
+    return [c.primaryPos, c.secondaryPos].filter(Boolean);
+  }
+  const p = c?.UI_Frontend_Data?.Positions; 
+  return p ? [p.Primary, p.Secondary, p.Third].filter(Boolean) : []; 
+}
+function getCardPosStr(c) { 
+  const pos = getCardPos(c);
+  return pos.length ? pos[0] + (pos[1] ? '/' + pos[1] : '') : 'N/A'; 
+}
+function getCardSkills(c) { return c?.Skills || c?.skills || []; }
+function getAbility(c) { return c?.Ability || c?.abilities?.[0] || null; }
 function shortName(n) { return n ? n.replace(/ \(.+?\)$/, '') : 'Unknown'; }
 function getTruncatedName(fullName) {
   if (!fullName) return '';
@@ -5611,7 +5652,7 @@ let expandedCardCat = null;
 function goCat() { showScreen('catalogue-screen'); filterCat(); }
 function filterCat() {
   const q=($('cs')?.value||'').toLowerCase(), posF=$('cp')?.value||'', sort=$('csort')?.value||'name';
-  let list=CARDS.filter(c=>c?.UI_Frontend_Data);
+  let list=CARDS.filter(c => c); // Keep all valid cards
   list=list.filter(c=>{const txt=getSearchText(c);return(!q||txt.includes(q))&&(!posF||getCardPos(c).includes(posF));});
   if(sort==='hp')list.sort((a,b)=>getCardHP(b)-getCardHP(a));else if(sort==='dmg')list.sort((a,b)=>getCardDMG(b)-getCardDMG(a));else if(sort==='spd')list.sort((a,b)=>getCardSPD(b)-getCardSPD(a));else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
   $('cgrid').innerHTML=list.map(c=>{const n=getCardName(c),safeN=escapeJS(n),isSel=(n===expandedCardCat);return`<div class="compact-card ${isSel?'selected-panel':''}" onclick="toggleCatExpand('${safeN}')" onmousemove="handleTooltipHover(event,'${safeN}',this)" onmouseleave="hideTooltip()"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),n)}" onerror="handleImgError(this,'${safeN}')"></div></div>`;}).join('');
@@ -5637,7 +5678,11 @@ function populateDraftFilters(){
 }
 function filterDraftGrid(){
   const q=($('draft-search')?.value||'').toLowerCase(),posF=$('draft-pos')?.value||'',teamF=$('draft-team')?.value||'',tierF=$('draft-tier')?.value||'',sort=$('draft-sort')?.value||'name';
-  let list=CARDS.filter(c=>c?.UI_Frontend_Data);
+  
+  // FIX: Remove the UI_Frontend_Data check so PARSER cards show up
+  let list = CARDS.filter(c => c); 
+  
+  // ... rest of the function stays the same ...
   list=list.filter(c=>{const txt=getSearchText(c);return(!q||txt.includes(q))&&(!posF||getCardPos(c).includes(posF))&&(!teamF||(c.UI_Frontend_Data?.Team||'')===teamF)&&(!tierF||getCardTier(c)===tierF);});
   if(sort==='hp')list.sort((a,b)=>getCardHP(b)-getCardHP(a));else if(sort==='dmg')list.sort((a,b)=>getCardDMG(b)-getCardDMG(a));else if(sort==='spd')list.sort((a,b)=>getCardSPD(b)-getCardSPD(a));else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
   const grid=$('draft-grid');grid.innerHTML='';
