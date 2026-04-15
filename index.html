@@ -3328,21 +3328,22 @@ const SKILL_ENGINE = (() => {
    * _reactiveSkillCanFire(rSk, castNature, attackSk)
    * Returns true if the reactive skill's timing matches the incoming attack nature.
    */
-  function _reactiveSkillCanFire(rSk, castNature, attackSk) {
-    const timing = String(rSk.Timing || rSk.timing || '');
-    if (!timing) return true; // no filter = always fires
+function _reactiveSkillCanFire(rSk, castNature, attackSk) {
+  const timing = String(rSk.Timing || rSk.timing || '');
+  if (!timing) return true; 
 
-    // Extract nature from timing string e.g. "Reactive_Free:On_Enemy:Nature:Offensive:Close_Shot"
-    const natMatch = timing.match(/Nature:([^\s:]+(?::[^\s:]+)*)/);
-    if (natMatch) {
-      const filter = natMatch[1].replace(/_/g, ':');
-      if (!natureMatchesFilter(castNature, filter)) return false;
-    }
-    // Property-level immunity on incoming attack
-    if (timing.includes('Unblockable') && attackSk && skillHasProperty(attackSk, 'Unblockable')) return false;
-    if (timing.includes('Uncontestable') && attackSk && skillHasProperty(attackSk, 'Uncontestable')) return false;
-    return true;
+  // FIX for Bug #5: Use [^\s]+ instead of [^\s:]+ to capture "Offensive:Close_Shot"
+  const natMatch = timing.match(/Nature:([^\s]+)/);
+  if (natMatch) {
+    // filter is now "Offensive:Close_Shot"
+    const filter = natMatch[1].replace(/_/g, ':');
+    if (!natureMatchesFilter(castNature, filter)) return false;
   }
+  
+  if (timing.includes('Unblockable') && attackSk && skillHasProperty(attackSk, 'Unblockable')) return false;
+  if (timing.includes('Uncontestable') && attackSk && skillHasProperty(attackSk, 'Uncontestable')) return false;
+  return true;
+}
 
   /**
    * _showReactivePrompt(reactors, atkC, defC, castNature, act)
@@ -4514,6 +4515,23 @@ function cloneCard(c, team) {
   cc._activeRound   = 0;
   cc._teamRef       = team;
 
+  // --- FIX for Bug #4: Populate _duoPartners ---
+  cc._duoPartners = []; 
+  const rules = cc.Ability?.Rules || [];
+  rules.forEach(rule => {
+    const trig = PARSER.parseTrigger(rule.trigger || '');
+    // Look for Roster Join Card Match rules
+    if (trig.type === 'ROSTER_JOIN' && trig.matchMode === 'CARD_MATCH') {
+      // Parse condition like "Own_TeamPlayer_ID=UTA_JST"
+      const cond = rule.condition || '';
+      const match = cond.match(/Own_TeamPlayer_ID=([\w]+)/);
+      if (match && match[1]) {
+        cc._duoPartners.push(match[1]);
+      }
+    }
+  });
+  // -------------------------------------------
+
   // Boot passive ability flags (ON:ALWAYS + ON:DEPLOY rules)
   ENGINE.bootPassiveAbilities(cc, [], null);
 
@@ -4524,7 +4542,6 @@ function cloneCard(c, team) {
     sk._usesThisTurn  = 0;
     sk._priority      = um.priority;
     sk._usesPerTurn   = isFinite(um.usesPerTurn)? um.usesPerTurn: Infinity;
-    // FIX: Use PARSER.parseTD instead of ENGINE.parseTD
     sk._td            = PARSER.parseTD(sk.TD || sk.td || 'DEFAULT');
     sk._isReactive    = (sk.Timing || '').startsWith('Reactive');
     sk._isFree        = (sk.Timing || '').includes('_Free');
@@ -5262,32 +5279,43 @@ function buildCardDetailHTML(card) {
     const abHtml = ab ? `<div class="ec-ability-block"><div class="ec-ability-name">${ab.Name || ''}</div><div class="ec-ability-desc">${ab.Description_UI || ab.description || ''}</div></div>` : '';
     
     const sHtml = getCardSkills(card).map(s => {
-      try {
-        // 1. Get Description
-        let desc = s.Description_UI || s.Description || '';
-        
-        // 2. Get Damage (Safely)
-        let displayDmg = s.Display_DMG || '';
-        
-        // Helper to extract damage from a modifiers array
-        const findDmg = (mods) => {
-          if (!Array.isArray(mods)) return null;
-          const mod = mods.find(m => typeof m.action_string === 'string' && m.action_string.includes('Deal_Flat_DMG'));
-          if (!mod) return null;
-          const match = mod.action_string.match(/Deal_Flat_DMG:(\d+)/);
-          return match ? match[1] : null;
-        };
+      // 1. Get Description
+      let desc = s.Description_UI || s.Description || '';
+      
+      // 2. Get Damage (Safely)
+      let displayDmg = s.Display_DMG || '';
+      
+      // Helper to extract damage from a modifiers array
+      const findDmg = (mods) => {
+        if (!Array.isArray(mods)) return null;
+        const mod = mods.find(m => typeof m.action_string === 'string' && m.action_string.includes('Deal_Flat_DMG'));
+        if (!mod) return null;
+        const match = mod.action_string.match(/Deal_Flat_DMG:(\d+)/);
+        return match ? match[1] : null;
+      };
 
-        // Check Legacy Modifiers
-        if (!displayDmg) displayDmg = findDmg(s.Modifiers);
+      // Check Legacy Modifiers
+      if (!displayDmg) displayDmg = findDmg(s.Modifiers);
 
-        // Check New Phases
-        if (!displayDmg && Array.isArray(s.Phases)) {
-            for (const phase of s.Phases) {
-              if (displayDmg) break;
-              displayDmg = findDmg(phase.Modifiers);
-            }
-        }
+      // Check New Phases
+      if (!displayDmg && Array.isArray(s.Phases)) {
+          for (const phase of s.Phases) {
+            if (displayDmg) break;
+            displayDmg = findDmg(phase.Modifiers);
+          }
+      }
+
+      return `<div class="ec-skill-wrap"><div class="ec-skill-header"><span class="ec-skill-name">${s.Name || 'Skill'}</span><span class="ec-skill-dmg">${displayDmg}</span></div><div class="ec-skill-desc">${desc}</div></div>`;
+    }).join('');
+
+    return `<div class="ec-header"><div class="ec-title">${n}</div><div class="ec-team">${team} · ${p}</div></div>
+<div class="ec-stats-row"><div class="ec-stat">${hp} <span>HP</span></div><div class="ec-stat">${dmg} <span>DMG</span></div><div class="ec-stat">${spd} <span>SPD</span></div></div>
+ ${abHtml}<div style="font-size:.68rem;color:var(--text-muted);font-weight:700;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">Skills</div>${sHtml}`;
+  } catch (e) {
+    console.error("CRITICAL Error in buildCardDetailHTML:", e);
+    return `<div style="padding:20px; color:red;">Error loading card details. Check console (F12).</div>`;
+  }
+}
 
         return `<div class="ec-skill-wrap"><div class="ec-skill-header"><span class="ec-skill-name">${s.Name || 'Skill'}</span><span class="ec-skill-dmg">${displayDmg}</span></div><div class="ec-skill-desc">${desc}</div></div>`;
       } catch (e) {
@@ -5496,20 +5524,20 @@ function showActionPanel(card, actorIdx) {
   btnsEl.innerHTML = '';
 
   // --- Context for Condition Checks ---
-  // We need to know if we are winning to check conditions
   const ownTeam = playerActive;
   const enemyTeam = enemyActive;
-  const ownScore = window.playerScore || 0;
-  const enemyScore = window.enemyScore || 0;
+  // FIX: Check variable existence safely (window.playerScore is undefined)
+  const ownScore = (typeof playerScore !== 'undefined') ? playerScore : 0;
+  const enemyScore = (typeof enemyScore !== 'undefined') ? enemyScore : 0;
   const ownTeamLead = ownScore > enemyScore;
-  // Build a basic context for PARSER
+  
   const context = {
       self: card,
       ownTeam: ownTeam,
       enemyTeam: enemyTeam,
       ownTeamLead: ownTeamLead,
-      gameRound: window.turnCount || 1,
-      ownGrave: [], // Simplified
+      gameRound: (typeof turnCount !== 'undefined') ? turnCount : 1,
+      ownGrave: []
   };
 
   // ── BASIC ATTACK ──
@@ -5532,58 +5560,57 @@ function showActionPanel(card, actorIdx) {
       const exhausted = sk._usesLeft <= 0;
       const turnCapped = isFinite(sk._usesPerTurn) && sk._usesThisTurn >= sk._usesPerTurn;
       
-      // 1. Hide Reactionary Skills unless we want them shown (They are handled by prompts usually)
-      //    If a skill is purely Reactive, we skip adding it to the main action bar.
-      //    EXCEPTION: If it is also "Free" or has a "Standard" branch.
       const isReactive = (sk.Timing || '').startsWith('Reactive');
-      // If it's ONLY reactive (no standard branch), hide it.
       if (isReactive && !(sk.Timing || '').includes('Standard')) {
-          return; // Skip this button
+          return; // Skip purely reactive skills
       }
 
-      // 2. Check Conditions (The logic you asked for)
-      //    We look into the phases/modifiers for conditions.
+      // 2. Check Conditions
       let conditionsMet = true;
       let conditionTooltip = "";
       
-      // Check parsed phases for conditions
-      if (sk._parsed && sk._parsed.phases) {
-          for (const phase of sk._parsed.phases) {
-              if (!phase.modifiers) continue;
-              for (const mod of phase.modifiers) {
-                  if (mod.condition) {
-                      // Use PARSER to check the condition string
-                      try {
-                          if (!PARSER.evalCondition(mod.condition, context)) {
-                              conditionsMet = false;
-                              conditionTooltip = `Requires: ${mod.condition}`; // Simple tooltip
-                          }
-                      } catch(e) {
-                          console.error("Condition Check Error", e);
-                      }
-                  }
+      // Helper to check conditions inside modifiers
+      const checkConds = (mods) => {
+          if (!Array.isArray(mods)) return true;
+          for (const mod of mods) {
+              if (mod.condition) {
+                  try {
+                      if (!PARSER.evalCondition(mod.condition, context)) return false;
+                  } catch(e) { console.error("Cond Err", e); }
               }
           }
+          return true;
+      };
+      
+      if (!checkConds(sk.Modifiers)) conditionsMet = false;
+      if (conditionsMet && Array.isArray(sk.Phases)) {
+          for (const phase of sk.Phases) {
+              if (!checkConds(phase.Modifiers)) { conditionsMet = false; break; }
+          }
       }
-      // Also check root condition if exists (Legacy)
+
       if (sk.Conditions && sk.Conditions.includes('Own_Team_Lead') && !ownTeamLead) {
           conditionsMet = false;
           conditionTooltip = "Requires: Team Lead";
       }
 
-      // Determine Disabled State
       const disabled = exhausted || turnCapped || !conditionsMet;
 
       const btn = document.createElement('button');
       btn.className='action-btn action-btn-skill';
       btn.disabled=disabled;
       
-      // Display Logic
-      // Try to find damage for the button label
+      // Display Logic - Robust DMG extraction
       let dmgLabel = sk.Display_DMG || '';
-      if (!dmgLabel && sk.Modifiers) {
-          const m = sk.Modifiers[0]?.action_string?.match(/Deal_Flat_DMG:(\d+)/);
-          if (m) dmgLabel = m[1];
+      const findDmg = (mods) => {
+          if (!Array.isArray(mods)) return null;
+          const m = mods.find(x => typeof x.action_string === 'string' && x.action_string.includes('Deal_Flat_DMG'));
+          return m ? m.action_string.match(/Deal_Flat_DMG:(\d+)/)?.[1] : null;
+      };
+      
+      if (!dmgLabel) dmgLabel = findDmg(sk.Modifiers);
+      if (!dmgLabel && Array.isArray(sk.Phases)) {
+          for (const p of sk.Phases) { if(dmgLabel) break; dmgLabel = findDmg(p.Modifiers); }
       }
       
       btn.innerHTML=`${sk.Name} <span class="action-btn-dmg">${dmgLabel}</span>`;
@@ -5603,11 +5630,7 @@ function showActionPanel(card, actorIdx) {
     });
   }
 
-  // ── SWAP / PASS (Same as before) ──
-  // ... (Keep your existing Swap/Pass logic here) ...
-  // (I am truncating this part for brevity, copy your Swap/Pass code from your file)
-  
-    // ── SWAP ──
+  // ── SWAP / PASS ──
   const aliveBench = playerBench.filter(c=>c&&!c.isDead);
   if (aliveBench.length) {
     const swapBtn = document.createElement('button');
@@ -5617,7 +5640,6 @@ function showActionPanel(card, actorIdx) {
     btnsEl.appendChild(swapBtn);
   }
 
-  // ── PASS ──
   const passBtn = document.createElement('button');
   passBtn.className='action-btn action-btn-pass';
   passBtn.textContent='PASS';
@@ -5626,7 +5648,6 @@ function showActionPanel(card, actorIdx) {
     $('action-panels-wrapper').classList.remove('visible');
   };
   btnsEl.appendChild(passBtn);
-
 
   wrapper.classList.add('visible');
 }
@@ -5681,8 +5702,11 @@ function _botStageMoves() {
       const pick = SKILL_ENGINE.botChooseSkill
         ? SKILL_ENGINE.botChooseSkill(card, enemyActive, playerActive)
         : usableSkills[Math.floor(Math.random()*usableSkills.length)];
+      
       if (pick) {
-        chosen = {actionType:'skill',actorIdx:i,skillIdx:pick.si ?? pick,targetIdx:tgt.i,execTeam:'enemy'};
+        // FIX for Bug #9: Check skillIdx first, fallback to si, then pick itself (if legacy format)
+        const skillIdx = pick.skillIdx ?? pick.si ?? pick;
+        chosen = {actionType:'skill', actorIdx:i, skillIdx, targetIdx:tgt.i, execTeam:'enemy'};
       }
     }
     if (!chosen) {
