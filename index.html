@@ -4774,11 +4774,10 @@ function getSearchText(c) {
     getCardVariant(c).toLowerCase(), 
     getCardTeam(c).toLowerCase()
   ];
-  getCardSkills(c).forEach(sk => { 
-    // Handle both {Skill: {...}} and flat {Name: ...}
-    const skillObj = sk.Skill || sk;
-    parts.push((skillObj.Name || '').toLowerCase()); 
-    parts.push((skillObj.Description_UI || skillObj.Description || '').toLowerCase()); 
+  getCardSkills(c).forEach(raw => { 
+    const s = raw.Skill || raw; // FIX: Unwrap
+    parts.push((s.Name || '').toLowerCase()); 
+    parts.push((s.Description_UI || s.Description || '').toLowerCase()); 
   });
   const ab = getAbility(c);
   if (ab) { 
@@ -5610,7 +5609,13 @@ function showTooltip(e, name) {
   const c=CARDS.find(x=>getCardName(x)===name); if(!c) return;
   const ab=getAbility(c);
   const abHtml=ab?`<div class="tt-ability">${ab.Name}</div><div style="color:rgba(255,255,255,.4);font-size:.6rem;">${ab.Description_UI||''}</div>`:'';
-  const sHtml=getCardSkills(c).map(s=>`<div class="tt-skill"><span class="tt-skill-name">${s.Name}</span> <span class="tt-skill-dmg">${s.Display_DMG}</span><div class="tt-skill-desc">${s.Description_UI}</div></div>`).join('');
+  
+  // FIX: Unwrap {Skill: {...}} here too!
+  const sHtml=getCardSkills(c).map(raw => {
+    const s = raw.Skill || raw; // Unwrap
+    return `<div class="tt-skill"><span class="tt-skill-name">${s.Name || ''}</span> <span class="tt-skill-dmg">${s.Display_DMG || ''}</span><div class="tt-skill-desc">${s.Description_UI || ''}</div></div>`;
+  }).join('');
+  
   tt.innerHTML=`<div class="tt-name">${shortName(name)}</div>${abHtml}${sHtml}`;
   tt.classList.add('visible'); positionTooltip(e);
 }
