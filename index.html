@@ -5495,15 +5495,6 @@ function showActionPanel(card, actorIdx) {
   nameEl.textContent = `[${card.battleRole}] ${shortName(getCardName(card))}`;
   btnsEl.innerHTML = '';
 
-function showActionPanel(card, actorIdx) {
-  const ck = card._instanceId;
-  const frozen = !!_frozen[ck];
-  const wrapper = $('action-panels-wrapper');
-  const nameEl  = $('action-card-name');
-  const btnsEl  = $('action-btns-row');
-  nameEl.textContent = `[${card.battleRole}] ${shortName(getCardName(card))}`;
-  btnsEl.innerHTML = '';
-
   // --- Context for Condition Checks ---
   // We need to know if we are winning to check conditions
   const ownTeam = playerActive;
