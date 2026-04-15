@@ -4729,7 +4729,18 @@ function getCardPosStr(c) {
 }
 
 function getCardSkills(c) { 
-  return c?.Skills || c?.skills || []; 
+  const skills = c?.Skills || c?.skills || [];
+  // Unwrap each skill if needed
+  return skills.map(s => s?.Skill || s).filter(Boolean);
+}
+
+  function getSearchText(card) {
+  if (!card) return '';
+  const name = getCardName(card).toLowerCase();
+  const variant = getCardVariant(card).toLowerCase();
+  const skills = getCardSkills(card);
+  const skillNames = skills.map(s => (s.Name || s.SkillName || '').toLowerCase()).join(' ');
+  return `${name} ${variant} ${skillNames}`;
 }
 
 function getAbility(c) { return c?.Ability || c?.abilities?.[0] || null; }
@@ -4795,15 +4806,23 @@ function cloneCard(c, team) {
     Object.assign(cc, cc.BasicInfo);
   }
   
-  // NORMALIZE SKILLS: Ensure cc.Skills is a flat array
-  if (cc.Skills && Array.isArray(cc.Skills)) {
-    cc.Skills = cc.Skills.map(s => {
-      // If wrapped in {Skill: ...}, unwrap it. Otherwise keep as is.
-      return s.Skill || s;
-    });
-  } else {
-    cc.Skills = []; // Ensure skills is always an array
-  }
+ // NORMALIZE SKILLS: Ensure cc.Skills is a flat array
+if (cc.Skills && Array.isArray(cc.Skills)) {
+  cc.Skills = cc.Skills.map(s => {
+    // If wrapped in {Skill: ...}, unwrap it. Otherwise keep as is.
+    const unwrapped = s.Skill || s;
+    // Ensure the unwrapped skill has all required fields
+    if (unwrapped && !unwrapped.Name && unwrapped.SkillName) {
+      unwrapped.Name = unwrapped.SkillName;
+    }
+    if (unwrapped && !unwrapped.Display_DMG && unwrapped.DisplayDMG) {
+      unwrapped.Display_DMG = unwrapped.DisplayDMG;
+    }
+    return unwrapped;
+  });
+} else {
+  cc.Skills = []; // Ensure skills is always an array
+}
 
   cc.currentHp      = getCardHP(cc);
   cc.isDead         = false;
@@ -5521,21 +5540,19 @@ function buildCardDetailHTML(card) {
   
   // Robust skill unwrapping and safety checks
   const skills = getCardSkills(card) || [];
-  const sHtml = skills.map(raw => {
-      const s = raw.Skill || raw; 
-      if (!s) return ''; // Skip if empty
-      const name = s.Name || 'Unknown Skill';
-      const dmgVal = s.Display_DMG || '';
-      // FIX: Skills use 'Description', NOT 'Description_UI'
-      const desc = s.Description || s.Description_UI || ''; 
-      return `<div class="ec-skill-wrap">
-                <div class="ec-skill-header">
-                  <span class="ec-skill-name">${name}</span>
-                  <span class="ec-skill-dmg">${dmgVal}</span>
-                </div>
-                <div class="ec-skill-desc">${desc}</div>
-              </div>`;
-  }).join('');
+const sHtml = skills.map(s => {
+    if (!s) return '';
+    const name = s.Name || s.SkillName || 'Unknown Skill';
+    const dmgVal = s.Display_DMG || s.DisplayDMG || '';
+    const desc = s.Description || s.Description_UI || s.Desc || '';
+    return `<div class="ec-skill-wrap">
+              <div class="ec-skill-header">
+                <span class="ec-skill-name">${name}</span>
+                <span class="ec-skill-dmg">${dmgVal}</span>
+              </div>
+              <div class="ec-skill-desc">${desc}</div>
+            </div>`;
+}).join('');
 
   return `<div class="ec-header"><div class="ec-title">${n}</div><div class="ec-team">${team} · ${p}</div></div>
 <div class="ec-stats-row"><div class="ec-stat">${hp} <span>HP</span></div><div class="ec-stat">${dmg} <span>DMG</span></div><div class="ec-stat">${spd} <span>SPD</span></div></div>
@@ -5714,7 +5731,12 @@ function goCat() { showScreen('catalogue-screen'); filterCat(); }
 function filterCat() {
   const q=($('cs')?.value||'').toLowerCase(), posF=$('cp')?.value||'', sort=$('csort')?.value||'name';
   let list=CARDS.filter(c => c); // Keep all valid cards
-  list=list.filter(c=>{const txt=getSearchText(c);return(!q||txt.includes(q))&&(!posF||getCardPos(c).includes(posF));});
+list=list.filter(c=>{
+  const txt = getSearchText(c);
+  const matchesSearch = !q || txt.includes(q);
+  const matchesPos = !posF || getCardPos(c).includes(posF);
+  return matchesSearch && matchesPos;
+});
   if(sort==='hp')list.sort((a,b)=>getCardHP(b)-getCardHP(a));else if(sort==='dmg')list.sort((a,b)=>getCardDMG(b)-getCardDMG(a));else if(sort==='spd')list.sort((a,b)=>getCardSPD(b)-getCardSPD(a));else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
   $('cgrid').innerHTML=list.map(c=>{const n=getCardName(c),safeN=escapeJS(n),isSel=(n===expandedCardCat);return`<div class="compact-card ${isSel?'selected-panel':''}" onclick="toggleCatExpand('${safeN}')" onmousemove="handleTooltipHover(event,'${safeN}',this)" onmouseleave="hideTooltip()"><div class="card-img-sm"><img src="${getImgUrl(getCardImg(c),n)}" onerror="handleImgError(this,'${safeN}')"></div></div>`;}).join('');
 }
@@ -5744,7 +5766,14 @@ function filterDraftGrid(){
   let list = CARDS.filter(c => c); 
   
   // ... rest of the function stays the same ...
-  list=list.filter(c=>{const txt=getSearchText(c);return(!q||txt.includes(q))&&(!posF||getCardPos(c).includes(posF))&&(!teamF||(c.UI_Frontend_Data?.Team||'')===teamF)&&(!tierF||getCardTier(c)===tierF);});
+  list=list.filter(c=>{
+  const txt = getSearchText(c);
+  const matchesSearch = !q || txt.includes(q);
+  const matchesPos = !posF || getCardPos(c).includes(posF);
+  const matchesTeam = !teamF || (getCardTeam(c) === teamF);
+  const matchesTier = !tierF || (getCardTier(c) === tierF);
+  return matchesSearch && matchesPos && matchesTeam && matchesTier;
+});
   if(sort==='hp')list.sort((a,b)=>getCardHP(b)-getCardHP(a));else if(sort==='dmg')list.sort((a,b)=>getCardDMG(b)-getCardDMG(a));else if(sort==='spd')list.sort((a,b)=>getCardSPD(b)-getCardSPD(a));else list.sort((a,b)=>getCardName(a).localeCompare(getCardName(b)));
   const grid=$('draft-grid');grid.innerHTML='';
   list.forEach(c=>{const n=getCardName(c),inD=isCardInDraft(c),isSel=(n===currentDraftPanelCard),imgSrc=getImgUrl(getCardImg(c),n);const div=document.createElement('div');div.className=`compact-card ${inD?'in-draft':''} ${isSel?'selected-panel':''}`;if(!inD){div.onclick=(e)=>{if(_drag.suppressClick){_drag.suppressClick=false;return;}openDraftPanel(n);};initDraftDrag(div,n,imgSrc);}div.onmousemove=ev=>handleTooltipHover(ev,n,div);div.onmouseleave=hideTooltip;div.innerHTML=`<div class="card-img-sm"><img src="${imgSrc}" onerror="handleImgError(this,'${escapeJS(n)}')"></div>`;grid.appendChild(div);});
@@ -6205,6 +6234,16 @@ function showEnemyBenchTooltip(event, count) {
 }
 function hideEnemyBenchTooltip() { const tt=$('enemy-bench-tooltip'); if(tt)tt.style.display='none'; }
 
+  // After defining CARDS, add this debug code:
+console.log('CARDS loaded:', CARDS.length);
+if (CARDS.length > 0) {
+  const firstCard = CARDS[0];
+  console.log('First card:', {
+    name: getCardName(firstCard),
+    skills: getCardSkills(firstCard),
+    skillsCount: getCardSkills(firstCard).length
+  });
+}
 
 // ============================================================
 // CARDS DATABASE
@@ -13896,6 +13935,7 @@ const CARDS = [
 }
 }]}
 ];
+  
 
 </script>
 </body>
