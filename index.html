@@ -4767,24 +4767,22 @@ function getDBShortName(f) {
   return clean; 
 }
 
-function getSearchText(c) {
-  const parts = [
-    getCardRawName(c).toLowerCase(), 
-    getCardName(c).toLowerCase(), 
-    getCardVariant(c).toLowerCase(), 
-    getCardTeam(c).toLowerCase()
-  ];
-  getCardSkills(c).forEach(raw => { 
-    const s = raw.Skill || raw; // FIX: Unwrap
-    parts.push((s.Name || '').toLowerCase()); 
-    parts.push((s.Description_UI || s.Description || '').toLowerCase()); 
-  });
-  const ab = getAbility(c);
-  if (ab) { 
-    parts.push((ab.Name || '').toLowerCase()); 
-    parts.push((ab.Description_UI || ab.Description || '').toLowerCase()); 
-  }
-  return parts.join(' ');
+function showTooltip(e, name) {
+  if (!_tooltipEnabled) return;
+  const tt=$('tooltip'); if(!tt) return;
+  const c=CARDS.find(x=>getCardName(x)===name); if(!c) return;
+  const ab=getAbility(c);
+  const abHtml=ab?`<div class="tt-ability">${ab.Name||''}</div><div style="color:rgba(255,255,255,.4);font-size:.6rem;">${ab.Description_UI||ab.Description||''}</div>`:'';
+  
+  const skills = getCardSkills(c) || [];
+  const sHtml=skills.map(raw => {
+    const s = raw.Skill || raw;
+    if (!s) return '';
+    return `<div class="tt-skill"><span class="tt-skill-name">${s.Name||''}</span> <span class="tt-skill-dmg">${s.Display_DMG||''}</span><div class="tt-skill-desc">${s.Description||s.Description_UI||''}</div></div>`;
+  }).join('');
+  
+  tt.innerHTML=`<div class="tt-name">${shortName(name)}</div>${abHtml}${sHtml}`;
+  tt.classList.add('visible'); positionTooltip(e);
 }
 
 //--- cloneCard: deep-copy, normalize, and wire up ENGINE counters ---
@@ -5512,29 +5510,32 @@ function _getPlayerId(card) {
  * Renders the card detail panel used in both Catalogue and Draft panels.
  */
 function buildCardDetailHTML(card) {
+  if (!card) return '';
   const n=getCardName(card), hp=getCardHP(card), dmg=getCardDMG(card), spd=getCardSPD(card);
   const p=getCardPosStr(card), team=card.BasicInfo?.Team||'';
   const ab=getAbility(card);
+  
   const abHtml = ab
-    ? `<div class="ec-ability-block"><div class="ec-ability-name">${ab.Name}</div><div class="ec-ability-desc">${ab.Description_UI||''}</div></div>`
+    ? `<div class="ec-ability-block"><div class="ec-ability-name">${ab.Name||'Ability'}</div><div class="ec-ability-desc">${ab.Description_UI||ab.Description||''}</div></div>`
     : '';
   
-  // FIX: Robust unwrap
-  const sHtml = getCardSkills(card).map(raw => {
-    const s = raw.Skill || raw; 
-    return `<div class="ec-skill-wrap">
-              <div class="ec-skill-header">
-                <span class="ec-skill-name">${s.Name||'Skill'}</span>
-                <span class="ec-skill-dmg">${s.Display_DMG||''}</span>
-              </div>
-              <div class="ec-skill-desc">${s.Description_UI||s.Description||''}</div>
-            </div>`;
+  // Robust skill unwrapping and safety checks
+  const skills = getCardSkills(card) || [];
+  const sHtml = skills.map(raw => {
+      const s = raw.Skill || raw; 
+      if (!s) return ''; // Skip if empty
+      const name = s.Name || 'Unknown Skill';
+      const dmgVal = s.Display_DMG || '';
+      // FIX: Skills use 'Description', NOT 'Description_UI'
+      const desc = s.Description || s.Description_UI || ''; 
+      return `<div class="ec-skill-wrap">
+                <div class="ec-skill-header">
+                  <span class="ec-skill-name">${name}</span>
+                  <span class="ec-skill-dmg">${dmgVal}</span>
+                </div>
+                <div class="ec-skill-desc">${desc}</div>
+              </div>`;
   }).join('');
-
-  return `<div class="ec-header"><div class="ec-title">${n}</div><div class="ec-team">${team} · ${p}</div></div>
-<div class="ec-stats-row"><div class="ec-stat">${hp} <span>HP</span></div><div class="ec-stat">${dmg} <span>DMG</span></div><div class="ec-stat">${spd} <span>SPD</span></div></div>
- ${abHtml}<div style="font-size:.68rem;color:var(--text-muted);font-weight:700;margin-bottom:6px;letter-spacing:1px;text-transform:uppercase;">Skills</div>${sHtml}`;
-}
 
   return `<div class="ec-header"><div class="ec-title">${n}</div><div class="ec-team">${team} · ${p}</div></div>
 <div class="ec-stats-row"><div class="ec-stat">${hp} <span>HP</span></div><div class="ec-stat">${dmg} <span>DMG</span></div><div class="ec-stat">${spd} <span>SPD</span></div></div>
